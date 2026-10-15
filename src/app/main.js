@@ -16,6 +16,7 @@ import { getSpotPrice } from '../live/price.js';
 import { setData as jobSetData, run as jobRun } from './riskjob.js';
 import { encodeState, decodeState } from './share.js';
 import { feedbackText, mailtoLink } from './feedback.js';
+import { dataAge } from '../data/candles.js';
 
 const META = JSON.parse(document.getElementById('meta').textContent);
 const STORE_KEY = 'btc-loan-risk:form';
@@ -520,7 +521,8 @@ function renderRisk() {
     + legendHtml([[nLiq, 'd-liq', R.legendLiquidated], [nPart, 'd-part', R.legendPartial], [nMargin, 'd-margin', R.legendMargin], [nNone, 'd-none', R.legendNothing]]);
   $('#kept-line').textContent = m.keptAfterSale && m.pPartial >= 0.005 ? t('results.kept', { kept: pct(m.keptAfterSale.q50, 0) }) : '';
   $('#outlook-line').textContent = r.outlook ? t('results.outlookLine', { trend: signedPct(riskSettings.trend), n: of100(r.outlook.pLiquidation + r.outlook.pPartial) }) : '';
-  $('#basis-line').textContent = t('results.basis', { g: of100(r.garchMc.pLiquidation + r.garchMc.pPartial) });
+  const lastHour = Math.max(META.prices[cur].to, appended[cur] && appended[cur].length ? appended[cur].at(-1).time : 0);
+  $('#basis-line').textContent = `${t('results.basis', { g: of100(r.garchMc.pLiquidation + r.garchMc.pPartial) })} · ${t('ui.dataThrough', { date: date(lastHour) })}`;
   renderSafer(); renderOutlook();
   if (tm.purpose === 'buy') renderLeverage();
   $('#history-text').innerHTML = historyText();
@@ -701,6 +703,10 @@ function renderStatic() {
   $('#impressum-body').innerHTML = tx.legal.impressum.map((x) => `<p>${em(x)}</p>`).join('');
   $('#privacy-body').innerHTML = tx.legal.privacy.map((sec) => `<h4>${esc(sec.h)}</h4>${sec.p.map((x) => `<p>${em(x)}</p>`).join('')}`).join('');
   for (const n of document.querySelectorAll('.template-note')) n.hidden = !JSON.stringify(tx.legal).includes('«');
+  // the embedded history is maintained by the weekly update; warn if it has not run for 45 days
+  const oldest = Math.min(...Object.values(META.prices).map((m) => m.to));
+  $('#data-old').hidden = !dataAge(oldest).stale;
+  $('#data-old').textContent = t('ui.dataOld', { date: date(oldest) });
   $('#donate-address').textContent = SITE.donationAddress;
   renderFeedbackForm();
 }

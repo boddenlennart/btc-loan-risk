@@ -11,10 +11,10 @@ const START = Date.parse('2014-01-01T00:00Z') / 1000;
 
 for (const currency of ['USD', 'EUR']) {
   describe.skipIf(!hasData(currency))(`${currency} hourly history`, () => {
-    it.skipIf(!hasRaw(currency))('embedded data equals the raw exchange download, to the cent', () => {
+    it.skipIf(!hasRaw(currency))('embedded data equals the raw exchange download, to the cent (later hours come from the weekly update)', () => {
       const h = loadHourly(currency);
       const raw = loadRaw(currency);
-      expect(h.time.length).toBe(raw.length);
+      expect(h.time.length).toBeGreaterThanOrEqual(raw.length);
       raw.forEach((r, i) => {
         if (h.time[i] !== r.time || toCents(h.open[i]) !== toCents(r.open) || toCents(h.high[i]) !== toCents(r.high)
           || toCents(h.low[i]) !== toCents(r.low) || toCents(h.close[i]) !== toCents(r.close) || h.noTrade[i] !== (r.volume === 0 ? 1 : 0)) {
@@ -22,10 +22,10 @@ for (const currency of ['USD', 'EUR']) {
         }
       });
     });
-    it('starts on 2014-01-01 and reaches the last 30 days', () => {
+    it('starts on 2014-01-01 and is not older than 45 days (the page warns after that; run the data update)', () => {
       const h = loadHourly(currency);
       expect(h.time[0]).toBe(START);
-      expect(Date.now() / 1000 - h.time.at(-1)).toBeLessThan(30 * 86400);
+      expect(Date.now() / 1000 - h.time.at(-1)).toBeLessThan(45 * 86400);
     });
     it('hours are in order and on the full hour', () => {
       const h = loadHourly(currency);

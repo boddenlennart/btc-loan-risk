@@ -94,6 +94,82 @@ npm test                                     # run all automated tests
 
 ---
 
+## How to update and check the data
+
+The page contains BTC price history up to a fixed date. A scheduled **GitHub Action** keeps it current. It does all the work, but **it never changes the published page by itself**: it proposes a change, and you approve it with one click.
+
+### What happens every Monday (automatically)
+
+1. GitHub runs the workflow **"Update price data"** (`.github/workflows/update-data.yml`).
+2. It downloads the new hourly prices since the last update from **Bitstamp** (main source) and **Kraken** (second opinion).
+3. It checks them:
+   - no missing hours, no duplicates
+   - no impossible values (zero, negative, low above high, more than a doubling or halving within one hour)
+   - both exchanges agree: in a typical hour they differ by about 0.01%; the check fails above 0.5% typical, above 2% for more than 1 hour in 100, or above 5% in any single hour
+4. It adds the hours, re-fits the model settings, rebuilds the page and runs **all** tests, including the test against history.
+5. It opens a **pull request** called "Weekly price data update [date]". The description says, in plain words:
+   - old and new end date
+   - whether the exchanges agreed
+   - any hours to look at
+   - how the result for a reference loan changed
+
+### What you do (about 2 minutes a week, or once a month)
+
+1. On GitHub, open the **Pull requests** tab and click the newest "Weekly price data update".
+2. Read the summary. Check that:
+   - the end date moved forward,
+   - there is no "Please look at these hours" (if there is, see below),
+   - the reference loan moved by 3 of 100 or less.
+3. Scroll down: the run shows a green check mark (tests passed).
+4. Click **Merge pull request**, then **Confirm merge**. GitHub Pages republishes the page within a few minutes.
+
+If you skip a week, that's fine. The next update contains both weeks and closes the older pull request by itself.
+
+**"Please look at these hours":** an hourly low was more than 10% apart between the two exchanges. That is often a real, very short crash on one exchange, exactly the kind of moment that triggers liquidations. Look the hour up on both exchanges' charts. If it looks like an error (one exchange only, no trading volume, recovered within the hour), don't merge and tell me. Otherwise merge.
+
+### If the update fails
+
+- GitHub opens an **issue** called "Price data update failed", assigned to you, and GitHub's notification e-mail tells you. Check under GitHub → Settings → Notifications → "Actions" that you receive these e-mails.
+- Read the issue: it says which check failed.
+- Often it's a temporary problem with an exchange's API. Click **Actions → Update price data → Run workflow** to try again a day later.
+- If the same check keeps failing, an exchange may have changed something. Nothing on the page changes until a run passes. The page itself warns visitors once the data is more than 45 days old.
+
+### Run it by hand
+
+- On GitHub: **Actions → Update price data → Run workflow**.
+- On your computer: `node tools/update-data.mjs`, then `node tools/build.mjs` and `npm test`.
+
+### One-time setup on GitHub (before the first run)
+
+1. **Settings → Actions → General → Workflow permissions:** choose **"Read and write permissions"** and tick **"Allow GitHub Actions to create and approve pull requests"**. Without this, the workflow cannot open its pull request. It still never merges by itself.
+2. **Settings → Notifications** (your account): make sure e-mails for **Actions** and **Issues** are switched on.
+3. Optional: **Settings → Branches →** add a rule for `main` that requires a pull request. That way nothing reaches the page without your click, not even by mistake.
+
+### The 60-day rule (important)
+
+In a public repository, **GitHub switches off scheduled workflows after 60 days without activity in the repository**. Commits to the repository count as activity, and merging the weekly pull request is one. If nothing is merged or changed for 60 days, the Monday update stops silently. GitHub e-mails a warning shortly before.
+
+- **To prevent it:** merge an update at least every few weeks.
+- **To restart it:** **Actions → Update price data → "Enable workflow"**, then **Run workflow** once.
+- **The safety net:** the page shows **"Data through [date]"** under the answer, and a red warning when the stored history is more than **45 days** old, so a stopped update is noticed before visitors are misled.
+
+### Yearly review checklist
+
+Once a year (for example in January):
+
+- [ ] **Sources:** Bitstamp and Kraken still publish hourly candles via the same public APIs, and their terms still allow this use. If not, choose new sources and update `tools/update-data.mjs`, the privacy notice and the README.
+- [ ] **Full re-download:** run `python3 tools/fetch_history.py usd` and `eur`, then `npm test`. The data test compares the embedded history with a fresh raw download to the cent; any difference shows an error or a later correction by an exchange.
+- [ ] **Known data issues** (`tests/fixtures/data-known-issues.json`): new extreme hours or exchange outages reviewed and noted.
+- [ ] **History test:** the calibration results in the test output are still within the limits (README → "Calibration results"). If they get close, discuss whether the default "no trend" assumption still holds.
+- [ ] **Cross-check limits:** look at the typical differences reported in the year's pull requests. If they rose (for example, a thinner market), consider whether the 0.5% / 2% / 5% limits still fit.
+- [ ] **Live price sources:** the four price services still answer from a web page (README → "Live-price check"); update the privacy notice if a service changed.
+- [ ] **Privacy notice and Impressum:** still correct (address, e-mail, services named, legal basis); date updated.
+- [ ] **Tools:** run `npm outdated` and update the build and test tools; check that GitHub has not announced the end of `actions/checkout@v4` or `actions/setup-node@v4`.
+- [ ] **Feedback:** go through the year's feedback e-mails against the success criteria in `ux/A4-success-criteria.md`.
+- [ ] **Custom domain** (if any): renewed, HTTPS still on.
+
+---
+
 ## How the page works
 
 | Method | What it does | File |
@@ -174,7 +250,7 @@ Public APIs can change their rules at any time; the page then falls back to the 
 
 ## Tests and how each was verified
 
-Run with `npm test` (219 tests). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
+Run with `npm test` (237 tests). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
 
 | # | Test | How it was verified |
 |---|---|---|
@@ -189,6 +265,7 @@ Run with `npm test` (219 tests). Tests 1–9 were written **before** the engine 
 | 9 | Real-offer check | Done by the project owner (phase 3); see below. |
 | + | Data quality (`tests/data.test.js`) | Embedded data equals the raw downloads to the cent; no gaps over 6 hours, no extreme wicks and no offline periods that were not reviewed by hand. |
 | + | GARCH fitting (`tests/garch.test.js`) | Data invented from known GARCH settings; the fit must recover them. |
+| + | Data update checks (`tests/candles.test.js`, `tests/workflow.test.js`) | Gaps, duplicates, impossible values, jumps and disagreement between exchanges are caught; a deep low on one exchange is listed for review; the 45-day page warning; the workflow runs weekly, tests before opening a pull request, reports failures, never merges and uses no stored secrets. |
 | + | Live price (`tests/liveprice.test.js`) | Fallback order, timeouts, bad answers, stale fallback, and that no user data is in any request (with fake network answers). |
 | + | Hosting (`tests/hosting.test.js`) | The built page has no external scripts, styles, fonts or images; every web address in it is one of the named price services (or a plain text link); the Content Security Policy allows exactly those services. The privacy notice must name every service (`tests/content.test.js`). |
 | + | Speed-up is exact (`tests/replay.test.js`) | The replay skips quiet days for speed; on 300 random loans (all margin-call rules) it gives exactly the same results as the plain hour-by-hour check. |
@@ -258,7 +335,8 @@ src/data/codec.js        compact price-history format
 data/                    compressed price history + meta.json (data/raw/ is not committed)
 reference/               independent Python reference + spreadsheet
 tests/                   automated tests and their fixtures
-tools/                   download, data build, page build, audit copy, local preview server
+tools/                   download, weekly data update, data build, page build, audit copy, local preview server
+.github/workflows/       the weekly data-update workflow
 ux/                      UX redesign: decisions, profiles, validation plan, content inventory, success criteria, sketches
 ```
 

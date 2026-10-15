@@ -37,6 +37,8 @@ export default {
     perYear: 'a year',
     showTable: 'Show as a table',
     dataUntil: 'Price history in this page: {from} to {to}.',
+    dataThrough: 'Data through {date}',
+    dataOld: 'The price history stored in this page ends on {date}, more than 45 days ago. Results may miss recent price moves. The owner of this page should run the data update.',
     dataAppended: 'Recent hours added from Bitstamp up to {to}.',
   },
 

@@ -1,0 +1,88 @@
+# Weekly price-data update. Opens a pull request; never merges by itself.
+# See README → "How to update and check the data".
+name: Update price data
+
+on:
+  schedule:
+    - cron: '17 5 * * 1' # every Monday 05:17 UTC
+  workflow_dispatch: {}  # "Run workflow" button in the Actions tab
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install tools
+        run: npm ci
+
+      - name: Fetch, check and append new hourly candles
+        id: update
+        run: node tools/update-data.mjs "$RUNNER_TEMP/summary.md"
+
+      - name: Rebuild the page (re-fits the model settings)
+        if: steps.update.outputs.changed == 'true'
+        run: node tools/build.mjs
+
+      - name: Run the full test suite
+        if: steps.update.outputs.changed == 'true'
+        run: npm test
+
+      - name: Open a pull request (never merged automatically)
+        if: steps.update.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          branch="data-update-$(date -u +%Y-%m-%d)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add data docs/index.html
+          git commit -m "Weekly price data update $(date -u +%Y-%m-%d)"
+          git push --force origin "$branch"
+          {
+            cat "$RUNNER_TEMP/summary.md"
+            echo
+            echo "All tests passed in [this run](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})."
+          } > "$RUNNER_TEMP/body.md"
+          gh pr create --base "${GITHUB_REF_NAME}" --head "$branch" --title "Weekly price data update $(date -u +%Y-%m-%d)" --body-file "$RUNNER_TEMP/body.md" \
+            || gh pr edit "$branch" --body-file "$RUNNER_TEMP/body.md"
+          # an older, unmerged update is contained in this one: close it with a note
+          for old in $(gh pr list --state open --json number,headRefName --jq ".[] | select(.headRefName | startswith(\"data-update-\")) | select(.headRefName != \"$branch\") | .number"); do
+            gh pr close "$old" --delete-branch --comment "Replaced by the newer data update from $(date -u +%Y-%m-%d), which contains these hours too."
+          done
+
+      - name: Tell the owner when something failed (opens an issue)
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "The weekly price-data update failed on $(date -u +%Y-%m-%d)."
+            echo
+            if [ -f "$RUNNER_TEMP/summary.md" ]; then cat "$RUNNER_TEMP/summary.md"; echo; fi
+            echo "Details: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo
+            echo "What to do: see README → \"How to update and check the data\" → \"If the update fails\"."
+          } > "$RUNNER_TEMP/issue.md"
+          open=$(gh issue list --state open --search "in:title Price data update failed" --json number --jq '.[0].number // empty')
+          if [ -n "$open" ]; then
+            gh issue comment "$open" --body-file "$RUNNER_TEMP/issue.md"
+          else
+            gh issue create --title "Price data update failed ($(date -u +%Y-%m-%d))" --body-file "$RUNNER_TEMP/issue.md" --assignee "${GITHUB_REPOSITORY_OWNER}"
+          fi
