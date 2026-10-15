@@ -1,0 +1,2024 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phase B sketches</title>
+<style>
+:root{--bg:#f2f1ee;--surface:#fcfcfb;--s2:#f0efec;--border:#dddcd7;--text:#0b0b0b;--text2:#52514e;--muted:#6e6d68;--blue:#2a78d6;--blue-ink:#1c5cab;--red:#d03b3b;--amber:#eda100;--green:#0ca30c;--grey:#c9c8c2;--band-o:rgba(42,120,214,.16);--band-i:rgba(42,120,214,.34)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.page{max-width:1500px;margin:0 auto;padding:24px 16px 80px}
+h1{font-size:1.5rem;margin:0 0 4px}h2{font-size:1.25rem;margin:40px 0 6px}.lead{color:var(--text2);max-width:900px;margin:0 0 16px}
+.row{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+.col{flex:0 0 auto}.col h3{margin:0 0 8px;font-size:1rem}.col p.note{max-width:375px;color:var(--text2);font-size:.85rem;margin:8px 0 0}
+.phone{width:375px;background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:14px 16px 24px;box-shadow:0 8px 30px rgba(0,0,0,.08)}
+.phone .bar{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:.95rem;padding:2px 0 10px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.phone .bar span{font-weight:400;color:var(--blue-ink);font-size:.85rem}
+.banner{background:#fff6e0;border:1px solid var(--amber);border-radius:10px;padding:8px 10px;font-size:.82rem;margin:8px 0 12px}
+.banner a,.link{color:var(--blue-ink);text-decoration:underline;cursor:pointer}
+label.f{display:block;font-weight:600;font-size:.9rem;margin:10px 0 4px}
+.inp{display:flex;align-items:center;gap:6px}.inp .box{flex:1;border:1px solid var(--border);border-radius:9px;padding:9px 11px;background:#fff;font-variant-numeric:tabular-nums}
+.inp .u{color:var(--muted);font-size:.85rem;min-width:28px}
+.q{display:inline-flex;width:22px;height:22px;border-radius:50%;border:1px solid var(--border);align-items:center;justify-content:center;font-size:.75rem;color:var(--blue-ink);font-weight:700;margin-left:6px;vertical-align:middle;background:var(--s2)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{border:1px solid var(--border);border-radius:999px;padding:6px 12px;font-size:.85rem;background:#fff}.chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.seg{display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden}.seg div{flex:1;text-align:center;padding:9px 6px;font-size:.88rem;background:#fff}.seg div.on{background:var(--blue);color:#fff;font-weight:600}
+.more{border:1px dashed var(--border);border-radius:10px;padding:9px 11px;margin-top:12px;font-size:.85rem;color:var(--text2)}.more b{color:var(--text)}
+.priceline{font-size:.8rem;color:var(--muted);margin-top:10px}
+.card{border:1px solid var(--border);border-radius:14px;padding:12px 13px;margin:10px 0;background:#fff}
+.headline{font-size:1.18rem;line-height:1.3;font-weight:700}.headline em{font-style:normal;color:var(--red)}
+.sub{color:var(--text2);font-size:.85rem}.small{color:var(--muted);font-size:.78rem}
+.dots{display:grid;grid-template-columns:repeat(20,1fr);gap:3px;margin:10px 0 6px}.dots i{aspect-ratio:1;border-radius:50%;display:block}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.78rem;color:var(--text2)}.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px;background:var(--c)}
+.slider{margin:6px 0 2px}.track{position:relative;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--green),var(--amber),var(--red));margin:18px 6px 6px}
+.thumb{position:absolute;top:50%;width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--blue);transform:translate(-50%,-50%)}
+.ticks{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin:0 2px}
+.levers{margin:6px 0 0}.lv{display:grid;grid-template-columns:1fr 90px 26px;gap:8px;align-items:center;font-size:.82rem;margin:5px 0}
+.lv .b{height:10px;border-radius:3px;background:var(--s2);position:relative}.lv .b i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--red)}
+.lv b{text-align:right;font-variant-numeric:tabular-nums}.lv.base{font-weight:700}
+.ladder{position:relative;height:66px;margin:6px 4px 0}.ladder .ln{position:absolute;left:0;right:0;top:28px;height:4px;background:linear-gradient(90deg,var(--red) 0,var(--red) 0%,var(--amber) 0%,var(--grey) 100%);border-radius:2px}
+.ladder .pt{position:absolute;top:0;transform:translateX(-50%);text-align:center;font-size:.72rem;line-height:1.2;white-space:nowrap}
+.ladder .pt i{display:block;width:12px;height:12px;border-radius:50%;margin:16px auto 4px;border:2px solid #fff;box-shadow:0 0 0 1px var(--border)}
+.acc{border-top:1px solid var(--border);padding:11px 2px;display:flex;justify-content:space-between;font-weight:600;font-size:.92rem}.acc span{color:var(--muted);font-weight:400;font-size:.8rem}
+.acc.open{border-bottom:none}.accbody{padding:0 2px 10px;font-size:.85rem;color:var(--text2)}
+.foot{border-top:1px solid var(--border);margin-top:14px;padding-top:12px;font-size:.78rem;color:var(--muted)}
+.donate{display:flex;gap:10px;align-items:center;margin-top:10px}.donate svg{flex:0 0 auto;background:#fff;border:1px solid var(--border);border-radius:6px}
+.addr{font-family:ui-monospace,Menlo,monospace;font-size:.68rem;word-break:break-all;color:var(--text)}
+.step{display:flex;gap:10px;align-items:flex-start;margin:14px 0 4px}.step .n{flex:0 0 26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.step h4{margin:2px 0 0;font-size:1.02rem;line-height:1.3}
+.wide{width:720px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px}
+.wide h4{margin:0 0 2px}.wide svg{width:100%;height:auto;display:block}
+.verdict{background:#eef5ff;border:1px solid #b7d3f6;border-radius:12px;padding:12px 14px;max-width:1100px}
+table.cmp{border-collapse:collapse;font-size:.85rem;max-width:1100px;background:#fff}table.cmp td,table.cmp th{border:1px solid var(--border);padding:6px 9px;text-align:left;vertical-align:top}
+.termsheet{font-size:.72rem;background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 10px;line-height:1.5}
+.termsheet mark{background:#fff0c2;border-radius:3px;padding:0 2px}.termsheet sup{background:var(--blue);color:#fff;border-radius:50%;padding:0 4px;font-size:.6rem;margin-left:2px}
+</style>
+</head>
+<body>
+<div class="page">
+<h1>Phase B · Sketches (not the real page)</h1>
+<p class="lead">All numbers are real, computed with the page's engine for the test offer in A2 (loan €15,000, starting LTV 50%, liquidation 83%, margin call 70% with sale after 48 h, 12 months, 11.5% added to the loan, fee 1.5%) at a BTC price of €72,066. Layout, wording and colours are proposals. Nothing here is interactive except where noted.</p>
+
+<h2>1 · Input: five numbers first</h2>
+<p class="lead">Five essential numbers and one question on the first screen. Everything else is behind "More terms from your offer", already filled with starting values. One guide shows where to find the numbers, instead of 23 "where to find" lines.</p>
+<div class="row">
+ <div class="col"><h3>Input screen (phone)</h3><div class="phone" id="input"></div><p class="note">The results start directly below. There is no "calculate" button: results update as you type.</p></div>
+ <div class="col"><h3>"Where to find these numbers" (opens on tap)</h3><div class="phone" id="guide"></div><p class="note">One small picture of a term sheet with the 5 numbers marked, plus the words to search for. People read their offer once, not field by field.</p></div>
+ <div class="col"><h3>"More terms from your offer" (open)</h3><div class="phone" id="more"></div><p class="note">The margin-call rules become one plain question with three answers. Here the test offer's "sale after 48 h" is chosen. That is the setting that turned out to matter most.</p></div>
+</div>
+
+<h2>2 · Results: two variants</h2>
+<p class="lead">Both show the same numbers. <b>Variant 1</b> gives the answer first and puts everything else in sections you open. <b>Variant 2</b> tells it as a story in steps and builds understanding before the big number.</p>
+<div class="row">
+ <div class="col"><h3>Variant 1 · "Answer first" (recommended)</h3><div class="phone" id="v1"></div></div>
+ <div class="col"><h3>Variant 1 · sections opened</h3><div class="phone" id="v1open"></div></div>
+ <div class="col"><h3>Variant 2 · "Guided story"</h3><div class="phone" id="v2"></div></div>
+</div>
+<table class="cmp" style="margin-top:14px">
+<tr><th></th><th>Variant 1 · Answer first</th><th>Variant 2 · Guided story</th></tr>
+<tr><td>First screen of results</td><td>Answer, 100 dots, LTV slider: <b>meets C4</b></td><td>The liquidation price; the big number comes in step 2 (<b>misses C4</b>)</td></tr>
+<tr><td>Profile A (first-time)</td><td>Fast answer; the "?" next to the sentence explains it</td><td>Best understanding, but a long scroll on a phone</td></tr>
+<tr><td>Profiles B and C</td><td>Find their section directly</td><td>Must scroll through the story every time</td></tr>
+<tr><td>Changing a number</td><td>Answer updates where you look</td><td>The answer moves out of view</td></tr>
+<tr><td>Borrowed from the other</td><td>Takes over V2's order inside the sections: price ladder → history → simulation</td><td></td></tr>
+</table>
+
+<h2>3 · The price-path picture: three options</h2>
+<p class="lead">Your feedback: the bands were not intuitive. Here are three options with the same data. <b>Recommendation: B for "possible futures" and C for "what really happened". The fan (A) moves to the expert section.</b></p>
+<div class="row">
+ <div class="col"><div class="wide" id="chartA"></div></div>
+ <div class="col"><div class="wide" id="chartB"></div></div>
+ <div class="col"><div class="wide" id="chartC"></div></div>
+</div>
+
+<h2>4 · Profile C: "Is the leverage worth it?"</h2>
+<p class="lead">Shown instead of "Borrow or sell?" when the visitor chose "Buy more BTC". The result counted in BTC is a <b>new calculation</b> (sketch numbers, from the same simulated paths; the final version gets its own tests, D10).</p>
+<div class="row">
+ <div class="col"><div class="phone" id="lev"></div></div>
+ <div class="col"><h3>Footer: feedback and donation</h3><div class="phone" id="foot"></div></div>
+</div>
+</div>
+
+<script>
+const N = {
+ "P0": 72066,
+ "fan": [
+  {
+   "month": 1,
+   "day": 30,
+   "q05": 52836.67805594969,
+   "q25": 64102.051619519,
+   "q50": 70996.70605627437,
+   "q75": 80525.2723728413,
+   "q95": 101374.84099459434
+  },
+  {
+   "month": 2,
+   "day": 61,
+   "q05": 45685.898886909126,
+   "q25": 59609.89506228819,
+   "q50": 71224.53082122657,
+   "q75": 86182.7870242121,
+   "q95": 117192.48479645624
+  },
+  {
+   "month": 3,
+   "day": 92,
+   "q05": 40752.631968018526,
+   "q25": 56606.89106946201,
+   "q50": 71388.23839201606,
+   "q75": 89811.55457244568,
+   "q95": 128571.10549887494
+  },
+  {
+   "month": 4,
+   "day": 120,
+   "q05": 37079.216654282376,
+   "q25": 54425.50853393626,
+   "q50": 71303.85609817371,
+   "q75": 93308.7126839246,
+   "q95": 140940.46942113087
+  },
+  {
+   "month": 5,
+   "day": 151,
+   "q05": 34126.54644332035,
+   "q25": 52709.41752887154,
+   "q50": 71330.6234858548,
+   "q75": 96291.28865910709,
+   "q95": 150389.32384129398
+  },
+  {
+   "month": 6,
+   "day": 181,
+   "q05": 32029.896792638505,
+   "q25": 51386.59751438565,
+   "q50": 71117.39322443474,
+   "q75": 99790.11465042234,
+   "q95": 160345.00500501957
+  },
+  {
+   "month": 7,
+   "day": 212,
+   "q05": 29485.390830280245,
+   "q25": 49887.326662640546,
+   "q50": 71603.07312852136,
+   "q75": 102584.0765818053,
+   "q95": 171915.47099925223
+  },
+  {
+   "month": 8,
+   "day": 242,
+   "q05": 27876.836621291455,
+   "q25": 48252.152527493316,
+   "q50": 71310.70424404887,
+   "q75": 104594.03100519309,
+   "q95": 185500.5320694813
+  },
+  {
+   "month": 9,
+   "day": 273,
+   "q05": 26385.56276675719,
+   "q25": 47635.96756934728,
+   "q50": 71239.22118886503,
+   "q75": 107881.03639165129,
+   "q95": 195106.10859510384
+  },
+  {
+   "month": 10,
+   "day": 304,
+   "q05": 25354.398917339113,
+   "q25": 46486.00332583984,
+   "q50": 71076.94662268288,
+   "q75": 109080.03790310422,
+   "q95": 205997.22539793613
+  },
+  {
+   "month": 11,
+   "day": 334,
+   "q05": 23572.3917527798,
+   "q25": 45392.88135100845,
+   "q50": 70991.8667447624,
+   "q75": 112291.02440016373,
+   "q95": 216545.12284160606
+  },
+  {
+   "month": 12,
+   "day": 365,
+   "q05": 22684.41849700932,
+   "q25": 44217.55944169101,
+   "q50": 70917.55877051363,
+   "q75": 113705.00417379722,
+   "q95": 230307.84593953934
+  }
+ ],
+ "headline": {
+  "p": 0.6397,
+  "pMargin": 0.7143,
+  "garch": 0.579,
+  "byMonth": [
+   0.055,
+   0.184,
+   0.294,
+   0.369,
+   0.428,
+   0.474,
+   0.515,
+   0.549,
+   0.58,
+   0.601,
+   0.621,
+   0.64
+  ]
+ },
+ "loan": {
+  "collateral": 0.41628507201731746,
+  "received": 14775,
+  "payback": 16818.89,
+  "cost": 2043.89,
+  "interest": 1818.89,
+  "apr": 0.13833434856175952,
+  "liqStart": 43413.2530120482,
+  "liqEnd": 48677.51513012048,
+  "mcStart": 51475.7142857143,
+  "drop": 0.3975903614457831,
+  "topUp": {
+   "btc": 0.1665140288069269,
+   "value": 8571.428571428569,
+   "repayInstead": 4285.714285714283
+  },
+  "lost": {
+   "btcSold": 0.3593372741653484,
+   "btcReturned": 0.05694779785196907,
+   "feeAmount": 600,
+   "valueReturned": 2472.2891566265084
+  },
+  "breakeven": 0.13833434856175963
+ },
+ "slider": [
+  {
+   "ltv": 0.2,
+   "p": 0.0905,
+   "liq": 17365.30120481928,
+   "btc": 1.0407126800432935
+  },
+  {
+   "ltv": 0.25,
+   "p": 0.166,
+   "liq": 21706.6265060241,
+   "btc": 0.8325701440346349
+  },
+  {
+   "ltv": 0.3,
+   "p": 0.2665,
+   "liq": 26047.951807228917,
+   "btc": 0.6938084533621958
+  },
+  {
+   "ltv": 0.35,
+   "p": 0.35925,
+   "liq": 30389.277108433733,
+   "btc": 0.5946929600247393
+  },
+  {
+   "ltv": 0.4,
+   "p": 0.4565,
+   "liq": 34730.60240963856,
+   "btc": 0.5203563400216468
+  },
+  {
+   "ltv": 0.45,
+   "p": 0.5575,
+   "liq": 39071.92771084338,
+   "btc": 0.4625389689081305
+  },
+  {
+   "ltv": 0.5,
+   "p": 0.64225,
+   "liq": 43413.2530120482,
+   "btc": 0.41628507201731746
+  },
+  {
+   "ltv": 0.55,
+   "p": 0.72525,
+   "liq": 47754.57831325302,
+   "btc": 0.3784409745611977
+  },
+  {
+   "ltv": 0.6,
+   "p": 0.80125,
+   "liq": 52095.903614457835,
+   "btc": 0.3469042266810979
+  },
+  {
+   "ltv": 0.65,
+   "p": 0.8765,
+   "liq": 56437.22891566266,
+   "btc": 0.32021928616716727
+  },
+  {
+   "ltv": 0.7,
+   "p": 0.845,
+   "liq": 60778.554216867466,
+   "btc": 0.29734648001236963
+  }
+ ],
+ "levers": [
+  {
+   "label": "as offered",
+   "p": 0.6397
+  },
+  {
+   "label": "starting LTV 40%",
+   "p": 0.4526
+  },
+  {
+   "label": "starting LTV 30%",
+   "p": 0.2581
+  },
+  {
+   "label": "liquidation LTV 90%",
+   "p": 0.6335
+  },
+  {
+   "label": "liquidation LTV 95%",
+   "p": 0.6321
+  },
+  {
+   "label": "6 months instead of 12",
+   "p": 0.4735
+  },
+  {
+   "label": "keep 3,000 ready for a margin call",
+   "p": 0.5399
+  },
+  {
+   "label": "lender only warns at margin call (no sale after 48 h)",
+   "p": 0.5698
+  },
+  {
+   "label": "liquidation LTV 90% AND margin call only a warning",
+   "p": 0.5015
+  },
+  {
+   "label": "liquidation LTV 95% AND margin call only a warning",
+   "p": 0.4594
+  },
+  {
+   "label": "interest paid monthly instead of added",
+   "p": 0.5928
+  }
+ ],
+ "replay": {
+  "share": 0.4419414770088249,
+  "starts": 4306,
+  "marginShare": 0.5076637250348351
+ },
+ "stories": [
+  {
+   "start": "2017-12-17",
+   "liquidatedAfterDays": 5,
+   "reason": "liquidationLtv",
+   "marginAfterDays": 5,
+   "weeklyLowRel": [
+    0.963,
+    0.5713,
+    0.6333,
+    0.65,
+    0.6585,
+    0.4678,
+    0.503,
+    0.3725,
+    0.2926,
+    0.3974,
+    0.4719,
+    0.4719,
+    0.4221,
+    0.3685,
+    0.3685,
+    0.3236,
+    0.3236,
+    0.3336,
+    0.392,
+    0.4397,
+    0.4541,
+    0.4239,
+    0.4164,
+    0.3828,
+    0.3772,
+    0.3515,
+    0.3238,
+    0.3042,
+    0.3042,
+    0.3313,
+    0.3238,
+    0.3311,
+    0.3881,
+    0.369,
+    0.3278,
+    0.3198,
+    0.3339,
+    0.3513,
+    0.3301,
+    0.3308,
+    0.3252,
+    0.3347,
+    0.3068,
+    0.3068,
+    0.3306,
+    0.3447,
+    0.3384,
+    0.3439,
+    0.2865,
+    0.1883,
+    0.1883,
+    0.1752,
+    0.1722
+   ],
+   "endRel": 0.192
+  },
+  {
+   "start": "2021-11-10",
+   "liquidatedAfterDays": 53,
+   "reason": "cureExpired",
+   "marginAfterDays": 24,
+   "weeklyLowRel": [
+    0.9499,
+    0.8937,
+    0.8488,
+    0.8155,
+    0.6472,
+    0.7016,
+    0.6967,
+    0.703,
+    0.65,
+    0.6077,
+    0.6283,
+    0.5049,
+    0.5481,
+    0.5495,
+    0.6337,
+    0.5572,
+    0.529,
+    0.5927,
+    0.5954,
+    0.6133,
+    0.6555,
+    0.6848,
+    0.6236,
+    0.6179,
+    0.6131,
+    0.6146,
+    0.4568,
+    0.419,
+    0.4621,
+    0.4527,
+    0.4721,
+    0.3314,
+    0.2899,
+    0.3236,
+    0.3068,
+    0.3266,
+    0.3266,
+    0.3526,
+    0.359,
+    0.3782,
+    0.3846,
+    0.3577,
+    0.3375,
+    0.3246,
+    0.3246,
+    0.3167,
+    0.319,
+    0.3345,
+    0.336,
+    0.326,
+    0.3315,
+    0.3478,
+    0.2709
+   ],
+   "endRel": 0.298
+  },
+  {
+   "start": "2020-02-13",
+   "liquidatedAfterDays": 28,
+   "reason": "liquidationLtv",
+   "marginAfterDays": 25,
+   "weeklyLowRel": [
+    0.9708,
+    0.9012,
+    0.8194,
+    0.7923,
+    0.4296,
+    0.3474,
+    0.5078,
+    0.5517,
+    0.6297,
+    0.6229,
+    0.6229,
+    0.6816,
+    0.8052,
+    0.7874,
+    0.8415,
+    0.8305,
+    0.8682,
+    0.8389,
+    0.8297,
+    0.8389,
+    0.8295,
+    0.8309,
+    0.8322,
+    0.8322,
+    0.8552,
+    0.9478,
+    0.9924,
+    1.0002,
+    0.9863,
+    0.8859,
+    0.8702,
+    0.904,
+    0.9117,
+    0.9178,
+    0.9288,
+    0.9389,
+    1.0013,
+    1.118,
+    1.1612,
+    1.257,
+    1.3755,
+    1.3721,
+    1.4201,
+    1.5228,
+    1.5186,
+    1.8227,
+    1.9491,
+    2.3305,
+    2.5869,
+    2.5869,
+    2.4791,
+    2.5891,
+    3.1639
+   ],
+   "endRel": 4.098
+  },
+  {
+   "start": "2023-01-01",
+   "liquidatedAfterDays": null,
+   "reason": null,
+   "marginAfterDays": null,
+   "weeklyLowRel": [
+    0.9975,
+    0.9975,
+    1.0292,
+    1.2206,
+    1.329,
+    1.3438,
+    1.3025,
+    1.2913,
+    1.3999,
+    1.343,
+    1.1965,
+    1.2387,
+    1.5891,
+    1.5957,
+    1.6199,
+    1.6551,
+    1.5998,
+    1.5843,
+    1.6333,
+    1.5428,
+    1.5875,
+    1.5605,
+    1.5974,
+    1.5352,
+    1.4749,
+    1.5551,
+    1.7507,
+    1.7695,
+    1.7269,
+    1.7074,
+    1.6892,
+    1.6847,
+    1.6892,
+    1.5271,
+    1.5145,
+    1.5215,
+    1.5337,
+    1.5,
+    1.5907,
+    1.5821,
+    1.6522,
+    1.6244,
+    1.6531,
+    1.8143,
+    2.0757,
+    2.084,
+    2.08,
+    2.1177,
+    2.1772,
+    2.3374,
+    2.4181,
+    2.4069,
+    2.4334
+   ],
+   "endRel": 2.597
+  }
+ ],
+ "samplePaths": [
+  {
+   "pts": [
+    72066,
+    71645,
+    70299,
+    71583,
+    79221,
+    80713,
+    88482,
+    86134,
+    88840,
+    81737,
+    90458,
+    84436,
+    91385,
+    90082,
+    103332,
+    113212,
+    113303,
+    114267,
+    118937,
+    142677,
+    122305,
+    131383,
+    152382,
+    162885,
+    157777,
+    173819,
+    184128,
+    166509,
+    178750,
+    162016,
+    156867,
+    152045,
+    154790,
+    164122,
+    159600,
+    156010,
+    150658,
+    146722,
+    142718,
+    164122,
+    142310,
+    146158,
+    159324,
+    150613,
+    132755,
+    92115,
+    117869,
+    108778,
+    112855,
+    112406,
+    116513,
+    117584,
+    88459,
+    88947
+   ],
+   "hitDay": null,
+   "end": 88947.04265151333
+  },
+  {
+   "pts": [
+    72066,
+    69284,
+    66522,
+    62826,
+    62367,
+    61319,
+    56766,
+    54729,
+    54875,
+    56005,
+    61935,
+    57801,
+    64204,
+    69572,
+    65556,
+    64100,
+    63226,
+    70696,
+    71210,
+    53491,
+    53009,
+    51538,
+    56945,
+    57775,
+    63068,
+    54268,
+    53969,
+    56688,
+    56049,
+    57689,
+    60676,
+    58679,
+    51847,
+    52863,
+    55687,
+    52484,
+    52002,
+    52138,
+    49354,
+    50224,
+    50545,
+    53972,
+    50662,
+    62654,
+    59048,
+    56342,
+    57231,
+    67514,
+    66843,
+    65950,
+    77313,
+    86158,
+    79670,
+    79700
+   ],
+   "hitDay": 134,
+   "end": 79699.57206265375
+  },
+  {
+   "pts": [
+    72066,
+    84194,
+    72493,
+    73241,
+    83657,
+    79362,
+    83525,
+    80675,
+    79928,
+    81985,
+    79098,
+    82095,
+    83606,
+    83722,
+    81257,
+    84237,
+    82053,
+    80126,
+    79212,
+    87164,
+    77276,
+    81657,
+    88699,
+    100497,
+    98960,
+    108895,
+    103977,
+    94588,
+    96973,
+    94355,
+    87703,
+    104560,
+    112549,
+    116751,
+    112765,
+    116035,
+    114892,
+    135732,
+    133674,
+    117644,
+    118979,
+    119559,
+    125408,
+    128972,
+    141970,
+    133116,
+    122985,
+    127474,
+    128150,
+    127796,
+    140022,
+    137773,
+    166499,
+    164410
+   ],
+   "hitDay": null,
+   "end": 164410.4404235725
+  },
+  {
+   "pts": [
+    72066,
+    76400,
+    74602,
+    73172,
+    71317,
+    85076,
+    81621,
+    85961,
+    79555,
+    76585,
+    101993,
+    82208,
+    89410,
+    94671,
+    92587,
+    92980,
+    83328,
+    87812,
+    82063,
+    87784,
+    87287,
+    89678,
+    84715,
+    83560,
+    86257,
+    86218,
+    91669,
+    100856,
+    96972,
+    118212,
+    127229,
+    124875,
+    106205,
+    109142,
+    106715,
+    108951,
+    117035,
+    112368,
+    108356,
+    108285,
+    104949,
+    122507,
+    120651,
+    111775,
+    115680,
+    97514,
+    103034,
+    93901,
+    97947,
+    97903,
+    99679,
+    116227,
+    107851,
+    107979
+   ],
+   "hitDay": null,
+   "end": 107978.96104731628
+  },
+  {
+   "pts": [
+    72066,
+    76049,
+    58358,
+    81131,
+    76828,
+    95114,
+    98143,
+    101475,
+    103344,
+    102572,
+    108143,
+    98834,
+    90184,
+    82856,
+    60613,
+    64183,
+    60847,
+    60224,
+    59350,
+    61151,
+    58587,
+    76638,
+    68825,
+    72006,
+    79900,
+    76625,
+    73630,
+    85571,
+    82200,
+    76545,
+    71391,
+    76846,
+    79715,
+    76994,
+    73391,
+    71374,
+    63647,
+    64312,
+    67290,
+    59691,
+    52452,
+    48492,
+    43922,
+    50149,
+    59111,
+    55164,
+    54919,
+    54552,
+    58785,
+    46950,
+    43953,
+    40854,
+    35079,
+    35582
+   ],
+   "hitDay": 280,
+   "end": 35581.75283693839
+  },
+  {
+   "pts": [
+    72066,
+    71425,
+    76216,
+    83443,
+    88591,
+    79756,
+    88714,
+    94538,
+    103224,
+    110775,
+    118035,
+    114303,
+    118956,
+    96593,
+    122532,
+    112579,
+    130900,
+    97214,
+    77589,
+    83348,
+    88090,
+    84367,
+    86945,
+    82428,
+    81320,
+    80830,
+    80635,
+    78921,
+    73956,
+    79193,
+    84992,
+    99595,
+    110463,
+    94034,
+    84410,
+    84545,
+    76391,
+    74834,
+    76214,
+    65526,
+    61613,
+    54746,
+    55960,
+    66077,
+    59165,
+    65607,
+    64673,
+    71965,
+    67383,
+    66173,
+    68002,
+    65019,
+    63664,
+    64068
+   ],
+   "hitDay": 286,
+   "end": 64068.29492969714
+  },
+  {
+   "pts": [
+    72066,
+    71087,
+    78763,
+    79687,
+    86658,
+    90964,
+    99588,
+    105733,
+    101630,
+    85832,
+    87902,
+    92329,
+    91290,
+    92424,
+    96946,
+    98914,
+    102908,
+    103775,
+    104826,
+    95351,
+    76073,
+    77595,
+    76760,
+    74218,
+    75400,
+    87966,
+    89433,
+    81407,
+    80756,
+    89222,
+    91506,
+    101781,
+    109678,
+    111034,
+    103912,
+    123639,
+    137805,
+    135132,
+    122318,
+    131624,
+    124660,
+    134619,
+    136738,
+    117936,
+    117838,
+    116039,
+    116521,
+    119158,
+    119369,
+    105600,
+    111091,
+    103844,
+    108899,
+    111746
+   ],
+   "hitDay": null,
+   "end": 111746.42735004914
+  },
+  {
+   "pts": [
+    72066,
+    75532,
+    70869,
+    70678,
+    59158,
+    51689,
+    48390,
+    44978,
+    39169,
+    37071,
+    39386,
+    45954,
+    61297,
+    49402,
+    46302,
+    46813,
+    49230,
+    46314,
+    45653,
+    47648,
+    47189,
+    36294,
+    35355,
+    36953,
+    45977,
+    55394,
+    56305,
+    55832,
+    54599,
+    54112,
+    52963,
+    54299,
+    52833,
+    49108,
+    36026,
+    36304,
+    32519,
+    30388,
+    31360,
+    30456,
+    31298,
+    31483,
+    33088,
+    30422,
+    29873,
+    30062,
+    28233,
+    32759,
+    35022,
+    38291,
+    37497,
+    37450,
+    29303,
+    29694
+   ],
+   "hitDay": 33,
+   "end": 29693.72313256922
+  },
+  {
+   "pts": [
+    72066,
+    80057,
+    78003,
+    67352,
+    78666,
+    87053,
+    102385,
+    104470,
+    133614,
+    118167,
+    115788,
+    112272,
+    99580,
+    102216,
+    101625,
+    105870,
+    103012,
+    111807,
+    102650,
+    99344,
+    91193,
+    90119,
+    111158,
+    116155,
+    117927,
+    124804,
+    118514,
+    122313,
+    110647,
+    110557,
+    109135,
+    142102,
+    121465,
+    111567,
+    117169,
+    114354,
+    107933,
+    125089,
+    127500,
+    124265,
+    139516,
+    153919,
+    148536,
+    162082,
+    156295,
+    178247,
+    173470,
+    177383,
+    173332,
+    177171,
+    179638,
+    181705,
+    183287,
+    191832
+   ],
+   "hitDay": null,
+   "end": 191832.30718479626
+  },
+  {
+   "pts": [
+    72066,
+    68471,
+    77816,
+    73613,
+    69159,
+    74449,
+    76998,
+    83129,
+    92250,
+    97402,
+    90411,
+    82246,
+    84320,
+    81473,
+    80655,
+    80205,
+    74664,
+    77256,
+    70961,
+    68046,
+    70942,
+    65274,
+    72037,
+    80118,
+    87282,
+    102387,
+    112245,
+    103165,
+    109032,
+    108062,
+    108651,
+    103075,
+    105742,
+    106816,
+    103898,
+    100692,
+    99208,
+    103545,
+    102546,
+    101536,
+    99426,
+    110267,
+    108876,
+    115192,
+    110761,
+    112869,
+    113418,
+    130476,
+    137790,
+    151799,
+    163546,
+    151649,
+    156728,
+    156424
+   ],
+   "hitDay": null,
+   "end": 156424.13151652162
+  },
+  {
+   "pts": [
+    72066,
+    69304,
+    61631,
+    61905,
+    58177,
+    65173,
+    73842,
+    72712,
+    80012,
+    72815,
+    75103,
+    82983,
+    99517,
+    105900,
+    105033,
+    104606,
+    101309,
+    102558,
+    109719,
+    105462,
+    86721,
+    85423,
+    85307,
+    82402,
+    86454,
+    84628,
+    83668,
+    79014,
+    78288,
+    90176,
+    89887,
+    85274,
+    80893,
+    73614,
+    95705,
+    100346,
+    98129,
+    95495,
+    97006,
+    100230,
+    107356,
+    97035,
+    100221,
+    115792,
+    140058,
+    150565,
+    148877,
+    146401,
+    150517,
+    143451,
+    141444,
+    140298,
+    136715,
+    138400
+   ],
+   "hitDay": null,
+   "end": 138399.52615054316
+  },
+  {
+   "pts": [
+    72066,
+    62713,
+    66947,
+    66510,
+    61591,
+    67132,
+    64008,
+    65723,
+    63807,
+    63585,
+    64230,
+    62476,
+    54367,
+    56526,
+    58241,
+    55800,
+    72992,
+    75317,
+    81501,
+    84544,
+    81658,
+    77837,
+    85155,
+    96449,
+    103826,
+    102348,
+    103407,
+    55301,
+    73477,
+    76780,
+    77951,
+    78610,
+    70706,
+    73738,
+    69482,
+    58332,
+    49959,
+    44162,
+    35463,
+    43728,
+    35114,
+    47438,
+    47189,
+    40916,
+    40632,
+    35014,
+    32763,
+    36267,
+    34901,
+    26054,
+    23064,
+    21935,
+    24369,
+    24067
+   ],
+   "hitDay": 190,
+   "end": 24067.257291414127
+  },
+  {
+   "pts": [
+    72066,
+    74521,
+    72198,
+    62751,
+    58917,
+    60247,
+    59728,
+    58208,
+    61814,
+    67844,
+    71209,
+    77136,
+    86683,
+    79350,
+    67501,
+    67327,
+    66679,
+    67926,
+    69505,
+    70684,
+    53095,
+    52617,
+    52151,
+    51487,
+    50141,
+    51636,
+    58745,
+    58441,
+    56864,
+    55548,
+    56348,
+    55232,
+    58816,
+    62025,
+    63004,
+    67310,
+    81192,
+    82588,
+    81511,
+    81708,
+    80491,
+    81351,
+    78213,
+    80533,
+    76946,
+    79749,
+    63339,
+    67147,
+    55532,
+    54721,
+    55621,
+    50915,
+    52807,
+    52061
+   ],
+   "hitDay": 141,
+   "end": 52060.59205700043
+  },
+  {
+   "pts": [
+    72066,
+    71533,
+    67901,
+    65210,
+    54526,
+    53050,
+    50746,
+    51017,
+    51915,
+    54192,
+    52801,
+    45592,
+    53251,
+    48910,
+    52145,
+    47562,
+    51348,
+    49162,
+    47525,
+    43217,
+    48209,
+    56875,
+    61933,
+    68872,
+    66136,
+    67590,
+    67282,
+    66550,
+    64548,
+    52783,
+    56617,
+    70183,
+    64574,
+    70503,
+    56308,
+    53666,
+    47072,
+    46733,
+    43364,
+    46740,
+    45546,
+    43935,
+    44361,
+    54306,
+    53183,
+    56316,
+    71276,
+    67030,
+    72619,
+    65335,
+    73630,
+    82024,
+    83698,
+    87538
+   ],
+   "hitDay": 33,
+   "end": 87537.71892578367
+  },
+  {
+   "pts": [
+    72066,
+    65687,
+    57630,
+    50470,
+    50208,
+    57462,
+    57526,
+    60594,
+    54362,
+    58754,
+    57505,
+    53887,
+    57703,
+    59491,
+    76445,
+    71764,
+    71511,
+    64936,
+    64944,
+    61364,
+    67548,
+    63335,
+    63497,
+    62467,
+    58626,
+    60787,
+    52516,
+    58994,
+    60536,
+    63723,
+    59633,
+    68503,
+    74888,
+    69619,
+    57376,
+    55491,
+    33811,
+    43826,
+    54327,
+    47986,
+    46609,
+    48290,
+    48475,
+    51539,
+    56070,
+    55235,
+    55242,
+    53263,
+    53351,
+    53526,
+    52055,
+    47671,
+    46843,
+    47139
+   ],
+   "hitDay": 21,
+   "end": 47138.706750102836
+  },
+  {
+   "pts": [
+    72066,
+    61620,
+    55959,
+    55187,
+    59397,
+    58250,
+    68984,
+    81574,
+    87540,
+    86454,
+    86307,
+    94411,
+    87891,
+    81970,
+    83186,
+    83287,
+    86772,
+    89052,
+    87001,
+    83965,
+    83343,
+    78731,
+    80723,
+    81932,
+    82569,
+    89483,
+    76998,
+    61321,
+    61710,
+    63685,
+    74211,
+    80107,
+    98035,
+    123622,
+    126333,
+    124614,
+    111181,
+    95974,
+    61840,
+    81199,
+    90355,
+    89027,
+    92365,
+    102691,
+    102896,
+    102192,
+    101202,
+    86995,
+    68475,
+    63890,
+    66920,
+    64692,
+    56813,
+    57466
+   ],
+   "hitDay": 263,
+   "end": 57466.31129876101
+  },
+  {
+   "pts": [
+    72066,
+    88014,
+    87616,
+    91616,
+    89230,
+    88052,
+    89840,
+    93467,
+    94255,
+    93698,
+    72864,
+    80915,
+    84333,
+    78182,
+    95307,
+    102577,
+    104203,
+    95743,
+    97750,
+    102396,
+    116957,
+    128965,
+    101607,
+    99787,
+    107909,
+    105488,
+    103311,
+    105706,
+    85852,
+    94445,
+    98934,
+    106136,
+    127801,
+    132143,
+    120908,
+    133911,
+    142142,
+    149277,
+    145387,
+    156125,
+    155042,
+    143351,
+    143730,
+    152978,
+    184242,
+    191062,
+    193170,
+    197933,
+    173154,
+    159044,
+    167031,
+    169717,
+    152121,
+    151186
+   ],
+   "hitDay": null,
+   "end": 151185.968357916
+  },
+  {
+   "pts": [
+    72066,
+    63337,
+    61712,
+    71568,
+    72416,
+    82247,
+    96479,
+    95408,
+    110185,
+    134582,
+    132951,
+    139373,
+    130224,
+    116076,
+    110261,
+    108286,
+    117100,
+    114473,
+    124342,
+    109063,
+    108278,
+    100472,
+    109394,
+    107123,
+    102104,
+    106652,
+    101531,
+    102161,
+    101070,
+    96500,
+    103402,
+    96233,
+    78023,
+    82964,
+    83245,
+    80136,
+    76518,
+    76134,
+    73901,
+    72220,
+    74081,
+    69363,
+    68935,
+    67359,
+    64244,
+    63484,
+    62506,
+    55789,
+    66324,
+    78144,
+    76393,
+    79121,
+    67176,
+    67601
+   ],
+   "hitDay": 327,
+   "end": 67601.4585984034
+  },
+  {
+   "pts": [
+    72066,
+    64626,
+    64533,
+    34512,
+    45855,
+    45817,
+    43030,
+    42465,
+    41686,
+    36325,
+    34758,
+    35912,
+    35560,
+    25027,
+    24330,
+    23246,
+    24093,
+    19135,
+    18910,
+    19180,
+    20383,
+    20121,
+    18749,
+    16249,
+    15083,
+    16986,
+    17162,
+    17464,
+    18996,
+    19960,
+    19732,
+    23820,
+    24047,
+    27657,
+    29770,
+    31580,
+    28845,
+    26210,
+    24984,
+    28101,
+    29291,
+    30964,
+    28278,
+    27105,
+    30031,
+    25742,
+    23331,
+    23681,
+    22672,
+    20875,
+    19609,
+    18557,
+    17419,
+    18183
+   ],
+   "hitDay": 21,
+   "end": 18182.71026682198
+  },
+  {
+   "pts": [
+    72066,
+    62868,
+    61166,
+    59882,
+    57324,
+    54641,
+    56825,
+    55096,
+    50421,
+    47986,
+    56200,
+    60774,
+    69614,
+    66328,
+    62701,
+    64561,
+    65852,
+    65036,
+    62886,
+    70604,
+    77893,
+    75169,
+    77163,
+    58701,
+    51057,
+    51562,
+    53220,
+    52575,
+    55115,
+    51497,
+    46781,
+    39001,
+    41534,
+    39677,
+    39531,
+    41964,
+    48191,
+    46787,
+    45560,
+    47466,
+    47561,
+    44826,
+    45643,
+    43970,
+    42300,
+    41733,
+    35983,
+    35091,
+    33301,
+    33352,
+    35586,
+    39110,
+    43987,
+    43888
+   ],
+   "hitDay": 58,
+   "end": 43887.68797294318
+  }
+ ],
+ "leverage": {
+  "bought": 0.20502039796852886,
+  "collateral": 0.41628507201731746,
+  "better": 0.2989,
+  "worseNoLiq": 0.0614,
+  "liquidated": 0.6397,
+  "endBtcIfLiquidated": 0.2619681958204979,
+  "breakevenRise": 0.13833434856175963
+ },
+ "trend0": 0.6397,
+ "trend20": 0.5582,
+ "trend50": 0.4615
+};
+const eur = (x, d = 0) => '€' + x.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d });
+const of100 = (p) => Math.round(p * 100);
+const $ = (id) => document.getElementById(id);
+const L = N.loan, H = N.headline;
+const liq = of100(H.p), mc = of100(H.pMargin) - liq, ok = 100 - liq - mc;
+function dots(groups) { // [[count,color],...] -> 100 dots, 20 per row
+  let h = '<div class="dots">'; for (const [n, c] of groups) for (let i = 0; i < n; i++) h += `<i style="background:${c}"></i>`; return h + '</div>';
+}
+const legend = (items) => '<div class="legend">' + items.map(([t, c]) => `<span style="--c:${c}">${t}</span>`).join('') + '</div>';
+const ladder = () => {
+  const pos = (p) => 86 - (1 - p / N.P0) / 0.5 * 76; // today at 86%, a 50% fall at 10%
+  return `<div class="ladder"><div class="ln"></div>
+   <div class="pt" style="left:${pos(L.liqStart)}%"><i style="background:var(--red)"></i>Sold<br><b>${eur(L.liqStart)}</b><br>−${of100(L.drop)}%</div>
+   <div class="pt" style="left:${pos(L.mcStart)}%"><i style="background:var(--amber)"></i>Margin call<br><b>${eur(L.mcStart)}</b><br>−${of100(1 - L.mcStart / N.P0)}%</div>
+   <div class="pt" style="left:86%"><i style="background:var(--blue)"></i>Today<br><b>${eur(N.P0)}</b></div></div><div style="height:34px"></div>`;
+};
+const field = (label, val, unit, q) => `<label class="f">${label}${q ? '<span class="q">?</span>' : ''}</label><div class="inp"><div class="box">${val}</div><span class="u">${unit}</span></div>`;
+
+$('input').innerHTML = `<div class="bar">BTC loan check <span>Deutsch</span></div>
+ <div class="sub">How likely is it that a BTC-backed loan gets liquidated, and what does it cost?</div>
+ <div class="banner">Example values. Replace them with your offer. <a>Where to find these numbers ›</a></div>
+ ${field('Loan amount', '15,000', '€ ▾')}
+ ${field('Starting LTV', '50', '%', true)}
+ ${field('Liquidation LTV', '83', '%', true)}
+ <label class="f">Duration</label><div class="chips"><span class="chip">6 months</span><span class="chip on">12 months</span><span class="chip">24 months</span><span class="chip">other</span></div>
+ ${field('Interest rate', '11.5', '% a year')}
+ <label class="f">What will you do with the money?</label><div class="seg"><div class="on">Spend it</div><div>Buy more BTC</div></div>
+ <div class="more"><b>More terms from your offer ›</b><br>interest added monthly · fee 1.5% · margin call 70%, sale after 48 h · liquidation fee 4%</div>
+ <div class="priceline">BTC price used: €72,066 · Coinbase, 11:20 · <span class="link">change</span></div>`;
+
+$('guide').innerHTML = `<div class="bar">Where to find these numbers <span>✕</span></div>
+ <div class="termsheet"><b>MUSTERKREDIT · Indicative Term Sheet</b><br>
+ 1. Principal amount: <mark>EUR 15,000.00</mark><sup>1</sup>. Term: <mark>12 months</mark><sup>4</sup>…<br>
+ 2. Loan-to-Value at origination: <mark>50 %</mark><sup>2</sup>.<br>
+ 3. Nominal interest rate: <mark>11.5 % p.a.</mark><sup>5</sup>, fixed…<br>
+ 4. …If the LTV reaches <mark>83 %</mark><sup>3</sup>, the lender may sell collateral…</div>
+ <p class="sub" style="margin-top:10px"><b>1 Loan amount</b>: "principal", "loan amount", "Darlehensbetrag"<br>
+ <b>2 Starting LTV</b>: "LTV", "loan-to-value", "Beleihungsquote". If only the collateral amount is given: loan ÷ collateral value<br>
+ <b>3 Liquidation LTV</b>: "liquidation", "Verwertung", the section on selling or enforcing the collateral<br>
+ <b>4 Duration</b>: "term", "maturity", "Laufzeit"<br>
+ <b>5 Interest rate</b>: "nominal rate", "Sollzins". Not the APR: the page calculates that itself</p>
+ <p class="small">The other terms (fees, margin call) are usually in sections called "fees", "collateral monitoring" or "margin call".</p>`;
+
+$('more').innerHTML = `<div class="bar">More terms from your offer <span>‹ back</span></div>
+ <label class="f">When do you pay the interest?<span class="q">?</span></label>
+ <div class="seg" style="font-size:.8rem"><div>Every month</div><div class="on">Added, paid at the end</div><div>Equal payments</div></div>
+ <div class="small" style="margin-top:4px">Added interest also earns interest (as in your offer) · <span class="link">change</span></div>
+ ${field('Origination fee', '1.5', '% ▾')}
+ <label class="f">What happens when BTC falls?<span class="q">?</span></label>
+ <div class="inp"><span class="sub" style="flex:1">Margin call at</span><div class="box" style="flex:0 0 70px">70</div><span class="u">%</span></div>
+ <div class="seg" style="margin-top:8px;font-size:.78rem;flex-direction:column"><div style="text-align:left">Only a warning; sale only at the liquidation LTV</div><div class="on" style="text-align:left">Sale if not fixed within <b>48</b> hours</div><div style="text-align:left">No margin call in my offer</div></div>
+ ${field('Liquidation fee', '4', '% of the amount owed ▾')}
+ <div class="more"><b>Expert settings ›</b> start date · day count · LTV after a margin call · simulation settings</div>
+ <div class="more"><b>Add a note</b> about where these numbers come from (stays in your browser)</div>`;
+
+const lvRows = (rows) => '<div class="levers">' + rows.map((r, i) => `<div class="lv ${i === 0 ? 'base' : ''}"><span>${r.label}</span><div class="b"><i style="width:${r.p * 100}%"></i></div><b>${of100(r.p)}</b></div>`).join('') + '</div>';
+const sorted = [N.levers[0], ...N.levers.slice(1).filter((l) => !/^liquidation LTV (90|95)%$/.test(l.label) && !/interest paid/.test(l.label)).sort((a, b) => a.p - b.p)];
+const cap = (x) => x[0].toUpperCase() + x.slice(1);
+const fmtLever = (l) => ({ ...l, label: cap(l.label.replace('as offered', 'Your offer as it is').replace('keep 3,000', 'keep €3,000').replace('lender only warns at margin call (no sale after 48 h)', 'lender only warns at a margin call').replace(' AND margin call only a warning', ' and margin call only a warning').replace('6 months instead of 12', '6 instead of 12 months')) });
+const slider = (ltv) => {
+  const pts = N.slider.filter((s) => s.ltv <= 0.65); const i = pts.findIndex((s) => Math.abs(s.ltv - ltv) < 1e-9);
+  return `<div class="slider"><div class="sub"><b>Starting LTV ${of100(ltv)}%</b> → <b style="color:var(--red)">${of100(pts[i].p)} of 100</b> liquidated · you pledge ${pts[i].btc.toFixed(2)} BTC</div>
+   <div class="track"><div class="thumb" style="left:${(i / (pts.length - 1)) * 100}%"></div></div>
+   <div class="ticks">${pts.filter((_, k) => k % 2 === 0).map((s) => `<span>${of100(s.ltv)}%<br>${of100(s.p)}</span>`).join('')}</div></div>`;
+};
+const headlineCard = () => `<div class="card"><div class="headline">In <em>${liq} of 100</em> simulated futures, this loan is liquidated within 12 months.<span class="q">?</span></div>
+ ${dots([[liq, 'var(--red)'], [mc, 'var(--amber)'], [ok, 'var(--grey)']])}
+ ${legend([[`${liq} liquidated`, 'var(--red)'], [`${mc} margin call, but survived`, 'var(--amber)'], [`${ok} no margin call`, 'var(--grey)']])}
+ <p class="sub" style="margin:10px 0 4px">Your BTC is sold if the price falls <b>${of100(L.drop)}%</b>, to <b>${eur(L.liqStart)}</b>, or earlier if a margin call is not fixed within 48 h.</p>
+ <p class="small">Other model: ${of100(H.garch)} of 100 · assumes no price trend · not a forecast · <span class="link">what this does not include ›</span></p></div>`;
+$('v1').innerHTML = `<div class="bar">Your result <span>Deutsch</span></div>${headlineCard()}
+ <div class="card"><b>Make it safer</b>${slider(0.5)}
+ <p class="small" style="margin:6px 0 0">Drag to try a lower LTV: you borrow less, or pledge more BTC.</p></div>
+ <div class="acc">What happens when BTC falls <span>›</span></div>
+ <div class="acc">What lowers your risk <span>6 options ›</span></div>
+ <div class="acc">What it costs <span>${eur(L.cost)} ›</span></div>
+ <div class="acc">Borrow or sell? <span>›</span></div>
+ <div class="acc">What history says <span>${of100(N.replay.share)} of 100 ›</span></div>
+ <div class="acc">Expert details <span>›</span></div>
+ <div class="acc" style="color:var(--blue-ink)">Help improve this page <span>›</span></div>`;
+
+const st = N.stories;
+$('v1open').innerHTML = `<div class="acc open">What happens when BTC falls <span>⌄</span></div><div class="accbody">${ladder()}
+ <p><b>At ${eur(L.mcStart)} (margin call):</b> you have 48 h to add <b>${L.topUp.btc.toFixed(2)} BTC</b> (≈ ${eur(L.topUp.value)}) or pay back <b>${eur(L.topUp.repayInstead)}</b>. Otherwise the lender sells.</p>
+ <p><b>At ${eur(L.liqStart)} (liquidation):</b> the lender sells <b>${L.lost.btcSold.toFixed(2)} BTC</b>. You get back ${L.lost.btcReturned.toFixed(3)} BTC (≈ ${eur(L.lost.valueReturned)}). You keep the €15,000.</p>
+ <p class="small">Because interest is added, the liquidation price rises to ${eur(L.liqEnd)} by the end. Your lender measures the price as an average of three exchanges, so its trigger can differ slightly. <b>The lender's own figures always win.</b></p></div>
+ <div class="acc open">What lowers your risk <span>⌄</span></div><div class="accbody"><p class="small" style="margin:0 0 4px">Liquidated, of 100 simulated futures, with one change to your offer:</p>${lvRows(sorted.map(fmtLever))}
+ <p class="small">A higher liquidation LTV alone barely helps your offer (95%: ${of100(N.levers.find((l) => l.label === 'liquidation LTV 95%').p)} of 100), because the sale after an unfixed margin call comes first. Ask your lender what happens after a margin call.</p></div>
+ <div class="acc open">What it costs <span>⌄</span></div><div class="accbody"><p>You receive <b>${eur(L.received)}</b> · pay back <b>${eur(L.payback, 2)}</b><br>Cost if nothing goes wrong: <b>${eur(L.cost, 2)}</b> (interest ${eur(L.interest, 2)} + fee €225.00)<br>That is <b>${(L.apr * 100).toFixed(1)}% a year</b> including fees.</p></div>
+ <div class="acc open">What history says <span>⌄</span></div><div class="accbody"><p>Started on any day since 2014, this exact loan would have been liquidated <b>${of100(N.replay.share)} times in 100</b>.</p>
+ <p>• Taken on 17 Dec 2017: sold after <b>${st[0].liquidatedAfterDays} days</b>.<br>• Taken on 13 Feb 2020: sold after <b>${st[2].liquidatedAfterDays} days</b>. A year later BTC was <b>${st[2].endRel.toFixed(1)}×</b> higher.<br>• Taken on 1 Jan 2023: never close.</p></div>`;
+
+$('v2').innerHTML = `<div class="bar">Your result <span>Deutsch</span></div>
+ <div class="step"><div class="n">1</div><h4>Your BTC is sold if the price falls ${of100(L.drop)}%.</h4></div>${ladder()}
+ <div class="step"><div class="n">2</div><h4>Has BTC fallen that far before, within 12 months?</h4></div>
+ <p class="sub">Yes. Started on any day since 2014, this loan would have been liquidated <b>${of100(N.replay.share)} times in 100</b>. Taken at the end of 2017: sold after ${st[0].liquidatedAfterDays} days.</p>
+ <div class="step"><div class="n">3</div><h4>And in the future?</h4></div>
+ <p class="sub">In <b style="color:var(--red)">${liq} of 100</b> simulated futures, it is liquidated.</p>${dots([[liq, 'var(--red)'], [mc, 'var(--amber)'], [ok, 'var(--grey)']])}
+ <div class="step"><div class="n">4</div><h4>What would make it safer?</h4></div>${lvRows(sorted.slice(0, 4).map(fmtLever))}
+ <div class="step"><div class="n">5</div><h4>What does it cost?</h4></div><p class="sub">${eur(L.cost)} if nothing goes wrong (${(L.apr * 100).toFixed(1)}% a year).</p>`;
+
+// ---- charts
+const W = 680, Hh = 300, pl = 58, pr = 14, pt = 14, pb = 30;
+const days = 365;
+const xs = (d) => pl + d / days * (W - pl - pr);
+function axes(maxY) {
+  const ys = (v) => pt + (1 - v / maxY) * (Hh - pt - pb); let g = '';
+  for (let v = 0; v <= maxY; v += 50000) g += `<line x1="${pl}" x2="${W - pr}" y1="${ys(v)}" y2="${ys(v)}" stroke="#e6e5e0"/><text x="${pl - 6}" y="${ys(v) + 4}" font-size="11" fill="#6e6d68" text-anchor="end">${eur(v)}</text>`;
+  for (const m of [0, 3, 6, 9, 12]) g += `<text x="${xs(m * 30.42)}" y="${Hh - 9}" font-size="11" fill="#6e6d68" text-anchor="${m === 0 ? 'start' : m === 12 ? 'end' : 'middle'}">${m === 0 ? 'today' : 'month ' + m}</text>`;
+  return { ys, g };
+}
+const mcLine = (ys) => `<path d="M${xs(0)},${ys(L.mcStart)}L${xs(days)},${ys(L.mcStart * L.liqEnd / L.liqStart)}" stroke="var(--amber)" stroke-width="2" stroke-dasharray="3 3" fill="none"/><text x="${xs(days) - 2}" y="${ys(L.mcStart * L.liqEnd / L.liqStart) - 6}" font-size="11" fill="#b07800" font-weight="600" text-anchor="end">margin call</text>`;
+const liqLine = (ys) => `<path d="M${xs(0)},${ys(L.liqStart)}L${xs(days)},${ys(L.liqEnd)}" stroke="var(--red)" stroke-width="2" stroke-dasharray="6 4" fill="none"/><text x="${xs(days) - 2}" y="${ys(L.liqEnd) + 14}" font-size="11" fill="var(--red)" font-weight="600" text-anchor="end">liquidation price</text>`;
+{ // A: fan, annotated (monthly bands of the 10,000-path run)
+  const { ys, g } = axes(Math.ceil(Math.max(...N.fan.map((f) => f.q95)) / 50000) * 50000);
+  const Q = [{ q05: N.P0, q25: N.P0, q50: N.P0, q75: N.P0, q95: N.P0, day: 0 }, ...N.fan];
+  const band = (a, b) => `M${Q.map((v) => `${xs(v.day)},${ys(v[a])}`).join('L')}L${Q.slice().reverse().map((v) => `${xs(v.day)},${ys(v[b])}`).join('L')}Z`;
+  const last = Q[Q.length - 1];
+  $('chartA').innerHTML = `<h4>A · Fan of possible prices (today's chart, explained)</h4><p class="small">Read it like a weather forecast. Each month: <b>9 of 10</b> possible futures stay inside the light band, <b>half</b> inside the dark band, and the line is the middle one. Where a band dips below the red line, the futures down there end in liquidation.</p>
+   <svg viewBox="0 0 ${W} ${Hh}">${g}<path d="${band('q95', 'q05')}" fill="var(--band-o)"/><path d="${band('q75', 'q25')}" fill="var(--band-i)"/><path d="M${Q.map((v) => `${xs(v.day)},${ys(v.q50)}`).join('L')}" stroke="var(--blue)" stroke-width="2" fill="none"/>${liqLine(ys)}
+   <text x="${xs(last.day) - 4}" y="${ys(last.q95) + 14}" font-size="11" fill="#1c5cab" text-anchor="end">9 of 10 inside the light band</text><text x="${xs(last.day) - 4}" y="${ys(last.q75) + 14}" font-size="11" fill="#1c5cab" text-anchor="end">half inside the dark band</text></svg>
+   <p class="small"><b>Weakness:</b> it hides the main point. A future that dips below the red line once and recovers still ends in liquidation, but the bands look fine at the end. Bands show prices, not outcomes.</p>`;
+}
+{ // B: 20 sample paths
+  const { ys, g } = axes(200000); let lines = '';
+  const hits = N.samplePaths.filter((p) => p.hitDay).length;
+  for (const p of N.samplePaths) {
+    const until = p.hitDay ? Math.ceil(p.hitDay / 7) : p.pts.length - 1;
+    const d = p.pts.slice(0, until + 1).map((v, k) => `${xs(Math.min(days, k * 7))},${ys(v)}`).join('L');
+    lines += `<path d="M${d}" stroke="${p.hitDay ? 'var(--red)' : '#9a9993'}" stroke-width="${p.hitDay ? 1.8 : 1.2}" stroke-opacity="${p.hitDay ? .9 : .6}" fill="none"/>`;
+    if (p.hitDay) { const k = until; lines += `<text x="${xs(Math.min(days, k * 7))}" y="${ys(p.pts[k]) + 4}" font-size="12" fill="var(--red)" text-anchor="middle" font-weight="700">✕</text>`; }
+  }
+  $('chartB').innerHTML = `<h4>B · 20 possible futures (recommended)</h4><p class="small">Each line is <b>one possible next 12 months</b>, built from real 30-day stretches of BTC's past, stuck together at random. <b style="color:var(--red)">${hits} of these 20</b> end in a sale (✕) and stop there: that's the 64 of 100 in small. Grey lines survive.</p>
+   <svg viewBox="0 0 ${W} ${Hh}">${g}${lines}${mcLine(ys)}${liqLine(ys)}</svg>
+   <p class="small"><b>Why some ✕ sit above the red line:</b> in your offer, the lender also sells when a margin call (amber line) is not fixed within 48 h. Those futures are sold at the amber line, not the red one.</p>
+   <p class="small"><b>Strength:</b> one line = one future, one ✕ = one sale. You can see that sales come early: more than half of them in the first 4 months. A button "show 20 others" draws a new set.</p>`;
+}
+{ // C: history stories
+  const maxY = 200000; const { ys, g } = axes(maxY); let lines = ''; const cols = ['var(--red)', '#b05a00', '#7a3fb0', 'var(--green)'];
+  const labels = ['17 Dec 2017', '10 Nov 2021', '13 Feb 2020', '1 Jan 2023'];
+  const yc = (v) => ys(Math.min(maxY, v * N.P0));
+  N.stories.forEach((s, j) => {
+    const until = s.liquidatedAfterDays ? Math.ceil(s.liquidatedAfterDays / 7) : s.weeklyLowRel.length - 1;
+    const d = s.weeklyLowRel.map((v, k) => `${xs(Math.min(days, k * 7))},${yc(v)}`);
+    lines += `<path d="M${d.slice(0, until + 1).join('L')}" stroke="${cols[j]}" stroke-width="2.2" fill="none"/>`;
+    if (s.liquidatedAfterDays) lines += `<path d="M${d.slice(until).join('L')}" stroke="${cols[j]}" stroke-width="1.2" stroke-dasharray="2 3" fill="none" opacity=".6"/><text x="${xs(Math.min(days, until * 7))}" y="${yc(s.weeklyLowRel[until]) + 4}" font-size="12" fill="${cols[j]}" text-anchor="middle" font-weight="700">✕</text>`;
+  });
+  const leg = N.stories.map((s, j) => `<span style="--c:${cols[j]}">${labels[j]}: ${s.liquidatedAfterDays ? `sold after ${s.liquidatedAfterDays} days${s.reason === 'cureExpired' ? ' (margin call not fixed)' : ''}; a year later BTC was ${s.endRel.toFixed(1)}× the start` : 'never close to a sale'}</span>`).join('');
+  $('chartC').innerHTML = `<h4>C · What really happened (4 real start dates)</h4><p class="small">Your loan, started on four real days. Real BTC prices (weekly lows), scaled to today's price. <b>✕ = sold.</b> The dotted part is what happened afterwards, when your BTC was already gone.</p>
+   <svg viewBox="0 0 ${W} ${Hh}">${g}${lines}${mcLine(ys)}${liqLine(ys)}</svg>
+   <div class="legend" style="flex-direction:column;gap:3px;margin-top:6px">${leg}</div>
+   <p class="small"><b>Strength:</b> real, concrete, memorable. <b>Weakness:</b> four stories are not a probability. That is why B and C go together.</p>`;
+}
+{ // profile C
+  const v = N.leverage; const b = of100(v.better), w = of100(v.worseNoLiq), l = 100 - b - w;
+  $('lev').innerHTML = `<div class="bar">Is the leverage worth it? <span>⌄</span></div>
+   <p class="sub">With <b>${eur(L.received)}</b> you buy <b>${v.bought.toFixed(3)} BTC</b> today. You pay back the loan at the end by selling BTC.</p>
+   <div class="card"><div class="headline" style="font-size:1.05rem">In <span style="color:var(--green)">${b} of 100</span> futures you end with <b>more BTC</b> than without the loan. In <span style="color:var(--red)">${l + w} of 100</span> with less.</div>
+   ${dots([[b, 'var(--green)'], [w, 'var(--grey)'], [l, 'var(--red)']])}
+   ${legend([[`${b} more BTC`, 'var(--green)'], [`${w} less, not sold`, 'var(--grey)'], [`${l} liquidated`, 'var(--red)']])}
+   <p class="small" style="margin-top:8px">If liquidated, you end with <b>${v.endBtcIfLiquidated.toFixed(3)} BTC</b> instead of ${v.collateral.toFixed(3)} BTC (−${of100(1 - v.endBtcIfLiquidated / v.collateral)}%), even though you bought more.</p></div>
+   <p class="sub"><b>Breakeven:</b> BTC must be <b>${(v.breakevenRise * 100).toFixed(1)}% higher</b> at the end, without being sold on the way.</p>
+   <div class="card"><b>What if BTC rises on average?</b><div class="lv base"><span>no trend (as above)</span><div class="b"><i style="width:${N.trend0 * 100}%"></i></div><b>${of100(N.trend0)}</b></div>
+   <div class="lv"><span>+20% a year</span><div class="b"><i style="width:${N.trend20 * 100}%"></i></div><b>${of100(N.trend20)}</b></div>
+   <div class="lv"><span>+50% a year</span><div class="b"><i style="width:${N.trend50 * 100}%"></i></div><b>${of100(N.trend50)}</b></div>
+   <p class="small" style="margin:6px 0 0">Liquidated, of 100. Assuming BTC rises 50% a year on average helps about as much as starting at an LTV of 40% instead of 50% (${of100(N.levers.find((l) => l.label === 'starting LTV 40%').p)} of 100). <b>The swings on the way still decide:</b> one optimistic assumption buys what borrowing a bit less buys for certain.</p></div>
+   <p class="small">Since 2014, BTC was higher <b>4 years later</b> on every start day in our data. But within <b>1 year</b>, 1 start day in 3 ended lower (worst: −83%). A loan has to survive the path, not just reach the destination. The past does not guarantee the future.</p>`;
+}
+$('foot').innerHTML = `<div class="acc open" style="color:var(--blue-ink)">Help improve this page <span>⌄</span></div><div class="accbody">
+ <p style="margin:0 0 6px">Four short questions. Your answers go into an e-mail in your own mail app, and you decide whether to send it.</p>
+ <label class="f">What will you mainly use the money for?</label><div class="chips"><span class="chip">Spend it</span><span class="chip">Compare offers</span><span class="chip on">Buy more BTC</span><span class="chip">Curious</span></div>
+ <label class="f">In one sentence: what does the big number at the top mean?</label><div class="inp"><div class="box" style="height:52px"></div></div>
+ <label class="f">This page gives me what I need to decide.</label><div class="chips">${[1, 2, 3, 4, 5, 6, 7].map((n) => `<span class="chip${n === 6 ? ' on' : ''}">${n}</span>`).join('')}</div>
+ <label class="f">This page is easy to use.</label><div class="chips">${[1, 2, 3, 4, 5, 6, 7].map((n) => `<span class="chip">${n}</span>`).join('')}</div>
+ <label class="f">What was confusing, or what is missing? <span class="small">(optional)</span></label><div class="inp"><div class="box" style="height:40px"></div></div>
+ <p class="small">☐ Attach my loan terms (no personal data)</p>
+ <div class="chips"><span class="chip on">Write e-mail</span><span class="chip">Copy text</span></div></div>
+ <div class="foot">This page is free and has no ads. If it helped you, you can support its upkeep with a Bitcoin donation.
+ <div class="donate"><svg width="96" height="96" xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 41 41" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h41v41H0z"/><path stroke="#000000" d="M2 2.5h7m6 0h1m3 0h1m3 0h4m1 0h1m3 0h7M2 3.5h1m5 0h1m4 0h1m1 0h1m1 0h1m1 0h2m1 0h2m2 0h2m1 0h1m2 0h1m5 0h1M2 4.5h1m1 0h3m1 0h1m1 0h2m2 0h2m1 0h1m2 0h1m2 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1M2 5.5h1m1 0h3m1 0h1m1 0h1m6 0h1m1 0h1m2 0h1m1 0h2m1 0h3m2 0h1m1 0h3m1 0h1M2 6.5h1m1 0h3m1 0h1m1 0h1m2 0h1m2 0h1m2 0h4m2 0h1m4 0h1m1 0h1m1 0h3m1 0h1M2 7.5h1m5 0h1m1 0h6m1 0h3m2 0h2m3 0h1m1 0h1m2 0h1m5 0h1M2 8.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M10 9.5h5m1 0h2m1 0h2m1 0h2m6 0h1M2 10.5h1m1 0h5m2 0h6m1 0h1m5 0h1m1 0h2m1 0h1m2 0h5M2 11.5h2m1 0h1m1 0h1m2 0h3m2 0h1m1 0h1m2 0h1m1 0h1m2 0h1m2 0h1m1 0h2m1 0h1m3 0h1M4 12.5h1m2 0h3m2 0h1m2 0h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h3m1 0h1m4 0h2M2 13.5h1m1 0h4m2 0h2m1 0h1m1 0h3m3 0h3m2 0h1m2 0h1m7 0h2M2 14.5h1m3 0h3m2 0h5m1 0h3m1 0h1m2 0h1m2 0h2m1 0h3m1 0h1m1 0h1M2 15.5h1m1 0h1m5 0h1m3 0h1m5 0h3m2 0h2m6 0h1m3 0h1M3 16.5h7m2 0h3m2 0h2m1 0h1m1 0h3m2 0h3m4 0h2m1 0h2M3 17.5h1m2 0h1m2 0h1m4 0h1m1 0h2m3 0h1m1 0h1m2 0h1m1 0h1m2 0h2m1 0h1m3 0h1M3 18.5h7m1 0h5m1 0h1m2 0h1m1 0h1m1 0h1m2 0h2m1 0h7M4 19.5h1m1 0h1m4 0h3m3 0h2m6 0h1m1 0h2m2 0h1m3 0h1M2 20.5h2m4 0h1m1 0h2m1 0h1m1 0h2m3 0h1m1 0h3m1 0h1m1 0h3m1 0h1m4 0h2M2 21.5h5m2 0h3m3 0h2m1 0h1m4 0h1m1 0h1m2 0h4m1 0h3M2 22.5h2m1 0h4m2 0h1m6 0h3m1 0h1m1 0h4m1 0h1m2 0h3m1 0h1m1 0h1M6 23.5h1m3 0h2m2 0h1m1 0h1m1 0h2m1 0h1m1 0h3m2 0h1m1 0h2m3 0h1m1 0h1M3 24.5h1m4 0h1m1 0h1m1 0h1m1 0h2m1 0h3m2 0h3m4 0h1m4 0h1m1 0h3M4 25.5h3m3 0h2m7 0h2m2 0h1m4 0h1m1 0h1m1 0h3m2 0h1M4 26.5h2m1 0h2m2 0h2m3 0h1m1 0h1m2 0h1m1 0h1m2 0h4m2 0h1m1 0h3m1 0h1M2 27.5h2m1 0h3m5 0h2m1 0h2m2 0h1m1 0h2m1 0h1m4 0h2m1 0h1m1 0h1M2 28.5h1m1 0h2m2 0h3m1 0h1m2 0h4m1 0h2m7 0h2m1 0h1m1 0h1m1 0h3M2 29.5h1m6 0h1m1 0h4m1 0h2m2 0h7m2 0h1m1 0h3M2 30.5h1m1 0h1m1 0h3m1 0h2m1 0h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h9m1 0h3M10 31.5h1m1 0h1m1 0h3m1 0h1m1 0h3m2 0h1m1 0h1m2 0h1m3 0h1m1 0h1M2 32.5h7m4 0h2m1 0h2m2 0h1m3 0h1m1 0h2m2 0h1m1 0h1m1 0h1m1 0h3M2 33.5h1m5 0h1m1 0h3m1 0h2m1 0h1m7 0h2m3 0h1m3 0h1m3 0h1M2 34.5h1m1 0h3m1 0h1m1 0h6m4 0h6m1 0h1m1 0h8m1 0h1M2 35.5h1m1 0h3m1 0h1m1 0h1m4 0h1m1 0h2m4 0h1m1 0h1m1 0h2m2 0h2m1 0h1m3 0h1M2 36.5h1m1 0h3m1 0h1m1 0h1m2 0h1m2 0h1m2 0h1m2 0h1m1 0h1m1 0h1m1 0h2m1 0h1m1 0h1m3 0h2M2 37.5h1m5 0h1m2 0h2m1 0h1m3 0h1m4 0h1m4 0h3m1 0h2m4 0h1M2 38.5h7m1 0h1m3 0h1m3 0h3m1 0h1m3 0h3m2 0h1m2 0h5"/></svg>
+<div><div class="addr">bc1qvj6cdm0mjea5pllsf8y3ezga0g8kq0cxuq3ufl0yx3ae9f27qj4snpj8ld</div><span class="link" style="font-size:.78rem">Copy address</span><div class="small">Donations on the Bitcoin network are public.</div></div></div>
+ <p>Impressum · Privacy · Not financial advice</p></div>`;
+</script>
+</body>
+</html>

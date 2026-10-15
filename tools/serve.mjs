@@ -3,7 +3,8 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
-const root = fileURLToPath(new URL('../docs/', import.meta.url));
+// optional third argument: folder to serve, relative to the project (default: docs)
+const root = fileURLToPath(new URL(`../${process.argv[3] || 'docs'}/`, import.meta.url));
 const port = Number(process.argv[2] || 8765);
 createServer(async (req, res) => {
   const path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
