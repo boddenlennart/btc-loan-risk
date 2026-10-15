@@ -9,6 +9,18 @@ const wf = parse(text);
 const steps = wf.jobs.update.steps;
 const run = (name) => steps.find((s) => s.name && s.name.startsWith(name));
 
+const tests = parse(readFileSync(new URL('../.github/workflows/tests.yml', import.meta.url), 'utf8'));
+
+describe('test workflow for every other change', () => {
+  it('runs on every push and pull request, with all tests and the browser tests', () => {
+    expect(tests.on).toHaveProperty('push');
+    expect(tests.on).toHaveProperty('pull_request');
+    const runs = tests.jobs.test.steps.map((s) => s.run || '').join('\n');
+    expect(runs).toMatch(/npm test/);
+    expect(runs).toMatch(/npm run test:e2e/);
+  });
+});
+
 describe('data-update workflow', () => {
   it('is valid YAML with a weekly schedule and a manual "Run workflow" button', () => {
     expect(wf.on.schedule[0].cron).toMatch(/^\d+ \d+ \* \* [0-6]$/);
@@ -26,6 +38,12 @@ describe('data-update workflow', () => {
   });
   it('the pull request is assigned to the owner and asks for their review (so GitHub notifies them)', () => {
     expect(run('Open a pull request').run).toMatch(/--assignee "\$\{GITHUB_REPOSITORY_OWNER\}" --reviewer "\$\{GITHUB_REPOSITORY_OWNER\}"/);
+  });
+  it('the passed tests show as a check mark on the pull request (commit status, after the tests)', () => {
+    const r = run('Open a pull request').run;
+    expect(r).toMatch(/statuses\/\$\(git rev-parse HEAD\)/);
+    expect(r).toMatch(/state=success/);
+    expect(wf.permissions.statuses).toBe('write');
   });
   it('never merges by itself', () => {
     expect(text).not.toMatch(/gh pr merge|auto-merge|--auto\b|enable-auto-merge|merge_method/i);

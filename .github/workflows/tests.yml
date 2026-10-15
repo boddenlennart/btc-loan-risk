@@ -1,0 +1,33 @@
+# Runs all tests and the browser tests for every push and every pull request
+# (your own changes, edits on the GitHub website). The weekly data update runs
+# the same tests inside its own workflow, before it opens its pull request.
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install tools
+        run: npm ci
+      - name: Build the page from the sources (the browser tests use this build)
+        run: node tools/build.mjs
+      - name: All tests
+        run: npm test
+      - name: The finished page in a real browser
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:e2e

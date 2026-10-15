@@ -11,6 +11,7 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+  statuses: write # to show the green check mark on the pull request
 
 concurrency:
   group: update-data
@@ -61,6 +62,12 @@ jobs:
           git add data docs/index.html
           git commit -m "Weekly price data update $(date -u +%Y-%m-%d)"
           git push --force origin "$branch"
+          # Pull requests opened by a workflow do not start other checks (a GitHub rule), so the
+          # result of the tests above is attached to the commit here: it shows as a check mark.
+          gh api "repos/${GITHUB_REPOSITORY}/statuses/$(git rev-parse HEAD)" \
+            -f state=success -f context="Weekly update: all tests and browser tests" \
+            -f description="All tests and browser tests passed on this data" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           {
             cat "$RUNNER_TEMP/summary.md"
             echo

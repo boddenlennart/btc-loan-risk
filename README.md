@@ -120,6 +120,12 @@ The page contains BTC price history up to a fixed date. A scheduled **GitHub Act
    - any hours to look at
    - how the result for a reference loan changed
 
+### When the tests run
+
+- **Weekly update:** inside the workflow, after the new data is added and **before** the pull request is opened: all tests, the browser tests and the drift guard. Only if everything passes does a pull request appear, with a green check mark linking to that run. Pull requests opened by a workflow don't start other checks on their own (a GitHub rule), which is why the workflow attaches its result to the pull request itself.
+- **Every other change** (your own pushes, edits on the GitHub website, normal pull requests): the workflow **"Tests"** (`.github/workflows/tests.yml`) runs all tests and the browser tests.
+- **On your computer:** `npm test` and `npm run test:e2e`.
+
 ### How you are notified
 
 The pull request is **assigned to you and asks for your review**. GitHub always notifies you about that: by e-mail and with the bell icon on github.com, whatever your "watch" settings. A failed run opens (or comments on) an issue that is also assigned to you.
@@ -131,7 +137,7 @@ The pull request is **assigned to you and asks for your review**. GitHub always 
    - the end date moved forward,
    - there is no "Please look at these hours" (if there is, see below),
    - the reference loan moved by 3 of 100 or less.
-3. Scroll down: the run shows a green check mark (tests passed).
+3. The pull request shows a green check mark **"Weekly update: all tests and browser tests"**. The tests already ran *before* the pull request was opened: if any test fails, there is no pull request, only an issue. The check mark links to the full test run.
 4. Click **Merge pull request**, then **Confirm merge**. GitHub Pages republishes the page within a few minutes.
 
 If you skip a week, that's fine. The next update contains both weeks and closes the older pull request by itself.
