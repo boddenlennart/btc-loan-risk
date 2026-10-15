@@ -163,3 +163,18 @@ Two things to weigh first:
   - Whether you need an Impressum at all depends on whether the page counts as business-like. Donations can play a role there.
 
   Both are questions for a lawyer, ideally before you publish. Your e-mail (boddenlennart@proton.me) goes into the feedback button and the Impressum contact line in Phase C.
+
+## 12. Decisions (approved 2026-10-15)
+
+| # | Decision |
+|---|---|
+| 1 | **Variant 1** ("Answer first"), with 5 sections instead of 7: *Make it safer* includes the other levers; costs sit together with *Borrow or sell?* / *Is the leverage worth it?* |
+| 2 | **Charts:** "20 possible futures" is the main picture; "What really happened" goes in history; the bands only in the expert section. |
+| 3 | **Result counted in BTC** for profile C: build it, with its own tests. |
+| 4 | **Neutral levers + "Questions to ask a lender"**, no provider names. |
+| 5 | **Price outlook:** presets anchored in our own history (Bear −30%, No trend 0%, Moderate +20%, Bull +50%, Generational run +100% a year) plus a free slider. The headline always shows "no trend" with the visitor's outlook next to it. "Black swan" is handled as a stress test (real crashes started today), not as a trend. No forecasts gathered online. |
+| 6 | **Margin-call behaviour is a setting:** only a warning · top up within N hours, otherwise the lender sells everything / only enough to reach the target LTV · the lender automatically sells part to reach the target LTV · no margin call. At the liquidation LTV: sells everything / only enough to reach the target. |
+| 7 | **"How these numbers are made"** in three layers: one sentence under the headline, one line above the 20-futures chart, a full section with method, data, history test results, limits and a link to the code. |
+| 8 | **Also in Phase C:** amounts in BTC (and entering "BTC I pledge" instead of the LTV), "I already have a loan", a shareable link (inputs stored only in the link itself, never sent to a server). |
+
+Evidence for decision 5 (test offer, margin call only a warning, liquidated of 100): even at +100% a year, a 60-month loan at 50% LTV is liquidated in 37 of 100 futures. Average yearly growth over 4-year periods since 2014: worst +8%, median +61%, best +172%; by start year it fell from +113% (2014–18) to +16% (2022–26). Script: `ux/sketches/trend-grid.mjs`.
