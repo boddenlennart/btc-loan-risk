@@ -17,3 +17,5 @@ ux/audit/
 *.pem
 *.key
 *.p12
+test-results/
+playwright-report/

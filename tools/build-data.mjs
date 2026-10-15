@@ -22,4 +22,4 @@ for (const cur of ['USD', 'EUR']) {
 }
 const metaPath = new URL('../data/meta.json', import.meta.url);
 const old = existsSync(metaPath) ? JSON.parse(readFileSync(metaPath, 'utf8')) : {};
-writeFileSync(metaPath, JSON.stringify({ ...old, ...meta }, null, 1));
+writeFileSync(metaPath, JSON.stringify({ ...old, ...meta, updated: Math.floor(Date.now() / 1000) }, null, 1));

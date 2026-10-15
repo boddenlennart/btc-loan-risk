@@ -1,0 +1,4149 @@
+{
+ "frozenEnd": "2026-10-01T00:00:00.000Z",
+ "garch": {
+  "USD": {
+   "mu": 0.0009932131925292258,
+   "omega": 0.00002207108776182046,
+   "alpha": 0.11179708133237105,
+   "beta": 0.8877028208978907,
+   "nu": 3.1788141142061237,
+   "hLast": 0.0005485153275688061
+  },
+  "EUR": {
+   "mu": 0.001108468717946358,
+   "omega": 0.000025253950488226886,
+   "alpha": 0.12470172745152261,
+   "beta": 0.8747981910221715,
+   "nu": 3.151860255077601,
+   "hLast": 0.0005146483851093832
+  }
+ },
+ "loans": [
+  {
+   "id": "example-eur",
+   "uses": "interest monthly, margin call as warning",
+   "loan": {
+    "collateralBtc": 0.5,
+    "amountReceived": 14850,
+    "totalInterest": 1500,
+    "totalPayback": 16500,
+    "totalCost": 1650,
+    "effectiveApr": 0.116393705,
+    "payments": [
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     15125
+    ],
+    "liquidation": [
+     37500,
+     37812.5
+    ],
+    "marginCall": [
+     42857.142857143,
+     43214.285714286
+    ],
+    "drop": 0.375,
+    "topUp": {
+     "btc": 0.2,
+     "value": 8571.428571429,
+     "repayInstead": 4285.714285714
+    },
+    "ifLiquidated": {
+     "btcSold": 0.42,
+     "btcReturned": 0.08,
+     "feeAmount": 750,
+     "valueReturned": 3000
+    },
+    "breakeven": 0.111111111
+   },
+   "risk": {
+    "pLiquidation": 0.5655,
+    "pPartial": 0,
+    "pMarginCall": 0.6845,
+    "cumulativeByMonth": [
+     0.056,
+     0.1525,
+     0.249,
+     0.312,
+     0.3645,
+     0.406,
+     0.4425,
+     0.4795,
+     0.4985,
+     0.5255,
+     0.5495,
+     0.5655
+    ],
+    "fanLastMonth": {
+     "month": 12,
+     "day": 365,
+     "q05": 18641.670552429,
+     "q25": 35814.64174462,
+     "q50": 58338.930552152,
+     "q75": 91541.83095414,
+     "q95": 183793.062372375
+    },
+    "keptAfterSale": {
+     "q10": 0.16,
+     "q50": 0.16,
+     "q90": 0.16
+    },
+    "leverage": null,
+    "samplePaths": {
+     "count": 40,
+     "sold": 21,
+     "firstEvent": {
+      "day": 8,
+      "kind": "liquidationLtv"
+     }
+    },
+    "outlook": null,
+    "garch": {
+     "pLiquidation": 0.451,
+     "pPartial": 0
+    },
+    "replay": {
+     "starts": 4292,
+     "liquidatedShare": 0.393988816,
+     "partialShare": 0,
+     "marginCallShare": 0.47972973,
+     "worst": {
+      "startTime": 1513468800,
+      "startPrice": 16106,
+      "maxDrawdown": 0.827805787,
+      "minLowTime": 1544886000,
+      "liquidationTime": 1513926000
+     },
+     "reserve": {
+      "q50": 0,
+      "q90": 0.727501463,
+      "q95": 0.929757195,
+      "max": 2.657852949
+     }
+    },
+    "stories": [
+     {
+      "start": "2017-12-17",
+      "sale": {
+       "day": 5,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 0.192202285
+     },
+     {
+      "start": "2021-11-10",
+      "sale": {
+       "day": 58,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 0.298368707
+     },
+     {
+      "start": "2020-02-13",
+      "sale": {
+       "day": 28,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 4.088378718
+     },
+     {
+      "start": "2023-01-01",
+      "sale": null,
+      "btcLeft": 1,
+      "endRel": 2.596967537
+     }
+    ],
+    "barrier": {
+     "sigma": 0.666580541,
+     "p": 0.480750133
+    },
+    "levers": [
+     {
+      "id": "lowerLtv",
+      "value": 0.3,
+      "p": 0.192
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.4,
+      "p": 0.3685
+     },
+     {
+      "id": "shorter",
+      "value": 6,
+      "p": 0.3875
+     },
+     {
+      "id": "higherLiq",
+      "value": 0.95,
+      "p": 0.4125
+     },
+     {
+      "id": "reserve",
+      "value": 3000,
+      "p": 0.457
+     }
+    ],
+    "leverBase": 0.5445,
+    "slider": [
+     {
+      "ltv": 0.1,
+      "p": 0.0035,
+      "btc": 2.5
+     },
+     {
+      "ltv": 0.15,
+      "p": 0.0255,
+      "btc": 1.666666667
+     },
+     {
+      "ltv": 0.2,
+      "p": 0.067,
+      "btc": 1.25
+     },
+     {
+      "ltv": 0.25,
+      "p": 0.1265,
+      "btc": 1
+     },
+     {
+      "ltv": 0.3,
+      "p": 0.192,
+      "btc": 0.833333333
+     },
+     {
+      "ltv": 0.35,
+      "p": 0.2725,
+      "btc": 0.714285714
+     },
+     {
+      "ltv": 0.4,
+      "p": 0.3685,
+      "btc": 0.625
+     },
+     {
+      "ltv": 0.45,
+      "p": 0.4655,
+      "btc": 0.555555556
+     },
+     {
+      "ltv": 0.5,
+      "p": 0.5445,
+      "btc": 0.5
+     },
+     {
+      "ltv": 0.55,
+      "p": 0.628,
+      "btc": 0.454545455
+     },
+     {
+      "ltv": 0.6,
+      "p": 0.717,
+      "btc": 0.416666667
+     },
+     {
+      "ltv": 0.65,
+      "p": 0.7935,
+      "btc": 0.384615385
+     }
+    ]
+   },
+   "facts": {
+    "higherAfter1y": 0.680261011,
+    "worst1y": -0.823967712,
+    "higherAfter4y": 1,
+    "fourYear": {
+     "worst": 0.076492523,
+     "p10": 0.228441495,
+     "median": 0.617126805,
+     "best": 1.719472197
+    },
+    "fourYearByStart": [
+     {
+      "from": 2014,
+      "to": 2018,
+      "perYear": 1.126560472
+     },
+     {
+      "from": 2015,
+      "to": 2019,
+      "perYear": 0.889887856
+     },
+     {
+      "from": 2016,
+      "to": 2020,
+      "perYear": 1.000642012
+     },
+     {
+      "from": 2017,
+      "to": 2021,
+      "perYear": 1.243417506
+     },
+     {
+      "from": 2018,
+      "to": 2022,
+      "perYear": 0.391609165
+     },
+     {
+      "from": 2019,
+      "to": 2023,
+      "perYear": 0.467951043
+     },
+     {
+      "from": 2020,
+      "to": 2024,
+      "perYear": 0.581975177
+     },
+     {
+      "from": 2021,
+      "to": 2025,
+      "perYear": 0.395697557
+     },
+     {
+      "from": 2022,
+      "to": 2026,
+      "perYear": 0.157788782
+     }
+    ],
+    "deepYears": 6,
+    "years": 13,
+    "worstYear": {
+     "year": 2018,
+     "fall": 0.803791643
+    }
+   }
+  },
+  {
+   "id": "test-offer-eur",
+   "uses": "added interest with compounding, sale after 48 h, fees",
+   "loan": {
+    "collateralBtc": 0.5,
+    "amountReceived": 14775,
+    "totalInterest": 1818.89,
+    "totalPayback": 16818.89,
+    "totalCost": 2043.89,
+    "effectiveApr": 0.138334349,
+    "payments": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     16818.89
+    ],
+    "liquidation": [
+     36144.578313253,
+     40527.445783133
+    ],
+    "marginCall": [
+     42857.142857143,
+     48053.971428571
+    ],
+    "drop": 0.397590361,
+    "topUp": {
+     "btc": 0.2,
+     "value": 8571.428571429,
+     "repayInstead": 4285.714285714
+    },
+    "ifLiquidated": {
+     "btcSold": 0.4316,
+     "btcReturned": 0.0684,
+     "feeAmount": 600,
+     "valueReturned": 2472.289156627
+    },
+    "breakeven": 0.138334349
+   },
+   "risk": {
+    "pLiquidation": 0.6505,
+    "pPartial": 0,
+    "pMarginCall": 0.721,
+    "cumulativeByMonth": [
+     0.064,
+     0.2035,
+     0.317,
+     0.393,
+     0.445,
+     0.4875,
+     0.5315,
+     0.5655,
+     0.5915,
+     0.6175,
+     0.633,
+     0.6505
+    ],
+    "fanLastMonth": {
+     "month": 12,
+     "day": 365,
+     "q05": 18641.670552429,
+     "q25": 35814.64174462,
+     "q50": 58338.930552152,
+     "q75": 91541.83095414,
+     "q95": 183793.062372375
+    },
+    "keptAfterSale": {
+     "q10": 0.1368,
+     "q50": 0.231289323,
+     "q90": 0.266778779
+    },
+    "leverage": null,
+    "samplePaths": {
+     "count": 40,
+     "sold": 25,
+     "firstEvent": {
+      "day": 7,
+      "kind": "cureExpired"
+     }
+    },
+    "outlook": null,
+    "garch": {
+     "pLiquidation": 0.577,
+     "pPartial": 0
+    },
+    "replay": {
+     "starts": 4292,
+     "liquidatedShare": 0.440121156,
+     "partialShare": 0,
+     "marginCallShare": 0.506057782,
+     "worst": {
+      "startTime": 1513468800,
+      "startPrice": 16106,
+      "maxDrawdown": 0.827805787,
+      "minLowTime": 1544886000,
+      "liquidationTime": 1513926000
+     },
+     "reserve": {
+      "q50": 0,
+      "q90": 0.777277827,
+      "q95": 0.995744906,
+      "max": 2.9201665
+     }
+    },
+    "stories": [
+     {
+      "start": "2017-12-17",
+      "sale": {
+       "day": 5,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.1368,
+      "endRel": 0.192202285
+     },
+     {
+      "start": "2021-11-10",
+      "sale": {
+       "day": 53,
+       "reason": "cureExpired"
+      },
+      "btcLeft": 0.26848872,
+      "endRel": 0.298368707
+     },
+     {
+      "start": "2020-02-13",
+      "sale": {
+       "day": 28,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.1368,
+      "endRel": 4.088378718
+     },
+     {
+      "start": "2023-01-01",
+      "sale": null,
+      "btcLeft": 1,
+      "endRel": 2.596967537
+     }
+    ],
+    "barrier": {
+     "sigma": 0.666580541,
+     "p": 0.447060545
+    },
+    "levers": [
+     {
+      "id": "lowerLtv",
+      "value": 0.3,
+      "p": 0.256
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.4,
+      "p": 0.4515
+     },
+     {
+      "id": "higherLiqWarning",
+      "value": 0.95,
+      "p": 0.462
+     },
+     {
+      "id": "shorter",
+      "value": 6,
+      "p": 0.468
+     },
+     {
+      "id": "reserve",
+      "value": 3000,
+      "p": 0.5315
+     },
+     {
+      "id": "warningOnly",
+      "value": null,
+      "p": 0.5645
+     },
+     {
+      "id": "monthlyInterest",
+      "value": null,
+      "p": 0.5895
+     },
+     {
+      "id": "higherLiq",
+      "value": 0.95,
+      "p": 0.62
+     }
+    ],
+    "leverBase": 0.6285,
+    "slider": [
+     {
+      "ltv": 0.1,
+      "p": 0.006,
+      "btc": 2.5
+     },
+     {
+      "ltv": 0.15,
+      "p": 0.0435,
+      "btc": 1.666666667
+     },
+     {
+      "ltv": 0.2,
+      "p": 0.093,
+      "btc": 1.25
+     },
+     {
+      "ltv": 0.25,
+      "p": 0.164,
+      "btc": 1
+     },
+     {
+      "ltv": 0.3,
+      "p": 0.256,
+      "btc": 0.833333333
+     },
+     {
+      "ltv": 0.35,
+      "p": 0.35,
+      "btc": 0.714285714
+     },
+     {
+      "ltv": 0.4,
+      "p": 0.4515,
+      "btc": 0.625
+     },
+     {
+      "ltv": 0.45,
+      "p": 0.547,
+      "btc": 0.555555556
+     },
+     {
+      "ltv": 0.5,
+      "p": 0.6285,
+      "btc": 0.5
+     },
+     {
+      "ltv": 0.55,
+      "p": 0.7215,
+      "btc": 0.454545455
+     },
+     {
+      "ltv": 0.6,
+      "p": 0.803,
+      "btc": 0.416666667
+     },
+     {
+      "ltv": 0.65,
+      "p": 0.8725,
+      "btc": 0.384615385
+     }
+    ]
+   },
+   "facts": {
+    "higherAfter1y": 0.680261011,
+    "worst1y": -0.823967712,
+    "higherAfter4y": 1,
+    "fourYear": {
+     "worst": 0.076492523,
+     "p10": 0.228441495,
+     "median": 0.617126805,
+     "best": 1.719472197
+    },
+    "fourYearByStart": [
+     {
+      "from": 2014,
+      "to": 2018,
+      "perYear": 1.126560472
+     },
+     {
+      "from": 2015,
+      "to": 2019,
+      "perYear": 0.889887856
+     },
+     {
+      "from": 2016,
+      "to": 2020,
+      "perYear": 1.000642012
+     },
+     {
+      "from": 2017,
+      "to": 2021,
+      "perYear": 1.243417506
+     },
+     {
+      "from": 2018,
+      "to": 2022,
+      "perYear": 0.391609165
+     },
+     {
+      "from": 2019,
+      "to": 2023,
+      "perYear": 0.467951043
+     },
+     {
+      "from": 2020,
+      "to": 2024,
+      "perYear": 0.581975177
+     },
+     {
+      "from": 2021,
+      "to": 2025,
+      "perYear": 0.395697557
+     },
+     {
+      "from": 2022,
+      "to": 2026,
+      "perYear": 0.157788782
+     }
+    ],
+    "deepYears": 6,
+    "years": 13,
+    "worstYear": {
+     "year": 2018,
+     "fall": 0.803791643
+    }
+   }
+  },
+  {
+   "id": "amortizing-usd",
+   "uses": "equal payments, 36 months, fixed fee",
+   "loan": {
+    "collateralBtc": 0.714285714,
+    "amountReceived": 14750,
+    "totalInterest": 1735.45,
+    "totalPayback": 16735.45,
+    "totalCost": 1985.45,
+    "effectiveApr": 0.087125998,
+    "payments": [
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     464.87,
+     465
+    ],
+    "liquidation": [
+     26250,
+     813.75
+    ],
+    "marginCall": [
+     30000,
+     930
+    ],
+    "drop": 0.5625,
+    "topUp": {
+     "btc": 0.714285714,
+     "value": 21428.571428571,
+     "repayInstead": 7500
+    },
+    "ifLiquidated": {
+     "btcSold": 0.6,
+     "btcReturned": 0.114285714,
+     "feeAmount": 750,
+     "valueReturned": 3000
+    },
+    "breakeven": 0.13460678
+   },
+   "risk": {
+    "pLiquidation": 0.2575,
+    "pPartial": 0,
+    "pMarginCall": 0.343,
+    "cumulativeByMonth": [
+     0.0085,
+     0.0225,
+     0.0425,
+     0.064,
+     0.081,
+     0.1055,
+     0.1245,
+     0.139,
+     0.1535,
+     0.1665,
+     0.18,
+     0.196,
+     0.2065,
+     0.2165,
+     0.222,
+     0.23,
+     0.232,
+     0.237,
+     0.24,
+     0.243,
+     0.2445,
+     0.247,
+     0.249,
+     0.2515,
+     0.2545,
+     0.255,
+     0.2555,
+     0.256,
+     0.2565,
+     0.257,
+     0.257,
+     0.2575,
+     0.2575,
+     0.2575,
+     0.2575,
+     0.2575
+    ],
+    "fanLastMonth": {
+     "month": 36,
+     "day": 1096,
+     "q05": 7760.640027138,
+     "q25": 24753.304397723,
+     "q50": 56424.59762801,
+     "q75": 136234.6923242,
+     "q95": 429236.327611971
+    },
+    "keptAfterSale": {
+     "q10": 0.16,
+     "q50": 0.16,
+     "q90": 0.16
+    },
+    "leverage": null,
+    "samplePaths": {
+     "count": 40,
+     "sold": 7,
+     "firstEvent": {
+      "day": 352,
+      "kind": "liquidationLtv"
+     }
+    },
+    "outlook": null,
+    "garch": {
+     "pLiquidation": 0.211,
+     "pPartial": 0
+    },
+    "replay": {
+     "starts": 3561,
+     "liquidatedShare": 0.174108397,
+     "partialShare": 0,
+     "marginCallShare": 0.298511654,
+     "worst": {
+      "startTime": 1513468800,
+      "startPrice": 19187.78,
+      "maxDrawdown": 0.837277684,
+      "minLowTime": 1544886000,
+      "liquidationTime": 1517562000
+     },
+     "reserve": {
+      "q50": 0,
+      "q90": 0.124686949,
+      "q95": 0.354887303,
+      "max": 0.938918941
+     }
+    },
+    "stories": [
+     {
+      "start": "2017-12-17",
+      "sale": {
+       "day": 47,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 1.188998415
+     },
+     {
+      "start": "2021-11-10",
+      "sale": {
+       "day": 215,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 1.201656934
+     },
+     {
+      "start": "2020-02-13",
+      "sale": {
+       "day": 29,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 2.105562202
+     },
+     {
+      "start": "2023-01-01",
+      "sale": null,
+      "btcLeft": 1,
+      "endRel": 5.3676951
+     }
+    ],
+    "barrier": {
+     "sigma": 0.682819462,
+     "p": 0.484758406
+    },
+    "levers": [
+     {
+      "id": "lowerLtv",
+      "value": 0.15,
+      "p": 0.0305
+     },
+     {
+      "id": "shorter",
+      "value": 18,
+      "p": 0.0955
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.25,
+      "p": 0.119
+     },
+     {
+      "id": "higherLiq",
+      "value": 0.95,
+      "p": 0.1715
+     },
+     {
+      "id": "reserve",
+      "value": 3000,
+      "p": 0.1945
+     }
+    ],
+    "leverBase": 0.253,
+    "slider": [
+     {
+      "ltv": 0.1,
+      "p": 0.0075,
+      "btc": 2.5
+     },
+     {
+      "ltv": 0.15,
+      "p": 0.0305,
+      "btc": 1.666666667
+     },
+     {
+      "ltv": 0.2,
+      "p": 0.0675,
+      "btc": 1.25
+     },
+     {
+      "ltv": 0.25,
+      "p": 0.119,
+      "btc": 1
+     },
+     {
+      "ltv": 0.3,
+      "p": 0.181,
+      "btc": 0.833333333
+     },
+     {
+      "ltv": 0.35,
+      "p": 0.253,
+      "btc": 0.714285714
+     },
+     {
+      "ltv": 0.4,
+      "p": 0.3295,
+      "btc": 0.625
+     },
+     {
+      "ltv": 0.45,
+      "p": 0.403,
+      "btc": 0.555555556
+     },
+     {
+      "ltv": 0.5,
+      "p": 0.5,
+      "btc": 0.5
+     },
+     {
+      "ltv": 0.55,
+      "p": 0.5845,
+      "btc": 0.454545455
+     },
+     {
+      "ltv": 0.6,
+      "p": 0.6725,
+      "btc": 0.416666667
+     },
+     {
+      "ltv": 0.65,
+      "p": 0.744,
+      "btc": 0.384615385
+     }
+    ]
+   },
+   "facts": {
+    "higherAfter1y": 0.677231415,
+    "worst1y": -0.833551354,
+    "higherAfter4y": 1,
+    "fourYear": {
+     "worst": 0.070320242,
+     "p10": 0.225764664,
+     "median": 0.598748263,
+     "best": 1.776964971
+    },
+    "fourYearByStart": [
+     {
+      "from": 2014,
+      "to": 2018,
+      "perYear": 1.054258084
+     },
+     {
+      "from": 2015,
+      "to": 2019,
+      "perYear": 0.868301124
+     },
+     {
+      "from": 2016,
+      "to": 2020,
+      "perYear": 1.016897168
+     },
+     {
+      "from": 2017,
+      "to": 2021,
+      "perYear": 1.329920741
+     },
+     {
+      "from": 2018,
+      "to": 2022,
+      "perYear": 0.373024581
+     },
+     {
+      "from": 2019,
+      "to": 2023,
+      "perYear": 0.443814891
+     },
+     {
+      "from": 2020,
+      "to": 2024,
+      "perYear": 0.575115773
+     },
+     {
+      "from": 2021,
+      "to": 2025,
+      "perYear": 0.338543885
+     },
+     {
+      "from": 2022,
+      "to": 2026,
+      "perYear": 0.167372611
+     }
+    ],
+    "deepYears": 7,
+    "years": 13,
+    "worstYear": {
+     "year": 2018,
+     "fall": 0.817939354
+    }
+   }
+  },
+  {
+   "id": "variable-rate-usd",
+   "uses": "variable rate path, actual days / 365",
+   "loan": {
+    "collateralBtc": 0.5,
+    "amountReceived": 14850,
+    "totalInterest": 1500.85,
+    "totalPayback": 16500.85,
+    "totalCost": 1650.85,
+    "effectiveApr": 0.115845507,
+    "payments": [
+     101.92,
+     98.63,
+     101.92,
+     101.92,
+     92.05,
+     101.92,
+     147.95,
+     152.88,
+     147.95,
+     152.88,
+     152.88,
+     15147.95
+    ],
+    "liquidation": [
+     37500,
+     37869.875
+    ],
+    "marginCall": [
+     42857.142857143,
+     43279.857142857
+    ],
+    "drop": 0.375,
+    "topUp": {
+     "btc": 0.2,
+     "value": 8571.428571429,
+     "repayInstead": 4285.714285714
+    },
+    "ifLiquidated": {
+     "btcSold": 0.42,
+     "btcReturned": 0.08,
+     "feeAmount": 750,
+     "valueReturned": 3000
+    },
+    "breakeven": 0.11116835
+   },
+   "risk": {
+    "pLiquidation": 0.5755,
+    "pPartial": 0,
+    "pMarginCall": 0.6945,
+    "cumulativeByMonth": [
+     0.062,
+     0.1585,
+     0.255,
+     0.323,
+     0.3705,
+     0.4155,
+     0.4535,
+     0.4915,
+     0.511,
+     0.5395,
+     0.562,
+     0.5755
+    ],
+    "fanLastMonth": {
+     "month": 12,
+     "day": 365,
+     "q05": 18419.534318283,
+     "q25": 35624.059024165,
+     "q50": 58648.023860619,
+     "q75": 92577.841608543,
+     "q95": 187676.620716252
+    },
+    "keptAfterSale": {
+     "q10": 0.16,
+     "q50": 0.16,
+     "q90": 0.16
+    },
+    "leverage": null,
+    "samplePaths": {
+     "count": 40,
+     "sold": 20,
+     "firstEvent": {
+      "day": 8,
+      "kind": "liquidationLtv"
+     }
+    },
+    "outlook": null,
+    "garch": {
+     "pLiquidation": 0.454,
+     "pPartial": 0
+    },
+    "replay": {
+     "starts": 4292,
+     "liquidatedShare": 0.393522833,
+     "partialShare": 0,
+     "marginCallShare": 0.46248835,
+     "worst": {
+      "startTime": 1513468800,
+      "startPrice": 19187.78,
+      "maxDrawdown": 0.837277684,
+      "minLowTime": 1544886000,
+      "liquidationTime": 1513951200
+     },
+     "reserve": {
+      "q50": 0,
+      "q90": 0.868728533,
+      "q95": 1.312584712,
+      "max": 2.876257582
+     }
+    },
+    "stories": [
+     {
+      "start": "2017-12-17",
+      "sale": {
+       "day": 6,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 0.182237341
+     },
+     {
+      "start": "2021-11-10",
+      "sale": {
+       "day": 24,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 0.262235385
+     },
+     {
+      "start": "2020-02-13",
+      "sale": {
+       "day": 28,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 4.563676105
+     },
+     {
+      "start": "2023-01-01",
+      "sale": null,
+      "btcLeft": 1,
+      "endRel": 2.673139746
+     }
+    ],
+    "barrier": {
+     "sigma": 0.682819462,
+     "p": 0.491246335
+    },
+    "levers": [
+     {
+      "id": "lowerLtv",
+      "value": 0.3,
+      "p": 0.194
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.4,
+      "p": 0.3755
+     },
+     {
+      "id": "shorter",
+      "value": 6,
+      "p": 0.3865
+     },
+     {
+      "id": "higherLiq",
+      "value": 0.95,
+      "p": 0.42
+     },
+     {
+      "id": "reserve",
+      "value": 3000,
+      "p": 0.466
+     }
+    ],
+    "leverBase": 0.547,
+    "slider": [
+     {
+      "ltv": 0.1,
+      "p": 0.0025,
+      "btc": 2.5
+     },
+     {
+      "ltv": 0.15,
+      "p": 0.0285,
+      "btc": 1.666666667
+     },
+     {
+      "ltv": 0.2,
+      "p": 0.0725,
+      "btc": 1.25
+     },
+     {
+      "ltv": 0.25,
+      "p": 0.1225,
+      "btc": 1
+     },
+     {
+      "ltv": 0.3,
+      "p": 0.194,
+      "btc": 0.833333333
+     },
+     {
+      "ltv": 0.35,
+      "p": 0.2835,
+      "btc": 0.714285714
+     },
+     {
+      "ltv": 0.4,
+      "p": 0.3755,
+      "btc": 0.625
+     },
+     {
+      "ltv": 0.45,
+      "p": 0.467,
+      "btc": 0.555555556
+     },
+     {
+      "ltv": 0.5,
+      "p": 0.547,
+      "btc": 0.5
+     },
+     {
+      "ltv": 0.55,
+      "p": 0.635,
+      "btc": 0.454545455
+     },
+     {
+      "ltv": 0.6,
+      "p": 0.719,
+      "btc": 0.416666667
+     },
+     {
+      "ltv": 0.65,
+      "p": 0.7965,
+      "btc": 0.384615385
+     }
+    ]
+   },
+   "facts": {
+    "higherAfter1y": 0.677231415,
+    "worst1y": -0.833551354,
+    "higherAfter4y": 1,
+    "fourYear": {
+     "worst": 0.070320242,
+     "p10": 0.225764664,
+     "median": 0.598748263,
+     "best": 1.776964971
+    },
+    "fourYearByStart": [
+     {
+      "from": 2014,
+      "to": 2018,
+      "perYear": 1.054258084
+     },
+     {
+      "from": 2015,
+      "to": 2019,
+      "perYear": 0.868301124
+     },
+     {
+      "from": 2016,
+      "to": 2020,
+      "perYear": 1.016897168
+     },
+     {
+      "from": 2017,
+      "to": 2021,
+      "perYear": 1.329920741
+     },
+     {
+      "from": 2018,
+      "to": 2022,
+      "perYear": 0.373024581
+     },
+     {
+      "from": 2019,
+      "to": 2023,
+      "perYear": 0.443814891
+     },
+     {
+      "from": 2020,
+      "to": 2024,
+      "perYear": 0.575115773
+     },
+     {
+      "from": 2021,
+      "to": 2025,
+      "perYear": 0.338543885
+     },
+     {
+      "from": 2022,
+      "to": 2026,
+      "perYear": 0.167372611
+     }
+    ],
+    "deepYears": 7,
+    "years": 13,
+    "worstYear": {
+     "year": 2018,
+     "fall": 0.817939354
+    }
+   }
+  },
+  {
+   "id": "auto-partial-eur",
+   "uses": "lender sells part at the margin call",
+   "loan": {
+    "collateralBtc": 0.5,
+    "amountReceived": 14850,
+    "totalInterest": 1500,
+    "totalPayback": 16500,
+    "totalCost": 1650,
+    "effectiveApr": 0.116393705,
+    "payments": [
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     15125
+    ],
+    "liquidation": [
+     37500,
+     37812.5
+    ],
+    "marginCall": [
+     42857.142857143,
+     43214.285714286
+    ],
+    "drop": 0.375,
+    "topUp": {
+     "btc": 0.2,
+     "value": 8571.428571429,
+     "repayInstead": 4285.714285714
+    },
+    "ifLiquidated": {
+     "btcSold": 0.42,
+     "btcReturned": 0.08,
+     "feeAmount": 750,
+     "valueReturned": 3000
+    },
+    "breakeven": 0.111111111
+   },
+   "risk": {
+    "pLiquidation": 0.137,
+    "pPartial": 0.5475,
+    "pMarginCall": 0.6845,
+    "cumulativeByMonth": [
+     0.0205,
+     0.0365,
+     0.0575,
+     0.0745,
+     0.082,
+     0.0885,
+     0.0975,
+     0.1055,
+     0.115,
+     0.122,
+     0.1315,
+     0.137
+    ],
+    "fanLastMonth": {
+     "month": 12,
+     "day": 365,
+     "q05": 18641.670552429,
+     "q25": 35814.64174462,
+     "q50": 58338.930552152,
+     "q75": 91541.83095414,
+     "q95": 183793.062372375
+    },
+    "keptAfterSale": {
+     "q10": 0.089263158,
+     "q50": 0.311246537,
+     "q90": 0.557894737
+    },
+    "leverage": null,
+    "samplePaths": {
+     "count": 40,
+     "sold": 31,
+     "firstEvent": {
+      "day": 5,
+      "kind": "partial"
+     }
+    },
+    "outlook": null,
+    "garch": {
+     "pLiquidation": 0.076,
+     "pPartial": 0.499
+    },
+    "replay": {
+     "starts": 4292,
+     "liquidatedShare": 0.027027027,
+     "partialShare": 0.452702703,
+     "marginCallShare": 0.47972973,
+     "worst": {
+      "startTime": 1513468800,
+      "startPrice": 16106,
+      "maxDrawdown": 0.827805787,
+      "minLowTime": 1544886000,
+      "liquidationTime": null
+     },
+     "reserve": {
+      "q50": 0,
+      "q90": 0.727501463,
+      "q95": 0.929757195,
+      "max": 2.657852949
+     }
+    },
+    "stories": [
+     {
+      "start": "2017-12-17",
+      "sale": {
+       "day": 5,
+       "reason": "partial"
+      },
+      "btcLeft": 0.054045722,
+      "endRel": 0.192202285
+     },
+     {
+      "start": "2021-11-10",
+      "sale": {
+       "day": 24,
+       "reason": "partial"
+      },
+      "btcLeft": 0.173642805,
+      "endRel": 0.298368707
+     },
+     {
+      "start": "2020-02-13",
+      "sale": {
+       "day": 29,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.089263158,
+      "endRel": 4.088378718
+     },
+     {
+      "start": "2023-01-01",
+      "sale": null,
+      "btcLeft": 1,
+      "endRel": 2.596967537
+     }
+    ],
+    "barrier": {
+     "sigma": 0.666580541,
+     "p": 0.480750133
+    },
+    "levers": [
+     {
+      "id": "higherLiq",
+      "value": 0.95,
+      "p": 0.0245
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.3,
+      "p": 0.0385
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.4,
+      "p": 0.0795
+     },
+     {
+      "id": "shorter",
+      "value": 6,
+      "p": 0.08
+     },
+     {
+      "id": "reserve",
+      "value": 3000,
+      "p": 0.1615
+     },
+     {
+      "id": "higherLiqWarning",
+      "value": 0.95,
+      "p": 0.4125
+     },
+     {
+      "id": "warningOnly",
+      "value": null,
+      "p": 0.5445
+     }
+    ],
+    "leverBase": 0.129,
+    "slider": [
+     {
+      "ltv": 0.1,
+      "p": 0,
+      "btc": 2.5
+     },
+     {
+      "ltv": 0.15,
+      "p": 0.0045,
+      "btc": 1.666666667
+     },
+     {
+      "ltv": 0.2,
+      "p": 0.0145,
+      "btc": 1.25
+     },
+     {
+      "ltv": 0.25,
+      "p": 0.0245,
+      "btc": 1
+     },
+     {
+      "ltv": 0.3,
+      "p": 0.0385,
+      "btc": 0.833333333
+     },
+     {
+      "ltv": 0.35,
+      "p": 0.0575,
+      "btc": 0.714285714
+     },
+     {
+      "ltv": 0.4,
+      "p": 0.0795,
+      "btc": 0.625
+     },
+     {
+      "ltv": 0.45,
+      "p": 0.108,
+      "btc": 0.555555556
+     },
+     {
+      "ltv": 0.5,
+      "p": 0.129,
+      "btc": 0.5
+     },
+     {
+      "ltv": 0.55,
+      "p": 0.173,
+      "btc": 0.454545455
+     },
+     {
+      "ltv": 0.6,
+      "p": 0.2315,
+      "btc": 0.416666667
+     },
+     {
+      "ltv": 0.65,
+      "p": 0.376,
+      "btc": 0.384615385
+     }
+    ]
+   },
+   "facts": {
+    "higherAfter1y": 0.680261011,
+    "worst1y": -0.823967712,
+    "higherAfter4y": 1,
+    "fourYear": {
+     "worst": 0.076492523,
+     "p10": 0.228441495,
+     "median": 0.617126805,
+     "best": 1.719472197
+    },
+    "fourYearByStart": [
+     {
+      "from": 2014,
+      "to": 2018,
+      "perYear": 1.126560472
+     },
+     {
+      "from": 2015,
+      "to": 2019,
+      "perYear": 0.889887856
+     },
+     {
+      "from": 2016,
+      "to": 2020,
+      "perYear": 1.000642012
+     },
+     {
+      "from": 2017,
+      "to": 2021,
+      "perYear": 1.243417506
+     },
+     {
+      "from": 2018,
+      "to": 2022,
+      "perYear": 0.391609165
+     },
+     {
+      "from": 2019,
+      "to": 2023,
+      "perYear": 0.467951043
+     },
+     {
+      "from": 2020,
+      "to": 2024,
+      "perYear": 0.581975177
+     },
+     {
+      "from": 2021,
+      "to": 2025,
+      "perYear": 0.395697557
+     },
+     {
+      "from": 2022,
+      "to": 2026,
+      "perYear": 0.157788782
+     }
+    ],
+    "deepYears": 6,
+    "years": 13,
+    "worstYear": {
+     "year": 2018,
+     "fall": 0.803791643
+    }
+   }
+  },
+  {
+   "id": "partial-everywhere-usd",
+   "uses": "partial sale after the deadline and at liquidation, fee on BTC sold, target 45%",
+   "loan": {
+    "collateralBtc": 0.5,
+    "amountReceived": 14850,
+    "totalInterest": 1500,
+    "totalPayback": 16500,
+    "totalCost": 1650,
+    "effectiveApr": 0.116393705,
+    "payments": [
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     15125
+    ],
+    "liquidation": [
+     37500,
+     37812.5
+    ],
+    "marginCall": [
+     42857.142857143,
+     43214.285714286
+    ],
+    "drop": 0.375,
+    "topUp": {
+     "btc": 0.277777778,
+     "value": 11904.761904762,
+     "repayInstead": 5357.142857143
+    },
+    "ifLiquidated": {
+     "btcSold": 0.408163265,
+     "btcReturned": 0.091836735,
+     "feeAmount": 306.12244898,
+     "valueReturned": 3443.87755102
+    },
+    "breakeven": 0.111111111
+   },
+   "risk": {
+    "pLiquidation": 0,
+    "pPartial": 0.6145,
+    "pMarginCall": 0.6945,
+    "cumulativeByMonth": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "fanLastMonth": {
+     "month": 12,
+     "day": 365,
+     "q05": 18419.534318283,
+     "q25": 35624.059024165,
+     "q50": 58648.023860619,
+     "q75": 92577.841608543,
+     "q95": 187676.620716252
+    },
+    "keptAfterSale": {
+     "q10": 0.115343539,
+     "q50": 0.339622642,
+     "q90": 0.505463157
+    },
+    "leverage": null,
+    "samplePaths": {
+     "count": 40,
+     "sold": 22,
+     "firstEvent": {
+      "day": 6,
+      "kind": "partial"
+     }
+    },
+    "outlook": null,
+    "garch": {
+     "pLiquidation": 0,
+     "pPartial": 0.5285
+    },
+    "replay": {
+     "starts": 4292,
+     "liquidatedShare": 0,
+     "partialShare": 0.405405405,
+     "marginCallShare": 0.4638863,
+     "worst": {
+      "startTime": 1513468800,
+      "startPrice": 19187.78,
+      "maxDrawdown": 0.837277684,
+      "minLowTime": 1544886000,
+      "liquidationTime": null
+     },
+     "reserve": {
+      "q50": 0,
+      "q90": 0.871218137,
+      "q95": 1.30996661,
+      "max": 2.870772778
+     }
+    },
+    "stories": [
+     {
+      "start": "2017-12-17",
+      "sale": {
+       "day": 6,
+       "reason": "partial"
+      },
+      "btcLeft": 0.039173277,
+      "endRel": 0.182237341
+     },
+     {
+      "start": "2021-11-10",
+      "sale": {
+       "day": 24,
+       "reason": "partial"
+      },
+      "btcLeft": 0.115343539,
+      "endRel": 0.262235385
+     },
+     {
+      "start": "2020-02-13",
+      "sale": {
+       "day": 28,
+       "reason": "partial"
+      },
+      "btcLeft": 0.339622642,
+      "endRel": 4.563676105
+     },
+     {
+      "start": "2023-01-01",
+      "sale": null,
+      "btcLeft": 1,
+      "endRel": 2.673139746
+     }
+    ],
+    "barrier": {
+     "sigma": 0.682819462,
+     "p": 0.491246335
+    },
+    "levers": [
+     {
+      "id": "lowerLtv",
+      "value": 0.4,
+      "p": 0
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.3,
+      "p": 0
+     },
+     {
+      "id": "shorter",
+      "value": 6,
+      "p": 0
+     },
+     {
+      "id": "reserve",
+      "value": 3000,
+      "p": 0
+     },
+     {
+      "id": "warningOnly",
+      "value": null,
+      "p": 0
+     },
+     {
+      "id": "higherLiq",
+      "value": 0.95,
+      "p": 0
+     },
+     {
+      "id": "higherLiqWarning",
+      "value": 0.95,
+      "p": 0
+     }
+    ],
+    "leverBase": 0,
+    "slider": [
+     {
+      "ltv": 0.1,
+      "p": 0,
+      "btc": 2.5
+     },
+     {
+      "ltv": 0.15,
+      "p": 0,
+      "btc": 1.666666667
+     },
+     {
+      "ltv": 0.2,
+      "p": 0,
+      "btc": 1.25
+     },
+     {
+      "ltv": 0.25,
+      "p": 0,
+      "btc": 1
+     },
+     {
+      "ltv": 0.3,
+      "p": 0,
+      "btc": 0.833333333
+     },
+     {
+      "ltv": 0.35,
+      "p": 0,
+      "btc": 0.714285714
+     },
+     {
+      "ltv": 0.4,
+      "p": 0,
+      "btc": 0.625
+     },
+     {
+      "ltv": 0.45,
+      "p": 0,
+      "btc": 0.555555556
+     },
+     {
+      "ltv": 0.5,
+      "p": 0,
+      "btc": 0.5
+     },
+     {
+      "ltv": 0.55,
+      "p": 0,
+      "btc": 0.454545455
+     },
+     {
+      "ltv": 0.6,
+      "p": 0,
+      "btc": 0.416666667
+     },
+     {
+      "ltv": 0.65,
+      "p": 0,
+      "btc": 0.384615385
+     }
+    ]
+   },
+   "facts": {
+    "higherAfter1y": 0.677231415,
+    "worst1y": -0.833551354,
+    "higherAfter4y": 1,
+    "fourYear": {
+     "worst": 0.070320242,
+     "p10": 0.225764664,
+     "median": 0.598748263,
+     "best": 1.776964971
+    },
+    "fourYearByStart": [
+     {
+      "from": 2014,
+      "to": 2018,
+      "perYear": 1.054258084
+     },
+     {
+      "from": 2015,
+      "to": 2019,
+      "perYear": 0.868301124
+     },
+     {
+      "from": 2016,
+      "to": 2020,
+      "perYear": 1.016897168
+     },
+     {
+      "from": 2017,
+      "to": 2021,
+      "perYear": 1.329920741
+     },
+     {
+      "from": 2018,
+      "to": 2022,
+      "perYear": 0.373024581
+     },
+     {
+      "from": 2019,
+      "to": 2023,
+      "perYear": 0.443814891
+     },
+     {
+      "from": 2020,
+      "to": 2024,
+      "perYear": 0.575115773
+     },
+     {
+      "from": 2021,
+      "to": 2025,
+      "perYear": 0.338543885
+     },
+     {
+      "from": 2022,
+      "to": 2026,
+      "perYear": 0.167372611
+     }
+    ],
+    "deepYears": 7,
+    "years": 13,
+    "worstYear": {
+     "year": 2018,
+     "fall": 0.817939354
+    }
+   }
+  },
+  {
+   "id": "no-margin-call-eur",
+   "uses": "no margin call, liquidation at 95%",
+   "loan": {
+    "collateralBtc": 0.5,
+    "amountReceived": 14850,
+    "totalInterest": 1500,
+    "totalPayback": 16500,
+    "totalCost": 1650,
+    "effectiveApr": 0.116393705,
+    "payments": [
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     15125
+    ],
+    "liquidation": [
+     31578.947368421,
+     31842.105263158
+    ],
+    "marginCall": null,
+    "drop": 0.473684211,
+    "topUp": null,
+    "ifLiquidated": {
+     "btcSold": 0.49875,
+     "btcReturned": 0.00125,
+     "feeAmount": 750,
+     "valueReturned": 39.473684211
+    },
+    "breakeven": 0.111111111
+   },
+   "risk": {
+    "pLiquidation": 0.4215,
+    "pPartial": 0,
+    "pMarginCall": null,
+    "cumulativeByMonth": [
+     0.021,
+     0.061,
+     0.1185,
+     0.174,
+     0.22,
+     0.257,
+     0.296,
+     0.332,
+     0.3545,
+     0.379,
+     0.4025,
+     0.4215
+    ],
+    "fanLastMonth": {
+     "month": 12,
+     "day": 365,
+     "q05": 18641.670552429,
+     "q25": 35814.64174462,
+     "q50": 58338.930552152,
+     "q75": 91541.83095414,
+     "q95": 183793.062372375
+    },
+    "keptAfterSale": {
+     "q10": 0.0025,
+     "q50": 0.0025,
+     "q90": 0.0025
+    },
+    "leverage": null,
+    "samplePaths": {
+     "count": 40,
+     "sold": 14,
+     "firstEvent": {
+      "day": 60,
+      "kind": "liquidationLtv"
+     }
+    },
+    "outlook": null,
+    "garch": {
+     "pLiquidation": 0.319,
+     "pPartial": 0
+    },
+    "replay": {
+     "starts": 4292,
+     "liquidatedShare": 0.329916123,
+     "partialShare": 0,
+     "marginCallShare": 0,
+     "worst": {
+      "startTime": 1513468800,
+      "startPrice": 16106,
+      "maxDrawdown": 0.827805787,
+      "minLowTime": 1544886000,
+      "liquidationTime": 1516140000
+     },
+     "reserve": {
+      "q50": 0,
+      "q90": 0.454738074,
+      "q95": 0.625058691,
+      "max": 2.08029722
+     }
+    },
+    "stories": [
+     {
+      "start": "2017-12-17",
+      "sale": {
+       "day": 31,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.0025,
+      "endRel": 0.192202285
+     },
+     {
+      "start": "2021-11-10",
+      "sale": {
+       "day": 73,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.0025,
+      "endRel": 0.298368707
+     },
+     {
+      "start": "2020-02-13",
+      "sale": {
+       "day": 29,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.0025,
+      "endRel": 4.088378718
+     },
+     {
+      "start": "2023-01-01",
+      "sale": null,
+      "btcLeft": 1,
+      "endRel": 2.596967537
+     }
+    ],
+    "barrier": {
+     "sigma": 0.666580541,
+     "p": 0.335595099
+    },
+    "levers": [
+     {
+      "id": "lowerLtv",
+      "value": 0.3,
+      "p": 0.1285
+     },
+     {
+      "id": "shorter",
+      "value": 6,
+      "p": 0.236
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.4,
+      "p": 0.2515
+     }
+    ],
+    "leverBase": 0.4125,
+    "slider": [
+     {
+      "ltv": 0.1,
+      "p": 0.0025,
+      "btc": 2.5
+     },
+     {
+      "ltv": 0.15,
+      "p": 0.012,
+      "btc": 1.666666667
+     },
+     {
+      "ltv": 0.2,
+      "p": 0.0415,
+      "btc": 1.25
+     },
+     {
+      "ltv": 0.25,
+      "p": 0.0785,
+      "btc": 1
+     },
+     {
+      "ltv": 0.3,
+      "p": 0.1285,
+      "btc": 0.833333333
+     },
+     {
+      "ltv": 0.35,
+      "p": 0.186,
+      "btc": 0.714285714
+     },
+     {
+      "ltv": 0.4,
+      "p": 0.2515,
+      "btc": 0.625
+     },
+     {
+      "ltv": 0.45,
+      "p": 0.332,
+      "btc": 0.555555556
+     },
+     {
+      "ltv": 0.5,
+      "p": 0.4125,
+      "btc": 0.5
+     },
+     {
+      "ltv": 0.55,
+      "p": 0.4855,
+      "btc": 0.454545455
+     },
+     {
+      "ltv": 0.6,
+      "p": 0.552,
+      "btc": 0.416666667
+     },
+     {
+      "ltv": 0.65,
+      "p": 0.6245,
+      "btc": 0.384615385
+     },
+     {
+      "ltv": 0.7,
+      "p": 0.6955,
+      "btc": 0.357142857
+     },
+     {
+      "ltv": 0.75,
+      "p": 0.765,
+      "btc": 0.333333333
+     },
+     {
+      "ltv": 0.8,
+      "p": 0.8295,
+      "btc": 0.3125
+     },
+     {
+      "ltv": 0.85,
+      "p": 0.8795,
+      "btc": 0.294117647
+     },
+     {
+      "ltv": 0.9,
+      "p": 0.9395,
+      "btc": 0.277777778
+     }
+    ]
+   },
+   "facts": {
+    "higherAfter1y": 0.680261011,
+    "worst1y": -0.823967712,
+    "higherAfter4y": 1,
+    "fourYear": {
+     "worst": 0.076492523,
+     "p10": 0.228441495,
+     "median": 0.617126805,
+     "best": 1.719472197
+    },
+    "fourYearByStart": [
+     {
+      "from": 2014,
+      "to": 2018,
+      "perYear": 1.126560472
+     },
+     {
+      "from": 2015,
+      "to": 2019,
+      "perYear": 0.889887856
+     },
+     {
+      "from": 2016,
+      "to": 2020,
+      "perYear": 1.000642012
+     },
+     {
+      "from": 2017,
+      "to": 2021,
+      "perYear": 1.243417506
+     },
+     {
+      "from": 2018,
+      "to": 2022,
+      "perYear": 0.391609165
+     },
+     {
+      "from": 2019,
+      "to": 2023,
+      "perYear": 0.467951043
+     },
+     {
+      "from": 2020,
+      "to": 2024,
+      "perYear": 0.581975177
+     },
+     {
+      "from": 2021,
+      "to": 2025,
+      "perYear": 0.395697557
+     },
+     {
+      "from": 2022,
+      "to": 2026,
+      "perYear": 0.157788782
+     }
+    ],
+    "deepYears": 6,
+    "years": 13,
+    "worstYear": {
+     "year": 2018,
+     "fall": 0.803791643
+    }
+   }
+  },
+  {
+   "id": "reserve-eur",
+   "uses": "cash reserve added at the margin call, sale after 72 h",
+   "loan": {
+    "collateralBtc": 0.5,
+    "amountReceived": 14850,
+    "totalInterest": 1500,
+    "totalPayback": 16500,
+    "totalCost": 1650,
+    "effectiveApr": 0.116393705,
+    "payments": [
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     15125
+    ],
+    "liquidation": [
+     37500,
+     37812.5
+    ],
+    "marginCall": [
+     42857.142857143,
+     43214.285714286
+    ],
+    "drop": 0.375,
+    "topUp": {
+     "btc": 0.2,
+     "value": 8571.428571429,
+     "repayInstead": 4285.714285714
+    },
+    "ifLiquidated": {
+     "btcSold": 0.42,
+     "btcReturned": 0.08,
+     "feeAmount": 750,
+     "valueReturned": 3000
+    },
+    "breakeven": 0.111111111
+   },
+   "risk": {
+    "pLiquidation": 0.5015,
+    "pPartial": 0,
+    "pMarginCall": 0.6845,
+    "cumulativeByMonth": [
+     0.0365,
+     0.103,
+     0.1855,
+     0.2495,
+     0.2995,
+     0.335,
+     0.374,
+     0.4125,
+     0.434,
+     0.459,
+     0.4845,
+     0.5015
+    ],
+    "fanLastMonth": {
+     "month": 12,
+     "day": 365,
+     "q05": 18641.670552429,
+     "q25": 35814.64174462,
+     "q50": 58338.930552152,
+     "q75": 91541.83095414,
+     "q95": 183793.062372375
+    },
+    "keptAfterSale": {
+     "q10": 0.16,
+     "q50": 0.182369933,
+     "q90": 0.292154913
+    },
+    "leverage": null,
+    "samplePaths": {
+     "count": 40,
+     "sold": 17,
+     "firstEvent": {
+      "day": 58,
+      "kind": "liquidationLtv"
+     }
+    },
+    "outlook": null,
+    "garch": {
+     "pLiquidation": 0.4085,
+     "pPartial": 0
+    },
+    "replay": {
+     "starts": 4292,
+     "liquidatedShare": 0.366728798,
+     "partialShare": 0,
+     "marginCallShare": 0.47972973,
+     "worst": {
+      "startTime": 1513468800,
+      "startPrice": 16106,
+      "maxDrawdown": 0.827805787,
+      "minLowTime": 1544886000,
+      "liquidationTime": 1516136400
+     },
+     "reserve": {
+      "q50": 0,
+      "q90": 0.727501463,
+      "q95": 0.929757195,
+      "max": 2.657852949
+     }
+    },
+    "stories": [
+     {
+      "start": "2017-12-17",
+      "sale": {
+       "day": 31,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.182369933,
+      "endRel": 0.192202285
+     },
+     {
+      "start": "2021-11-10",
+      "sale": {
+       "day": 73,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.182251656,
+      "endRel": 0.298368707
+     },
+     {
+      "start": "2020-02-13",
+      "sale": {
+       "day": 28,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.182240228,
+      "endRel": 4.088378718
+     },
+     {
+      "start": "2023-01-01",
+      "sale": null,
+      "btcLeft": 1,
+      "endRel": 2.596967537
+     }
+    ],
+    "barrier": {
+     "sigma": 0.666580541,
+     "p": 0.480750133
+    },
+    "levers": [
+     {
+      "id": "lowerLtv",
+      "value": 0.3,
+      "p": 0.167
+     },
+     {
+      "id": "higherLiqWarning",
+      "value": 0.95,
+      "p": 0.31
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.4,
+      "p": 0.3185
+     },
+     {
+      "id": "shorter",
+      "value": 6,
+      "p": 0.32
+     },
+     {
+      "id": "warningOnly",
+      "value": null,
+      "p": 0.457
+     },
+     {
+      "id": "higherLiq",
+      "value": 0.95,
+      "p": 0.4585
+     },
+     {
+      "id": "reserve",
+      "value": 3000,
+      "p": 0.4905
+     }
+    ],
+    "leverBase": 0.4905,
+    "slider": [
+     {
+      "ltv": 0.1,
+      "p": 0.0025,
+      "btc": 2.5
+     },
+     {
+      "ltv": 0.15,
+      "p": 0.019,
+      "btc": 1.666666667
+     },
+     {
+      "ltv": 0.2,
+      "p": 0.056,
+      "btc": 1.25
+     },
+     {
+      "ltv": 0.25,
+      "p": 0.104,
+      "btc": 1
+     },
+     {
+      "ltv": 0.3,
+      "p": 0.167,
+      "btc": 0.833333333
+     },
+     {
+      "ltv": 0.35,
+      "p": 0.237,
+      "btc": 0.714285714
+     },
+     {
+      "ltv": 0.4,
+      "p": 0.3185,
+      "btc": 0.625
+     },
+     {
+      "ltv": 0.45,
+      "p": 0.409,
+      "btc": 0.555555556
+     },
+     {
+      "ltv": 0.5,
+      "p": 0.4905,
+      "btc": 0.5
+     },
+     {
+      "ltv": 0.55,
+      "p": 0.566,
+      "btc": 0.454545455
+     },
+     {
+      "ltv": 0.6,
+      "p": 0.642,
+      "btc": 0.416666667
+     },
+     {
+      "ltv": 0.65,
+      "p": 0.722,
+      "btc": 0.384615385
+     }
+    ]
+   },
+   "facts": {
+    "higherAfter1y": 0.680261011,
+    "worst1y": -0.823967712,
+    "higherAfter4y": 1,
+    "fourYear": {
+     "worst": 0.076492523,
+     "p10": 0.228441495,
+     "median": 0.617126805,
+     "best": 1.719472197
+    },
+    "fourYearByStart": [
+     {
+      "from": 2014,
+      "to": 2018,
+      "perYear": 1.126560472
+     },
+     {
+      "from": 2015,
+      "to": 2019,
+      "perYear": 0.889887856
+     },
+     {
+      "from": 2016,
+      "to": 2020,
+      "perYear": 1.000642012
+     },
+     {
+      "from": 2017,
+      "to": 2021,
+      "perYear": 1.243417506
+     },
+     {
+      "from": 2018,
+      "to": 2022,
+      "perYear": 0.391609165
+     },
+     {
+      "from": 2019,
+      "to": 2023,
+      "perYear": 0.467951043
+     },
+     {
+      "from": 2020,
+      "to": 2024,
+      "perYear": 0.581975177
+     },
+     {
+      "from": 2021,
+      "to": 2025,
+      "perYear": 0.395697557
+     },
+     {
+      "from": 2022,
+      "to": 2026,
+      "perYear": 0.157788782
+     }
+    ],
+    "deepYears": 6,
+    "years": 13,
+    "worstYear": {
+     "year": 2018,
+     "fall": 0.803791643
+    }
+   }
+  },
+  {
+   "id": "existing-loan-eur",
+   "uses": "existing loan: LTV from BTC pledged, already above margin call",
+   "loan": {
+    "collateralBtc": 0.34,
+    "amountReceived": 15000,
+    "totalInterest": 1500,
+    "totalPayback": 16500,
+    "totalCost": 1500,
+    "effectiveApr": 0.104714113,
+    "payments": [
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     15125
+    ],
+    "liquidation": [
+     55147.058823529,
+     55606.617647059
+    ],
+    "marginCall": [
+     63025.210084034,
+     63550.420168067
+    ],
+    "drop": 0.080882353,
+    "topUp": {
+     "btc": 0.136,
+     "value": 8571.428571429,
+     "repayInstead": 4285.714285714
+    },
+    "ifLiquidated": {
+     "btcSold": 0.2856,
+     "btcReturned": 0.0544,
+     "feeAmount": 750,
+     "valueReturned": 3000
+    },
+    "breakeven": 0.1
+   },
+   "risk": {
+    "pLiquidation": 0.9865,
+    "pPartial": 0,
+    "pMarginCall": 1,
+    "cumulativeByMonth": [
+     0.958,
+     0.969,
+     0.9765,
+     0.9785,
+     0.979,
+     0.9805,
+     0.9825,
+     0.9835,
+     0.985,
+     0.9855,
+     0.986,
+     0.9865
+    ],
+    "fanLastMonth": {
+     "month": 12,
+     "day": 365,
+     "q05": 18641.670552429,
+     "q25": 35814.64174462,
+     "q50": 58338.930552152,
+     "q75": 91541.83095414,
+     "q95": 183793.062372375
+    },
+    "keptAfterSale": {
+     "q10": 0.16,
+     "q50": 0.223168747,
+     "q90": 0.253756133
+    },
+    "leverage": null,
+    "samplePaths": {
+     "count": 40,
+     "sold": 40,
+     "firstEvent": {
+      "day": 2,
+      "kind": "liquidationLtv"
+     }
+    },
+    "outlook": null,
+    "garch": {
+     "pLiquidation": 0.994,
+     "pPartial": 0
+    },
+    "replay": {
+     "starts": 4292,
+     "liquidatedShare": 0.977865797,
+     "partialShare": 0,
+     "marginCallShare": 1,
+     "worst": {
+      "startTime": 1513468800,
+      "startPrice": 16106,
+      "maxDrawdown": 0.827805787,
+      "minLowTime": 1544886000,
+      "liquidationTime": 1513645200
+     },
+     "reserve": {
+      "q50": 0.264917065,
+      "q90": 1.540443327,
+      "q95": 1.837878229,
+      "max": 4.379195514
+     }
+    },
+    "stories": [
+     {
+      "start": "2017-12-17",
+      "sale": {
+       "day": 2,
+       "reason": "cureExpired"
+      },
+      "btcLeft": 0.215733362,
+      "endRel": 0.192202285
+     },
+     {
+      "start": "2021-11-10",
+      "sale": {
+       "day": 2,
+       "reason": "cureExpired"
+      },
+      "btcLeft": 0.216567093,
+      "endRel": 0.298368707
+     },
+     {
+      "start": "2020-02-13",
+      "sale": {
+       "day": 2,
+       "reason": "cureExpired"
+      },
+      "btcLeft": 0.221423294,
+      "endRel": 4.088378718
+     },
+     {
+      "start": "2023-01-01",
+      "sale": {
+       "day": 2,
+       "reason": "cureExpired"
+      },
+      "btcLeft": 0.2371159,
+      "endRel": 2.596967537
+     }
+    ],
+    "barrier": {
+     "sigma": 0.666580541,
+     "p": 0.899313905
+    },
+    "levers": [
+     {
+      "id": "lowerLtv",
+      "value": 0.54,
+      "p": 0.6645
+     },
+     {
+      "id": "higherLiqWarning",
+      "value": 0.95,
+      "p": 0.7435
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.64,
+      "p": 0.8415
+     },
+     {
+      "id": "reserve",
+      "value": 3000,
+      "p": 0.855
+     },
+     {
+      "id": "warningOnly",
+      "value": null,
+      "p": 0.907
+     },
+     {
+      "id": "shorter",
+      "value": 6,
+      "p": 0.979
+     },
+     {
+      "id": "higherLiq",
+      "value": 0.95,
+      "p": 0.9815
+     }
+    ],
+    "leverBase": 0.9825,
+    "slider": [
+     {
+      "ltv": 0.1,
+      "p": 0.0045,
+      "btc": 2.5
+     },
+     {
+      "ltv": 0.15,
+      "p": 0.032,
+      "btc": 1.666666667
+     },
+     {
+      "ltv": 0.2,
+      "p": 0.0745,
+      "btc": 1.25
+     },
+     {
+      "ltv": 0.25,
+      "p": 0.1365,
+      "btc": 1
+     },
+     {
+      "ltv": 0.3,
+      "p": 0.216,
+      "btc": 0.833333333
+     },
+     {
+      "ltv": 0.35,
+      "p": 0.3095,
+      "btc": 0.714285714
+     },
+     {
+      "ltv": 0.4,
+      "p": 0.4075,
+      "btc": 0.625
+     },
+     {
+      "ltv": 0.45,
+      "p": 0.5045,
+      "btc": 0.555555556
+     },
+     {
+      "ltv": 0.5,
+      "p": 0.594,
+      "btc": 0.5
+     },
+     {
+      "ltv": 0.55,
+      "p": 0.6865,
+      "btc": 0.454545455
+     },
+     {
+      "ltv": 0.6,
+      "p": 0.776,
+      "btc": 0.416666667
+     },
+     {
+      "ltv": 0.65,
+      "p": 0.857,
+      "btc": 0.384615385
+     }
+    ]
+   },
+   "facts": {
+    "higherAfter1y": 0.680261011,
+    "worst1y": -0.823967712,
+    "higherAfter4y": 1,
+    "fourYear": {
+     "worst": 0.076492523,
+     "p10": 0.228441495,
+     "median": 0.617126805,
+     "best": 1.719472197
+    },
+    "fourYearByStart": [
+     {
+      "from": 2014,
+      "to": 2018,
+      "perYear": 1.126560472
+     },
+     {
+      "from": 2015,
+      "to": 2019,
+      "perYear": 0.889887856
+     },
+     {
+      "from": 2016,
+      "to": 2020,
+      "perYear": 1.000642012
+     },
+     {
+      "from": 2017,
+      "to": 2021,
+      "perYear": 1.243417506
+     },
+     {
+      "from": 2018,
+      "to": 2022,
+      "perYear": 0.391609165
+     },
+     {
+      "from": 2019,
+      "to": 2023,
+      "perYear": 0.467951043
+     },
+     {
+      "from": 2020,
+      "to": 2024,
+      "perYear": 0.581975177
+     },
+     {
+      "from": 2021,
+      "to": 2025,
+      "perYear": 0.395697557
+     },
+     {
+      "from": 2022,
+      "to": 2026,
+      "perYear": 0.157788782
+     }
+    ],
+    "deepYears": 6,
+    "years": 13,
+    "worstYear": {
+     "year": 2018,
+     "fall": 0.803791643
+    }
+   }
+  },
+  {
+   "id": "buy-btc-sell-usd",
+   "uses": "buy more BTC, repay by selling, result counted in BTC",
+   "loan": {
+    "collateralBtc": 0.625,
+    "amountReceived": 14850,
+    "totalInterest": 1500,
+    "totalPayback": 16500,
+    "totalCost": 1650,
+    "effectiveApr": 0.116393705,
+    "payments": [
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     15125
+    ],
+    "liquidation": [
+     30000,
+     30250
+    ],
+    "marginCall": [
+     34285.714285714,
+     34571.428571429
+    ],
+    "drop": 0.5,
+    "topUp": {
+     "btc": 0.46875,
+     "value": 16071.428571429,
+     "repayInstead": 6428.571428571
+    },
+    "ifLiquidated": {
+     "btcSold": 0.525,
+     "btcReturned": 0.1,
+     "feeAmount": 750,
+     "valueReturned": 3000
+    },
+    "breakeven": 0.111111111
+   },
+   "risk": {
+    "pLiquidation": 0.402,
+    "pPartial": 0,
+    "pMarginCall": 0.498,
+    "cumulativeByMonth": [
+     0.0165,
+     0.047,
+     0.0995,
+     0.1475,
+     0.192,
+     0.235,
+     0.275,
+     0.3105,
+     0.3355,
+     0.3575,
+     0.3825,
+     0.402
+    ],
+    "fanLastMonth": {
+     "month": 12,
+     "day": 365,
+     "q05": 18419.534318283,
+     "q25": 35624.059024165,
+     "q50": 58648.023860619,
+     "q75": 92577.841608543,
+     "q95": 187676.620716252
+    },
+    "keptAfterSale": {
+     "q10": 0.16,
+     "q50": 0.16,
+     "q90": 0.16
+    },
+    "leverage": {
+     "more": 0.3935,
+     "lessKept": 0.2045,
+     "liquidated": 0.402,
+     "endBtc": {
+      "q05": 0.3475,
+      "q50": 0.553637792,
+      "q95": 0.784208347
+     }
+    },
+    "samplePaths": {
+     "count": 40,
+     "sold": 14,
+     "firstEvent": {
+      "day": 303,
+      "kind": "liquidationLtv"
+     }
+    },
+    "outlook": null,
+    "garch": {
+     "pLiquidation": 0.2865,
+     "pPartial": 0
+    },
+    "replay": {
+     "starts": 4292,
+     "liquidatedShare": 0.314538677,
+     "partialShare": 0,
+     "marginCallShare": 0.376747437,
+     "worst": {
+      "startTime": 1513468800,
+      "startPrice": 19187.78,
+      "maxDrawdown": 0.837277684,
+      "minLowTime": 1544886000,
+      "liquidationTime": 1516197600
+     },
+     "reserve": {
+      "q50": 0,
+      "q90": 0.49697451,
+      "q95": 0.847973288,
+      "max": 2.096618223
+     }
+    },
+    "stories": [
+     {
+      "start": "2017-12-17",
+      "sale": {
+       "day": 32,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 0.182237341
+     },
+     {
+      "start": "2021-11-10",
+      "sale": {
+       "day": 75,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 0.262235385
+     },
+     {
+      "start": "2020-02-13",
+      "sale": {
+       "day": 29,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 4.563676105
+     },
+     {
+      "start": "2023-01-01",
+      "sale": null,
+      "btcLeft": 1,
+      "endRel": 2.673139746
+     }
+    ],
+    "barrier": {
+     "sigma": 0.682819462,
+     "p": 0.31004621
+    },
+    "levers": [
+     {
+      "id": "lowerLtv",
+      "value": 0.2,
+      "p": 0.072
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.3,
+      "p": 0.194
+     },
+     {
+      "id": "shorter",
+      "value": 6,
+      "p": 0.203
+     },
+     {
+      "id": "higherLiq",
+      "value": 0.95,
+      "p": 0.254
+     },
+     {
+      "id": "reserve",
+      "value": 3000,
+      "p": 0.3095
+     }
+    ],
+    "leverBase": 0.375,
+    "slider": [
+     {
+      "ltv": 0.1,
+      "p": 0.0025,
+      "btc": 2.5
+     },
+     {
+      "ltv": 0.15,
+      "p": 0.028,
+      "btc": 1.666666667
+     },
+     {
+      "ltv": 0.2,
+      "p": 0.072,
+      "btc": 1.25
+     },
+     {
+      "ltv": 0.25,
+      "p": 0.122,
+      "btc": 1
+     },
+     {
+      "ltv": 0.3,
+      "p": 0.194,
+      "btc": 0.833333333
+     },
+     {
+      "ltv": 0.35,
+      "p": 0.283,
+      "btc": 0.714285714
+     },
+     {
+      "ltv": 0.4,
+      "p": 0.375,
+      "btc": 0.625
+     },
+     {
+      "ltv": 0.45,
+      "p": 0.4675,
+      "btc": 0.555555556
+     },
+     {
+      "ltv": 0.5,
+      "p": 0.5465,
+      "btc": 0.5
+     },
+     {
+      "ltv": 0.55,
+      "p": 0.6355,
+      "btc": 0.454545455
+     },
+     {
+      "ltv": 0.6,
+      "p": 0.7185,
+      "btc": 0.416666667
+     },
+     {
+      "ltv": 0.65,
+      "p": 0.7975,
+      "btc": 0.384615385
+     }
+    ]
+   },
+   "facts": {
+    "higherAfter1y": 0.677231415,
+    "worst1y": -0.833551354,
+    "higherAfter4y": 1,
+    "fourYear": {
+     "worst": 0.070320242,
+     "p10": 0.225764664,
+     "median": 0.598748263,
+     "best": 1.776964971
+    },
+    "fourYearByStart": [
+     {
+      "from": 2014,
+      "to": 2018,
+      "perYear": 1.054258084
+     },
+     {
+      "from": 2015,
+      "to": 2019,
+      "perYear": 0.868301124
+     },
+     {
+      "from": 2016,
+      "to": 2020,
+      "perYear": 1.016897168
+     },
+     {
+      "from": 2017,
+      "to": 2021,
+      "perYear": 1.329920741
+     },
+     {
+      "from": 2018,
+      "to": 2022,
+      "perYear": 0.373024581
+     },
+     {
+      "from": 2019,
+      "to": 2023,
+      "perYear": 0.443814891
+     },
+     {
+      "from": 2020,
+      "to": 2024,
+      "perYear": 0.575115773
+     },
+     {
+      "from": 2021,
+      "to": 2025,
+      "perYear": 0.338543885
+     },
+     {
+      "from": 2022,
+      "to": 2026,
+      "perYear": 0.167372611
+     }
+    ],
+    "deepYears": 7,
+    "years": 13,
+    "worstYear": {
+     "year": 2018,
+     "fall": 0.817939354
+    }
+   }
+  },
+  {
+   "id": "buy-btc-cash-eur",
+   "uses": "buy more BTC, repay with new money, 24 months",
+   "loan": {
+    "collateralBtc": 0.833333333,
+    "amountReceived": 14850,
+    "totalInterest": 3000,
+    "totalPayback": 18000,
+    "totalCost": 3150,
+    "effectiveApr": 0.110676579,
+    "payments": [
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     15125
+    ],
+    "liquidation": [
+     22500,
+     22687.5
+    ],
+    "marginCall": [
+     25714.285714286,
+     25928.571428571
+    ],
+    "drop": 0.625,
+    "topUp": {
+     "btc": 1.111111111,
+     "value": 28571.428571429,
+     "repayInstead": 8571.428571429
+    },
+    "ifLiquidated": {
+     "btcSold": 0.7,
+     "btcReturned": 0.133333333,
+     "feeAmount": 750,
+     "valueReturned": 3000
+    },
+    "breakeven": 0.212121212
+   },
+   "risk": {
+    "pLiquidation": 0.385,
+    "pPartial": 0,
+    "pMarginCall": 0.461,
+    "cumulativeByMonth": [
+     0.0045,
+     0.011,
+     0.023,
+     0.0415,
+     0.057,
+     0.082,
+     0.1075,
+     0.128,
+     0.1515,
+     0.171,
+     0.1925,
+     0.2145,
+     0.2355,
+     0.25,
+     0.2635,
+     0.2755,
+     0.2925,
+     0.3045,
+     0.3185,
+     0.335,
+     0.3485,
+     0.362,
+     0.3745,
+     0.385
+    ],
+    "fanLastMonth": {
+     "month": 24,
+     "day": 731,
+     "q05": 10905.962499738,
+     "q25": 29443.35420765,
+     "q50": 57771.35205741,
+     "q75": 114107.618633603,
+     "q95": 301543.677679209
+    },
+    "keptAfterSale": {
+     "q10": 0.16,
+     "q50": 0.16,
+     "q90": 0.16
+    },
+    "leverage": {
+     "more": 0.615,
+     "lessKept": 0,
+     "liquidated": 0.385,
+     "endBtc": {
+      "q05": 0.380833333,
+      "q50": 1.080833333,
+      "q95": 1.080833333
+     }
+    },
+    "samplePaths": {
+     "count": 40,
+     "sold": 16,
+     "firstEvent": {
+      "day": 630,
+      "kind": "liquidationLtv"
+     }
+    },
+    "outlook": null,
+    "garch": {
+     "pLiquidation": 0.308,
+     "pPartial": 0
+    },
+    "replay": {
+     "starts": 3927,
+     "liquidatedShare": 0.151769799,
+     "partialShare": 0,
+     "marginCallShare": 0.238604533,
+     "worst": {
+      "startTime": 1513468800,
+      "startPrice": 16106,
+      "maxDrawdown": 0.827805787,
+      "minLowTime": 1544886000,
+      "liquidationTime": 1517572800
+     },
+     "reserve": {
+      "q50": 0,
+      "q90": 0.092527439,
+      "q95": 0.214334832,
+      "max": 1.19471177
+     }
+    },
+    "stories": [
+     {
+      "start": "2017-12-17",
+      "sale": {
+       "day": 48,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 0.368985471
+     },
+     {
+      "start": "2021-11-10",
+      "sale": {
+       "day": 216,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 0.604628842
+     },
+     {
+      "start": "2020-02-13",
+      "sale": {
+       "day": 29,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 3.877838291
+     },
+     {
+      "start": "2023-01-01",
+      "sale": null,
+      "btcLeft": 1,
+      "endRel": 5.909155705
+     }
+    ],
+    "barrier": {
+     "sigma": 0.666580541,
+     "p": 0.298456534
+    },
+    "levers": [
+     {
+      "id": "lowerLtv",
+      "value": 0.1,
+      "p": 0.052
+     },
+     {
+      "id": "shorter",
+      "value": 12,
+      "p": 0.192
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.2,
+      "p": 0.201
+     },
+     {
+      "id": "higherLiq",
+      "value": 0.95,
+      "p": 0.293
+     },
+     {
+      "id": "reserve",
+      "value": 3000,
+      "p": 0.322
+     }
+    ],
+    "leverBase": 0.3645,
+    "slider": [
+     {
+      "ltv": 0.1,
+      "p": 0.052,
+      "btc": 2.5
+     },
+     {
+      "ltv": 0.15,
+      "p": 0.1135,
+      "btc": 1.666666667
+     },
+     {
+      "ltv": 0.2,
+      "p": 0.201,
+      "btc": 1.25
+     },
+     {
+      "ltv": 0.25,
+      "p": 0.288,
+      "btc": 1
+     },
+     {
+      "ltv": 0.3,
+      "p": 0.3645,
+      "btc": 0.833333333
+     },
+     {
+      "ltv": 0.35,
+      "p": 0.4515,
+      "btc": 0.714285714
+     },
+     {
+      "ltv": 0.4,
+      "p": 0.54,
+      "btc": 0.625
+     },
+     {
+      "ltv": 0.45,
+      "p": 0.615,
+      "btc": 0.555555556
+     },
+     {
+      "ltv": 0.5,
+      "p": 0.6825,
+      "btc": 0.5
+     },
+     {
+      "ltv": 0.55,
+      "p": 0.752,
+      "btc": 0.454545455
+     },
+     {
+      "ltv": 0.6,
+      "p": 0.811,
+      "btc": 0.416666667
+     },
+     {
+      "ltv": 0.65,
+      "p": 0.859,
+      "btc": 0.384615385
+     }
+    ]
+   },
+   "facts": {
+    "higherAfter1y": 0.680261011,
+    "worst1y": -0.823967712,
+    "higherAfter4y": 1,
+    "fourYear": {
+     "worst": 0.076492523,
+     "p10": 0.228441495,
+     "median": 0.617126805,
+     "best": 1.719472197
+    },
+    "fourYearByStart": [
+     {
+      "from": 2014,
+      "to": 2018,
+      "perYear": 1.126560472
+     },
+     {
+      "from": 2015,
+      "to": 2019,
+      "perYear": 0.889887856
+     },
+     {
+      "from": 2016,
+      "to": 2020,
+      "perYear": 1.000642012
+     },
+     {
+      "from": 2017,
+      "to": 2021,
+      "perYear": 1.243417506
+     },
+     {
+      "from": 2018,
+      "to": 2022,
+      "perYear": 0.391609165
+     },
+     {
+      "from": 2019,
+      "to": 2023,
+      "perYear": 0.467951043
+     },
+     {
+      "from": 2020,
+      "to": 2024,
+      "perYear": 0.581975177
+     },
+     {
+      "from": 2021,
+      "to": 2025,
+      "perYear": 0.395697557
+     },
+     {
+      "from": 2022,
+      "to": 2026,
+      "perYear": 0.157788782
+     }
+    ],
+    "deepYears": 6,
+    "years": 13,
+    "worstYear": {
+     "year": 2018,
+     "fall": 0.803791643
+    }
+   }
+  },
+  {
+   "id": "outlook-bull-eur",
+   "uses": "price outlook +50% a year next to no trend",
+   "loan": {
+    "collateralBtc": 0.5,
+    "amountReceived": 14850,
+    "totalInterest": 1500,
+    "totalPayback": 16500,
+    "totalCost": 1650,
+    "effectiveApr": 0.116393705,
+    "payments": [
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     125,
+     15125
+    ],
+    "liquidation": [
+     37500,
+     37812.5
+    ],
+    "marginCall": [
+     42857.142857143,
+     43214.285714286
+    ],
+    "drop": 0.375,
+    "topUp": {
+     "btc": 0.2,
+     "value": 8571.428571429,
+     "repayInstead": 4285.714285714
+    },
+    "ifLiquidated": {
+     "btcSold": 0.42,
+     "btcReturned": 0.08,
+     "feeAmount": 750,
+     "valueReturned": 3000
+    },
+    "breakeven": 0.111111111
+   },
+   "risk": {
+    "pLiquidation": 0.5655,
+    "pPartial": 0,
+    "pMarginCall": 0.6845,
+    "cumulativeByMonth": [
+     0.056,
+     0.1525,
+     0.249,
+     0.312,
+     0.3645,
+     0.406,
+     0.4425,
+     0.4795,
+     0.4985,
+     0.5255,
+     0.5495,
+     0.5655
+    ],
+    "fanLastMonth": {
+     "month": 12,
+     "day": 365,
+     "q05": 18641.670552429,
+     "q25": 35814.64174462,
+     "q50": 58338.930552152,
+     "q75": 91541.83095414,
+     "q95": 183793.062372375
+    },
+    "keptAfterSale": {
+     "q10": 0.16,
+     "q50": 0.16,
+     "q90": 0.16
+    },
+    "leverage": null,
+    "samplePaths": {
+     "count": 40,
+     "sold": 21,
+     "firstEvent": {
+      "day": 8,
+      "kind": "liquidationLtv"
+     }
+    },
+    "outlook": {
+     "pLiquidation": 0.412,
+     "pPartial": 0,
+     "leverage": null
+    },
+    "garch": {
+     "pLiquidation": 0.451,
+     "pPartial": 0
+    },
+    "replay": {
+     "starts": 4292,
+     "liquidatedShare": 0.393988816,
+     "partialShare": 0,
+     "marginCallShare": 0.47972973,
+     "worst": {
+      "startTime": 1513468800,
+      "startPrice": 16106,
+      "maxDrawdown": 0.827805787,
+      "minLowTime": 1544886000,
+      "liquidationTime": 1513926000
+     },
+     "reserve": {
+      "q50": 0,
+      "q90": 0.727501463,
+      "q95": 0.929757195,
+      "max": 2.657852949
+     }
+    },
+    "stories": [
+     {
+      "start": "2017-12-17",
+      "sale": {
+       "day": 5,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 0.192202285
+     },
+     {
+      "start": "2021-11-10",
+      "sale": {
+       "day": 58,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 0.298368707
+     },
+     {
+      "start": "2020-02-13",
+      "sale": {
+       "day": 28,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 4.088378718
+     },
+     {
+      "start": "2023-01-01",
+      "sale": null,
+      "btcLeft": 1,
+      "endRel": 2.596967537
+     }
+    ],
+    "barrier": {
+     "sigma": 0.666580541,
+     "p": 0.480750133
+    },
+    "levers": [
+     {
+      "id": "lowerLtv",
+      "value": 0.3,
+      "p": 0.192
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.4,
+      "p": 0.3685
+     },
+     {
+      "id": "shorter",
+      "value": 6,
+      "p": 0.3875
+     },
+     {
+      "id": "higherLiq",
+      "value": 0.95,
+      "p": 0.4125
+     },
+     {
+      "id": "reserve",
+      "value": 3000,
+      "p": 0.457
+     }
+    ],
+    "leverBase": 0.5445,
+    "slider": [
+     {
+      "ltv": 0.1,
+      "p": 0.0035,
+      "btc": 2.5
+     },
+     {
+      "ltv": 0.15,
+      "p": 0.0255,
+      "btc": 1.666666667
+     },
+     {
+      "ltv": 0.2,
+      "p": 0.067,
+      "btc": 1.25
+     },
+     {
+      "ltv": 0.25,
+      "p": 0.1265,
+      "btc": 1
+     },
+     {
+      "ltv": 0.3,
+      "p": 0.192,
+      "btc": 0.833333333
+     },
+     {
+      "ltv": 0.35,
+      "p": 0.2725,
+      "btc": 0.714285714
+     },
+     {
+      "ltv": 0.4,
+      "p": 0.3685,
+      "btc": 0.625
+     },
+     {
+      "ltv": 0.45,
+      "p": 0.4655,
+      "btc": 0.555555556
+     },
+     {
+      "ltv": 0.5,
+      "p": 0.5445,
+      "btc": 0.5
+     },
+     {
+      "ltv": 0.55,
+      "p": 0.628,
+      "btc": 0.454545455
+     },
+     {
+      "ltv": 0.6,
+      "p": 0.717,
+      "btc": 0.416666667
+     },
+     {
+      "ltv": 0.65,
+      "p": 0.7935,
+      "btc": 0.384615385
+     }
+    ]
+   },
+   "facts": {
+    "higherAfter1y": 0.680261011,
+    "worst1y": -0.823967712,
+    "higherAfter4y": 1,
+    "fourYear": {
+     "worst": 0.076492523,
+     "p10": 0.228441495,
+     "median": 0.617126805,
+     "best": 1.719472197
+    },
+    "fourYearByStart": [
+     {
+      "from": 2014,
+      "to": 2018,
+      "perYear": 1.126560472
+     },
+     {
+      "from": 2015,
+      "to": 2019,
+      "perYear": 0.889887856
+     },
+     {
+      "from": 2016,
+      "to": 2020,
+      "perYear": 1.000642012
+     },
+     {
+      "from": 2017,
+      "to": 2021,
+      "perYear": 1.243417506
+     },
+     {
+      "from": 2018,
+      "to": 2022,
+      "perYear": 0.391609165
+     },
+     {
+      "from": 2019,
+      "to": 2023,
+      "perYear": 0.467951043
+     },
+     {
+      "from": 2020,
+      "to": 2024,
+      "perYear": 0.581975177
+     },
+     {
+      "from": 2021,
+      "to": 2025,
+      "perYear": 0.395697557
+     },
+     {
+      "from": 2022,
+      "to": 2026,
+      "perYear": 0.157788782
+     }
+    ],
+    "deepYears": 6,
+    "years": 13,
+    "worstYear": {
+     "year": 2018,
+     "fall": 0.803791643
+    }
+   }
+  },
+  {
+   "id": "taxes-short-usd",
+   "uses": "6 months, taxes in the borrow-or-sell comparison",
+   "loan": {
+    "collateralBtc": 0.5,
+    "amountReceived": 14850,
+    "totalInterest": 750,
+    "totalPayback": 15750,
+    "totalCost": 900,
+    "effectiveApr": 0.127970809,
+    "payments": [
+     125,
+     125,
+     125,
+     125,
+     125,
+     15125
+    ],
+    "liquidation": [
+     37500,
+     37812.5
+    ],
+    "marginCall": [
+     42857.142857143,
+     43214.285714286
+    ],
+    "drop": 0.375,
+    "topUp": {
+     "btc": 0.2,
+     "value": 8571.428571429,
+     "repayInstead": 4285.714285714
+    },
+    "ifLiquidated": {
+     "btcSold": 0.42,
+     "btcReturned": 0.08,
+     "feeAmount": 750,
+     "valueReturned": 3000
+    },
+    "breakeven": -0.204545455
+   },
+   "risk": {
+    "pLiquidation": 0.416,
+    "pPartial": 0,
+    "pMarginCall": 0.5685,
+    "cumulativeByMonth": [
+     0.064,
+     0.16,
+     0.2565,
+     0.324,
+     0.3715,
+     0.416
+    ],
+    "fanLastMonth": {
+     "month": 6,
+     "day": 182,
+     "q05": 25510.66320922,
+     "q25": 41809.164219346,
+     "q50": 58050.851456478,
+     "q75": 80997.57991572,
+     "q95": 131249.856074767
+    },
+    "keptAfterSale": {
+     "q10": 0.16,
+     "q50": 0.16,
+     "q90": 0.16
+    },
+    "leverage": null,
+    "samplePaths": {
+     "count": 40,
+     "sold": 13,
+     "firstEvent": {
+      "day": 8,
+      "kind": "liquidationLtv"
+     }
+    },
+    "outlook": null,
+    "garch": {
+     "pLiquidation": 0.271,
+     "pPartial": 0
+    },
+    "replay": {
+     "starts": 4474,
+     "liquidatedShare": 0.302413947,
+     "partialShare": 0,
+     "marginCallShare": 0.400312919,
+     "worst": {
+      "startTime": 1405728000,
+      "startPrice": 632.59,
+      "maxDrawdown": 0.759085664,
+      "minLowTime": 1421218800,
+      "liquidationTime": 1411113600
+     },
+     "reserve": {
+      "q50": 0,
+      "q90": 0.42165071,
+      "q95": 0.550243814,
+      "max": 1.612415223
+     }
+    },
+    "stories": [
+     {
+      "start": "2017-12-17",
+      "sale": {
+       "day": 6,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 0.336329164
+     },
+     {
+      "start": "2021-11-10",
+      "sale": {
+       "day": 24,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 0.463180963
+     },
+     {
+      "start": "2020-02-13",
+      "sale": {
+       "day": 28,
+       "reason": "liquidationLtv"
+      },
+      "btcLeft": 0.16,
+      "endRel": 1.139579738
+     },
+     {
+      "start": "2023-01-01",
+      "sale": null,
+      "btcLeft": 1,
+      "endRel": 1.850695705
+     }
+    ],
+    "barrier": {
+     "sigma": 0.682819462,
+     "p": 0.329670027
+    },
+    "levers": [
+     {
+      "id": "lowerLtv",
+      "value": 0.3,
+      "p": 0.0815
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.4,
+      "p": 0.203
+     },
+     {
+      "id": "shorter",
+      "value": 3,
+      "p": 0.2205
+     },
+     {
+      "id": "higherLiq",
+      "value": 0.95,
+      "p": 0.247
+     },
+     {
+      "id": "reserve",
+      "value": 3000,
+      "p": 0.289
+     }
+    ],
+    "leverBase": 0.3875,
+    "slider": [
+     {
+      "ltv": 0.1,
+      "p": 0,
+      "btc": 2.5
+     },
+     {
+      "ltv": 0.15,
+      "p": 0.0015,
+      "btc": 1.666666667
+     },
+     {
+      "ltv": 0.2,
+      "p": 0.0105,
+      "btc": 1.25
+     },
+     {
+      "ltv": 0.25,
+      "p": 0.0375,
+      "btc": 1
+     },
+     {
+      "ltv": 0.3,
+      "p": 0.0815,
+      "btc": 0.833333333
+     },
+     {
+      "ltv": 0.35,
+      "p": 0.1345,
+      "btc": 0.714285714
+     },
+     {
+      "ltv": 0.4,
+      "p": 0.203,
+      "btc": 0.625
+     },
+     {
+      "ltv": 0.45,
+      "p": 0.2905,
+      "btc": 0.555555556
+     },
+     {
+      "ltv": 0.5,
+      "p": 0.3875,
+      "btc": 0.5
+     },
+     {
+      "ltv": 0.55,
+      "p": 0.4925,
+      "btc": 0.454545455
+     },
+     {
+      "ltv": 0.6,
+      "p": 0.605,
+      "btc": 0.416666667
+     },
+     {
+      "ltv": 0.65,
+      "p": 0.707,
+      "btc": 0.384615385
+     }
+    ]
+   },
+   "facts": {
+    "higherAfter1y": 0.677231415,
+    "worst1y": -0.833551354,
+    "higherAfter4y": 1,
+    "fourYear": {
+     "worst": 0.070320242,
+     "p10": 0.225764664,
+     "median": 0.598748263,
+     "best": 1.776964971
+    },
+    "fourYearByStart": [
+     {
+      "from": 2014,
+      "to": 2018,
+      "perYear": 1.054258084
+     },
+     {
+      "from": 2015,
+      "to": 2019,
+      "perYear": 0.868301124
+     },
+     {
+      "from": 2016,
+      "to": 2020,
+      "perYear": 1.016897168
+     },
+     {
+      "from": 2017,
+      "to": 2021,
+      "perYear": 1.329920741
+     },
+     {
+      "from": 2018,
+      "to": 2022,
+      "perYear": 0.373024581
+     },
+     {
+      "from": 2019,
+      "to": 2023,
+      "perYear": 0.443814891
+     },
+     {
+      "from": 2020,
+      "to": 2024,
+      "perYear": 0.575115773
+     },
+     {
+      "from": 2021,
+      "to": 2025,
+      "perYear": 0.338543885
+     },
+     {
+      "from": 2022,
+      "to": 2026,
+      "perYear": 0.167372611
+     }
+    ],
+    "deepYears": 7,
+    "years": 13,
+    "worstYear": {
+     "year": 2018,
+     "fall": 0.817939354
+    }
+   }
+  }
+ ]
+}

@@ -522,7 +522,9 @@ function renderRisk() {
   $('#kept-line').textContent = m.keptAfterSale && m.pPartial >= 0.005 ? t('results.kept', { kept: pct(m.keptAfterSale.q50, 0) }) : '';
   $('#outlook-line').textContent = r.outlook ? t('results.outlookLine', { trend: signedPct(riskSettings.trend), n: of100(r.outlook.pLiquidation + r.outlook.pPartial) }) : '';
   const lastHour = Math.max(META.prices[cur].to, appended[cur] && appended[cur].length ? appended[cur].at(-1).time : 0);
-  $('#basis-line').textContent = `${t('results.basis', { g: of100(r.garchMc.pLiquidation + r.garchMc.pPartial) })} · ${t('ui.dataThrough', { date: date(lastHour) })}`;
+  $('#basis-line').textContent = `${t('results.basis', { g: of100(r.garchMc.pLiquidation + r.garchMc.pPartial) })}`;
+  // the whole period the results are based on, and when the stored data was last updated
+  $('#data-period').textContent = t('ui.dataThrough', { from: date(META.prices[cur].from), to: date(lastHour), updated: date(META.dataUpdated || META.prices[cur].to) });
   renderSafer(); renderOutlook();
   if (tm.purpose === 'buy') renderLeverage();
   $('#history-text').innerHTML = historyText();

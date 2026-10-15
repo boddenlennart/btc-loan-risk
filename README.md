@@ -88,6 +88,7 @@ python3 tools/fetch_history.py eur           # download EUR price history (slow:
 node tools/build-data.mjs                    # compress the history into data/
 node tools/build.mjs                         # write docs/index.html
 npm test                                     # run all automated tests
+npm run test:e2e                             # test the finished page in a browser (first: npx playwright install chromium)
 ```
 
 **All page text** (German and English) is in [`src/content/text.de.js`](src/content/text.de.js) and [`src/content/text.en.js`](src/content/text.en.js). You can edit wording there without touching any calculation. The example values in the form are in [`src/content/examples.js`](src/content/examples.js).
@@ -106,12 +107,22 @@ The page contains BTC price history up to a fixed date. A scheduled **GitHub Act
    - no missing hours, no duplicates
    - no impossible values (zero, negative, low above high, more than a doubling or halving within one hour)
    - both exchanges agree: in a typical hour they differ by about 0.01%; the check fails above 0.5% typical, above 2% for more than 1 hour in 100, or above 5% in any single hour
-4. It adds the hours, re-fits the model settings, rebuilds the page and runs **all** tests, including the test against history.
+4. It adds the hours, re-fits the model settings and rebuilds the page. Then it runs the **full regression**:
+   - all 266 automated tests, among them:
+     - the 13 reference loans on frozen history, which must match the stored results exactly
+     - the same 13 loans on the newest data, where every result must be valid
+     - the test against history
+   - **the 14 browser tests of the finished page**
+   - the **drift guard**: if the new hours move the result of any reference loan by more than 5 of 100, the update stops and you get an issue instead of a pull request.
 5. It opens a **pull request** called "Weekly price data update [date]". The description says, in plain words:
    - old and new end date
    - whether the exchanges agreed
    - any hours to look at
    - how the result for a reference loan changed
+
+### How you are notified
+
+The pull request is **assigned to you and asks for your review**. GitHub always notifies you about that: by e-mail and with the bell icon on github.com, whatever your "watch" settings. A failed run opens (or comments on) an issue that is also assigned to you.
 
 ### What you do (about 2 minutes a week, or once a month)
 
@@ -151,7 +162,7 @@ In a public repository, **GitHub switches off scheduled workflows after 60 days 
 
 - **To prevent it:** merge an update at least every few weeks.
 - **To restart it:** **Actions → Update price data → "Enable workflow"**, then **Run workflow** once.
-- **The safety net:** the page shows **"Data through [date]"** under the answer, and a red warning when the stored history is more than **45 days** old, so a stopped update is noticed before visitors are misled.
+- **The safety net:** the page shows the period of the price data and the date of the last update under the answer (for example "Price data: 1 Jan 2014 to 15 Oct 2026 · last updated 15 Oct 2026"), and a red warning when the stored history is more than **45 days** old, so a stopped update is noticed before visitors are misled.
 
 ### Yearly review checklist
 
@@ -250,7 +261,7 @@ Public APIs can change their rules at any time; the page then falls back to the 
 
 ## Tests and how each was verified
 
-Run with `npm test` (237 tests). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
+Run with `npm test` (266 tests) and `npm run test:e2e` (14 browser tests). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
 
 | # | Test | How it was verified |
 |---|---|---|
@@ -265,6 +276,9 @@ Run with `npm test` (237 tests). Tests 1–9 were written **before** the engine 
 | 9 | Real-offer check | Done by the project owner (phase 3); see below. |
 | + | Data quality (`tests/data.test.js`) | Embedded data equals the raw downloads to the cent; no gaps over 6 hours, no extreme wicks and no offline periods that were not reviewed by hand. |
 | + | GARCH fitting (`tests/garch.test.js`) | Data invented from known GARCH settings; the fit must recover them. |
+| Regression | Golden master (`tests/regression.test.js`) | 13 reference loans that together use every main function: all repayment types, fees, variable rate, every margin-call rule, partial sales, reserve, existing loan, buy-more-BTC both ways, price outlook, taxes. On the frozen history (up to 1 Oct 2026, which new data never changes), every result must equal `tests/fixtures/regression-golden.json` to 9 decimal places: payment plans, trigger prices, APR, simulation, GARCH, replay, stories, levers, slider, result in BTC, history facts. **Checked by deliberately breaking the code three times:** a fee off by 1%, 31-day instead of 30-day price stretches, interest 0.01% too high. Each was caught and named. Regenerate with `node tools/update-golden.mjs` only when a change is intended, and say why in the commit. |
+| Regression | Newest data (`tests/current-data.test.js`) | The same 13 loans on the full current history: no missing or invalid numbers, chances between 0 and 1, monthly chance never falling, price bands in order, 40 sample paths, history stories present, lower LTV never clearly riskier, slider in order, buy-more-BTC shares add up. |
+| Regression | Finished page in a browser (`e2e/page.spec.js`, Playwright + Chromium) | 14 scenarios:<br>• the page loads without errors, and its answer equals the engine run directly on the same data<br>• only the named price services are contacted<br>• a lower LTV gives a lower answer; the slider works<br>• impossible terms show the error<br>• German works<br>• "a loan I already have", "buy more BTC", the price outlook and "sells part at once" all work<br>• all charts, the QR code, the Impressum and the privacy notice render<br>• the shared link restores the inputs<br>• the feedback text is correct<br>• no sideways scrolling at 375 px<br>• offline, the stored price is used with a warning |
 | + | Data update checks (`tests/candles.test.js`, `tests/workflow.test.js`) | Gaps, duplicates, impossible values, jumps and disagreement between exchanges are caught; a deep low on one exchange is listed for review; the 45-day page warning; the workflow runs weekly, tests before opening a pull request, reports failures, never merges and uses no stored secrets. |
 | + | Live price (`tests/liveprice.test.js`) | Fallback order, timeouts, bad answers, stale fallback, and that no user data is in any request (with fake network answers). |
 | + | Hosting (`tests/hosting.test.js`) | The built page has no external scripts, styles, fonts or images; every web address in it is one of the named price services (or a plain text link); the Content Security Policy allows exactly those services. The privacy notice must name every service (`tests/content.test.js`). |
@@ -334,7 +348,8 @@ src/live/price.js        live price fallback chain
 src/data/codec.js        compact price-history format
 data/                    compressed price history + meta.json (data/raw/ is not committed)
 reference/               independent Python reference + spreadsheet
-tests/                   automated tests and their fixtures
+tests/                   automated tests and their fixtures (incl. regression golden file)
+e2e/                     browser tests of the finished page
 tools/                   download, weekly data update, data build, page build, audit copy, local preview server
 .github/workflows/       the weekly data-update workflow
 ux/                      UX redesign: decisions, profiles, validation plan, content inventory, success criteria, sketches

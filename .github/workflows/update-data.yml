@@ -43,6 +43,12 @@ jobs:
         if: steps.update.outputs.changed == 'true'
         run: npm test
 
+      - name: Test the finished page in a real browser
+        if: steps.update.outputs.changed == 'true'
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:e2e
+
       - name: Open a pull request (never merged automatically)
         if: steps.update.outputs.changed == 'true'
         env:
@@ -60,7 +66,9 @@ jobs:
             echo
             echo "All tests passed in [this run](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})."
           } > "$RUNNER_TEMP/body.md"
+          # assigned to the owner and asking for their review: GitHub always notifies about that
           gh pr create --base "${GITHUB_REF_NAME}" --head "$branch" --title "Weekly price data update $(date -u +%Y-%m-%d)" --body-file "$RUNNER_TEMP/body.md" \
+              --assignee "${GITHUB_REPOSITORY_OWNER}" --reviewer "${GITHUB_REPOSITORY_OWNER}" \
             || gh pr edit "$branch" --body-file "$RUNNER_TEMP/body.md"
           # an older, unmerged update is contained in this one: close it with a note
           for old in $(gh pr list --state open --json number,headRefName --jq ".[] | select(.headRefName | startswith(\"data-update-\")) | select(.headRefName != \"$branch\") | .number"); do

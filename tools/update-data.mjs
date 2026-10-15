@@ -5,6 +5,8 @@
 //   4. re-fits the model settings (GARCH) and compares a reference loan before and after
 //   5. writes a plain-language summary for the pull request
 // Exits with code 1 (and explains why) if a check fails; nothing is changed then.
+// Drift guard: if the new hours move the result of any of the 13 reference loans by more
+// than 5 of 100, the update also stops, so a person looks at it first.
 // Usage: node tools/update-data.mjs [summary-file]
 import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
 import { gunzipSync, gzipSync } from 'node:zlib';
@@ -13,6 +15,8 @@ import { checkSeries, crossCheck } from '../src/data/candles.js';
 import { dailyFromHourly, dailyReturns } from '../src/engine/history.js';
 import { fitGarchT } from '../src/engine/garch.js';
 import { setData, run } from '../src/app/riskjob.js';
+import * as job from '../src/app/riskjob.js';
+import { REFERENCE_LOANS, resultsFor } from '../tests/helpers/regression.js';
 
 const root = new URL('../', import.meta.url);
 const summaryFile = process.argv[2] || 'data-update-summary.md';
@@ -78,8 +82,10 @@ async function referenceResult(cur, gz, price) {
 const meta = JSON.parse(readFileSync(new URL('data/meta.json', root), 'utf8'));
 const lines = []; const failures = []; let changed = false;
 
+const oldData = {}; const newData = {}; // files are written only after every check has passed
 for (const cur of ['USD', 'EUR']) {
   const oldGz = readFileSync(file(cur));
+  oldData[cur] = oldGz;
   const h = decodeHourly(gunzipSync(oldGz));
   const n = h.time.length;
   const lastTime = h.time[n - 1];
@@ -102,7 +108,7 @@ for (const cur of ['USD', 'EUR']) {
   const price = fresh.at(-1).close;
   const before = await referenceResult(cur, oldGz, price);
   const after = await referenceResult(cur, newGz, price);
-  writeFileSync(file(cur), newGz);
+  newData[cur] = newGz;
   meta[cur] = { ...meta[cur], hours: rows.length, to: fresh.at(-1).time, lastClose: price, bytes: newGz.length, sources: [...new Set([...(meta[cur].sources || []), 'bitstamp'])] };
   changed = true;
   const of100 = (x) => Math.round(x * 100);
@@ -126,14 +132,43 @@ for (const cur of ['USD', 'EUR']) {
   );
 }
 
-if (failures.length) {
+function stopIfFailed() {
+  if (!failures.length) return;
   const text = ['## Data update stopped: a check failed', '', 'Nothing was changed. The new hours did not pass the checks:', '', ...failures.map((f) => `- ${f}`), '',
     'What to do: open the exchange websites and look at these hours. If it is a temporary API problem, run the workflow again later ("Actions" tab → "Update price data" → "Run workflow").'].join('\n');
   writeFileSync(summaryFile, text);
   console.error(text);
   process.exit(1);
 }
+stopIfFailed();
+
+// Drift guard over all 13 reference loans (tests/helpers/regression.js), old vs new data.
+const DRIFT_LIMIT = 0.05;
+async function allResults(gzByCur) {
+  const out = {};
+  for (const [cur, gz] of Object.entries(gzByCur)) job.setData(cur, gz.toString('base64'));
+  for (const ref of REFERENCE_LOANS) {
+    const r = await resultsFor(ref, job, null);
+    out[ref.id] = { sim: r.risk.pLiquidation + r.risk.pPartial, replay: r.risk.replay.liquidatedShare + r.risk.replay.partialShare };
+  }
+  return out;
+}
 if (changed) {
+  const after = await allResults(Object.fromEntries(['USD', 'EUR'].map((c) => [c, newData[c] || oldData[c]])));
+  const before = await allResults(oldData);
+  const moves = REFERENCE_LOANS.map((r) => ({ id: r.id, size: Math.max(Math.abs(after[r.id].sim - before[r.id].sim), Math.abs(after[r.id].replay - before[r.id].replay)) }));
+  const worst = moves.reduce((a, m) => (m.size > a.size ? m : a));
+  if (worst.size > DRIFT_LIMIT) {
+    failures.push(`**Drift guard:** the new hours moved the result of the reference loan "${worst.id}" by ${Math.round(worst.size * 100)} of 100 (limit 5). That is far more than a week of normal data does. A person should look at the new hours before they are used.`);
+  } else {
+    lines.push(`Drift guard: across all 13 reference loans (tests/helpers/regression.js), the largest change is ${Math.round(worst.size * 1000) / 10} of 100 ("${worst.id}"); limit 5.`, '');
+  }
+}
+stopIfFailed();
+
+if (changed) {
+  for (const [cur, gz] of Object.entries(newData)) writeFileSync(file(cur), gz);
+  meta.updated = NOW; // shown on the page as "last updated"
   writeFileSync(new URL('data/meta.json', root), JSON.stringify(meta, null, 1));
   const garch = Object.fromEntries(['USD', 'EUR'].map((c) => [c, fitGarchT(dailyReturns(dailyFromHourly(decodeHourly(gunzipSync(readFileSync(file(c)))))).returns)]));
   lines.push(`GARCH settings now: ${Object.entries(garch).map(([c, g]) => `${c} α ${g.alpha.toFixed(3)} β ${g.beta.toFixed(3)} ν ${g.nu.toFixed(2)}`).join(' · ')}`);

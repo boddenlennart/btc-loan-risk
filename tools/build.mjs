@@ -27,7 +27,7 @@ const b64 = (cur) => (currencies.includes(cur) ? readFileSync(file(cur)).toStrin
 // The GARCH model is fitted here once on the embedded history, so visitors' browsers don't
 // have to (it is the slowest step). The few recent hours added on load barely change it.
 const garch = Object.fromEntries(currencies.map((c) => [c, fitGarchT(dailyReturns(dailyFromHourly(decodeHourly(gunzipSync(readFileSync(file(c)))))).returns)]));
-const pageMeta = { prices: Object.fromEntries(currencies.map((c) => [c, meta[c]])), garch, built: Math.floor(Date.now() / 1000) };
+const pageMeta = { prices: Object.fromEntries(currencies.map((c) => [c, meta[c]])), garch, dataUpdated: meta.updated, built: Math.floor(Date.now() / 1000) };
 
 // Donation QR code: made here at build time and stored in the page as an SVG picture.
 const qr = (await QRCode.toString(`bitcoin:${SITE.donationAddress}`, { type: 'svg', errorCorrectionLevel: 'M', margin: 2 }))

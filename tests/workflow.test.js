@@ -14,13 +14,18 @@ describe('data-update workflow', () => {
     expect(wf.on.schedule[0].cron).toMatch(/^\d+ \d+ \* \* [0-6]$/);
     expect(wf.on).toHaveProperty('workflow_dispatch');
   });
-  it('runs the update, rebuilds the page, runs the full test suite, then opens a pull request — in that order', () => {
+  it('runs the update, rebuilds the page, runs all tests and the browser tests, then opens a pull request — in that order', () => {
     const names = steps.map((s) => s.name || '');
     const i = (n) => names.findIndex((x) => x.startsWith(n));
     expect(i('Fetch, check and append')).toBeLessThan(i('Rebuild the page'));
     expect(i('Rebuild the page')).toBeLessThan(i('Run the full test suite'));
-    expect(i('Run the full test suite')).toBeLessThan(i('Open a pull request'));
+    expect(i('Run the full test suite')).toBeLessThan(i('Test the finished page in a real browser'));
+    expect(i('Test the finished page in a real browser')).toBeLessThan(i('Open a pull request'));
+    expect(run('Test the finished page').run).toMatch(/npm run test:e2e/);
     expect(run('Run the full test suite').run).toBe('npm test');
+  });
+  it('the pull request is assigned to the owner and asks for their review (so GitHub notifies them)', () => {
+    expect(run('Open a pull request').run).toMatch(/--assignee "\$\{GITHUB_REPOSITORY_OWNER\}" --reviewer "\$\{GITHUB_REPOSITORY_OWNER\}"/);
   });
   it('never merges by itself', () => {
     expect(text).not.toMatch(/gh pr merge|auto-merge|--auto\b|enable-auto-merge|merge_method/i);

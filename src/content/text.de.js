@@ -34,7 +34,7 @@ export default {
     perYear: 'pro Jahr',
     showTable: 'Als Tabelle anzeigen',
     dataUntil: 'Kurshistorie in dieser Seite: {from} bis {to}.',
-    dataThrough: 'Daten bis {date}',
+    dataThrough: 'Kursdaten: {from} bis {to} · zuletzt aktualisiert am {updated}',
     dataOld: 'Die in dieser Seite gespeicherte Kurshistorie endet am {date}, vor mehr als 45 Tagen. Den Ergebnissen fehlen womöglich neuere Kursbewegungen. Der Betreiber dieser Seite sollte die Daten aktualisieren.',
     dataAppended: 'Neueste Stunden von Bitstamp ergänzt bis {to}.',
   },
