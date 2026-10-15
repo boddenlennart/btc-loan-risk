@@ -1,6 +1,96 @@
-# A2 · Usability test kit
+# A2 · Validation plan
 
-*Phase A, step 2. You run this yourself with 5 people. First on the **current** page (baseline), later with 5 **new** people on the redesigned page.*
+*Phase A, step 2, revised: no moderated test sessions. User feedback is collected after launch, through the page itself.*
+
+## 1. What this changes, honestly
+
+| | Moderated test (original plan) | Feedback in production (new plan) |
+|---|---|---|
+| **Who answers** | 5 people we choose, matching the profiles | Visitors who **choose** to answer. They are mostly people who liked the page a lot or disliked it a lot |
+| **What we learn** | Where people hesitate, misread, give up, **while** they use it | What people **say** afterwards, if they say anything |
+| **When** | Before launch | Only after launch |
+| **Comparison old vs. new** | Possible (same tasks, two groups) | Not possible: the old page never had feedback |
+
+**What we lose:** seeing where people get stuck, and a before/after comparison.
+
+**How the plan makes up for it** (sections 2–5):
+- a structured expert review **before** launch, clearly labelled as my judgement and not as user evidence
+- a comprehension question **inside** the feedback, so we measure understanding, not just opinion
+- fixed review checkpoints after launch
+- an optional 5-minute check that doesn't need a session
+
+## 2. Before launch: expert review (by me, labelled as such)
+
+1. **Heuristic evaluation:** the redesigned page checked against Nielsen's 10 usability heuristics. Every finding is rated by severity (0–4); everything rated 3–4 is fixed before launch.
+2. **Cognitive walkthrough:** for each profile (A, B, C), I go through the test offer (appendix, section 5) step by step on a phone and a laptop. At every step I ask four questions:
+   - Will they know what to do here?
+   - Will they see the control?
+   - Will they connect the control with their goal?
+   - Will they understand the feedback?
+   
+   Every "no" is fixed or written down as a known risk.
+3. **Automated checks:** the measurable criteria C and D in A4 (amount of text, readability, accessibility, phone layout, speed, unchanged numbers).
+
+This is **not** a replacement for real users. It catches obvious problems early, so feedback can focus on the non-obvious ones.
+
+## 3. Optional: a 5-minute check before launch (no session needed)
+
+If you can, send the link to 2–3 people who fit the profiles, via chat:
+> *"Could you try this with any loan idea, 5 minutes? Then answer two questions: (1) In one sentence, what does the big number at the top mean? (2) What confused you?"*
+
+Paste the answers to me. Even 2–3 answers before launch catch the worst misunderstandings. This is optional; launch does not depend on it.
+
+## 4. The feedback panel on the page
+
+**Where:** at the end of the results, as a calm section "Help improve this page", closed by default. No pop-up, no reminder, no question while someone is still working.
+
+**Questions** (kept short on purpose):
+
+| # | Question | Type | Why |
+|---|---|---|---|
+| F1 | *"What will you mainly use the money for?"* Spend it · Compare offers · Buy more BTC · Just curious | one choice | Assigns the answer to profile A, B or C |
+| F2 | *"In one sentence: what does the big number at the top mean?"* | short text | **Comprehension**, the same question as Q1 in the appendix kit. Scored with the same answer key. |
+| F3 | *"This page gives me what I need to decide."* 1–7 | scale | UMUX-Lite, item 1 (usefulness) |
+| F4 | *"This page is easy to use."* 1–7 | scale | UMUX-Lite, item 2 (ease of use) |
+| F5 | *"What was confusing, or what is missing?"* | free text, optional | The problems we cannot guess |
+| F6 | *"Attach my loan terms (no personal data) to help reproduce a problem"* | checkbox, **off** by default | Helps check numbers. The visitor sees exactly what would be attached. |
+
+**UMUX-Lite** is a published 2-question short form of the usability questionnaire (Lewis et al., 2013). It correlates closely with the 10-question SUS and fits in a feedback box. Scoring: `(F3 + F4 − 2) ÷ 12 × 100`. A SUS-comparable estimate is `0.65 × that + 22.9`.
+
+**How it is sent (privacy):**
+- The button **"Write e-mail"** opens the visitor's own mail app with a pre-filled e-mail to your address, subject "BTC loan check feedback".
+- The visitor sees the full text and decides whether to send it. **Nothing leaves the page by itself.** The page does not collect, store or count anything.
+- If no mail app is set up, a **"Copy text"** button copies the e-mail text, with your address shown next to it.
+- **The privacy notice gets one new section:** if a visitor sends an e-mail, you process their e-mail address and message to read and answer it (Art. 6 (1) (f) GDPR), and you delete it when it is no longer needed. I'll add it as a template with «placeholders».
+
+**Example of what you receive:**
+```
+Subject: BTC loan check feedback
+Use: Buy more BTC
+Big number means: chance my BTC gets sold before the loan ends, in the simulation
+Gives me what I need: 6/7 · Easy to use: 5/7
+Confusing / missing: what happens if I add the bought BTC as collateral?
+Page version: 2026-11-02 · Language: de · Device: phone
+(no loan terms attached)
+```
+
+## 5. Review checkpoints after launch
+
+- **When:** after **15 feedback e-mails** or **6 weeks** after launch, whichever comes first. After that, every 25 e-mails or every 3 months.
+- **What you do:** forward the e-mails to me, or paste them into a session.
+- **What I do:**
+  - score F2 with the answer key
+  - compute UMUX-Lite
+  - group F5 into problems
+  - compare against the criteria in A4
+  - propose the **smallest** fix for each missed criterion, ranked by how often the problem came up
+- **Watch out:** few answers and self-selection mean single e-mails can mislead. A problem counts as confirmed when **at least 3 people** mention it independently, or when **one** person shows a wrong number (we check every reported number).
+
+---
+
+# Appendix: moderated test kit (optional, for later)
+
+*Not part of the current plan. Kept in case you ever can run sessions. The term sheet (section 5) and the answer key (section 7) are also used for my walkthrough and for scoring F2.*
 
 **Contents**
 1. Who to invite

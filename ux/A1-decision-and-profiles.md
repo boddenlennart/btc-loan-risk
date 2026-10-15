@@ -21,6 +21,8 @@ After using the page, a visitor does one of these:
 4. **Do nothing** (no loan, no sale).
 5. **Ask the lender a question first**, for example how it measures the BTC price or what happens after a margin call.
 
+For profile C (below), decisions 1 and 2 mean "take the leverage as planned / take less leverage", and 3 becomes "don't lever, keep the BTC as it is".
+
 **Design consequence:** the results must lead to these five options. Every result that does not help choose between them moves to an expert section or goes.
 
 ## Profile A: first-time borrower *(main profile)*
@@ -47,10 +49,26 @@ After using the page, a visitor does one of these:
 | **What would go wrong today** | Finds all the details, but has to re-enter everything to compare two offers. The table of methods and the payment plan are there but scattered. |
 | **Success for them** | Can check the liquidation price, total interest and payback against the offer to the cent, and see the risk of two LTVs side by side. Finds the model details in one expert section. |
 
+## Profile C: leveraged long-term holder *(added by you)*
+
+| | |
+|---|---|
+| **Situation** | Experienced Bitcoiner with a long-term conviction that BTC gains value against fiat money, which loses purchasing power over time. Borrows fiat against BTC **to buy more BTC now**. Plans to repay later, either with fresh income or by selling some of the (hopefully more valuable) BTC. |
+| **Knowledge** | High. Knows LTV, margin calls and liquidation, probably from experience. Has a view on BTC's long-term price. |
+| **What they have in hand** | One or more offers; a target amount of BTC to buy; sometimes a plan to add the bought BTC as extra collateral. |
+| **Device** | Laptop and phone. |
+| **Questions in their own words** | "How much can I borrow before the liquidation risk gets serious?" · "How much must BTC rise for this to pay off?" · "What if BTC halves first, before it goes up?" · "Do I end up with more BTC than if I hadn't borrowed?" |
+| **Decision afterwards** | How much leverage to take (LTV, amount), for how long, how much cash to keep ready for margin calls, and whether to repay with income or by selling BTC. Or: not to lever at all. |
+| **What would go wrong today** | The page frames the loan as "borrow **or sell**". This profile borrows **to buy**. The breakeven assumes repayment by selling BTC. The 0% price trend sits hidden in the model settings, although this profile's whole idea is a long-term upward trend. The page does not show the **double hit**: when BTC falls, the collateral and the newly bought BTC lose value together, and a liquidation sells the collateral at the low. |
+| **Success for them** | They can see, for the LTV they are considering, the chance of liquidation, the BTC rise needed to break even, and the **result counted in BTC**: in how many of 100 simulated futures they end up with more BTC than without the loan, and in how many with less. |
+
+**An honest point the page should make to this profile:** the loss of fiat purchasing power is a few percent per year. BTC's price swings are far larger: in 8 of the 13 calendar years since 2014, BTC fell at least 50% from a high within the same year (most: 82% in 2018; measured on this project's USD data). Over a loan of 1–3 years, **the liquidation risk is driven mainly by the swings, not by the long-term trend.** A positive long-term trend lowers the risk only somewhat. The page should show the result with **no trend assumed and with the visitor's own trend side by side**, so optimism is visible and not hidden in a setting.
+
 ## What follows for the design
 
+- **One early question, "What will you do with the money?"**, separates the profiles: *spend it* (A, B) or *buy more BTC* (C). The answer changes only one results section: "Borrow or sell?" becomes "Is the leverage worth it?". The headline, the lever and the price ladder stay the same for everyone.
 - **Profile A decides the layout:** answer first, few inputs first, plain sentence, one lever.
 - **Profile B keeps everything they need**, but behind one door: an "expert details" section, collapsed by default.
 - **Comparing two offers side by side** would help Profile B. It is a new feature, though, so it is **not** part of this redesign ("deeper, not bigger"). Noted for later.
 
-**Please correct:** Do the two profiles match your friends? Who is missing? Is the order of the five decisions right?
+**Status:** profiles A and B confirmed by you; profile C added at your request.

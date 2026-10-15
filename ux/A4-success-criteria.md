@@ -1,27 +1,31 @@
 # A4 · Success criteria
 
-*Phase A, step 4. Fixed **before** any design, so we can't adjust them afterwards to fit the result. The redesign counts as done only when **people other than you and me** meet the criteria marked "testers", and the automatic checks pass.*
+*Phase A, step 4 (revised for feedback in production). Fixed **before** any design, so we can't adjust them afterwards to fit the result. People other than you and me confirm the result in two ways: **automated checks** (C, D) before launch, and **visitors' feedback** (A, B) after launch.*
 
-## A. Understanding (5 new testers on the redesigned page, test kit A2)
+## Launch gate vs. review after launch
 
-| # | Criterion | Target | Baseline (current page) |
+- **Before launch:** criteria **C** and **D** must all pass, and every finding of severity 3–4 from my expert review (A2, section 2) must be fixed. I can measure these myself, and you can repeat the checks.
+- **After launch:** criteria **A** and **B** are checked at each review checkpoint (A2, section 5), from the visitors' feedback e-mails. They decide what we improve next, not whether the page goes live.
+
+## A. Understanding (from feedback e-mails, at each checkpoint)
+
+| # | Criterion | Target | Measured from |
 |---|---|---|---|
-| A1 | **Headline understood:** Q1 answered correctly with the page closed (mentions losing the BTC / liquidation, and that it is an estimate, not a certainty) | **at least 4 of 5** | from your baseline test |
-| A2 | **Liquidation price found:** Q2 correct (within 1%) | **at least 4 of 5** | from your baseline test |
-| A3 | **Knows how to make it safer:** Q3 correct with the page closed **and** T3 solved without a hint (they found how much safer a change makes it) | **at least 4 of 5** | from your baseline test |
-| A4 | **Knows the limits:** Q4 names at least one limit with the page closed | **at least 3 of 5** | from your baseline test |
-| A5 | **Cost understood:** Q5 correct (amount received **and** total cost) | **at least 4 of 5** | from your baseline test |
-| A6 | **Nobody misreads the headline as a price fall** ("BTC falls 55%") | **0 of 5** | from your baseline test |
-| A7 | **Leads to a decision:** "Would you take this loan?" answered with one of the five decisions in A1 and a reason that comes from the page | **at least 4 of 5** | from your baseline test |
+| A1 | **Headline understood:** F2 scored correct with the answer key (mentions losing the BTC / liquidation, and that it is an estimate, not a certainty) | **≥ 80 %** of answers | F2 |
+| A2 | **Nobody misreads the headline as a price fall** ("BTC falls 55%") or as a certainty | **≤ 1** such answer per checkpoint; if 2 or more, the headline wording is changed | F2 |
+| A3 | **Each profile reached:** at least one answer each from "spend", "compare" and "buy more BTC" | **all three present** by the second checkpoint; if one is missing, I check whether the page speaks to that profile | F1 |
+| A4 | **Profile C understands the leverage result:** F2 answers from "buy more BTC" visitors are correct at the same rate as the others | **no more than 15 percentage points below** the overall rate | F1 + F2 |
+| A5 | **No confirmed number error:** every reported wrong number is checked; confirmed errors are fixed at once | **0 open** | F5, F6 |
 
-## B. Effort (same testers)
+## B. Effort and satisfaction (from feedback e-mails, at each checkpoint)
 
-| # | Criterion | Target | Baseline |
+| # | Criterion | Target | Measured from |
 |---|---|---|---|
-| B1 | **Time to first answer** (T1: from opening the page with the offer in hand until they state a risk result) | median **≤ 3 minutes**, **and** faster than the baseline median | from your baseline test |
-| B2 | **The 5 main terms entered correctly without a hint** (amount, starting LTV, liquidation LTV, duration, rate) | **5 of 5** testers | from your baseline test |
-| B3 | **Hints needed** across all 4 tasks | **at most 2 in total** (for all 5 testers together) | from your baseline test |
-| B4 | **SUS score** (usability questionnaire) | average **≥ 75**, **and** higher than the baseline average | from your baseline test |
+| B1 | **UMUX-Lite** (usefulness + ease) | average **≥ 75** (0–100 scale) | F3, F4 |
+| B2 | **"Gives me what I need to decide"** on its own | average **≥ 5.5 of 7** | F3 |
+| B3 | **Recurring problems:** any problem named independently by **3 or more** people | **fixed or explained** before the next checkpoint | F5 |
+
+*Self-selected feedback is biased (A2, section 1). These numbers show the direction, not proof. With fewer than 10 answers at a checkpoint, I report them but draw no conclusions.*
 
 ## C. Amount of text and controls (measured automatically on the built page)
 
@@ -44,16 +48,25 @@
 | D5 | **Phone layout:** no sideways scrolling at 320 px width; all tap targets at least 44 × 44 px | **passes** | passes at 375 px; 320 px not yet tested |
 | D6 | **Speed:** first risk answer on a mid-range phone | **≤ 5 seconds** after the page opens | ≈ 2.6 s on a laptop; phone not yet measured |
 
+## D+. New elements (feedback, donation)
+
+| # | Criterion | Target |
+|---|---|---|
+| D7 | **Nothing is sent without the visitor's action**, except the named price requests. The feedback panel only opens the visitor's mail app (a `mailto:` link). The built page contains no other outside address. | `tests/hosting.test.js` extended; **passes** |
+| D8 | **Donation QR code is correct:** the QR in the page, decoded by an independent QR reader, gives exactly `bitcoin:` + the address you supplied, and the address passes a checksum test | **passes** (automatic) |
+| D9 | **Feedback e-mail is complete and readable:** the pre-filled e-mail contains F1–F5, the page version, language and device type, and no loan terms unless F6 is ticked | **passes** (automatic) |
+| D10 | **Profile C numbers are right:** the new "result counted in BTC" is checked against an independent calculation on fixed example paths, like the other engine tests | **passes** (automatic) |
+
 ## E. What happens if a criterion is missed
 
-- **A or B missed:** I name the failing criterion, the observed cause (with tester quotes) and the **smallest** change that would fix it. You decide whether to change it and test again (2–3 new testers are enough for a re-check).
-- **C or D missed:** fixed before the tester round, because those I can measure myself.
-- **Targets are not lowered after seeing results.** If you think a target was wrong, we agree on a new one **before** the next test round, and the reason is written down here.
+- **C or D missed before launch:** fixed before launch.
+- **A or B missed at a checkpoint:** I name the failing criterion, the cause (with quotes from the e-mails) and the **smallest** change that would fix it. You decide.
+- **Targets are not lowered after seeing results.** If you think a target was wrong, we agree on a new one **before** the next checkpoint, and the reason is written down here.
 
 ## F. Who confirms what
 
 | Criteria | Confirmed by |
 |---|---|
-| A, B | **Your 5 testers** (observation sheets + SUS), analysed by me, checked by you |
 | C, D | **Automated checks** that I run and you can repeat (`npm test` plus the audit script) |
-| Real-offer check (from the original brief) | **You**, with a real offer, to the cent |
+| A, B | **Visitors' feedback e-mails** at each checkpoint, analysed by me, checked by you |
+| Real-offer check (from the original brief) | **You**, with a real offer, to the cent, before launch |

@@ -1,6 +1,6 @@
 # A3 · Content inventory
 
-*Phase A, step 3. Example numbers use the test offer from A2 at a BTC price of €72,066. Every text, input and result on the current page, with a proposed verdict. These are **hypotheses**: the baseline test (A2) confirms or overturns each one before anything is built.*
+*Phase A, step 3. Example numbers use the test offer from A2 at a BTC price of €72,066. Every text, input and result on the current page, with a proposed verdict. These verdicts are **hypotheses**. Before launch they are checked by my expert review (A2, section 2); after launch, by the visitors' feedback (A2, sections 4–5).*
 
 ## How to read this
 
@@ -73,7 +73,7 @@
 |---|---|---|---|
 | Short hint under every field | ⚑ | **Shorten** | Keep it only for the 5 essential fields, as a 1-line placeholder or subtitle. For the others the label must speak for itself, with the hint shown on demand. |
 | "Where to find this in your offer" line under every field | ⚑ | **Merge** | Into **one** guide next to the form: "Where to find these numbers in your offer". A small picture of a term sheet with the 5 numbers marked, plus the search words. People read the offer once, not field by field. **Change to brief: one guide instead of per field.** |
-| "?" button with a worked example on every field | ⚑ | **Shorten** | Keep the "?" only where the baseline test shows confusion. Expected candidates: starting LTV, liquidation LTV, how you pay back, margin call. **Change to brief: no longer on every field.** The full texts move to the glossary, so nothing is lost. |
+| "?" button with a worked example on every field | ⚑ | **Shorten** (approved) | A "?" only where confusion is likely (your decision). See the list in section 6. The full texts move to the glossary, so nothing is lost. |
 | "Example, replace with your offer" badge on every field | ⚑ | **Merge** | Into **one** banner above the form ("Example values. Replace them with your offer."), plus a subtle highlight on the fields still unchanged. Today it repeats 23 times. |
 | Error messages (problem + fix) | ⚑ | **Keep** | Already appear only when needed. |
 
@@ -128,11 +128,40 @@ Tier 3 = one Expert section.
 | Bottom summary bar | – | **Keep**, rethink | Today it repeats the headline. In Phase B it could carry the LTV slider on phones instead. |
 | Stale price warning, errors | ⚑ | **Keep** | Appear only when needed. |
 
-## 5. Changes to your original brief that need your OK
+## 5. New elements (from your feedback on Phase A)
 
-1. **No longer** a "?" with a worked example on **every** input. Only where the baseline test shows confusion; full texts in the glossary.
+| Element | Tier | What it is / why |
+|---|---|---|
+| **"What will you do with the money?"** Spend it / Buy more BTC | 1 | One question right after the 5 essential inputs. It decides whether the results show "Borrow or sell?" (profiles A, B) or "Is the leverage worth it?" (profile C). Everything else stays the same. |
+| **"Is the leverage worth it?"** (profile C only) | 2 | Replaces "Borrow or sell?" when *Buy more BTC* is chosen:<br>• **Breakeven:** "BTC must rise X% over the loan for the bought BTC to pay for the loan" (same calculation as today's breakeven).<br>• **Result counted in BTC:** "In N of 100 simulated futures you end with more BTC than without the loan, in M of 100 with less (including L where your collateral was sold)". This is a **new calculation** on the existing simulated paths, with its own tests. It needs your OK in Phase B.<br>• **How you repay:** with new money / by selling BTC at the end (changes the BTC result). |
+| **Your own trend, shown side by side** (profile C) | 2 | In "Is the leverage worth it?": the headline chance with **no trend** next to the same chance with **the trend you assume** (e.g. +20% a year). The default stays 0%. The visitor's assumption is visible, not hidden in Expert. |
+| **Feedback panel** "Help improve this page" | 3 | End of the results, closed by default. 4 short questions + 1 optional, sent as a pre-filled e-mail from the visitor's own mail app (A2, section 4). Nothing is sent automatically. |
+| **Donation box** | Footer | One short, quiet sentence. Draft: "This page is free and has no ads. If it helped you, you can support its upkeep with a Bitcoin donation." Then your **on-chain address** as text with a "Copy" button, and a QR code (`bitcoin:` link). The QR is made when the page is built and stored inside it as a picture: no outside service, no extra code running. A small note: "Donations on the Bitcoin network are public." No pop-ups, no progress bars, no reminders. |
+| **Privacy notice: new section on feedback e-mails** | Footer | Template with «placeholders» (A2, section 4). |
+
+**Advice for the donation address** (your decision, not a page feature):
+- **Use a separate wallet or account only for donations.** Everyone can see an on-chain address's full history and balance. If it is linked to your own holdings, your holdings become visible too.
+- **Donations can count as income for tax purposes**, depending on your situation. It may also affect whether the page counts as a business-like service for the Impressum. Ask a tax adviser.
+- **I need from you, before Phase C:** the donation address and the e-mail address for feedback. I will not use any address you have not given me.
+
+## 6. Where a "?" stays (your decision: only where confusion is likely)
+
+| # | Where | Why confusion is likely |
+|---|---|---|
+| 1 | **Starting LTV** | The key term. "50%" is easily read as "half of my BTC" rather than "the loan is half of the BTC value". |
+| 2 | **Liquidation LTV** | Easily mixed up with the margin-call LTV and with the starting LTV. "Higher is safer" is not obvious. |
+| 3 | **When you pay the interest** | "Added to the loan" quietly raises the liquidation price over time. People won't expect that. |
+| 4 | **What happens when BTC falls** (margin call, cure period, what the lender does) | Three terms many people haven't met before, and lenders word them differently. |
+| 5 | **The headline number** ("What is a simulated future?") | The most likely misreading on the page: "55%" taken as "BTC falls 55%" or as certainty. |
+| 6 | **The price-path picture** ("How to read this") | Your own feedback: the bands were not intuitive. |
+
+Everything else: a self-explaining label, plus a glossary link where a technical word appears.
+
+## 7. Changes to your original brief (approved)
+
+1. **No longer** a "?" with a worked example on **every** input. Only where confusion is likely (section 6); full texts in the glossary.
 2. **One** "where to find these numbers" guide instead of one line per field.
 3. **Cut** the early repayment fee (input and result), the "where you pay tax" field and the interest-share result.
 4. The completeness test is **rewritten** accordingly. Every element still needs an explanation somewhere (field, glossary or Expert), but not a visible one everywhere.
 
-Nothing is cut or moved before the baseline test. If the test shows that people use something I want to cut, it stays.
+Approved by you. If feedback after launch shows that people miss something that was cut, it comes back.
