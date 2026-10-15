@@ -73,3 +73,13 @@ describe('longer loan -> chance of liquidation never lower', () => {
     expect(replayOne(hourly, { ...t, durationMonths: 6 }, time[0]).liquidation).not.toBeNull();
   });
 });
+
+describe('margin-call options move the risk in the expected direction (same random paths)', () => {
+  const o = { model: 'gbm', params: { mu: 0, sigma: 0.8 }, s0: 1, days: 365, nPaths: 4000, seed: 5, liquidationBarrier: 0.6, marginBarrier: 0.7 };
+  it('a lender who liquidates after the cure period -> chance never lower', () => {
+    expect(runMonteCarlo({ ...o, cureDays: 3 }).pLiquidation).toBeGreaterThanOrEqual(runMonteCarlo(o).pLiquidation);
+  });
+  it('a reserve added at the margin call -> chance never higher', () => {
+    expect(runMonteCarlo({ ...o, reserve: { amount: 0.2, collateralBtc: 1 } }).pLiquidation).toBeLessThanOrEqual(runMonteCarlo(o).pLiquidation);
+  });
+});

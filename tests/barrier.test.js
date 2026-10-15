@@ -74,3 +74,20 @@ describe('Monte Carlo is repeatable', () => {
     expect(r.pMarginCall).toBeGreaterThanOrEqual(r.pLiquidation);
   });
 });
+
+describe('assumed price trend', () => {
+  it('with an assumed trend, the textbook model still matches the formula', () => {
+    // trend 0: log price has no drift -> formula with mu = sigma^2 / 2
+    const sigma = 0.6;
+    const exact = gbmBarrierHitProbability({ s0: 1, barrier: 0.6, mu: sigma ** 2 / 2, sigma, years: 1 });
+    const mc = runMonteCarlo({ model: 'gbm', params: { mu: 0.5, sigma }, s0: 1, days: 365, nPaths: 40000, seed: 3, liquidationBarrier: 0.6, logDriftPerDay: 0 });
+    expect(Math.abs(mc.pLiquidation - exact)).toBeLessThanOrEqual(4 * Math.sqrt(exact * (1 - exact) / 40000) + 1e-4);
+  });
+  it('bootstrap with trend 0: simulated median price after a year stays near today\'s price', () => {
+    const returns = Array.from({ length: 400 }, (_, i) => 0.004 + 0.03 * Math.sin(i * 1.7)); // strongly rising made-up history
+    const lowRel = returns.map((r) => Math.min(0, r) - 0.01);
+    const r = runMonteCarlo({ model: 'bootstrap', params: { returns, lowRel, blockDays: 10 }, s0: 1, days: 365, nPaths: 4000, seed: 2, liquidationBarrier: 0, logDriftPerDay: 0 });
+    expect(r.fanByMonth.at(-1).q50).toBeGreaterThan(0.85);
+    expect(r.fanByMonth.at(-1).q50).toBeLessThan(1.15);
+  });
+});

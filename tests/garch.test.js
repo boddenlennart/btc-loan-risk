@@ -22,3 +22,18 @@ describe('GARCH(1,1) with Student-t errors recovers known settings', () => {
     expect(fit.nu).toBeGreaterThan(2);
   });
 });
+
+describe('Student-t random numbers', () => {
+  it('have variance 1 and the right tail weight', async () => {
+    const { makeRng } = await import('../src/engine/random.js');
+    const rng = makeRng(11);
+    const nu = 5; const n = 400000;
+    let s2 = 0; let tail = 0;
+    for (let i = 0; i < n; i++) { const x = rng.studentT(nu); s2 += x * x; if (Math.abs(x) > 3) tail++; }
+    expect(s2 / n).toBeGreaterThan(0.97);
+    expect(s2 / n).toBeLessThan(1.03);
+    // P(|T| > 3 / sqrt(3/5)) for t(5) = P(|T| > 3.873) = 0.01172
+    expect(tail / n).toBeGreaterThan(0.0105);
+    expect(tail / n).toBeLessThan(0.0130);
+  });
+});

@@ -1,7 +1,8 @@
 // Data quality — the embedded history is complete and has no obvious bad prints.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { loadHourly, hasRaw } from './helpers/history.js';
+import { loadHourly, loadRaw, hasData, hasRaw } from './helpers/history.js';
+import { toCents } from '../src/data/codec.js';
 
 // Known gaps (exchange outages) and known extreme hourly wicks are listed here
 // after being checked by hand; anything new fails the test until reviewed.
@@ -9,11 +10,22 @@ const known = JSON.parse(readFileSync(new URL('./fixtures/data-known-issues.json
 const START = Date.parse('2014-01-01T00:00Z') / 1000;
 
 for (const currency of ['USD', 'EUR']) {
-  describe.skipIf(!hasRaw(currency))(`${currency} hourly history`, () => {
-    it('starts on 2014-01-01 and reaches the last 7 days', () => {
+  describe.skipIf(!hasData(currency))(`${currency} hourly history`, () => {
+    it.skipIf(!hasRaw(currency))('embedded data equals the raw exchange download, to the cent', () => {
+      const h = loadHourly(currency);
+      const raw = loadRaw(currency);
+      expect(h.time.length).toBe(raw.length);
+      raw.forEach((r, i) => {
+        if (h.time[i] !== r.time || toCents(h.open[i]) !== toCents(r.open) || toCents(h.high[i]) !== toCents(r.high)
+          || toCents(h.low[i]) !== toCents(r.low) || toCents(h.close[i]) !== toCents(r.close) || h.noTrade[i] !== (r.volume === 0 ? 1 : 0)) {
+          throw new Error(`difference at ${new Date(r.time * 1000).toISOString()}`);
+        }
+      });
+    });
+    it('starts on 2014-01-01 and reaches the last 30 days', () => {
       const h = loadHourly(currency);
       expect(h.time[0]).toBe(START);
-      expect(Date.now() / 1000 - h.time.at(-1)).toBeLessThan(7 * 86400);
+      expect(Date.now() / 1000 - h.time.at(-1)).toBeLessThan(30 * 86400);
     });
     it('hours are in order and on the full hour', () => {
       const h = loadHourly(currency);
@@ -50,7 +62,7 @@ for (const currency of ['USD', 'EUR']) {
       const quiet = [];
       let run = 0;
       for (let i = 0; i <= h.time.length; i++) {
-        if (i < h.time.length && h.volume[i] === 0) { run++; continue; }
+        if (i < h.time.length && h.noTrade[i]) { run++; continue; }
         if (run > 24) quiet.push(new Date(h.time[i - run] * 1000).toISOString());
         run = 0;
       }

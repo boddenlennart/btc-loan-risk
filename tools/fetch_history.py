@@ -9,7 +9,7 @@ Sources (raw exchange data, no aggregators):
 Output: data/raw/btc-usd-1h.csv and data/raw/btc-eur-1h.csv
         columns: unix_time_utc_hour_start,open,high,low,close,volume,source
 
-Usage: python3 tools/fetch_history.py usd|eur
+Usage: python3 tools/fetch_history.py usd|eur   (eur-seg N downloads one Kraken time segment, for parallel runs)
 Only uses the Python standard library. Safe to re-run: Kraken progress is cached.
 """
 import csv
@@ -135,6 +135,8 @@ if __name__ == "__main__":
     elif which == "eur-seg":
         kraken_segment(int(sys.argv[2]))
     elif which == "eur":
+        for n in range(len(SEGMENTS) - 1):  # resumes; finished segments return quickly
+            kraken_segment(n)
         rows = kraken_trades_to_hours(START, EUR_SWITCH)
         rows.update(bitstamp("btceur", EUR_SWITCH, now))
         write("btc-eur-1h.csv", rows)

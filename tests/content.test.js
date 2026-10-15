@@ -8,8 +8,8 @@ const INPUTS = [
   'currency', 'btcPrice', 'loanAmount', 'initialLtv', 'marginCallLtv', 'liquidationLtv', 'durationMonths',
   'startDate', 'rateType', 'rateAnnual', 'ratePath', 'repayment', 'compounding', 'dayCount',
   'originationFee', 'liquidationFee', 'liquidationFeeBasis', 'earlyRepaymentFee', 'curePeriodHours',
-  'cureTargetLtv', 'reserveAmount', 'taxRateNow', 'taxRateAtMaturity', 'taxJurisdiction', 'notes',
-  'simPaths', 'bootstrapBlockDays',
+  'marginCallConsequence', 'cureTargetLtv', 'reserveAmount', 'taxRateNow', 'taxRateAtMaturity', 'taxJurisdiction', 'notes',
+  'simPaths', 'bootstrapBlockDays', 'assumedTrend',
 ];
 // Inputs where a worked number example makes no sense (free text or a list choice).
 const NO_NUMERIC_EXAMPLE = ['currency', 'taxJurisdiction', 'notes'];
@@ -27,12 +27,13 @@ const GLOSSARY = [
   'counterpartyRisk', 'rehypothecation', 'monteCarlo', 'blockBootstrap', 'garch', 'historicalReplay',
 ];
 // Fixed page sections that must exist (not advice, risks, data sources...).
+const LEGAL = ['impressumTitle', 'privacyTitle', 'templateNote'];
 const SECTIONS = ['notAdvice', 'counterpartyRisk', 'priceMeasurement', 'lenderFiguresWin', 'exampleLabel', 'privacy', 'dataSources', 'staleWarning'];
 
 // Phrases that claim what is "normal" in the market. Allowed only if the same text
 // carries a [source: ...] marker. Plus advice and sales wording, never allowed.
-const MARKET_CLAIMS = [/\btypical/i, /\busually\b/i, /\bnormally\b/i, /\bcommon(ly)?\b/i, /\bmarket (rate|standard|value)/i, /\bmost lenders\b/i, /\bstandard rate\b/i,
-  /üblich/i, /typisch/i, /normalerweise/i, /marktüblich/i, /die meisten (Anbieter|Kreditgeber)/i, /gängig/i, /in der Regel/i];
+const MARKET_CLAIMS = [/\btypical/i, /\busually\b/i, /\bnormally\b/i, /\bmostly\b/i, /\bcommon(ly)?\b/i, /\bmarket (rate|standard|value)/i, /\bmost lenders\b/i, /\bstandard rate\b/i,
+  /\bmeist(ens)?\b/i, /üblich/i, /typisch/i, /normalerweise/i, /marktüblich/i, /die meisten (Anbieter|Kreditgeber)/i, /gängig/i, /in der Regel/i];
 const ADVICE = [/\byou should\b/i, /\bwe recommend\b/i, /\bgreat deal\b/i, /\bbest (offer|lender)\b/i, /\bsollten Sie\b/i, /\bsolltest\b/i, /\bempfehlen\b/i, /\bempfehlung\b/i];
 const LENDER_NAMES = [/nexo/i, /ledn/i, /celsius/i, /blockfi/i, /unchained/i, /firefish/i, /salt lending/i, /hodl ?hodl/i, /debifi/i, /bitpanda/i, /bison/i, /two ?prime/i, /\bmilo\b/i, /coinbase/i, /kraken/i, /binance/i, /crypto\.com/i, /\baave\b/i, /\bstrike\b/i];
 
@@ -94,6 +95,15 @@ for (const lang of ['en', 'de']) {
       const t = await load(lang);
       for (const s of SECTIONS) expect(t.sections?.[s], `sections.${s}`).toEqual(expect.any(String));
     });
+    it('Impressum and privacy notice exist, and the privacy notice names every outside service the page contacts', async () => {
+      const t = await load(lang);
+      for (const k of LEGAL) expect(t.legal?.[k], `legal.${k}`).toEqual(expect.any(String));
+      expect(t.legal.impressum.length).toBeGreaterThan(2);
+      const text = JSON.stringify(t.legal.privacy) + t.sections.privacy;
+      for (const host of ['api.coinbase.com', 'api.kraken.com', 'api.binance.com', 'api.coingecko.com', 'www.bitstamp.net', 'GitHub']) {
+        expect(text, host).toContain(host);
+      }
+    });
     it('no "typical / market" value claims without a [source: ...]', async () => {
       const t = await load(lang);
       for (const [path, s] of allStrings(t)) {
@@ -131,5 +141,25 @@ describe('example values in the form', () => {
   it('every example value is marked as an example', async () => {
     const { EXAMPLE_TERMS } = await import('../src/content/examples.js');
     expect(EXAMPLE_TERMS.isExample).toBe(true);
+  });
+});
+
+describe('every text the page code asks for exists', () => {
+  it('all t("...") keys in src/app/*.js and data-t keys in index.html exist in both languages', async () => {
+    const { readFileSync, readdirSync } = await import('node:fs');
+    const dir = new URL('../src/app/', import.meta.url);
+    const keys = new Set();
+    for (const f of readdirSync(dir).filter((x) => x.endsWith('.js'))) {
+      for (const [, k] of readFileSync(new URL(f, dir), 'utf8').matchAll(/\bt\('([\w.]+)'/g)) keys.add(k);
+    }
+    for (const [, k] of readFileSync(new URL('index.html', dir), 'utf8').matchAll(/data-t="([\w.]+)"/g)) keys.add(k);
+    expect(keys.size).toBeGreaterThan(20);
+    for (const lang of ['en', 'de']) {
+      const tx = await load(lang);
+      for (const k of keys) {
+        const v = k.split('.').reduce((o, p) => (o == null ? o : o[p]), tx);
+        expect(typeof v, `${lang}: ${k}`).toBe('string');
+      }
+    }
   });
 });

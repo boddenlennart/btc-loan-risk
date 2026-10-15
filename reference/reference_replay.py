@@ -20,7 +20,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from reference_loan import add_months, schedule  # noqa: E402
+from reference_loan import add_months, r2, schedule  # noqa: E402
 
 HERE = os.path.dirname(__file__)
 RAW = os.path.join(HERE, "..", "data", "raw")
@@ -30,7 +30,7 @@ def load(currency):
     with open(os.path.join(RAW, f"btc-{currency.lower()}-1h.csv")) as f:
         r = csv.reader(f)
         next(r)
-        return {int(row[0]): (float(row[1]), float(row[3])) for row in r}  # time -> (open, low)
+        return {int(row[0]): (r2(float(row[1])), r2(float(row[3]))) for row in r}  # time -> (open, low), in cents like the page
 
 
 def debt_on_day(terms, rows, day):

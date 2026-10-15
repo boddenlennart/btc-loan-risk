@@ -1,27 +1,25 @@
-// Loads the hourly price history for tests.
-// Phase 1: reads the raw exchange downloads (data/raw, made by tools/fetch_history.py).
-// Phase 2 adds the compressed copy embedded in the page, and data.test.js checks
-// that both are identical.
+// Loads the hourly price history for tests: the same compressed files the page
+// embeds (data/btc-*-1h.bin.gz). data.test.js checks them against the raw
+// exchange downloads (data/raw, made by tools/fetch_history.py) when present.
 import { readFileSync, existsSync } from 'node:fs';
+import { gunzipSync } from 'fflate';
+import { decodeHourly } from '../../src/data/codec.js';
 
 const cache = {};
+const embeddedPath = (c) => new URL(`../../data/btc-${c.toLowerCase()}-1h.bin.gz`, import.meta.url);
+export const rawPath = (c) => new URL(`../../data/raw/btc-${c.toLowerCase()}-1h.csv`, import.meta.url);
 
-export function rawPath(currency) {
-  return new URL(`../../data/raw/btc-${currency.toLowerCase()}-1h.csv`, import.meta.url);
-}
-
-export function hasRaw(currency) {
-  return existsSync(rawPath(currency));
-}
+export const hasData = (currency) => existsSync(embeddedPath(currency));
+export const hasRaw = (currency) => existsSync(rawPath(currency));
 
 export function loadHourly(currency) {
-  if (cache[currency]) return cache[currency];
-  const lines = readFileSync(rawPath(currency), 'utf8').trim().split('\n').slice(1);
-  const n = lines.length;
-  const h = { time: new Float64Array(n), open: new Float64Array(n), high: new Float64Array(n), low: new Float64Array(n), close: new Float64Array(n), volume: new Float64Array(n) };
-  lines.forEach((line, i) => {
-    const [t, o, hi, lo, c, v] = line.split(',');
-    h.time[i] = +t; h.open[i] = +o; h.high[i] = +hi; h.low[i] = +lo; h.close[i] = +c; h.volume[i] = +v;
+  if (!cache[currency]) cache[currency] = decodeHourly(gunzipSync(readFileSync(embeddedPath(currency))));
+  return cache[currency];
+}
+
+export function loadRaw(currency) {
+  return readFileSync(rawPath(currency), 'utf8').trim().split('\n').slice(1).map((line) => {
+    const [time, open, high, low, close, volume] = line.split(',').map(Number);
+    return { time, open, high, low, close, volume };
   });
-  return (cache[currency] = h);
 }

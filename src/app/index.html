@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' blob:; worker-src blob:; style-src 'unsafe-inline'; img-src data:; connect-src https://api.coinbase.com https://api.kraken.com https://api.binance.com https://api.coingecko.com https://www.bitstamp.net; base-uri 'none'; form-action 'none'">
+<title>BTC loan risk check</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M7 22l6-7 5 4 7-9' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>/*STYLE*/</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-inner">
+    <h1 data-t="meta.title"></h1>
+    <nav><a href="#glossary" data-t="ui.glossaryLink"></a><button type="button" id="lang-btn" class="secondary"></button></nav>
+  </div>
+</header>
+<main class="wrap">
+  <section class="intro">
+    <p data-t="sections.whatThisIs"></p>
+    <p data-t="sections.howItWorks"></p>
+    <p class="notice" data-t="sections.notAdvice"></p>
+    <p class="notice example" data-t="sections.exampleLabel"></p>
+  </section>
+
+  <section aria-labelledby="offer-h">
+    <h2 id="offer-h" data-t="ui.yourOffer"></h2>
+    <p data-t="ui.yourOfferIntro"></p>
+    <p class="notice" data-t="sections.lenderFiguresWin"></p>
+    <form id="form" onsubmit="return false" novalidate></form>
+    <p class="buttons"><button type="button" id="reset-btn" class="secondary" data-t="ui.resetExamples"></button>
+      <button type="button" id="forget-btn" class="secondary" data-t="ui.forgetInputs"></button></p>
+    <p id="forgotten" class="sub" role="status" data-t="ui.forgotten" hidden></p>
+  </section>
+
+  <section id="results" aria-labelledby="results-h">
+    <h2 id="results-h" data-t="ui.results"></h2>
+    <p data-t="ui.resultsIntro"></p>
+    <p id="error-banner" class="notice error" data-t="ui.fixErrors" hidden></p>
+    <p id="stale-banner" class="notice error" data-t="sections.staleWarning" hidden></p>
+    <div class="cards" id="loan-basics"></div>
+    <p id="progress" class="progress" aria-live="polite" hidden></p>
+    <div id="risk">
+      <div class="cards" id="risk-head"></div>
+      <div class="cards" id="risk-charts"></div>
+      <div class="cards" id="risk-detail"></div>
+    </div>
+    <div class="cards" id="loan-cost"></div>
+    <div class="cards" id="loan-events"></div>
+    <p><button type="button" id="copy-btn" class="secondary" data-t="ui.copyResults"></button></p>
+    <p class="sub" id="data-range"></p>
+  </section>
+
+  <section aria-labelledby="risk-h" class="risks">
+    <h2 id="risk-h" data-t="glossary.counterpartyRisk.term"></h2>
+    <p data-t="sections.counterpartyRisk"></p>
+    <h3 data-t="glossary.priceIndex.term"></h3>
+    <p data-t="sections.priceMeasurement"></p>
+    <p class="notice" data-t="sections.lenderFiguresWin"></p>
+  </section>
+
+  <section id="glossary" aria-labelledby="glossary-h">
+    <h2 id="glossary-h" data-t="ui.glossaryLink"></h2>
+    <dl id="glossary-list"></dl>
+  </section>
+
+  <section id="impressum" aria-labelledby="impressum-h" class="legal">
+    <h2 id="impressum-h" data-t="legal.impressumTitle"></h2>
+    <p class="notice template-note" data-t="legal.templateNote" hidden></p>
+    <div id="impressum-body"></div>
+  </section>
+
+  <section id="privacy-notice" aria-labelledby="privacy-h" class="legal">
+    <h2 id="privacy-h" data-t="legal.privacyTitle"></h2>
+    <p class="notice template-note" data-t="legal.templateNote" hidden></p>
+    <div id="privacy-body"></div>
+  </section>
+
+  <footer>
+    <p><a href="#impressum" data-t="legal.impressumTitle"></a> · <a href="#privacy-notice" data-t="legal.privacyTitle"></a></p>
+    <p data-t="sections.notAdvice"></p>
+    <p data-t="sections.privacy"></p>
+    <p data-t="sections.dataSources"></p>
+  </footer>
+</main>
+<div id="summary-bar" class="summary-bar" aria-live="polite"></div>
+<script type="application/json" id="meta">/*META*/</script>
+<script type="text/plain" id="data-USD">/*DATA_USD*/</script>
+<script type="text/plain" id="data-EUR">/*DATA_EUR*/</script>
+<script type="text/plain" id="worker-src">/*WORKER*/</script>
+<script>/*APP*/</script>
+</body>
+</html>

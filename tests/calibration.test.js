@@ -11,11 +11,12 @@
 // number of independent checks is small; that is why the band is wide.
 // The same is done for the "worst 10%" level (fail above 20%) and the median
 // (reality should land below it between 20% and 80% of the time).
+// The models run with the page's default assumption: no price trend (0% a year).
 import { describe, it, expect } from 'vitest';
 import { runMonteCarlo } from '../src/engine/montecarlo.js';
 import { dailyFromHourly, dailyReturns } from '../src/engine/history.js';
 import { fitGarchT } from '../src/engine/garch.js';
-import { loadHourly, hasRaw } from './helpers/history.js';
+import { loadHourly, hasData } from './helpers/history.js';
 
 const FIRST_CUTOFF = Date.parse('2016-01-01T00:00Z') / 1000;
 
@@ -28,7 +29,7 @@ function calibrate(currency, model, horizonDays) {
     const { returns, lowRel } = dailyReturns(past);
     const params = model === 'bootstrap' ? { returns, lowRel, blockDays: 30 } : fitGarchT(returns);
     const s0 = daily.close[i - 1];
-    const sim = runMonteCarlo({ model, params, s0, days: horizonDays, nPaths: 2000, seed: i, liquidationBarrier: 0, collectMinRatios: true });
+    const sim = runMonteCarlo({ model, params, s0, days: horizonDays, nPaths: 2000, seed: i, liquidationBarrier: 0, collectMinRatios: true, logDriftPerDay: 0 });
     let realMin = Infinity;
     for (let d = i; d < i + horizonDays; d++) realMin = Math.min(realMin, daily.low[d]);
     const realRatio = realMin / s0;
@@ -42,9 +43,9 @@ function calibrate(currency, model, horizonDays) {
 for (const currency of ['USD', 'EUR']) {
   for (const model of ['bootstrap', 'garch']) {
     for (const horizon of [90, 365]) {
-      it.skipIf(!hasRaw(currency))(`${currency}, ${model}, ${horizon} days: "worst 5%" not badly breached`, () => {
+      it.skipIf(!hasData(currency))(`${currency}, ${model}, ${horizon} days: "worst 5%" not badly breached`, () => {
         const r = calibrate(currency, model, horizon);
-        console.log(`${currency} ${model} ${horizon}d: ${r.n} cut-offs, below q05 ${(r.below05 * 100).toFixed(1)}%, below q10 ${(r.below10 * 100).toFixed(1)}%, below median ${(r.below50 * 100).toFixed(1)}%`);
+        process.stderr.write(`${currency} ${model} ${horizon}d: ${r.n} cut-offs, below q05 ${(r.below05 * 100).toFixed(1)}%, below q10 ${(r.below10 * 100).toFixed(1)}%, below median ${(r.below50 * 100).toFixed(1)}%\n`);
         expect(r.below05).toBeLessThanOrEqual(0.10);
         expect(r.below10).toBeLessThanOrEqual(0.20);
         expect(r.below50).toBeGreaterThanOrEqual(0.2);
