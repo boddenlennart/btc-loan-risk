@@ -18,6 +18,9 @@ describe('valid terms pass', () => {
   it('the example loan is accepted', () => {
     expect(validateTerms(ok)).toEqual({ ok: true, errors: [] });
   });
+  it('an existing loan whose LTV is already above the starting LTV of new offers is fine, as long as it is below the liquidation LTV', () => {
+    expect(validateTerms({ ...ok, mode: 'existing', collateralInput: 0.3, initialLtv: 0.75 }).ok).toBe(true);
+  });
   it('optional fields may be left empty', () => {
     expect(validateTerms({ ...ok, marginCallLtv: null, curePeriodHours: null }).ok).toBe(true);
   });
@@ -50,6 +53,8 @@ const bad = [
   ['negative reserve', { reserveAmount: -100 }, 'RESERVE_NEGATIVE', 'reserveAmount'],
   ['tax rate 100% or more', { taxRateNow: 1 }, 'TAX_RATE_INVALID', 'taxRateNow'],
   ['negative tax rate', { taxRateAtMaturity: -0.1 }, 'TAX_RATE_INVALID', 'taxRateAtMaturity'],
+  ['BTC amount entered instead of LTV, but zero', { ltvInput: 'btc', collateralInput: 0 }, 'COLLATERAL_INVALID', 'collateralBtc'],
+  ['existing loan already at the liquidation LTV', { mode: 'existing', collateralInput: 0.2, initialLtv: 0.85 }, 'EXISTING_LOAN_AT_LIQUIDATION', 'collateralBtc'],
   ['text where a number belongs', { loanAmount: 'abc' }, 'LOAN_AMOUNT_INVALID', 'loanAmount'],
 ];
 

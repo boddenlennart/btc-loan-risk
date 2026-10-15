@@ -3,11 +3,10 @@
 //   - the loan starts at the OPEN price of the start hour,
 //   - checks begin with the hour after the start hour and end at maturity,
 //   - debt = loan + interest owed but not yet paid, growing day by day.
-// Optional behaviour at a margin call:
-//   - reserveAmount: that much money is added as BTC at the margin-call price (once),
-//   - marginCallConsequence 'liquidateAfterCure': if the LTV is still at or above the
-//     margin-call level when the cure period ends, the lender liquidates then.
+// What the lender does at a margin call or liquidation (including partial sales and
+// a reserve top-up) is defined once in lender.js and shared with the simulations.
 import { collateralBtc, debtByDay, loanDays } from './loan.js';
+import { lenderRules, createLoanState, stepLoan, watchPrice } from './lender.js';
 
 const isoDay = (t) => new Date(t * 1000).toISOString().slice(0, 10);
 
@@ -54,26 +53,20 @@ function run(hourly, terms, i0, skipDays = true, debtCache = null) {
   let debt = debtCache?.get(key);
   if (!debt) { debt = debtByDay(t); debtCache?.set(key, debt); }
   const tEnd = t0 + (debt.length - 1) * 86400;
-  const mLtv = t.marginCallLtv || null;
   const lLtv = t.liquidationLtv;
-  const reserve = t.reserveAmount > 0 ? t.reserveAmount : 0;
-  const afterCure = t.marginCallConsequence === 'liquidateAfterCure' && mLtv;
-  const cureSec = (t.curePeriodHours ?? 0) * 3600;
+  const rules = lenderRules(t);
+  const cure = (t.curePeriodHours ?? 0) * 3600;
+  const s = createLoanState(c0);
 
-  let c = c0;
-  let marginCall = null; let liquidation = null; let topUp = null;
-  let deadline = null;
   let minLow = startPrice; let minLowTime = t0;
   let reserveNeeded = 0;
   const fast = skipDays && t0 % 86400 === 0;
   const blocks = fast ? blocksFor(hourly) : null;
   for (let i = i0 + 1; i < hourly.time.length && hourly.time[i] < tEnd; i++) {
-    if (fast && hourly.time[i] % 86400 === 0 && deadline === null) {
+    if (fast && hourly.time[i] % 86400 === 0 && s.deadline === null) {
       const dt = debt[Math.floor((hourly.time[i] - t0) / 86400)];
-      const watchMargin = mLtv && (!marginCall || afterCure);
-      const threshold = watchMargin ? dt / (c * mLtv) : dt / (c * lLtv);
       const dayLow = blocks.low[i];
-      if (liquidation || dayLow > threshold) {
+      if (s.liquidation || dayLow > watchPrice(s, rules, dt)) {
         const need = dt / (lLtv * dayLow) / c0 - 1;
         if (need > reserveNeeded) reserveNeeded = need;
         if (dayLow < minLow) {
@@ -90,33 +83,11 @@ function run(hourly, terms, i0, skipDays = true, debtCache = null) {
     if (low < minLow) { minLow = low; minLowTime = ti; }
     const need = dt / (lLtv * low) / c0 - 1;
     if (need > reserveNeeded) reserveNeeded = need;
-    if (liquidation) continue;
-
-    if (low <= dt / (c * lLtv)) {
-      liquidation = { time: ti, low, reason: 'liquidationLtv' };
-      if (!marginCall && mLtv) marginCall = { time: ti, low };
-      continue;
-    }
-    if (deadline !== null && ti >= deadline) {
-      if (hourly.close[i] <= dt / (c * mLtv)) {
-        liquidation = { time: ti, low, reason: 'cureExpired' };
-        continue;
-      }
-      deadline = null;
-    }
-    if (mLtv && deadline === null && low <= dt / (c * mLtv)) {
-      const firstCall = !marginCall;
-      if (firstCall) marginCall = { time: ti, low };
-      if (firstCall && reserve) {
-        const price = dt / (c * mLtv);
-        topUp = { time: ti, btc: reserve / price, price };
-        c += topUp.btc;
-      }
-      if (afterCure) deadline = ti + cureSec;
-    }
+    stepLoan(s, rules, { time: ti, low, close: hourly.close[i], debt: dt, cure });
   }
   return {
-    startTime: t0, startPrice, collateralBtc: c0, marginCall, liquidation, topUp,
+    startTime: t0, startPrice, collateralBtc: c0, marginCall: s.firstMargin, liquidation: s.liquidation, topUp: s.topUp,
+    partialSales: s.partialSales, collateralAtEnd: s.liquidation ? s.liquidation.btcReturned : s.c, debtScaleAtEnd: s.scale,
     maxDrawdown: 1 - minLow / startPrice, minLowTime, reserveNeeded: Math.max(0, reserveNeeded),
   };
 }
@@ -132,13 +103,13 @@ const nearestRank = (sorted, q) => sorted[Math.max(0, Math.ceil(q * sorted.lengt
 
 /**
  * Replays the loan from every UTC day start where the full duration fits in the history.
- * Returns { starts, liquidatedShare, marginCallShare, worst, fastest, reserveBtcNeeded, perStart }.
+ * Returns { starts, liquidatedShare, partialShare (part of the BTC sold, loan continued), marginCallShare, worst, fastest, reserveBtcNeeded, perStart }.
  * reserveBtcNeeded: extra BTC (per BTC pledged) that would have avoided liquidation; quantiles over all starts.
  */
 export function replayAll(hourly, terms, { firstStart = -Infinity } = {}) {
   const last = hourly.time[hourly.time.length - 1];
-  const perStart = { time: [], liquidated: [], marginCall: [], liquidationTime: [] };
-  let liq = 0; let mc = 0;
+  const perStart = { time: [], liquidated: [], partial: [], marginCall: [], liquidationTime: [] };
+  let liq = 0; let mc = 0; let part = 0;
   let worst = null; let fastest = null;
   const reserves = [];
   const debtCache = new Map();
@@ -150,7 +121,9 @@ export function replayAll(hourly, terms, { firstStart = -Infinity } = {}) {
     const r = run(hourly, terms, i, true, debtCache);
     perStart.time.push(t0);
     perStart.liquidated.push(!!r.liquidation);
+    perStart.partial.push(!r.liquidation && r.partialSales.length > 0);
     perStart.marginCall.push(!!r.marginCall);
+    if (!r.liquidation && r.partialSales.length) part++;
     perStart.liquidationTime.push(r.liquidation ? r.liquidation.time : null);
     if (r.liquidation) liq++;
     if (r.marginCall) mc++;
@@ -167,6 +140,7 @@ export function replayAll(hourly, terms, { firstStart = -Infinity } = {}) {
   return {
     starts: n,
     liquidatedShare: n ? liq / n : null,
+    partialShare: n ? part / n : null,
     marginCallShare: n ? mc / n : null,
     worst, fastest,
     reserveBtcNeeded: n ? { q50: nearestRank(sorted, 0.5), q90: nearestRank(sorted, 0.9), q95: nearestRank(sorted, 0.95), max: sorted[n - 1] } : null,

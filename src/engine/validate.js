@@ -6,8 +6,10 @@ export const ERROR_CODES = [
   'LOAN_AMOUNT_INVALID', 'PRICE_INVALID', 'LTV_OUT_OF_RANGE', 'LIQ_LTV_NOT_ABOVE_INITIAL',
   'LIQ_LTV_TOO_HIGH', 'MARGIN_LTV_OUT_OF_RANGE', 'DURATION_INVALID', 'NEGATIVE_RATE',
   'RATE_PATH_INVALID', 'NEGATIVE_FEE', 'FEE_EXCEEDS_LOAN', 'CURE_NEGATIVE', 'TAX_RATE_INVALID',
-  'RESERVE_NEGATIVE', 'CURE_TARGET_INVALID',
+  'RESERVE_NEGATIVE', 'CURE_TARGET_INVALID', 'COLLATERAL_INVALID', 'EXISTING_LOAN_AT_LIQUIDATION',
 ];
+
+const BEHAVIOURS = ['warningOnly', 'liquidateAfterCure', 'partialAfterCure', 'autoPartial'];
 
 const num = (x) => typeof x === 'number' && Number.isFinite(x);
 const empty = (x) => x === null || x === undefined || x === '';
@@ -19,18 +21,25 @@ export function validateTerms(t) {
   if (!num(t.loanAmount) || t.loanAmount <= 0) add('loanAmount', 'LOAN_AMOUNT_INVALID');
   if (!num(t.btcPrice) || t.btcPrice <= 0) add('btcPrice', 'PRICE_INVALID');
 
+  // "I already have a loan": the current LTV comes from the BTC pledged and the amount owed.
+  const existing = t.mode === 'existing';
+  if ((existing || t.ltvInput === 'btc') && (!num(t.collateralInput) || t.collateralInput <= 0)) add('collateralBtc', 'COLLATERAL_INVALID');
   const initialOk = num(t.initialLtv) && t.initialLtv > 0 && t.initialLtv < 1;
-  if (!initialOk) add('initialLtv', 'LTV_OUT_OF_RANGE');
+  if (existing && num(t.initialLtv) && num(t.liquidationLtv) && t.initialLtv >= t.liquidationLtv) add('collateralBtc', 'EXISTING_LOAN_AT_LIQUIDATION');
+  else if (!initialOk && !(existing || t.ltvInput === 'btc')) add('initialLtv', 'LTV_OUT_OF_RANGE');
+  else if (!initialOk) add('collateralBtc', 'COLLATERAL_INVALID');
   const liqNum = num(t.liquidationLtv);
   if (!liqNum || t.liquidationLtv > 1) add('liquidationLtv', 'LIQ_LTV_TOO_HIGH');
-  else if (initialOk && t.liquidationLtv <= t.initialLtv) add('liquidationLtv', 'LIQ_LTV_NOT_ABOVE_INITIAL');
+  else if (initialOk && !existing && t.liquidationLtv <= t.initialLtv) add('liquidationLtv', 'LIQ_LTV_NOT_ABOVE_INITIAL');
 
   if (!empty(t.marginCallLtv)) {
-    if (!num(t.marginCallLtv) || (initialOk && t.marginCallLtv <= t.initialLtv) || (liqNum && t.marginCallLtv >= t.liquidationLtv)) {
+    // (an existing loan may already be above its margin-call LTV today)
+    if (!num(t.marginCallLtv) || (initialOk && !existing && t.marginCallLtv <= t.initialLtv) || (liqNum && t.marginCallLtv >= t.liquidationLtv)) {
       add('marginCallLtv', 'MARGIN_LTV_OUT_OF_RANGE');
     }
   }
 
+  if (t.marginCallConsequence && !BEHAVIOURS.includes(t.marginCallConsequence)) add('marginCallConsequence', 'MARGIN_LTV_OUT_OF_RANGE');
   if (!Number.isInteger(t.durationMonths) || t.durationMonths < 1) add('durationMonths', 'DURATION_INVALID');
 
   const rate = t.rate ?? {};

@@ -1,21 +1,63 @@
 // The risk calculations behind the results page. Runs inside a Web Worker
 // (worker.js), or directly on the page if the browser refuses to start a worker.
+// Results are posted in stages so the answer appears first:
+//   'partial' after the headline numbers, then 'result' with everything.
 import { gunzipSync } from 'fflate';
 import { decodeHourly } from '../data/codec.js';
 import { dailyFromHourly, dailyReturns } from '../engine/history.js';
 import { fitGarchT } from '../engine/garch.js';
 import { runMonteCarlo } from '../engine/montecarlo.js';
 import { gbmBarrierHitProbability } from '../engine/barrier.js';
-import { replayAll } from '../engine/replay.js';
-import { collateralBtc, liquidationPrices, marginCallPrices, loanDays, addMonths, daysBetween } from '../engine/loan.js';
+import { replayAll, replayOne } from '../engine/replay.js';
+import { lenderRules } from '../engine/lender.js';
+import { collateralBtc, liquidationPrices, debtByDay, loanDays, loanSummary, addMonths, daysBetween } from '../engine/loan.js';
 
-const store = {}; // currency -> { hourly, returns, lowRel, sigma, garch }
+const store = {}; // currency -> { hourly, daily, returns, lowRel, sigma, garch, facts }
 
 function b64ToBytes(b64) {
   const bin = atob(b64);
   const out = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
   return out;
+}
+
+/** Facts about the past used in the price-outlook presets (computed once per currency). */
+function historyFacts(daily) {
+  const byDay = new Map(daily.time.map((t, i) => [t, daily.close[i]]));
+  const ratio = (years) => {
+    const out = [];
+    for (let i = 0; i < daily.time.length; i++) {
+      const later = byDay.get(daily.time[i] + Math.round(365.25 * years) * 86400);
+      if (later) out.push(later / daily.close[i]);
+    }
+    return out;
+  };
+  const r1 = ratio(1); const r4 = ratio(4);
+  const cagr4 = r4.map((r) => r ** 0.25 - 1).sort((a, b) => a - b);
+  const pick = (q) => cagr4[Math.floor(q * (cagr4.length - 1))];
+  const fourYearByStart = [];
+  for (let y = new Date(daily.time[0] * 1000).getUTCFullYear(); ; y++) {
+    const a = byDay.get(Date.UTC(y, 0, 1) / 1000); const b = byDay.get(Date.UTC(y + 4, 0, 1) / 1000);
+    if (!a || !b) break;
+    fourYearByStart.push({ from: y, to: y + 4, perYear: (b / a) ** 0.25 - 1 });
+  }
+  // calendar years with a fall of at least 50% from a high within the same year
+  let deepYears = 0; let years = 0; let worstYear = { year: null, fall: 0 };
+  let year = null; let peak = 0; let fall = 0;
+  const closeYear = () => { if (year !== null) { years++; if (fall >= 0.5) deepYears++; if (fall > worstYear.fall) worstYear = { year, fall }; } };
+  for (let i = 0; i < daily.time.length; i++) {
+    const y = new Date(daily.time[i] * 1000).getUTCFullYear();
+    if (y !== year) { closeYear(); year = y; peak = 0; fall = 0; }
+    peak = Math.max(peak, daily.close[i]); fall = Math.max(fall, 1 - daily.low[i] / peak);
+  }
+  closeYear();
+  return {
+    higherAfter1y: r1.filter((x) => x > 1).length / r1.length,
+    worst1y: Math.min(...r1) - 1,
+    higherAfter4y: r4.filter((x) => x > 1).length / r4.length,
+    fourYear: { worst: pick(0), p10: pick(0.1), median: pick(0.5), best: pick(1) },
+    fourYearByStart, deepYears, years, worstYear,
+  };
 }
 
 function setData(currency, base64, appended) {
@@ -31,93 +73,110 @@ function setData(currency, base64, appended) {
       noTrade: Uint8Array.from([...h.noTrade, ...extra.map(() => 0)]),
     };
   }
-  const { returns, lowRel } = dailyReturns(dailyFromHourly(hourly));
+  const daily = dailyFromHourly(hourly);
+  const { returns, lowRel } = dailyReturns(daily);
   const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
   const sigma = Math.sqrt(returns.reduce((a, b) => a + (b - mean) ** 2, 0) / (returns.length - 1) * 365);
-  store[currency] = { hourly, returns, lowRel, sigma, garch: null };
+  store[currency] = { hourly, daily, returns, lowRel, sigma, garch: null, facts: historyFacts(daily) };
 }
 
-/** Month ends of the loan in days from the start (calendar months). */
-function monthEndsFor(terms) {
-  const ends = [];
-  for (let m = 1; m <= terms.durationMonths; m++) ends.push(daysBetween(terms.startDate, addMonths(terms.startDate, m)));
-  return ends;
-}
+const monthEndsFor = (t) => Array.from({ length: t.durationMonths }, (_, m) => daysBetween(t.startDate, addMonths(t.startDate, m + 1)));
 
-function mcFor(terms, s, model, settings, { reserve, nPaths, seed }) {
-  const days = loanDays(terms);
-  const m = marginCallPrices(terms);
-  const params = model === 'bootstrap' ? { returns: s.returns, lowRel: s.lowRel, blockDays: settings.blockDays } : s.garch;
-  const cureDays = terms.marginCallConsequence === 'liquidateAfterCure' && m ? Math.max(1, Math.ceil((terms.curePeriodHours ?? 0) / 24)) : null;
+/** One simulation of the loan `t`. */
+function simulate(t, s, settings, { model = 'bootstrap', nPaths = settings.nPaths, trend = 0, samplePaths = 0, leverage = false, seed = 20240101 } = {}) {
+  const sum = loanSummary(t);
   return runMonteCarlo({
-    model, params, s0: terms.btcPrice, days, nPaths, seed,
-    liquidationBarrier: liquidationPrices(terms).byDay,
-    marginBarrier: m ? m.byDay : null,
-    monthEnds: monthEndsFor(terms),
-    logDriftPerDay: Math.log(1 + settings.trend) / 365,
-    cureDays,
-    reserve: reserve ? { amount: terms.reserveAmount, collateralBtc: collateralBtc(terms) } : null,
+    model, params: model === 'bootstrap' ? { returns: s.returns, lowRel: s.lowRel, blockDays: settings.blockDays } : s.garch,
+    s0: t.btcPrice, days: loanDays(t), nPaths, seed, monthEnds: monthEndsFor(t), samplePaths,
+    logDriftPerDay: Math.log(1 + trend) / 365,
+    loan: { debtByDay: debtByDay(t), collateralBtc: collateralBtc(t), rules: lenderRules(t) },
+    cureDays: Math.max(1, Math.ceil((t.curePeriodHours ?? 0) / 24)),
+    leverage: leverage ? { bought: sum.amountReceived / t.btcPrice, payback: sum.totalPayback, repay: t.repayWith === 'cash' ? 'cash' : 'sell' } : null,
   });
 }
 
-function whatIfCells(terms) {
-  const ltvs = [terms.initialLtv - 0.1, terms.initialLtv, terms.initialLtv + 0.1]
-    .map((x) => Math.round(x * 1000) / 1000)
-    .filter((x) => x >= 0.05 && x < terms.liquidationLtv - 0.01);
-  const durations = [...new Set([Math.max(1, Math.round(terms.durationMonths / 2)), terms.durationMonths, terms.durationMonths * 2])];
-  const cells = [];
-  for (const ltv of ltvs) {
-    for (const months of durations) {
-      const t = { ...terms, initialLtv: ltv, durationMonths: months, reserveAmount: 0, cureTargetLtv: null };
-      if (t.marginCallLtv && t.marginCallLtv <= ltv) t.marginCallLtv = null;
-      if (t.rate.type === 'variable') t.rate = { ...t.rate, path: t.rate.path.filter((p) => p.fromMonth < months) };
-      cells.push({ ltv, months, terms: t });
-    }
+/** The options in "Make it safer": each is one change to the visitor's own terms. */
+function leverList(t) {
+  const out = [];
+  const add = (id, change, value) => out.push({ id, terms: { ...t, ...change }, value });
+  for (const pts of [0.1, 0.2]) {
+    const ltv = Math.round((t.initialLtv - pts) * 100) / 100;
+    if (ltv >= 0.05) add('lowerLtv', { initialLtv: ltv, ...(t.marginCallLtv && t.marginCallLtv <= ltv ? { marginCallLtv: null } : {}) }, ltv);
   }
-  return { ltvs, durations, cells };
+  if (t.durationMonths >= 2) {
+    const m = Math.max(1, Math.round(t.durationMonths / 2));
+    add('shorter', { durationMonths: m, rate: t.rate.type === 'variable' ? { ...t.rate, path: t.rate.path.filter((p) => p.fromMonth < m) } : t.rate }, m);
+  }
+  if (t.marginCallLtv) {
+    const reserve = t.reserveAmount > 0 ? t.reserveAmount : Math.round(t.loanAmount * 0.2 / 100) * 100;
+    add('reserve', { reserveAmount: reserve }, reserve);
+    if (t.marginCallConsequence !== 'warningOnly') add('warningOnly', { marginCallConsequence: 'warningOnly' }, null);
+  }
+  if (t.liquidationLtv < 0.95) add('higherLiq', { liquidationLtv: 0.95 }, 0.95);
+  if (t.liquidationLtv < 0.95 && t.marginCallLtv && t.marginCallConsequence !== 'warningOnly') add('higherLiqWarning', { liquidationLtv: 0.95, marginCallConsequence: 'warningOnly' }, 0.95);
+  if (t.repayment === 'bullet') add('monthlyInterest', { repayment: 'interestOnly', compounding: 'none' }, null);
+  return out;
+}
+
+/** Real start dates for "What really happened" and the stress test (only those inside the data). */
+const STORIES = ['2017-12-17', '2021-11-10', '2020-02-13', '2023-01-01'];
+
+function story(s, t, iso) {
+  const t0 = Date.parse(`${iso}T00:00Z`) / 1000;
+  const i0 = s.daily.time.indexOf(t0);
+  if (i0 < 0) return null;
+  const days = loanDays({ ...t, startDate: iso });
+  if (i0 + days >= s.daily.time.length) return null;
+  const r = replayOne(s.hourly, { ...t, startDate: iso }, t0);
+  const weekly = [];
+  for (let d = 0; d <= days; d += 7) weekly.push(Math.min(...s.daily.low.slice(i0 + Math.max(1, d - 6), i0 + d + 1)) / s.daily.open[i0]);
+  const sale = r.liquidation ? { day: Math.round((r.liquidation.time - t0) / 86400), reason: r.liquidation.reason }
+    : r.partialSales.length ? { day: Math.round((r.partialSales[0].time - t0) / 86400), reason: 'partial' } : null;
+  return { start: iso, sale, partialSales: r.partialSales.length, weekly, endRel: s.daily.close[i0 + days] / s.daily.open[i0], btcLeft: r.collateralAtEnd / r.collateralBtc };
 }
 
 async function run(id, terms, settings, garch, post = postMessage) {
   const s = store[terms.currency];
   if (!s) throw new Error(`no price history for ${terms.currency}`);
   if (garch) s.garch = garch;
-  const hasReserve = terms.reserveAmount > 0 && !!terms.marginCallLtv;
-  const wi = whatIfCells(terms);
-  const total = 3 + (hasReserve ? 3 : 0) + wi.cells.length;
+  const levers = leverList(terms);
+  const ltvGrid = [];
+  // the slider stops below the margin-call LTV (above it, a new loan would start in a margin call)
+  const ltvMax = (terms.marginCallLtv || terms.liquidationLtv) - 0.04;
+  for (let x = 0.1; x < ltvMax; x += 0.05) ltvGrid.push(Math.round(x * 100) / 100);
+  const total = 4 + levers.length + ltvGrid.length;
   let done = 0;
   // after each step: report progress and give the page a moment to repaint
   const tick = async () => { post({ type: 'progress', id, done: ++done, total }); await new Promise((r) => setTimeout(r, 0)); };
   post({ type: 'progress', id, done, total });
-
   if (!s.garch) s.garch = fitGarchT(s.returns);
-  const result = { garch: s.garch, currency: terms.currency };
-  const opts = { nPaths: settings.nPaths, seed: 20240101 };
 
-  result.bootstrap = mcFor(terms, s, 'bootstrap', settings, opts); await tick();
-  result.garchMc = mcFor(terms, s, 'garch', settings, opts); await tick();
-  result.replay = replayAll(s.hourly, { ...terms, reserveAmount: 0 }); await tick();
-  if (hasReserve) {
-    result.bootstrapReserve = mcFor(terms, s, 'bootstrap', settings, { ...opts, reserve: true }); await tick();
-    result.garchMcReserve = mcFor(terms, s, 'garch', settings, { ...opts, reserve: true }); await tick();
-    const r = replayAll(s.hourly, terms);
-    result.replayReserve = { starts: r.starts, liquidatedShare: r.liquidatedShare, marginCallShare: r.marginCallShare }; await tick();
-  }
-
-  const years = loanDays(terms) / 365;
+  const buy = terms.purpose === 'buy';
+  const result = { currency: terms.currency, garch: s.garch, facts: s.facts, history: { from: s.hourly.time[0], to: s.hourly.time[s.hourly.time.length - 1] } };
+  result.main = simulate(terms, s, settings, { samplePaths: 20, leverage: buy }); await tick();
+  result.outlook = settings.trend !== 0 ? simulate(terms, s, settings, { trend: settings.trend, leverage: buy }) : null;
+  result.garchMc = simulate(terms, s, settings, { model: 'garch' }); await tick();
+  result.replay = replayAll(s.hourly, terms); await tick();
+  result.stories = STORIES.map((iso) => story(s, terms, iso)).filter(Boolean);
   const lp = liquidationPrices(terms);
   result.barrier = {
     sigma: s.sigma,
-    p: gbmBarrierHitProbability({ s0: terms.btcPrice, barrier: lp.atStart, mu: Math.log(1 + settings.trend) + s.sigma ** 2 / 2, sigma: s.sigma, years }),
+    p: gbmBarrierHitProbability({ s0: terms.btcPrice, barrier: lp.atStart, mu: s.sigma ** 2 / 2, sigma: s.sigma, years: loanDays(terms) / 365 }),
   };
+  await tick();
+  post({ type: 'partial', id, result: { ...result, levers: null, slider: null } }); // the answer first
 
-  result.history = { from: s.hourly.time[0], to: s.hourly.time[s.hourly.time.length - 1] };
-  post({ type: 'partial', id, result: { ...result, whatIf: null } }); // show the main results before the what-if table
-
-  result.whatIf = { ltvs: wi.ltvs, durations: wi.durations, cells: [] };
-  for (const c of wi.cells) {
-    const mc = mcFor(c.terms, s, 'bootstrap', settings, { nPaths: 2000, seed: 7 });
-    const rp = replayAll(s.hourly, c.terms);
-    result.whatIf.cells.push({ ltv: c.ltv, months: c.months, p: mc.pLiquidation, replay: rp.liquidatedShare, starts: rp.starts });
+  result.levers = [];
+  for (const l of levers) {
+    result.levers.push({ id: l.id, value: l.value, p: simulate(l.terms, s, settings, { nPaths: 2000, seed: 7 }).pLiquidation });
+    await tick();
+  }
+  result.levers.sort((a, b) => a.p - b.p);
+  result.leverBase = simulate(terms, s, settings, { nPaths: 2000, seed: 7 }).pLiquidation; // same paths as the levers, for a fair comparison
+  result.slider = [];
+  for (const ltv of ltvGrid) {
+    const t = { ...terms, initialLtv: ltv, ...(terms.marginCallLtv && terms.marginCallLtv <= ltv ? { marginCallLtv: null } : {}) };
+    result.slider.push({ ltv, p: simulate(t, s, settings, { nPaths: 2000, seed: 7 }).pLiquidation, btc: collateralBtc(t) });
     await tick();
   }
   return result;

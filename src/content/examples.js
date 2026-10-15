@@ -1,34 +1,43 @@
-// Starting values for the form. These are made-up round numbers so they can
-// never be mistaken for a real lender's quote. Every field shows the badge
-// "example, replace with your offer" until the visitor changes it.
-// Percentages are stored as fractions (0.5 = 50%).
+// Starting values for the form. Made-up round numbers so they can never be mistaken
+// for a real lender's quote. The banner "Example values. Replace them with your offer."
+// stays until the visitor changes one of the five main numbers.
+// Percentages are in percent here (50 = 50%), as typed in the form.
 
-export const EXAMPLE_TERMS = {
+export const EXAMPLE_FORM = {
   isExample: true,
+  mode: 'new',
   currency: 'EUR',
-  btcPrice: null, // filled with the live (or embedded) price
   loanAmount: 10000,
-  startDate: null, // today
+  ltvInput: 'ltv',
+  initialLtv: 50,
+  collateralBtc: '',
+  liquidationLtv: 80,
   durationMonths: 12,
-  initialLtv: 0.5,
-  marginCallLtv: 0.7,
-  liquidationLtv: 0.8,
-  rate: { type: 'fixed', annual: 0.1, path: [{ fromMonth: 0, annual: 0.08 }, { fromMonth: 6, annual: 0.12 }] },
+  rateType: 'fixed',
+  rateAnnual: 10,
+  ratePath: [{ fromMonth: 0, rate: 8 }, { fromMonth: 6, rate: 12 }],
+  purpose: 'spend',
+  repayWith: 'sell',
   repayment: 'interestOnly',
   compounding: 'none',
-  dayCount: '30/360',
-  originationFee: { type: 'percent', value: 0.01 },
-  liquidationFee: { value: 0.05, basis: 'debt' },
-  earlyRepaymentFee: 0,
-  curePeriodHours: 72,
-  marginCallConsequence: 'warningOnly',
-  cureTargetLtv: null, // empty = back to the starting LTV
-  reserveAmount: 2000,
+  originationFee: { value: 1, type: 'percent' },
+  marginCallLtv: 70,
+  marginCallConsequence: 'liquidateAfterCure',
+  curePeriodHours: 48,
+  liquidationSale: 'all',
+  cureTargetLtv: '',
+  liquidationFee: 5,
+  liquidationFeeBasis: 'debt',
+  reserveAmount: 0,
   taxRateNow: 0,
   taxRateAtMaturity: 0,
-  taxJurisdiction: '',
-  notes: '',
-  simPaths: 10000,
+  startDate: '',
+  dayCount: '30/360',
+  simPaths: '10000',
   bootstrapBlockDays: 30,
-  assumedTrend: 0,
+  outlook: 0,
+  notes: '',
 };
+
+// kept for the content test: every example is marked as such
+export const EXAMPLE_TERMS = EXAMPLE_FORM;

@@ -1,0 +1,540 @@
+[
+ {
+  "currency": "USD",
+  "name": "Nov 2021 top, lender sells part at the margin call, 4% fee",
+  "start": "2021-11-10T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "marginCallConsequence": "autoPartial",
+   "liquidationFee": {
+    "value": 0.04,
+    "basis": "debt"
+   }
+  },
+  "expected": {
+   "startPrice": 66928.42,
+   "collateralBtc": 0.29882671666236854,
+   "marginCall": 1638594000,
+   "liquidation": null,
+   "partialSales": [
+    {
+     "time": 1638594000,
+     "iso": "2021-12-04T05:00Z",
+     "reason": "autoPartial",
+     "btc": 0.12949157722035964
+    },
+    {
+     "time": 1642845600,
+     "iso": "2022-01-22T10:00Z",
+     "reason": "autoPartial",
+     "btc": 0.07337856042487052
+    },
+    {
+     "time": 1655107200,
+     "iso": "2022-06-13T08:00Z",
+     "reason": "autoPartial",
+     "btc": 0.04158118424075995
+    },
+    {
+     "time": 1667934000,
+     "iso": "2022-11-08T19:00Z",
+     "reason": "autoPartial",
+     "btc": 0.02356267106976398
+    }
+   ],
+   "collateralAtEnd": 0.030812723706614448
+  }
+ },
+ {
+  "currency": "USD",
+  "name": "Dec 2017 top, sells everything if not fixed in 48 h",
+  "start": "2017-12-17T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "marginCallConsequence": "liquidateAfterCure",
+   "curePeriodHours": 48
+  },
+  "expected": {
+   "startPrice": 19187.78,
+   "collateralBtc": 1.0423300663234623,
+   "marginCall": 1513911600,
+   "liquidation": {
+    "time": 1513951200,
+    "iso": "2017-12-22T14:00Z",
+    "reason": "liquidationLtv",
+    "btcReturned": 0.20846601326469238
+   },
+   "partialSales": [],
+   "collateralAtEnd": 0.20846601326469238
+  }
+ },
+ {
+  "currency": "USD",
+  "name": "Dec 2017 top, sells part if not fixed in 48 h, 2% fee on BTC sold",
+  "start": "2017-12-17T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "marginCallConsequence": "partialAfterCure",
+   "curePeriodHours": 48,
+   "liquidationFee": {
+    "value": 0.02,
+    "basis": "collateralSold"
+   }
+  },
+  "expected": {
+   "startPrice": 19187.78,
+   "collateralBtc": 1.0423300663234623,
+   "marginCall": 1513911600,
+   "liquidation": {
+    "time": 1513951200,
+    "iso": "2017-12-22T14:00Z",
+    "reason": "liquidationLtv",
+    "btcReturned": 0.191448379528799
+   },
+   "partialSales": [],
+   "collateralAtEnd": 0.191448379528799
+  }
+ },
+ {
+  "currency": "USD",
+  "name": "Feb 2020, warning only, partial sale at the liquidation LTV",
+  "start": "2020-02-13T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "marginCallConsequence": "warningOnly",
+   "liquidationSale": "partial"
+  },
+  "expected": {
+   "startPrice": 10348.78,
+   "collateralBtc": 1.932594953221539,
+   "marginCall": 1583996400,
+   "liquidation": null,
+   "partialSales": [
+    {
+     "time": 1584007200,
+     "iso": "2020-03-12T10:00Z",
+     "reason": "liquidationLtv",
+     "btc": 1.1595569719329237
+    },
+    {
+     "time": 1584061200,
+     "iso": "2020-03-13T01:00Z",
+     "reason": "liquidationLtv",
+     "btc": 0.4638227887731692
+    }
+   ],
+   "collateralAtEnd": 0.30921519251544605
+  }
+ },
+ {
+  "currency": "USD",
+  "name": "Nov 2021 top, reserve 3,000 added, sells everything if not fixed in 72 h",
+  "start": "2021-11-10T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "marginCallConsequence": "liquidateAfterCure",
+   "curePeriodHours": 72,
+   "reserveAmount": 3000.0
+  },
+  "expected": {
+   "startPrice": 66928.42,
+   "collateralBtc": 0.29882671666236854,
+   "marginCall": 1638594000,
+   "liquidation": {
+    "time": 1642845600,
+    "iso": "2022-01-22T10:00Z",
+    "reason": "liquidationLtv",
+    "btcReturned": 0.07231606543229319
+   },
+   "partialSales": [],
+   "collateralAtEnd": 0.07231606543229319
+  }
+ },
+ {
+  "currency": "USD",
+  "name": "Mid 2019 top, bullet 12%, sells part after 24 h, target 45%",
+  "start": "2019-06-26T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.4,
+   "marginCallLtv": 0.65,
+   "liquidationLtv": 0.75,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.12
+   },
+   "repayment": "bullet",
+   "compounding": "monthly",
+   "dayCount": "act/365",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "marginCallConsequence": "partialAfterCure",
+   "curePeriodHours": 24,
+   "cureTargetLtv": 0.45
+  },
+  "expected": {
+   "startPrice": 11760.0,
+   "collateralBtc": 2.1258503401360542,
+   "marginCall": 1571832000,
+   "liquidation": {
+    "time": 1584057600,
+    "iso": "2020-03-13T00:00Z",
+    "reason": "liquidationLtv",
+    "btcReturned": 0.33235924986844456
+   },
+   "partialSales": [
+    {
+     "time": 1571918400,
+     "iso": "2019-10-24T12:00Z",
+     "reason": "cureExpired",
+     "btc": 0.796413340662276
+    }
+   ],
+   "collateralAtEnd": 0.33235924986844456
+  }
+ },
+ {
+  "currency": "EUR",
+  "name": "Nov 2021 top, lender sells part at the margin call, 4% fee",
+  "start": "2021-11-10T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "marginCallConsequence": "autoPartial",
+   "liquidationFee": {
+    "value": 0.04,
+    "basis": "debt"
+   }
+  },
+  "expected": {
+   "startPrice": 57784.21,
+   "collateralBtc": 0.34611531420088637,
+   "marginCall": 1638594000,
+   "liquidation": null,
+   "partialSales": [
+    {
+     "time": 1638594000,
+     "iso": "2021-12-04T05:00Z",
+     "reason": "autoPartial",
+     "btc": 0.14998330282038405
+    },
+    {
+     "time": 1643018400,
+     "iso": "2022-01-24T10:00Z",
+     "reason": "autoPartial",
+     "btc": 0.08499053826488434
+    },
+    {
+     "time": 1655161200,
+     "iso": "2022-06-13T23:00Z",
+     "reason": "autoPartial",
+     "btc": 0.048161305016767776
+    }
+   ],
+   "collateralAtEnd": 0.06298016809885021
+  }
+ },
+ {
+  "currency": "EUR",
+  "name": "Dec 2017 top, sells everything if not fixed in 48 h",
+  "start": "2017-12-17T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "marginCallConsequence": "liquidateAfterCure",
+   "curePeriodHours": 48
+  },
+  "expected": {
+   "startPrice": 16106.0,
+   "collateralBtc": 1.2417732522041476,
+   "marginCall": 1513911600,
+   "liquidation": {
+    "time": 1513926000,
+    "iso": "2017-12-22T07:00Z",
+    "reason": "liquidationLtv",
+    "btcReturned": 0.2483546504408296
+   },
+   "partialSales": [],
+   "collateralAtEnd": 0.2483546504408296
+  }
+ },
+ {
+  "currency": "EUR",
+  "name": "Dec 2017 top, sells part if not fixed in 48 h, 2% fee on BTC sold",
+  "start": "2017-12-17T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "marginCallConsequence": "partialAfterCure",
+   "curePeriodHours": 48,
+   "liquidationFee": {
+    "value": 0.02,
+    "basis": "collateralSold"
+   }
+  },
+  "expected": {
+   "startPrice": 16106.0,
+   "collateralBtc": 1.2417732522041476,
+   "marginCall": 1513911600,
+   "liquidation": {
+    "time": 1513926000,
+    "iso": "2017-12-22T07:00Z",
+    "reason": "liquidationLtv",
+    "btcReturned": 0.22808080142525156
+   },
+   "partialSales": [],
+   "collateralAtEnd": 0.22808080142525156
+  }
+ },
+ {
+  "currency": "EUR",
+  "name": "Feb 2020, warning only, partial sale at the liquidation LTV",
+  "start": "2020-02-13T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "marginCallConsequence": "warningOnly",
+   "liquidationSale": "partial"
+  },
+  "expected": {
+   "startPrice": 9548.0,
+   "collateralBtc": 2.0946795140343526,
+   "marginCall": 1583730000,
+   "liquidation": null,
+   "partialSales": [
+    {
+     "time": 1584007200,
+     "iso": "2020-03-12T10:00Z",
+     "reason": "liquidationLtv",
+     "btc": 1.2568077084206117
+    },
+    {
+     "time": 1584064800,
+     "iso": "2020-03-13T02:00Z",
+     "reason": "liquidationLtv",
+     "btc": 0.5027230833682446
+    }
+   ],
+   "collateralAtEnd": 0.3351487222454963
+  }
+ },
+ {
+  "currency": "EUR",
+  "name": "Nov 2021 top, reserve 3,000 added, sells everything if not fixed in 72 h",
+  "start": "2021-11-10T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "marginCallConsequence": "liquidateAfterCure",
+   "curePeriodHours": 72,
+   "reserveAmount": 3000.0
+  },
+  "expected": {
+   "startPrice": 57784.21,
+   "collateralBtc": 0.34611531420088637,
+   "marginCall": 1638594000,
+   "liquidation": {
+    "time": 1642993200,
+    "iso": "2022-01-24T03:00Z",
+    "reason": "cureExpired",
+    "btcReturned": 0.09864606141628446
+   },
+   "partialSales": [],
+   "collateralAtEnd": 0.09864606141628446
+  }
+ },
+ {
+  "currency": "EUR",
+  "name": "Mid 2019 top, bullet 12%, sells part after 24 h, target 45%",
+  "start": "2019-06-26T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.4,
+   "marginCallLtv": 0.65,
+   "liquidationLtv": 0.75,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.12
+   },
+   "repayment": "bullet",
+   "compounding": "monthly",
+   "dayCount": "act/365",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "marginCallConsequence": "partialAfterCure",
+   "curePeriodHours": 24,
+   "cureTargetLtv": 0.45
+  },
+  "expected": {
+   "startPrice": 10328.84,
+   "collateralBtc": 2.420407325507995,
+   "marginCall": 1571846400,
+   "liquidation": {
+    "time": 1584057600,
+    "iso": "2020-03-13T00:00Z",
+    "reason": "liquidationLtv",
+    "btcReturned": 0.36878954739841463
+   },
+   "partialSales": [
+    {
+     "time": 1574499600,
+     "iso": "2019-11-23T09:00Z",
+     "reason": "cureExpired",
+     "btc": 0.9452491359143367
+    }
+   ],
+   "collateralAtEnd": 0.36878954739841463
+  }
+ }
+]

@@ -158,3 +158,87 @@ export function replayStrip(el, data) {
     return { x: x(data.time[i]), html: `<b>${esc(data.fmtDate(data.time[i]))}</b><br>${res}` };
   });
 }
+
+// shared axes for the price charts below: y = price, x = days of the loan
+function priceAxes(svg, { H, pad, days, maxY, fmt, monthLabel }) {
+  const x = (d) => pad.l + (d / days) * (W - pad.l - pad.r);
+  const ticks = niceTicks(0, maxY);
+  const top = Math.max(maxY, ticks[ticks.length - 1]);
+  const y = (v) => pad.t + (1 - Math.min(v, top) / top) * (H - pad.t - pad.b);
+  const months = Math.round(days / 30.44);
+  const step = Math.max(1, Math.ceil(months / 6));
+  let g = ticks.map((v) => `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y(v)}" y2="${y(v)}" class="grid"/><text x="${pad.l - 6}" y="${y(v) + 4}" class="axis" text-anchor="end">${esc(fmt(v))}</text>`).join('');
+  for (let m = 0; m <= months; m += step) {
+    const d = Math.min(days, Math.round(m * 30.44));
+    g += `<text x="${x(d)}" y="${H - 8}" class="axis" text-anchor="${m === 0 ? 'start' : m >= months ? 'end' : 'middle'}">${esc(monthLabel(m))}</text>`;
+  }
+  return { x, y, g };
+}
+
+function triggerLines({ x, y }, data) {
+  const line = (a, b, cls, label, below) => `<path d="M${x(0)},${y(a)}L${x(data.days)},${y(b)}" class="${cls}"/><text x="${x(data.days) - 2}" y="${y(b) + (below ? 14 : -6)}" class="label-${cls === 'line-critical' ? 'critical' : 'warning'}" text-anchor="end">${esc(label)}</text>`;
+  let s = '';
+  if (data.mc) s += line(data.mc[0], data.mc[1], 'line-warning', data.labels.margin, false);
+  s += line(data.liq[0], data.liq[1], 'line-critical', data.labels.sale, true);
+  return s;
+}
+
+/**
+ * "20 possible futures": one line per simulated path, stopping with ✕ where the lender sells.
+ * data: { paths: [{ weekly, event }], days, liq: [start, end], mc: [start, end] | null, fmt, monthLabel, labels: { title, margin, sale, tip } }
+ */
+export function futuresChart(el, data) {
+  const H = 300;
+  const pad = { l: 64, r: 16, t: 14, b: 30 };
+  const { svg, tip } = frame(el, H, data.labels.title);
+  const maxY = Math.max(...data.paths.flatMap((p) => p.weekly)) * 1.02;
+  const ax = priceAxes(svg, { H, pad, days: data.days, maxY, fmt: data.fmt, monthLabel: data.monthLabel });
+  const dayOf = (k, n) => (k === n - 1 ? data.days : k * 7);
+  let lines = '';
+  for (const p of data.paths) {
+    const n = p.weekly.length;
+    const until = p.event ? Math.min(n - 1, Math.ceil(p.event.day / 7)) : n - 1;
+    const pts = p.weekly.slice(0, until + 1).map((v, k) => `${ax.x(dayOf(k, n))},${ax.y(v)}`).join('L');
+    lines += `<path d="M${pts}" class="${p.event ? 'path-sold' : 'path-kept'}"/>`;
+    if (p.event) lines += `<text x="${ax.x(dayOf(until, n))}" y="${ax.y(p.weekly[until]) + 4}" class="mark-sold" text-anchor="middle">✕</text>`;
+  }
+  svg.innerHTML = `${ax.g}${lines}${triggerLines(ax, data)}<line class="cross" y1="${pad.t}" y2="${H - pad.b}" opacity="0"/><rect class="hit" x="${pad.l}" y="0" width="${W - pad.l - pad.r}" height="${H}" fill="transparent"/>`;
+  hover(el, svg, tip, pad, (xv) => {
+    const d = Math.round(((xv - pad.l) / (W - pad.l - pad.r)) * data.days);
+    const sold = data.paths.filter((p) => p.event && p.event.day <= d).length;
+    const c = svg.querySelector('.cross');
+    c.setAttribute('x1', ax.x(d)); c.setAttribute('x2', ax.x(d)); c.setAttribute('opacity', 1);
+    return { x: ax.x(d), html: esc(data.labels.tip(Math.round(d / 30.44), sold)) };
+  });
+}
+
+/**
+ * "What really happened": the visitor's loan on real start dates, real prices scaled to today.
+ * data: { stories: [{ weekly (relative), sale }], s0, days, liq, mc, colors, fmt, monthLabel, labels }
+ */
+export function storiesChart(el, data) {
+  const H = 300;
+  const pad = { l: 64, r: 16, t: 14, b: 30 };
+  const { svg, tip } = frame(el, H, data.labels.title);
+  const maxY = Math.min(4, Math.max(...data.stories.flatMap((s) => s.weekly))) * data.s0 * 1.02;
+  const ax = priceAxes(svg, { H, pad, days: data.days, maxY, fmt: data.fmt, monthLabel: data.monthLabel });
+  let lines = '';
+  data.stories.forEach((s, j) => {
+    const n = s.weekly.length;
+    const pts = s.weekly.map((v, k) => `${ax.x(Math.min(data.days, k * 7))},${ax.y(v * data.s0)}`);
+    const until = s.sale ? Math.min(n - 1, Math.ceil(s.sale.day / 7)) : n - 1;
+    lines += `<path d="M${pts.slice(0, until + 1).join('L')}" class="story" style="stroke:${data.colors[j]}"/>`;
+    if (s.sale) {
+      lines += `<path d="M${pts.slice(until).join('L')}" class="story-after" style="stroke:${data.colors[j]}"/>`;
+      lines += `<text x="${ax.x(Math.min(data.days, until * 7))}" y="${ax.y(s.weekly[until] * data.s0) + 4}" class="mark-sold" style="fill:${data.colors[j]}" text-anchor="middle">✕</text>`;
+    }
+  });
+  svg.innerHTML = `${ax.g}${lines}${triggerLines(ax, data)}<line class="cross" y1="${pad.t}" y2="${H - pad.b}" opacity="0"/><rect class="hit" x="${pad.l}" y="0" width="${W - pad.l - pad.r}" height="${H}" fill="transparent"/>`;
+  hover(el, svg, tip, pad, (xv) => {
+    const d = Math.round(((xv - pad.l) / (W - pad.l - pad.r)) * data.days);
+    const k = Math.min(Math.floor(d / 7), Math.min(...data.stories.map((s) => s.weekly.length)) - 1);
+    const c = svg.querySelector('.cross');
+    c.setAttribute('x1', ax.x(d)); c.setAttribute('x2', ax.x(d)); c.setAttribute('opacity', 1);
+    return { x: ax.x(d), html: `<b>${esc(data.monthLabel(Math.round(d / 30.44)))}</b><br>${data.stories.map((s, j) => `<span style="color:${data.colors[j]}">${esc(data.labels.names[j])}: ${esc(data.fmt(s.weekly[k] * data.s0))}</span>`).join('<br>')}` };
+  });
+}

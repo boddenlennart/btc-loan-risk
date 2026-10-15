@@ -127,10 +127,95 @@ describe('speed-up (skipping quiet days) gives exactly the same answers', () => 
         ...loan, loanAmount: 10000, initialLtv, liquidationLtv: Math.min(0.95, initialLtv + 0.05 + rnd() * 0.3),
         marginCallLtv: rnd() < 0.3 ? null : initialLtv + 0.03, durationMonths: 1 + Math.floor(rnd() * 24),
         rate: { type: 'fixed', annual: rnd() * 0.15 }, repayment: ['interestOnly', 'bullet', 'amortizing'][Math.floor(rnd() * 3)],
-        reserveAmount: rnd() < 0.5 ? 0 : 3000, marginCallConsequence: rnd() < 0.5 ? 'warningOnly' : 'liquidateAfterCure', curePeriodHours: 24,
+        reserveAmount: rnd() < 0.5 ? 0 : 3000, curePeriodHours: 24,
+        marginCallConsequence: ['warningOnly', 'liquidateAfterCure', 'partialAfterCure', 'autoPartial'][Math.floor(rnd() * 4)],
+        liquidationSale: rnd() < 0.3 ? 'partial' : 'all', liquidationFee: { value: rnd() * 0.05, basis: rnd() < 0.5 ? 'debt' : 'collateralSold' },
       };
       if (t.marginCallLtv !== null && t.marginCallLtv >= t.liquidationLtv) t.marginCallLtv = null;
       expect(replayOne(h, t, start), `case ${k}`).toEqual(replayOne(h, t, start, { skipDays: false }));
     }
   });
+});
+
+describe('partial sales (hand-calculated, made-up history)', () => {
+  // 1 BTC pledged at 100, loan 50 (LTV 50%). Margin call 70% → trigger 71.43; liquidation 80% → 62.50.
+  // Target after a sale = starting LTV 50%. A partial sale of value S at price P repays k·S,
+  // where k = 1 without fee; S = (debt − 0.5 × BTC × P) / (k − 0.5).
+  const start = toUnix('2024-01-01T00:00Z');
+  const day = (n) => start + n * 24 * 3600;
+  const t = { ...loan, startDate: '2024-01-01', curePeriodHours: 24 };
+  const dip = (spec) => { // spec: { dayIndex: [price, hours] }
+    const h = madeUp({});
+    for (const [d, [p, hours]] of Object.entries(spec)) {
+      const i = h.time.indexOf(day(+d));
+      for (let k = 0; k < hours; k++) { h.low[i + k] = p; h.close[i + k] = p; }
+    }
+    return h;
+  };
+
+  it('lender sells part automatically at the margin call: 0.4 BTC at 71.43, debt 50 → 21.43; later dip to 55 survives', () => {
+    // S = (50 − 0.5 × 71.4286) / 0.5 = 28.571 → 0.4 BTC. New margin trigger 21.43 / (0.6 × 0.7) = 51.02 < 55.
+    const r = replayOne(dip({ 5: [70, 1], 10: [55, 1] }), { ...t, marginCallConsequence: 'autoPartial' }, start);
+    expect(r.partialSales).toHaveLength(1);
+    expect(r.partialSales[0].btc).toBeCloseTo(0.4, 10);
+    expect(r.partialSales[0].time).toBe(day(5));
+    expect(r.collateralAtEnd).toBeCloseTo(0.6, 10);
+    expect(r.debtScaleAtEnd).toBeCloseTo(21.428571 / 50, 6);
+    expect(r.liquidation).toBeNull();
+  });
+  it('with a 5% fee on the amount repaid: sells 0.4421 BTC, debt → 19.92', () => {
+    // k = 1/1.05; S = 14.2857 / (0.952381 − 0.5) = 31.579 → 0.442105 BTC; repaid 30.075.
+    const r = replayOne(dip({ 5: [70, 1] }), { ...t, marginCallConsequence: 'autoPartial', liquidationFee: { value: 0.05, basis: 'debt' } }, start);
+    expect(r.partialSales[0].btc).toBeCloseTo(0.442105, 5);
+    expect(r.debtScaleAtEnd * 50).toBeCloseTo(19.92481, 4);
+  });
+  it('margin call not fixed within 24 h, lender sells only enough: 0.4286 BTC at 70, debt → 20', () => {
+    // At the deadline the price is still 70: S = (50 − 0.5 × 70) / 0.5 = 30 → 30/70 BTC.
+    const r = replayOne(dip({ 5: [70, 48] }), { ...t, marginCallConsequence: 'partialAfterCure' }, start);
+    expect(r.partialSales).toHaveLength(1);
+    expect(r.partialSales[0].time).toBe(day(5) + 24 * 3600);
+    expect(r.partialSales[0].reason).toBe('cureExpired');
+    expect(r.partialSales[0].btc).toBeCloseTo(30 / 70, 10);
+    expect(r.debtScaleAtEnd * 50).toBeCloseTo(20, 8);
+    expect(r.liquidation).toBeNull();
+  });
+  it('same, but the lender sells everything: loan closed at the deadline', () => {
+    const r = replayOne(dip({ 5: [70, 48] }), { ...t, marginCallConsequence: 'liquidateAfterCure' }, start);
+    expect(r.liquidation.reason).toBe('cureExpired');
+    expect(r.liquidation.btcSold).toBeCloseTo(50 / 70, 10);
+    expect(r.liquidation.btcReturned).toBeCloseTo(1 - 50 / 70, 10);
+  });
+  it('at the liquidation LTV the lender sells only enough: 0.6 BTC at 62.50, debt → 12.50', () => {
+    // Warning only at the margin call; dip to 55 reaches 62.5: S = (50 − 0.5 × 62.5) / 0.5 = 37.5 → 0.6 BTC.
+    const r = replayOne(dip({ 10: [55, 1] }), { ...t, marginCallConsequence: 'warningOnly', liquidationSale: 'partial' }, start);
+    expect(r.partialSales).toHaveLength(1);
+    expect(r.partialSales[0].reason).toBe('liquidationLtv');
+    expect(r.partialSales[0].btc).toBeCloseTo(0.6, 10);
+    expect(r.debtScaleAtEnd * 50).toBeCloseTo(12.5, 8);
+    expect(r.liquidation).toBeNull();
+  });
+  it('replay over all starts reports the share with partial sales separately', () => {
+    const r = replayAll(dip({ 100: [70, 1] }), { ...loan, marginCallConsequence: 'autoPartial' });
+    expect(r.liquidatedShare).toBe(0);
+    // Dip at day 100, 00:00 (10 Apr). One-month loans starting 11 Mar … 9 Apr contain it: 30 starts.
+    // (The loan starting 10 Apr 00:00 does not: checks begin with the hour after the start.)
+    expect(r.partialShare).toBeCloseTo(30 / 171, 12);
+  });
+});
+
+const ruleFixtures = JSON.parse(readFileSync(new URL('./fixtures/replay-rules.json', import.meta.url)));
+describe('real crashes with margin-call rules: same result as the independent reference program', () => {
+  for (const f of ruleFixtures) {
+    it.skipIf(!hasData(f.currency))(`${f.currency}: ${f.name}`, () => {
+      const start = toUnix(f.start);
+      const e = f.expected;
+      const r = replayOne(loadHourly(f.currency), { ...f.terms, currency: f.currency, startDate: f.start.slice(0, 10) }, start);
+      expect(r.marginCall?.time ?? null).toBe(e.marginCall);
+      expect(r.liquidation?.time ?? null).toBe(e.liquidation?.time ?? null);
+      expect(r.liquidation?.reason ?? null).toBe(e.liquidation?.reason ?? null);
+      expect(r.partialSales.map((p) => [p.time, p.reason])).toEqual(e.partialSales.map((p) => [p.time, p.reason]));
+      r.partialSales.forEach((p, i) => expect(p.btc).toBeCloseTo(e.partialSales[i].btc, 9));
+      expect(r.collateralAtEnd).toBeCloseTo(e.collateralAtEnd, 9);
+    });
+  }
 });

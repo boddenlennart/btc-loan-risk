@@ -6,7 +6,7 @@
 <meta name="description" content="">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' blob:; worker-src blob:; style-src 'unsafe-inline'; img-src data:; connect-src https://api.coinbase.com https://api.kraken.com https://api.binance.com https://api.coingecko.com https://www.bitstamp.net; base-uri 'none'; form-action 'none'">
-<title>BTC loan risk check</title>
+<title>BTC loan check</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M7 22l6-7 5 4 7-9' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>/*STYLE*/</style>
 </head>
@@ -14,78 +14,115 @@
 <header class="top">
   <div class="wrap top-inner">
     <h1 data-t="meta.title"></h1>
-    <nav><a href="#glossary" data-t="ui.glossaryLink"></a><button type="button" id="lang-btn" class="secondary"></button></nav>
+    <nav><button type="button" id="lang-btn" class="secondary"></button></nav>
   </div>
 </header>
 <main class="wrap">
-  <section class="intro">
-    <p data-t="sections.whatThisIs"></p>
-    <p data-t="sections.howItWorks"></p>
-    <p class="notice" data-t="sections.notAdvice"></p>
-    <p class="notice example" data-t="sections.exampleLabel"></p>
-  </section>
+  <p class="intro" data-t="ui.intro"></p>
 
-  <section aria-labelledby="offer-h">
-    <h2 id="offer-h" data-t="ui.yourOffer"></h2>
-    <p data-t="ui.yourOfferIntro"></p>
-    <p class="notice" data-t="sections.lenderFiguresWin"></p>
-    <form id="form" onsubmit="return false" novalidate></form>
+  <form id="form" onsubmit="return false" novalidate></form>
+
+  <section id="results" aria-labelledby="results-h">
+    <h2 id="results-h" class="visually-hidden" data-t="results.title"></h2>
+    <p id="error-banner" class="notice error" data-t="ui.fixErrors" hidden></p>
+    <p id="stale-banner" class="notice error" data-t="ui.staleWarning" hidden></p>
+    <p id="progress" class="progress" aria-live="polite" hidden></p>
+
+    <div id="risk">
+      <div class="card answer" id="answer">
+        <div class="label-row"><p class="headline" id="headline-text" aria-live="polite"></p><button type="button" class="q" aria-expanded="false" aria-controls="headline-help" aria-label="?">?</button></div>
+        <div class="help" id="headline-help" hidden></div>
+        <div id="dots"></div>
+        <p class="sale-line" id="sale-line"></p>
+        <p class="sub" id="kept-line"></p>
+        <p class="outlook-line" id="outlook-line"></p>
+        <p class="small"><span id="basis-line"></span> · <a href="#method" data-t="results.howMade"></a></p>
+        <details class="limits"><summary data-t="results.limitsTitle"></summary><ul id="limits"></ul></details>
+        <p class="actions"><button type="button" class="link" data-copy-link data-t="ui.copyLink"></button></p>
+        <p class="hint" id="link-copied" data-t="ui.linkCopied" hidden></p>
+      </div>
+
+      <div class="card" id="safer">
+        <h3 data-t="results.safer"></h3>
+        <div id="safer-body"></div>
+      </div>
+
+      <div class="card" id="outlook">
+        <h3 data-t="results.outlookTitle"></h3>
+        <div id="outlook-body"></div>
+      </div>
+
+      <details class="section" id="sec-falls">
+        <summary><h3 data-t="sections.falls"></h3></summary>
+        <div id="falls-text"></div>
+        <div class="label-row"><h4 data-t="falls.futuresTitle"></h4><button type="button" class="q" aria-expanded="false" aria-controls="futures-help" aria-label="?">?</button></div>
+        <div class="help" id="futures-help" hidden></div>
+        <p class="sub" id="futures-line"></p>
+        <div id="futures-chart"></div>
+        <p class="hint" id="futures-note" data-t="falls.futuresMarginNote" hidden></p>
+        <p><button type="button" class="link" data-other-paths data-t="falls.showOthers"></button></p>
+        <p class="hint" data-t="falls.measure"></p>
+        <p class="notice" data-t="falls.lenderWins"></p>
+        <h4 data-t="falls.questionsTitle"></h4>
+        <ul id="questions"></ul>
+        <p class="hint" data-t="falls.counterparty"></p>
+      </details>
+
+      <details class="section" id="sec-cost">
+        <summary><h3 id="sec-cost-title"></h3></summary>
+        <div id="cost-body"></div>
+      </details>
+
+      <details class="section" id="sec-history">
+        <summary><h3 data-t="sections.history"></h3></summary>
+        <div id="history-text"></div>
+        <h4 data-t="history.storiesTitle"></h4>
+        <p class="sub" data-t="history.storiesLine"></p>
+        <div id="stories-chart"></div>
+        <ul class="story-legend" id="stories-legend"></ul>
+      </details>
+
+      <details class="section" id="method">
+        <summary><h3 data-t="sections.method"></h3></summary>
+        <ul class="method" id="method-text"></ul>
+        <h4 data-t="method.compareTitle"></h4>
+        <div class="table-wrap" id="compare"></div>
+        <h4 data-t="method.fanTitle"></h4>
+        <p class="hint" data-t="method.fanNote"></p>
+        <div id="fan-chart"></div>
+        <h4 data-t="method.byMonthTitle"></h4>
+        <div id="months-chart"></div>
+      </details>
+
+      <details class="section" id="sec-feedback">
+        <summary><h3 data-t="sections.feedback"></h3></summary>
+        <div id="feedback-body"></div>
+      </details>
+    </div>
+    <p class="sub" id="data-range"></p>
     <p class="buttons"><button type="button" id="reset-btn" class="secondary" data-t="ui.resetExamples"></button>
       <button type="button" id="forget-btn" class="secondary" data-t="ui.forgetInputs"></button></p>
     <p id="forgotten" class="sub" role="status" data-t="ui.forgotten" hidden></p>
   </section>
 
-  <section id="results" aria-labelledby="results-h">
-    <h2 id="results-h" data-t="ui.results"></h2>
-    <p data-t="ui.resultsIntro"></p>
-    <p id="error-banner" class="notice error" data-t="ui.fixErrors" hidden></p>
-    <p id="stale-banner" class="notice error" data-t="sections.staleWarning" hidden></p>
-    <div class="cards" id="loan-basics"></div>
-    <p id="progress" class="progress" aria-live="polite" hidden></p>
-    <div id="risk">
-      <div class="cards" id="risk-head"></div>
-      <div class="cards" id="risk-charts"></div>
-      <div class="cards" id="risk-detail"></div>
-    </div>
-    <div class="cards" id="loan-cost"></div>
-    <div class="cards" id="loan-events"></div>
-    <p><button type="button" id="copy-btn" class="secondary" data-t="ui.copyResults"></button></p>
-    <p class="sub" id="data-range"></p>
-  </section>
-
-  <section aria-labelledby="risk-h" class="risks">
-    <h2 id="risk-h" data-t="glossary.counterpartyRisk.term"></h2>
-    <p data-t="sections.counterpartyRisk"></p>
-    <h3 data-t="glossary.priceIndex.term"></h3>
-    <p data-t="sections.priceMeasurement"></p>
-    <p class="notice" data-t="sections.lenderFiguresWin"></p>
-  </section>
-
-  <section id="glossary" aria-labelledby="glossary-h">
-    <h2 id="glossary-h" data-t="ui.glossaryLink"></h2>
-    <dl id="glossary-list"></dl>
-  </section>
-
-  <section id="impressum" aria-labelledby="impressum-h" class="legal">
-    <h2 id="impressum-h" data-t="legal.impressumTitle"></h2>
-    <p class="notice template-note" data-t="legal.templateNote" hidden></p>
-    <div id="impressum-body"></div>
-  </section>
-
-  <section id="privacy-notice" aria-labelledby="privacy-h" class="legal">
-    <h2 id="privacy-h" data-t="legal.privacyTitle"></h2>
-    <p class="notice template-note" data-t="legal.templateNote" hidden></p>
-    <div id="privacy-body"></div>
-  </section>
-
   <footer>
-    <p><a href="#impressum" data-t="legal.impressumTitle"></a> · <a href="#privacy-notice" data-t="legal.privacyTitle"></a></p>
-    <p data-t="sections.notAdvice"></p>
-    <p data-t="sections.privacy"></p>
-    <p data-t="sections.dataSources"></p>
+    <div class="donate">
+      <div class="qr">/*QR*/</div>
+      <div>
+        <p data-t="donate.text"></p>
+        <p class="addr" id="donate-address"></p>
+        <p><button type="button" class="secondary" data-copy-address data-t="donate.copy"></button></p>
+        <p class="hint" data-t="donate.public"></p>
+      </div>
+    </div>
+    <p data-t="footer.notAdvice"></p>
+    <details id="glossary"><summary data-t="glossary.title"></summary><dl id="glossary-list"></dl></details>
+    <details id="impressum"><summary data-t="legal.impressumTitle"></summary><p class="notice template-note" data-t="legal.templateNote" hidden></p><div id="impressum-body"></div></details>
+    <details id="privacy-notice"><summary data-t="legal.privacyTitle"></summary><p class="notice template-note" data-t="legal.templateNote" hidden></p><div id="privacy-body"></div></details>
+    <p class="hint" data-t="footer.privacy"></p>
+    <p class="hint" data-t="footer.sources"></p>
   </footer>
 </main>
-<div id="summary-bar" class="summary-bar" aria-live="polite"></div>
 <script type="application/json" id="meta">/*META*/</script>
 <script type="text/plain" id="data-USD">/*DATA_USD*/</script>
 <script type="text/plain" id="data-EUR">/*DATA_EUR*/</script>

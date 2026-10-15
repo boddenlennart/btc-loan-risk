@@ -12,6 +12,7 @@
 // The same seed always gives the same paths, and a longer horizon extends the
 // same paths (so results for 6 and 12 months are directly comparable).
 import { makeRng, mixSeed } from './random.js';
+import { createLoanState, stepLoan } from './lender.js';
 
 const barrierFn = (b) => (b === null || b === undefined ? () => -Infinity : typeof b === 'number' ? () => b : (d) => b[Math.min(d, b.length - 1)]);
 
@@ -78,29 +79,56 @@ function makeStepper(model, params, rng) {
       return [x1, low];
     };
   }
+  if (model === 'fixed') { // for tests: every path follows the same given daily steps [[logReturn, logLowRel], ...]
+    let k = 0;
+    return () => params.steps[Math.min(k++, params.steps.length - 1)];
+  }
   throw new Error(`unknown model ${model}`);
 }
 
 /**
- * runMonteCarlo({ model, params, s0, days, nPaths, seed,
- *                 liquidationBarrier, marginBarrier?, collectMinRatios?, monthEnds?,
- *                 reserve?: { amount, collateralBtc }, cureDays?, logDriftPerDay? })
- * Barriers are a number or an array with one price per day (0..days); the low
- * during day d (from d to d+1) is compared with the barrier of day d.
- * With a reserve, the money is added as extra BTC at the margin-call price the
- * first time a margin call happens, which lowers the liquidation barrier.
- * With cureDays (lender liquidates when a margin call is not fixed in time):
- * if the closing price is still at or below the margin-call level cureDays
- * after the call, the path counts as liquidated on that day.
- * Returns { pLiquidation, pMarginCall, cumulativeByMonth: [...],
- *           fanByMonth: [{ month, q05, q25, q50, q75, q95 }], minRatios? }
+ * runMonteCarlo({ model, params, s0, days, nPaths, seed, logDriftPerDay?, monthEnds?,
+ *                 loan?, liquidationBarrier?, marginBarrier?, reserve?, cureDays?,
+ *                 collectMinRatios?, samplePaths?, leverage? })
+ *
+ * Two ways to describe what ends a path:
+ *  - loan: { debtByDay, collateralBtc, rules } (rules from lender.js) — the page uses
+ *    this; margin calls, partial sales and reserves follow lender.js exactly.
+ *  - liquidationBarrier / marginBarrier: prices (a number, or one per day). Translated
+ *    into a loan with 1 unit of collateral; reserve { amount, collateralBtc } and
+ *    cureDays (sell everything if a margin call is not fixed in time) as before.
+ * The low during day d (from d-1 to d) is compared with the debt of day d-1.
+ *
+ * Returns { pLiquidation, pPartial, pMarginCall, cumulativeByMonth, fanByMonth,
+ *           keptAfterSale?, minRatios?, samplePaths?, leverage? }
+ *  - keptAfterSale: for paths with any forced sale, the share of the pledged BTC still
+ *    yours at the end (quantiles q10, q50, q90)
+ *  - samplePaths: n → the first n paths, weekly closing prices plus the day and kind of
+ *    the first sale (for the "possible futures" chart)
+ *  - leverage: { bought, payback, repay: 'sell' | 'cash' } → BTC held at the end
+ *    compared with not borrowing (profile "buy more BTC")
  */
 export function runMonteCarlo(opts) {
   const { model, s0, days, nPaths, seed = 1, collectMinRatios = false } = opts;
   const params = withDrift(model, opts.params, opts.logDriftPerDay);
-  const liq = barrierFn(opts.liquidationBarrier);
-  const mc = barrierFn(opts.marginBarrier);
-  const hasMargin = opts.marginBarrier !== null && opts.marginBarrier !== undefined;
+  let loan = opts.loan;
+  if (!loan) {
+    const liq = barrierFn(opts.liquidationBarrier);
+    const hasMargin = opts.marginBarrier !== null && opts.marginBarrier !== undefined;
+    const ratio = hasMargin ? liq(0) / barrierFn(opts.marginBarrier)(0) : null;
+    const debt = new Float64Array(days + 1).map((_, d) => liq(d));
+    loan = {
+      debtByDay: debt, collateralBtc: 1,
+      rules: {
+        mLtv: ratio, lLtv: 1, behaviour: !hasMargin ? 'none' : opts.cureDays != null ? 'liquidateAfterCure' : 'warningOnly',
+        afterCure: hasMargin && opts.cureDays != null, rearm: hasMargin && opts.cureDays != null, cureSale: 'all', liquidationSale: 'all',
+        target: ratio, feeValue: 0, feeBasis: 'debt',
+        reserve: opts.reserve && opts.reserve.amount > 0 ? opts.reserve.amount / opts.reserve.collateralBtc : 0,
+      },
+    };
+  }
+  const { debtByDay, rules } = loan;
+  const cure = opts.cureDays ?? 0;
   const monthEnds = opts.monthEnds ?? defaultMonthEnds(days);
   const nm = monthEnds.length;
   const monthIndexOfDay = new Int32Array(days + 1).fill(-1);
@@ -111,51 +139,54 @@ export function runMonteCarlo(opts) {
   const fan = new Float64Array(nm * nPaths);
   const hitsByMonth = new Float64Array(nm);
   const minRatios = collectMinRatios ? new Float64Array(nPaths) : null;
-  let liquidated = 0;
-  let marginCalls = 0;
-  const reserve = opts.reserve && opts.reserve.amount > 0 ? opts.reserve : null;
-  const cureDays = opts.cureDays ?? null;
+  const nSample = Math.min(opts.samplePaths || 0, nPaths);
+  const samples = [];
+  const lev = opts.leverage || null;
+  const endBtc = lev ? new Float64Array(nPaths) : null;
+  const keptAfterSale = []; // share of the pledged BTC still yours at the end, for paths with any forced sale
+  let liquidated = 0; let partial = 0; let marginCalls = 0;
+  let levMore = 0; let levLessKept = 0;
 
   for (let p = 0; p < nPaths; p++) {
     const rng = makeRng(mixSeed(seed, p));
     const step = makeStepper(model, params, rng);
+    const st = createLoanState(loan.collateralBtc);
     let logS = Math.log(s0);
     let minLog = logS;
-    let hit = false;
-    let called = false;
-    let scale = 1; // barrier multiplier after a reserve top-up
-    let deadline = -1;
+    const weekly = p < nSample ? [s0] : null;
+    let event = null;
     for (let d = 1; d <= days; d++) {
       const [ret, lowRel] = step();
       const lowLog = logS + lowRel;
-      const lowPrice = Math.exp(lowLog);
       logS += ret;
       if (lowLog < minLog) minLog = lowLog;
-      if (!hit) {
-        const liquidate = () => { hit = true; liquidated++; hitsByMonth[firstMonthForDay[d]]++; };
-        if (lowPrice <= liq(d - 1) * scale) {
-          liquidate();
-          if (!called && hasMargin) { called = true; marginCalls++; }
-        } else if (deadline >= 0 && d >= deadline && Math.exp(logS) <= mc(d - 1) * scale) {
-          liquidate();
-        } else {
-          if (deadline >= 0 && d >= deadline) deadline = -1;
-          if (hasMargin && deadline < 0 && lowPrice <= mc(d - 1) * scale) {
-            if (!called) {
-              called = true; marginCalls++;
-              if (reserve) {
-                const c = reserve.collateralBtc;
-                scale = c / (c + reserve.amount / (mc(d - 1) * scale));
-              }
-            }
-            if (cureDays !== null) deadline = d + cureDays;
-          }
-        }
+      if (!st.liquidation) {
+        const nPartial = st.partialSales.length;
+        stepLoan(st, rules, { time: d, low: Math.exp(lowLog), close: Math.exp(logS), debt: debtByDay[d - 1], cure });
+        if (st.liquidation) {
+          hitsByMonth[firstMonthForDay[d]]++;
+          if (weekly && !event) event = { day: d, kind: st.liquidation.reason };
+        } else if (weekly && !event && st.partialSales.length > nPartial) event = { day: d, kind: 'partial' };
       }
       const mi = monthIndexOfDay[d];
       if (mi >= 0) fan[mi * nPaths + p] = Math.exp(logS);
+      if (weekly && (d % 7 === 0 || d === days)) weekly.push(Math.exp(logS));
     }
+    if (st.liquidation) liquidated++;
+    else if (st.partialSales.length) partial++;
+    if (st.liquidation || st.partialSales.length) keptAfterSale.push((st.liquidation ? st.liquidation.btcReturned : st.c) / loan.collateralBtc);
+    if (st.firstMargin) marginCalls++;
     if (minRatios) minRatios[p] = Math.exp(minLog) / s0;
+    if (weekly) samples.push({ weekly, event, liquidated: !!st.liquidation, partial: !st.liquidation && st.partialSales.length > 0 });
+    if (lev) {
+      // BTC at the end: collateral left (or returned after a liquidation) + bought BTC
+      // − BTC sold at the end to repay (only when repaying by selling)
+      const endPrice = Math.exp(logS);
+      const repaySell = !st.liquidation && lev.repay === 'sell' ? (lev.payback * st.scale) / endPrice : 0;
+      const held = (st.liquidation ? st.liquidation.btcReturned : st.c) + lev.bought - repaySell;
+      endBtc[p] = held;
+      if (!st.liquidation) { if (held > loan.collateralBtc) levMore++; else levLessKept++; }
+    }
   }
 
   const cumulativeByMonth = [];
@@ -163,10 +194,25 @@ export function runMonteCarlo(opts) {
   for (let m = 0; m < nm; m++) { acc += hitsByMonth[m]; cumulativeByMonth.push(acc / nPaths); }
   const fanByMonth = [];
   for (let m = 0; m < nm; m++) {
-    const s = fan.subarray(m * nPaths, (m + 1) * nPaths).slice().sort();
-    fanByMonth.push({ month: m + 1, day: monthEnds[m], q05: quantile(s, 0.05), q25: quantile(s, 0.25), q50: quantile(s, 0.5), q75: quantile(s, 0.75), q95: quantile(s, 0.95) });
+    const srt = fan.subarray(m * nPaths, (m + 1) * nPaths).slice().sort();
+    fanByMonth.push({ month: m + 1, day: monthEnds[m], q05: quantile(srt, 0.05), q25: quantile(srt, 0.25), q50: quantile(srt, 0.5), q75: quantile(srt, 0.75), q95: quantile(srt, 0.95) });
   }
-  const out = { pLiquidation: liquidated / nPaths, pMarginCall: hasMargin ? marginCalls / nPaths : null, cumulativeByMonth, fanByMonth };
+  const out = {
+    pLiquidation: liquidated / nPaths, pPartial: partial / nPaths,
+    pMarginCall: rules.mLtv ? marginCalls / nPaths : null, cumulativeByMonth, fanByMonth,
+  };
+  if (keptAfterSale.length) {
+    const srt = Float64Array.from(keptAfterSale).sort();
+    out.keptAfterSale = { q10: quantile(srt, 0.1), q50: quantile(srt, 0.5), q90: quantile(srt, 0.9) };
+  }
   if (minRatios) out.minRatios = Array.from(minRatios);
+  if (nSample) out.samplePaths = samples;
+  if (lev) {
+    const srt = endBtc.slice().sort();
+    out.leverage = {
+      more: levMore / nPaths, lessKept: levLessKept / nPaths, liquidated: liquidated / nPaths,
+      endBtc: { q05: quantile(srt, 0.05), q50: quantile(srt, 0.5), q95: quantile(srt, 0.95) },
+    };
+  }
   return out;
 }
