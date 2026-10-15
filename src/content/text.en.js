@@ -100,8 +100,8 @@ export default {
     help: {
       initialLtv: 'LTV = loan ÷ value of the BTC you pledge. A lower LTV means more BTC behind the same loan, so the price can fall further. Example: loan €10,000 at 50% LTV means you pledge BTC worth €20,000. At a BTC price of €50,000 that is 0.4 BTC.',
       liquidationLtv: 'When BTC falls, your loan stays the same but your BTC is worth less, so the LTV rises. At this LTV the lender sells your BTC. A higher number gives you more room. Example: €10,000 loan, 0.4 BTC, liquidation at 80%: the sale happens when 0.4 BTC is worth €12,500, which is a BTC price of €31,250.',
-      repayment: 'If interest is added to the loan, what you owe grows every month, and so does the price at which your BTC is sold. Example: €10,000 at 10% for a year: paid monthly, you owe €10,000 all year; added to the loan, you owe about €11,000 at the end, and the sale price rises by about 10%.',
-      marginCall: 'A [[marginCall]] comes before a sale: your LTV has risen to a warning level. What happens next depends on your lender: only a warning; you must add BTC or repay part within some hours, otherwise the lender sells everything or just enough; or the lender sells part of your BTC at once. Example: margin call at 70% with a 48-hour deadline: if the LTV is still 70% after 48 hours, the lender sells.',
+      repayment: 'If interest is added to the loan, what you owe grows every month, and so does the price at which your BTC is sold. Example: €10,000 at 10% for a year. Paid monthly, you owe €10,000 all year. Added to the loan, you owe about €11,000 at the end, and the sale price rises by about 10%.',
+      marginCall: 'A [[marginCall]] comes before a sale: your LTV has risen to a warning level. What happens next depends on your lender. It may be only a warning. You may have some hours to add BTC or repay part, or the lender sells everything or just enough. Or the lender sells part of your BTC at once. Example: margin call at 70% with a 48-hour deadline: if the LTV is still 70% after 48 hours, the lender sells.',
     },
   },
 
@@ -149,6 +149,7 @@ export default {
     safer: 'Make it safer',
     sliderLine: 'Starting LTV {ltv} → {p} of 100 liquidated · you pledge {btc}',
     sliderLineExisting: 'LTV {ltv} → {p} of 100 liquidated · {btc} pledged (add {add})',
+    sliderLineExistingNow: 'LTV {ltv} → {p} of 100 liquidated · {btc} pledged',
     sliderNote: 'Drag to try a lower LTV: borrow less, or pledge more BTC. Release to use it.',
     otherOptions: 'Other options, one change at a time (liquidated, of 100):',
     yourTerms: 'Your terms as they are',
@@ -193,7 +194,7 @@ export default {
     liquidationPartial: 'At {price} (liquidation): the lender sells just enough BTC to bring the LTV back to {target}. The loan continues with less BTC.',
     futuresTitle: '20 possible futures',
     futuresLine: 'Each line is one possible path of the BTC price over your loan, built from real 30-day stretches of BTC\'s past, joined at random. ✕ = the lender sells. {k} of these 20 end with a sale.',
-    futuresHelp: 'The simulation takes the real daily price moves of BTC since 2014, cuts them into 30-day pieces, and joins randomly chosen pieces into a new path for the length of your loan. Each path keeps the real mix of calm and wild weeks. Example: one path may start with a stretch from May 2021 (a 50% fall) followed by one from late 2023 (a steady rise).',
+    futuresHelp: 'The simulation takes the real daily price moves of BTC since 2014 and cuts them into 30-day pieces. It joins randomly chosen pieces into a new path for the length of your loan. Each path keeps the real mix of calm and wild weeks. Example: one path may start with a stretch from May 2021 (a 50% fall) followed by one from late 2023 (a steady rise).',
     futuresMarginNote: 'Some ✕ sit above the red line: there, a margin call (amber line) was not fixed in time, or the lender sold part of the BTC.',
     showOthers: 'Show 20 others',
     measure: 'Your lender decides which BTC price counts: one exchange, an average of several, or an average over some minutes. A single exchange can briefly drop much lower than others. This page uses the lowest price of every hour on one exchange, which is cautious, but it cannot copy your lender\'s method exactly.',
@@ -287,6 +288,7 @@ export default {
   },
 
   footer: {
+    license: 'Open source under the MIT licence. Provided "as is", without warranty of any kind: use it at your own risk.',
     notAdvice: 'This page is not financial, investment or tax advice. It is a calculator with a model of past price moves. It cannot know your situation or the future. Check every number against your lender\'s documents.',
     privacy: 'Everything you type stays in your browser; this page has no server of its own, no tracking and no cookies. It remembers your inputs in your browser\'s local storage; "Forget my inputs" deletes them. When the page opens, your browser asks public price services for the current BTC price: api.coinbase.com, and only if that fails api.kraken.com, api.binance.com or api.coingecko.com; it also loads recent hourly prices from www.bitstamp.net. These services see your IP address and browser type, but nothing you entered. A copied link contains your inputs after the "#" sign, which browsers do not send to any server. The page itself is hosted by GitHub Pages.',
     sources: 'Data: Bitstamp (USD 2014–, EUR 2017–), Kraken (EUR 2014–2016). Current price: Coinbase, Kraken, Binance or CoinGecko. Known gap: Bitstamp was offline from 5 to 9 January 2015.',

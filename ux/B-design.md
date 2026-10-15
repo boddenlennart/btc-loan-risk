@@ -15,7 +15,7 @@ The sketch numbers produced three findings that shape the design more than any l
 Historical facts used in the copy (USD data 2014–2026, every start day):
 - Higher after **4 years: 100%** of start days.
 - Higher after **1 year: 67.5%** of start days; worst outcome **−83%**.
-- In **8 of 13** calendar years BTC fell **≥ 50%** within the year.
+- In **7 of 13** calendar years BTC fell **≥ 50%** within the year.
 
 ## 2. Your request: advocate for a lower LTV, point to high liquidation LTVs (e.g. Firefish)
 

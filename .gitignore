@@ -1,6 +1,19 @@
+# tools installed inside the project (not committed)
 .tools/
 node_modules/
+# raw exchange downloads (large; re-create with tools/fetch_history.py)
 data/raw/
-.DS_Store
+# local test copies and logs
+ux/audit/
 *.log
+# editor / OS / local assistant settings
+.DS_Store
 .claude/
+.vscode/
+.idea/
+# never commit secrets
+.env
+.env.*
+*.pem
+*.key
+*.p12

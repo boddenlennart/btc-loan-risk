@@ -7,7 +7,7 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 const page = new URL('../docs/index.html', import.meta.url);
 const ALLOWED_HOSTS = ['api.coinbase.com', 'api.kraken.com', 'api.binance.com', 'api.coingecko.com', 'www.bitstamp.net'];
 // Plain text links shown to the reader (not loaded by the page):
-const TEXT_LINKS = ['docs.github.com'];
+const TEXT_LINKS = ['docs.github.com', 'github.com'];
 
 describe.skipIf(!existsSync(page))('built page: self-hosted, no external resources', () => {
   const html = existsSync(page) ? readFileSync(page, 'utf8') : '';

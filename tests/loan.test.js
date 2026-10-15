@@ -138,3 +138,14 @@ describe('early repayment', () => {
     expect(earlyRepaymentCost(simple, 6)).toBeCloseTo(10100, 6);
   });
 });
+
+describe('equal monthly payments stay exact for rates close to 0%', () => {
+  it('a rate of 0.0000000000025% gives the same plan as 0% (100 over 50 months = 2.00 each)', () => {
+    const t = { ...simple, loanAmount: 100, durationMonths: 50, repayment: 'amortizing' };
+    const tiny = buildSchedule({ ...t, rate: { type: 'fixed', annual: 2.5e-14 } });
+    const zero = buildSchedule({ ...t, rate: { type: 'fixed', annual: 0 } });
+    expect(tiny.map((r) => r.payment)).toEqual(zero.map((r) => r.payment));
+    expect(tiny.every((r) => r.balanceAfter >= 0)).toBe(true);
+    expect(zero[0].payment).toBe(2);
+  });
+});

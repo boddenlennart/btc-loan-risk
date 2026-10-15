@@ -38,8 +38,11 @@ function periodInterest(balance, annual, days, dayCount) {
   return (balance * annual) / 12; // '30/360', the preset
 }
 
+// Equal payment for n periods. 1 - (1 + r)^-n is written with expm1/log1p, which stays
+// accurate for rates close to 0 (the plain formula breaks down there).
 function pmt(rate, n, pv) {
-  return rate === 0 ? pv / n : (pv * rate) / (1 - (1 + rate) ** -n);
+  if (rate === 0) return pv / n;
+  return (pv * rate) / -Math.expm1(-n * Math.log1p(rate));
 }
 
 /** Monthly schedule rows: { month, date, rate, days, interest, principal, payment, balanceAfter }. */

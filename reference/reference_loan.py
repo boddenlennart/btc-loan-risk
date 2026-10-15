@@ -71,7 +71,8 @@ def period_interest(balance, annual, days, day_count):
 def pmt(rate, n, pv):
     if rate == 0:
         return pv / n
-    return pv * rate / (1 - (1 + rate) ** -n)
+    # 1 - (1 + r)^-n via expm1/log1p: stays accurate for rates close to 0
+    return pv * rate / -math.expm1(-n * math.log1p(rate))
 
 
 def schedule(case):

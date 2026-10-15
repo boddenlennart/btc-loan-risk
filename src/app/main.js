@@ -31,6 +31,8 @@ let state = loadState();
 let priceInfo = null; // { source, time, stale } | { source: 'manual' }
 const feedback = { use: '', meaning: '', useful: 0, easy: 0, missing: '', attach: false };
 let lastTerms = null; let lastSettings = null; let lastRisk = null; let timer = null; let started = false;
+// the terms and settings the current risk results were calculated for (charts must use these, not newer inputs)
+let riskTerms = null; let riskSettings = null; const pending = {};
 let showOtherPaths = false;
 
 function loadState() {
@@ -335,13 +337,13 @@ async function ensureRecent(cur) {
   appended[cur] = [];
   const candles = await fetchRecentCandles(cur);
   appended[cur] = candles;
-  if (candles.length) { sentData.delete(cur); if (started && cur === state.currency) update(); }
+  if (candles.length) sentData.delete(cur); // picked up by the next recalculation
 }
 
 // ------------------------------------------------------------------ worker
 // '#no-worker' in the address forces the fallback (to test browsers that block workers)
 let worker = null; let useInline = location.hash === '#no-worker'; let runId = 0; let busy = false;
-const sentData = new Set(); const garchCache = {};
+const sentData = new Set(); const garchCache = { ...(META.garch || {}) }; // fitted at build time
 function makeWorker() {
   sentData.clear();
   if (useInline) return;
@@ -363,7 +365,7 @@ function onWorkerMessage(m) {
     $('#progress').hidden = false; $('#progress').textContent = t('ui.computing', { done: m.done, total: m.total });
   } else if (m.type === 'partial' || m.type === 'result') {
     garchCache[m.result.currency] = m.result.garch;
-    lastRisk = m.result;
+    lastRisk = m.result; [riskTerms, riskSettings] = pending[m.id];
     if (m.type === 'result') { busy = false; $('#progress').hidden = true; }
     renderRisk();
   } else if (m.type === 'error') {
@@ -376,6 +378,7 @@ function requestRisk(terms, settings) {
   if (!worker && !useInline) makeWorker();
   sendData(terms.currency);
   busy = true;
+  pending[runId] = [terms, settings];
   const garch = garchCache[terms.currency] || null;
   if (useInline) {
     const id = runId;
@@ -388,14 +391,15 @@ function showErrors(errors) {
   for (const el of document.querySelectorAll('[data-field] .err')) { el.hidden = true; el.textContent = ''; }
   const fieldFor = (f) => (f === 'rate' ? (state.rateType === 'variable' ? 'ratePath' : 'rateAnnual') : f === 'marginCallConsequence' ? 'marginCallLtv' : f);
   for (const e of errors) {
+    if (e.field === 'btcPrice' && !priceInfo) continue; // the price is still loading
     const el = $(`[data-field="${fieldFor(e.field)}"] .err`);
     if (!el) continue;
     const tx = texts().errors[e.code];
     el.hidden = false; el.textContent += `${tx.problem} ${tx.fix} `;
-    if (e.field === 'btcPrice') $('#price-edit').hidden = false;
+    if (e.field === 'btcPrice' && priceInfo) $('#price-edit').hidden = false; // not while the price is still loading
     const det = el.closest('details'); if (det && !det.open) det.open = true;
   }
-  $('#error-banner').hidden = errors.length === 0;
+  $('#error-banner').hidden = errors.filter((e) => !(e.field === 'btcPrice' && !priceInfo)).length === 0;
 }
 
 function update() {
@@ -431,7 +435,7 @@ function renderLoan() {
   else if (rules.liquidationSale === 'partial') sale = t('results.saleLinePartialLiq', v);
   else if (rules.afterCure) sale = t('results.saleLineCure', v);
   else sale = t('results.saleLine', v);
-  const rising = lp.atMaturity > lp.atStart * 1.005 ? ` ${t('results.rising', { end: money0(lp.atMaturity, cur) })}` : '';
+  const rising = tm.repayment === 'bullet' && lp.atMaturity > lp.atStart * 1.005 ? ` ${t('results.rising', { end: money0(lp.atMaturity, cur) })}` : '';
   $('#sale-line').textContent = sale + rising;
   renderFallsText();
   renderCost();
@@ -467,7 +471,7 @@ function renderCost() {
   const rows = s.schedule.map((r) => `<tr><td>${r.month}</td><td>${esc(isoDate(r.date))}</td><td>${money(r.interest, cur)}</td><td>${money(r.principal, cur)}</td><td>${money(r.payment, cur)}</td><td>${money(r.balanceAfter, cur)}</td></tr>`).join('');
   let html = `<p>${esc(existing ? t('cost.lineExisting', { payback: money(s.totalPayback, cur), interest: money(s.totalInterest, cur) })
     : t('cost.line', { received: money(s.amountReceived, cur), payback: money(s.totalPayback, cur), cost: money(s.totalCost, cur), apr: pct(s.effectiveApr, 1) }))}</p>
-    <details class="table-details"><summary>${esc(C.schedule)}</summary><div class="table-wrap"><table><thead><tr>${C.scheduleHead.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></details>`;
+    <details class="table-details"><summary>${esc(C.schedule)}</summary><div class="table-wrap" tabindex="0" role="region" aria-label="${esc(t('ui.showTable'))}"><table><thead><tr>${C.scheduleHead.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></details>`;
   if (tm.purpose !== 'buy') {
     html += `<h4>${esc(texts().sections.borrowOrSell)}</h4><p>${esc(C.sellIntro)}</p>
       <p class="big-line">${esc(t('cost.breakeven', { rise: pct(breakevenReturn(tm, { taxRateNow: tm.taxRateNow, taxRateAtMaturity: tm.taxRateAtMaturity }), 1) }))}</p>
@@ -502,7 +506,7 @@ function splitTo100(parts) { // rounds shares so they add up to exactly 100
 }
 
 function renderRisk() {
-  const r = lastRisk; const tm = lastTerms;
+  const r = lastRisk; const tm = riskTerms;
   if (!r || !tm || r.currency !== tm.currency) return;
   $('#risk').classList.remove('outdated');
   const R = texts().results; const cur = tm.currency; const months = tm.durationMonths;
@@ -515,7 +519,7 @@ function renderRisk() {
   $('#dots').innerHTML = dotsHtml([[nLiq, 'd-liq'], [nPart, 'd-part'], [nMargin, 'd-margin'], [nNone, 'd-none']], headline)
     + legendHtml([[nLiq, 'd-liq', R.legendLiquidated], [nPart, 'd-part', R.legendPartial], [nMargin, 'd-margin', R.legendMargin], [nNone, 'd-none', R.legendNothing]]);
   $('#kept-line').textContent = m.keptAfterSale && m.pPartial >= 0.005 ? t('results.kept', { kept: pct(m.keptAfterSale.q50, 0) }) : '';
-  $('#outlook-line').textContent = r.outlook ? t('results.outlookLine', { trend: signedPct(lastSettings.trend), n: of100(r.outlook.pLiquidation + r.outlook.pPartial) }) : '';
+  $('#outlook-line').textContent = r.outlook ? t('results.outlookLine', { trend: signedPct(riskSettings.trend), n: of100(r.outlook.pLiquidation + r.outlook.pPartial) }) : '';
   $('#basis-line').textContent = t('results.basis', { g: of100(r.garchMc.pLiquidation + r.garchMc.pPartial) });
   renderSafer(); renderOutlook();
   if (tm.purpose === 'buy') renderLeverage();
@@ -527,7 +531,7 @@ function renderRisk() {
 }
 
 function renderSafer() {
-  const r = lastRisk; const tm = lastTerms; const R = texts().results; const cur = tm.currency;
+  const r = lastRisk; const tm = riskTerms; const R = texts().results; const cur = tm.currency;
   const el = $('#safer-body');
   if (!r.slider) { el.innerHTML = `<p class="progress">${esc(t('ui.computing', { done: '…', total: '…' }))}</p>`; return; }
   const grid = r.slider;
@@ -537,7 +541,9 @@ function renderSafer() {
     const g = grid[i];
     if (tm.mode === 'existing') {
       const btcNeeded = tm.loanAmount / (g.ltv * tm.btcPrice);
-      return t('results.sliderLineExisting', { ltv: pct(g.ltv, 0), p: of100(g.p), btc: btc(btcNeeded), add: btc(Math.max(0, btcNeeded - tm.collateralInput)) });
+      const add = btcNeeded - tm.collateralInput;
+      return add > 0.00005 ? t('results.sliderLineExisting', { ltv: pct(g.ltv, 0), p: of100(g.p), btc: btc(btcNeeded), add: btc(add) })
+        : t('results.sliderLineExistingNow', { ltv: pct(g.ltv, 0), p: of100(g.p), btc: btc(btcNeeded) });
     }
     return t('results.sliderLine', { ltv: pct(g.ltv, 0), p: of100(g.p), btc: btc(g.btc) });
   };
@@ -588,7 +594,7 @@ function renderOutlook() {
 }
 
 function renderLeverage() {
-  const r = lastRisk; const tm = lastTerms; const C = texts().cost; const el = $('#leverage');
+  const r = lastRisk; const tm = riskTerms || lastTerms; const C = texts().cost; const el = $('#leverage');
   if (!el) return;
   const s = loanSummary(tm); const cur = tm.currency;
   const bought = s.amountReceived / tm.btcPrice; const c0 = collateralBtc(tm);
@@ -599,7 +605,7 @@ function renderLeverage() {
     const sentence = t('cost.levHeadline', { more, less: lessKept + liq, liq });
     html += `<p class="big-line">${esc(sentence)}</p>${dotsHtml([[more, 'd-good'], [lessKept, 'd-none'], [liq, 'd-liq']], sentence)}
       ${legendHtml([[more, 'd-good', C.levLegendMore], [lessKept, 'd-none', C.levLegendLess], [liq, 'd-liq', C.levLegendLiq]])}`;
-    if (r.outlook && r.outlook.leverage) html += `<p class="hint">${esc(t('results.outlookLine', { trend: signedPct(lastSettings.trend), n: of100(r.outlook.leverage.more) }))} (${esc(C.levLegendMore)})</p>`;
+    if (r.outlook && r.outlook.leverage) html += `<p class="hint">${esc(t('results.outlookLine', { trend: signedPct(riskSettings.trend), n: of100(r.outlook.leverage.more) }))} (${esc(C.levLegendMore)})</p>`;
   }
   if (lenderRules(tm).liquidationSale === 'all') {
     const lq = costIfLiquidated(tm, { price: liquidationPrices(tm).atStart, debt: tm.loanAmount });
@@ -625,7 +631,7 @@ function historyText() {
 
 // charts are drawn when their section is opened (and redrawn after new results)
 function chartCommon() {
-  const tm = lastTerms; const { lp, mp } = salePrices(tm); const cur = tm.currency;
+  const tm = riskTerms; const { lp, mp } = salePrices(tm); const cur = tm.currency;
   const days = daysBetween(tm.startDate, addMonths(tm.startDate, tm.durationMonths));
   return {
     days, liq: [lp.atStart, lp.atMaturity], mc: mp ? [mp.atStart, mp.atMaturity] : null,
@@ -635,7 +641,7 @@ function chartCommon() {
 function renderFutures() {
   const r = lastRisk; if (!r || !r.main.samplePaths) return;
   const Fa = texts().falls; const paths = r.main.samplePaths;
-  const shown = showOtherPaths ? paths.slice(10).concat(paths.slice(0, 10)) : paths;
+  const shown = showOtherPaths ? paths.slice(20, 40) : paths.slice(0, 20);
   $('#futures-line').textContent = t('falls.futuresLine', { k: shown.filter((p) => p.event).length });
   futuresChart($('#futures-chart'), {
     ...chartCommon(), paths: shown,
@@ -645,7 +651,7 @@ function renderFutures() {
 }
 function renderStories() {
   const r = lastRisk; if (!r || !r.stories) return;
-  const tm = lastTerms; const H = texts().history;
+  const tm = riskTerms; const H = texts().history;
   const names = r.stories.map((s) => isoDate(s.start));
   storiesChart($('#stories-chart'), { ...chartCommon(), stories: r.stories, s0: tm.btcPrice, colors: STORY_COLORS, labels: { title: H.storiesTitle, names, margin: texts().falls.ladderMargin, sale: texts().falls.ladderSale } });
   $('#stories-legend').innerHTML = r.stories.map((s, j) => {
@@ -658,7 +664,7 @@ function renderStories() {
 }
 function renderExpertCharts() {
   const r = lastRisk; if (!r) return;
-  const tm = lastTerms; const M = texts().method; const { lp } = salePrices(tm);
+  const tm = riskTerms; const M = texts().method; const { lp } = salePrices(tm);
   const cm = chartCommon();
   const liqByMonth = [0, ...r.main.fanByMonth.map((f) => f.day)].map((d) => lp.byDay[d]);
   fanChart($('#fan-chart'), { s0: tm.btcPrice, fan: r.main.fanByMonth, liq: liqByMonth, fmt: cm.fmt, monthLabel: cm.monthLabel, labels: { title: M.fanTitle, median: '50%', liq: texts().falls.ladderSale } });
@@ -671,7 +677,7 @@ function renderExpertCharts() {
     <tr><th scope="row">${esc(rows.replay)}</th><td>${of100(r.replay.liquidatedShare + (r.replay.partialShare || 0))}</td></tr>
     <tr><th scope="row">${esc(rows.barrier)}</th><td>${of100(r.barrier.p)}</td></tr></tbody></table>
     <p class="hint">${esc(t('method.barrierNote', { sigma: pct(r.barrier.sigma, 0) }))}</p>
-    <p class="hint">${esc(t('method.settings', { paths: num(lastSettings.nPaths, 0), block: lastSettings.blockDays, from: date(r.history.from), to: date(r.history.to) }))}</p>`;
+    <p class="hint">${esc(t('method.settings', { paths: num(riskSettings.nPaths, 0), block: riskSettings.blockDays, from: date(r.history.from), to: date(r.history.to) }))}</p>`;
 }
 
 // ------------------------------------------------------------------ static parts
@@ -736,4 +742,5 @@ if (state.priceManual && numOr(state.btcPrice, null) !== null) priceInfo = { sou
 renderAll();
 makeWorker();
 const waitMax = (p, ms) => Promise.race([p, new Promise((r) => setTimeout(r, ms))]);
-Promise.all([waitMax(loadPrice(false), 5000), waitMax(ensureRecent(state.currency), 5000)]).then(() => { started = true; update(); });
+// wait for the live price (at most 4 s) and the recent hours (at most 1.5 s); later candles are used in the next recalculation
+Promise.all([waitMax(loadPrice(false), 4000), waitMax(ensureRecent(state.currency), 1500)]).then(() => { started = true; update(); });

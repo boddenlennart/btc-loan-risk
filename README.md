@@ -103,15 +103,30 @@ npm test                                     # run all automated tests
 | Monte Carlo, GARCH(1,1) with Student-t errors | Second simulation with a model in which wild days cluster and large moves are more frequent. Cross-check for the bootstrap. | `src/engine/garch.js` |
 | Textbook barrier formula | Closed-form chance that a geometric Brownian motion touches the liquidation price. Sanity check only. | `src/engine/barrier.js` |
 | Loan arithmetic | Payment plan, interest, APR (XIRR), collateral, trigger prices, top-up, cost of liquidation, breakeven. | `src/engine/loan.js` |
+| Lender rules | What the lender does when BTC falls: margin call as a warning only, top-up deadline with full or partial sale, automatic partial sale, full or partial sale at the liquidation LTV, fees, a cash reserve. **One implementation used by both the replay and the simulations.** | `src/engine/lender.js` |
+| Result counted in BTC | For "buy more BTC": BTC held at the end compared with not borrowing, in every simulated future. | `src/engine/montecarlo.js` |
 
-All simulations run in a background Web Worker.
+All simulations run in a background Web Worker. The GARCH model is fitted once when the page is built (it was the slowest step in the browser).
+
+### What the visitor sees (UX redesign, see `ux/`)
+
+- **Answer first:** "In N of 100 simulated futures, this loan is liquidated within M months", with 100 coloured dots and the price at which the BTC is sold.
+- **Make it safer:** an LTV slider and the effect of each other option (shorter loan, cash reserve, other margin-call rules, higher liquidation LTV), computed on the visitor's own numbers.
+- **Price outlook:** presets anchored in real history (bear, no trend, moderate, bull, generational run) and a slider. The headline always shows "no trend", with the outlook next to it.
+- **Sections, closed by default:**
+  - what happens when BTC falls (price ladder, 20 possible futures, questions to ask a lender)
+  - costs and "borrow or sell?" / "is the leverage worth it?"
+  - what history says (4 real start dates)
+  - how these numbers are made
+  - feedback
+- **Also:** "I already have a loan", entering BTC instead of the LTV, a shareable link (inputs only after "#"), a feedback e-mail built in the visitor's own mail app, a donation box with a QR code made at build time.
 
 ### Assumptions (all visible and editable on the page)
 
 - **Debt** for the LTV = loan plus interest owed but not yet paid, growing day by day. So the liquidation price rises over time if interest is added to the loan.
 - **Interest** per month = balance × yearly rate ÷ 12 (preset). It can also be actual days ÷ 365 or ÷ 360. Each month's interest is rounded to the cent.
 - **Assumed price trend** = 0% a year (preset). The models remove the strong past upward trend of BTC. With the past trend kept, the calibration test (below) showed the models were too optimistic.
-- **Margin call**: either a warning only, or the lender sells when the margin call is not fixed within the cure period (your choice). Optionally you add a reserve as extra BTC at the first margin call.
+- **Margin call**: only a warning; top up within the cure period, otherwise the lender sells everything or only enough to reach the target LTV; or the lender sells part at once. At the liquidation LTV: everything, or only enough. A partial sale repays part of the debt; later interest shrinks in proportion. A cash reserve is added as BTC at the first margin call.
 - **Breakeven**: assumes you repay the loan by selling BTC at the end, with the tax rates you enter for "now" and "at the end".
 - The page checks the **lowest price of every hour on one exchange**. Your lender may measure the price differently (another exchange, an index, an average). The page explains this to visitors.
 
@@ -159,7 +174,7 @@ Public APIs can change their rules at any time; the page then falls back to the 
 
 ## Tests and how each was verified
 
-Run with `npm test`. All tests were written **before** the engine (phase 1) and approved by the project owner.
+Run with `npm test` (219 tests). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
 
 | # | Test | How it was verified |
 |---|---|---|
@@ -169,14 +184,33 @@ Run with `npm test`. All tests were written **before** the engine (phase 1) and 
 | 4 | Out-of-sample calibration (`tests/calibration.test.js`) | For every month from 2016 on, the model only sees earlier prices and predicts the lowest price of the next 90 or 365 days. Reality may fall below the "worst 5%" level at most 10% of the time, and below the "worst 10%" level at most 20%. Results below. |
 | 5 | Common-sense rules (`tests/properties.test.js`) | Hundreds of random loans: a higher LTV never lowers the liquidation price; a longer loan never lowers the chance of liquidation (formula, all three simulations, replay); liquidating after an unfixed margin call never lowers it; a reserve never raises it. |
 | 6 | Input validation (`tests/validation.test.js`) | 27 kinds of impossible terms must each be rejected with the right code. Each code has a "what is wrong" and a "how to fix it" text in both languages (test 7). |
-| 7 | Completeness and wording (`tests/content.test.js`) | Every input has label, hint, "where to find this" and a "?" text with a number example; every output has a "What does this mean?" text; glossary entries exist; German and English have the same texts. A word scan rejects "typical", "usually", "üblich", "meist", "you should", "empfehlen" and similar, and any lender or platform name, unless a `[source: …]` is given. |
+| 7 | Completeness and wording (`tests/content.test.js`, revised in the UX redesign as approved) | A "?" help text exists at exactly the six agreed places, each with a number example; every input and every result is explained somewhere (help, hint, glossary or its section); glossary entries exist; German and English have the same texts; no sentence over 30 words, average at most 14. A word scan rejects "typical", "usually", "üblich", "meist", "you should", "empfehlen" and similar, and any lender name, unless a `[source: …]` is given. |
 | 8 | Plain-language review | Done by the project owner (phase 3). |
 | 9 | Real-offer check | Done by the project owner (phase 3); see below. |
 | + | Data quality (`tests/data.test.js`) | Embedded data equals the raw downloads to the cent; no gaps over 6 hours, no extreme wicks and no offline periods that were not reviewed by hand. |
 | + | GARCH fitting (`tests/garch.test.js`) | Data invented from known GARCH settings; the fit must recover them. |
 | + | Live price (`tests/liveprice.test.js`) | Fallback order, timeouts, bad answers, stale fallback, and that no user data is in any request (with fake network answers). |
 | + | Hosting (`tests/hosting.test.js`) | The built page has no external scripts, styles, fonts or images; every web address in it is one of the named price services (or a plain text link); the Content Security Policy allows exactly those services. The privacy notice must name every service (`tests/content.test.js`). |
-| + | Speed-up is exact (`tests/replay.test.js`) | The replay skips quiet days for speed; on 300 random loans it gives exactly the same results as the plain hour-by-hour check. |
+| + | Speed-up is exact (`tests/replay.test.js`) | The replay skips quiet days for speed; on 300 random loans (all margin-call rules) it gives exactly the same results as the plain hour-by-hour check. |
+| UX | Lender rules, hand-calculated (`tests/replay.test.js`) | Partial sale at the margin call (0.4 BTC sold at 71.43, debt 50 → 21.43), with a 5% fee, after an unfixed margin call, at the liquidation LTV, sell-everything after the deadline: each number worked out by hand. |
+| UX | Lender rules on real crashes (`tests/replay.test.js`) | `reference/reference_replay.py` implements the rules a second time, independently, in Python. On 12 real-crash scenarios (USD and EUR) the page gives the same sale hours, BTC amounts and remaining BTC. |
+| UX | Simulation uses the same rules; result counted in BTC (`tests/leverage.test.js`) | On a fixed made-up price path: margin call, partial sale, liquidation and the BTC held at the end (e.g. 0.6 + 0.3 − 21.43/100 = 0.6857 BTC) match hand calculations. |
+| UX | Share link and feedback e-mail (`tests/app.test.js`) | Inputs round-trip through the link; the BTC price and the private note are left out; the feedback e-mail contains the four answers, version, language and device, and loan terms only when ticked. |
+| UX | Donation QR code (`tests/donation.test.js`) | The address passes the Bitcoin checksum (a one-character typo fails); an independent QR reader (jsQR) decodes the code to exactly `bitcoin:` + the address; the built page contains exactly that code. |
+| UX | Equal payments near 0% (`tests/loan.test.js`) | Found by the random tests: the textbook payment formula breaks down for rates near 0%. Replaced by a numerically stable form (engine and Python reference); a 0.0000000000025% rate now gives the same plan as 0%. |
+
+### UX success criteria measured on the built page (A4, phase C)
+
+| Criterion | Target | Before | After |
+|---|---|---|---|
+| C1 Words before the first result | ≤ 300 | ≈ 1,170 (EN) / 1,090 (DE) | **124 / 109** |
+| C2 Input fields visible before the first result | ≤ 6 | 23 | **6** |
+| C3 "?" buttons visible by default | ≤ 6 | 23 | **3** (6 in total) |
+| C4 Answer, dots and slider on the first phone screen | yes | no | **yes** |
+| D3 Readability | short sentences | 11 words average | ≤ 14 average, none over 30 (test) |
+| D4 Accessibility (axe-core, WCAG 2.2 AA), light + dark, 320 px to desktop | 0 serious/critical | – | **0** (`node tools/build-audit.mjs`, then run axe in `ux/audit/`) |
+| D5 Phone layout at 320 px | no sideways scrolling, 44 px targets | – | **passes** (links inside running text excepted, as WCAG allows) |
+| D6 First answer on a mid-range phone | ≤ 5 s | – | **not yet measured on a real phone.** In Node: first answer after 0.6 s, all results after 1.1 s |
 
 ### Calibration results (assumed trend 0%)
 
@@ -198,13 +232,12 @@ Limits: below "worst 5%" at most 10%, below "worst 10%" at most 20%, below media
 ## Final check: compare with a real offer to the cent
 
 1. Open the page and press **Reset to example values**.
-2. Enter every term from your offer: currency, loan amount, start date, duration, LTVs, rate, repayment type, fees. Use the **BTC price your offer names** (type it into "BTC price today").
+2. Enter every term from your offer: currency, loan amount, start date, duration, LTVs, rate, repayment type, fees. Use the **BTC price your offer names** ("BTC price used" → change).
 3. Compare these three numbers with your offer or loan agreement:
-   - **Liquidation price** (results, top)
-   - **Total interest** (results, "Total interest")
-   - **Total you pay back** (results, "Total you pay back"). Open **Show the monthly payment plan** to compare month by month.
+   - **Liquidation price** (results, the line under the dots; also in "What happens when BTC falls")
+   - **Total interest** and **total you pay back** (section "What it costs"). Open **Show the monthly payment plan** to compare month by month.
 4. If something differs, check in this order:
-   - **Day count**: under "Interest and repayment → More settings", try "actual days ÷ 365" or "÷ 360".
+   - **Day count**: under "Expert settings", try "actual days ÷ 365" or "÷ 360".
    - **Rounding**: this page rounds every month's interest to the cent. Some lenders round only the total.
    - **Fees**: is the origination fee taken off the payout, or paid separately? Is it a percentage or a fixed amount?
    - **Liquidation price**: does your lender include unpaid interest in the debt? Which price does it use (see "How your lender measures the price")?
@@ -225,7 +258,39 @@ src/data/codec.js        compact price-history format
 data/                    compressed price history + meta.json (data/raw/ is not committed)
 reference/               independent Python reference + spreadsheet
 tests/                   automated tests and their fixtures
-tools/                   download, data build, page build, local preview server
+tools/                   download, data build, page build, audit copy, local preview server
+ux/                      UX redesign: decisions, profiles, validation plan, content inventory, success criteria, sketches
 ```
 
 No keys or secrets are needed or stored. All APIs used are public.
+
+---
+
+## Licence
+
+[MIT](LICENSE). The software is provided **"as is", without warranty of any kind**; the page footer says so too. The BTC price history in `data/` and inside `docs/index.html` comes from the public APIs of the exchanges Bitstamp and Kraken and is not covered by the MIT licence.
+
+## Repository check before the first push (2026-10-15)
+
+Scanned: all tracked files and the full history of all branches (`git log --all -p`), plus the reference spreadsheet's metadata. Patterns searched:
+- private key blocks
+- AWS, GitHub, OpenAI/Anthropic, Slack and Google keys
+- JWTs
+- password, secret and token assignments
+- Bitcoin private keys (WIF) and extended private keys (xprv)
+- German IBANs and phone numbers
+- e-mail addresses
+- home-folder paths
+- Bitcoin addresses
+
+The embedded price data is excluded from the pattern search because random base64 gives false hits; it contains only prices.
+
+| Found | Where | Assessment |
+|---|---|---|
+| No keys, tokens, passwords, private keys, IBANs, phone numbers or home paths | – | clean |
+| `boddenlennart@proton.me` | `src/content/site.js`, page | intended: feedback and Impressum contact |
+| `bc1qvj6c…pnpj8ld` | `src/content/site.js`, page | intended: donation address (public by design) |
+| `boddenlennart@gmail.com` | **author of every commit** (metadata, not file content) | **becomes public with a push.** The first commit, made on GitHub, already contains it. See the owner's decision in the project notes. |
+| Spreadsheet creator | `reference/loan-reference.xlsx` | "openpyxl" only, no personal data |
+
+Not committed (in `.gitignore`): `.tools/`, `node_modules/`, `data/raw/`, `ux/audit/`, logs, `.claude/`, `.env*`, key files.

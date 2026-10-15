@@ -22,7 +22,7 @@ function b64ToBytes(b64) {
 }
 
 /** Facts about the past used in the price-outlook presets (computed once per currency). */
-function historyFacts(daily) {
+function historyFacts(daily, hourly) {
   const byDay = new Map(daily.time.map((t, i) => [t, daily.close[i]]));
   const ratio = (years) => {
     const out = [];
@@ -45,10 +45,11 @@ function historyFacts(daily) {
   let deepYears = 0; let years = 0; let worstYear = { year: null, fall: 0 };
   let year = null; let peak = 0; let fall = 0;
   const closeYear = () => { if (year !== null) { years++; if (fall >= 0.5) deepYears++; if (fall > worstYear.fall) worstYear = { year, fall }; } };
-  for (let i = 0; i < daily.time.length; i++) {
-    const y = new Date(daily.time[i] * 1000).getUTCFullYear();
+  // measured on hourly prices, like everything else on the page (daily prices miss short crashes)
+  for (let i = 0; i < hourly.time.length; i++) {
+    const y = new Date(hourly.time[i] * 1000).getUTCFullYear();
     if (y !== year) { closeYear(); year = y; peak = 0; fall = 0; }
-    peak = Math.max(peak, daily.close[i]); fall = Math.max(fall, 1 - daily.low[i] / peak);
+    peak = Math.max(peak, hourly.close[i]); fall = Math.max(fall, 1 - hourly.low[i] / peak);
   }
   closeYear();
   return {
@@ -77,7 +78,7 @@ function setData(currency, base64, appended) {
   const { returns, lowRel } = dailyReturns(daily);
   const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
   const sigma = Math.sqrt(returns.reduce((a, b) => a + (b - mean) ** 2, 0) / (returns.length - 1) * 365);
-  store[currency] = { hourly, daily, returns, lowRel, sigma, garch: null, facts: historyFacts(daily) };
+  store[currency] = { hourly, daily, returns, lowRel, sigma, garch: null, facts: historyFacts(daily, hourly) };
 }
 
 const monthEndsFor = (t) => Array.from({ length: t.durationMonths }, (_, m) => daysBetween(t.startDate, addMonths(t.startDate, m + 1)));
@@ -153,7 +154,7 @@ async function run(id, terms, settings, garch, post = postMessage) {
 
   const buy = terms.purpose === 'buy';
   const result = { currency: terms.currency, garch: s.garch, facts: s.facts, history: { from: s.hourly.time[0], to: s.hourly.time[s.hourly.time.length - 1] } };
-  result.main = simulate(terms, s, settings, { samplePaths: 20, leverage: buy }); await tick();
+  result.main = simulate(terms, s, settings, { samplePaths: 40, leverage: buy }); // 2 × 20 for "show 20 others" await tick();
   result.outlook = settings.trend !== 0 ? simulate(terms, s, settings, { trend: settings.trend, leverage: buy }) : null;
   result.garchMc = simulate(terms, s, settings, { model: 'garch' }); await tick();
   result.replay = replayAll(s.hourly, terms); await tick();

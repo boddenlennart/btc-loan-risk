@@ -5,6 +5,10 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { build } from 'esbuild';
 import QRCode from 'qrcode';
 import { SITE } from '../src/content/site.js';
+import { gunzipSync } from 'node:zlib';
+import { decodeHourly } from '../src/data/codec.js';
+import { dailyFromHourly, dailyReturns } from '../src/engine/history.js';
+import { fitGarchT } from '../src/engine/garch.js';
 
 const root = new URL('../', import.meta.url);
 const read = (p) => readFileSync(new URL(p, root), 'utf8');
@@ -20,7 +24,10 @@ const file = (cur) => new URL(`data/btc-${cur.toLowerCase()}-1h.bin.gz`, root);
 const currencies = ['EUR', 'USD'].filter((c) => existsSync(file(c)) && meta[c]);
 if (currencies.length < 2) console.warn(`WARNING: only ${currencies.join(', ')} price history available`);
 const b64 = (cur) => (currencies.includes(cur) ? readFileSync(file(cur)).toString('base64') : '');
-const pageMeta = { prices: Object.fromEntries(currencies.map((c) => [c, meta[c]])), built: Math.floor(Date.now() / 1000) };
+// The GARCH model is fitted here once on the embedded history, so visitors' browsers don't
+// have to (it is the slowest step). The few recent hours added on load barely change it.
+const garch = Object.fromEntries(currencies.map((c) => [c, fitGarchT(dailyReturns(dailyFromHourly(decodeHourly(gunzipSync(readFileSync(file(c)))))).returns)]));
+const pageMeta = { prices: Object.fromEntries(currencies.map((c) => [c, meta[c]])), garch, built: Math.floor(Date.now() / 1000) };
 
 // Donation QR code: made here at build time and stored in the page as an SVG picture.
 const qr = (await QRCode.toString(`bitcoin:${SITE.donationAddress}`, { type: 'svg', errorCorrectionLevel: 'M', margin: 2 }))
