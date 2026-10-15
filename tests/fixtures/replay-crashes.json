@@ -1,0 +1,191 @@
+[
+ {
+  "currency": "USD",
+  "name": "Nov 2021 top, 50% / 80%",
+  "start": "2021-11-10T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   }
+  },
+  "expected": {
+   "startPrice": 66928.42,
+   "collateralBtc": 0.29882671666236854,
+   "liquidation": {
+    "time": 1641524400,
+    "iso": "2022-01-07T03:00Z",
+    "low": 41508.12,
+    "triggerPrice": 41830.2625,
+    "debt": 10000.0
+   },
+   "marginCall": {
+    "time": 1638594000,
+    "iso": "2021-12-04T05:00Z",
+    "low": 41967.5,
+    "triggerPrice": 47806.01428571429
+   }
+  }
+ },
+ {
+  "currency": "USD",
+  "name": "Dec 2017 top (2018 crash), 50% / 80%",
+  "start": "2017-12-17T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   }
+  },
+  "expected": {
+   "startPrice": 19187.78,
+   "collateralBtc": 1.0423300663234623,
+   "liquidation": {
+    "time": 1513951200,
+    "iso": "2017-12-22T14:00Z",
+    "low": 11159.93,
+    "triggerPrice": 11992.362499999997,
+    "debt": 10000.0
+   },
+   "marginCall": {
+    "time": 1513911600,
+    "iso": "2017-12-22T03:00Z",
+    "low": 13300.0,
+    "triggerPrice": 13705.557142857142
+   }
+  }
+ },
+ {
+  "currency": "USD",
+  "name": "Feb 2020 (March 2020 crash), 50% / 80%",
+  "start": "2020-02-13T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   }
+  },
+  "expected": {
+   "startPrice": 10348.78,
+   "collateralBtc": 1.932594953221539,
+   "liquidation": {
+    "time": 1584007200,
+    "iso": "2020-03-12T10:00Z",
+    "low": 5965.24,
+    "triggerPrice": 6467.9875,
+    "debt": 10000.0
+   },
+   "marginCall": {
+    "time": 1583996400,
+    "iso": "2020-03-12T07:00Z",
+    "low": 7340.0,
+    "triggerPrice": 7391.985714285716
+   }
+  }
+ },
+ {
+  "currency": "USD",
+  "name": "Mid 2019 top, bullet 12% compounding, 40% / 75%",
+  "start": "2019-06-26T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.4,
+   "marginCallLtv": 0.65,
+   "liquidationLtv": 0.75,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.12
+   },
+   "repayment": "bullet",
+   "compounding": "monthly",
+   "dayCount": "act/365",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   }
+  },
+  "expected": {
+   "startPrice": 11760.0,
+   "collateralBtc": 2.1258503401360542,
+   "liquidation": {
+    "time": 1574658000,
+    "iso": "2019-11-25T05:00Z",
+    "low": 6515.0,
+    "triggerPrice": 6591.751820387098,
+    "debt": 10509.808387096775
+   },
+   "marginCall": {
+    "time": 1571832000,
+    "iso": "2019-10-23T12:00Z",
+    "low": 7451.11,
+    "triggerPrice": 7524.226028307693
+   }
+  }
+ },
+ {
+  "currency": "USD",
+  "name": "Feb 2020, 25% / 90% (survives March 2020)",
+  "start": "2020-02-13T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.25,
+   "marginCallLtv": null,
+   "liquidationLtv": 0.9,
+   "durationMonths": 6,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   }
+  },
+  "expected": {
+   "startPrice": 10348.78,
+   "collateralBtc": 3.865189906443078,
+   "liquidation": null,
+   "marginCall": null
+  }
+ }
+]
