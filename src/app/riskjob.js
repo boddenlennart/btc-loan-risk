@@ -21,7 +21,7 @@ function b64ToBytes(b64) {
   return out;
 }
 
-/** Facts about the past used in the price-outlook presets (computed once per currency). */
+/** Facts about the past for "Does the price trend matter?" and the leverage section (computed once per currency). */
 function historyFacts(daily, hourly) {
   const byDay = new Map(daily.time.map((t, i) => [t, daily.close[i]]));
   const ratio = (years) => {
@@ -52,7 +52,14 @@ function historyFacts(daily, hourly) {
     peak = Math.max(peak, hourly.close[i]); fall = Math.max(fall, 1 - hourly.low[i] / peak);
   }
   closeYear();
+  // How precisely 13 years of data pin down the yearly trend: mean log growth ± 2 standard errors
+  const lr = []; for (let i = 1; i < daily.close.length; i++) lr.push(Math.log(daily.close[i] / daily.close[i - 1]));
+  const m = lr.reduce((x, y) => x + y, 0) / lr.length;
+  const sd = Math.sqrt(lr.reduce((x, y) => x + (y - m) ** 2, 0) / (lr.length - 1));
+  const span = lr.length / 365; const se = (sd * Math.sqrt(365)) / Math.sqrt(span);
+  const trendRange = { estimate: Math.exp(m * 365) - 1, low: Math.exp(m * 365 - 2 * se) - 1, high: Math.exp(m * 365 + 2 * se) - 1 };
   return {
+    trendRange,
     higherAfter1y: r1.filter((x) => x > 1).length / r1.length,
     worst1y: Math.min(...r1) - 1,
     higherAfter4y: r4.filter((x) => x > 1).length / r4.length,
@@ -119,6 +126,9 @@ function leverList(t) {
   return out;
 }
 
+/** Yearly trends of the middle simulated path compared in "Does the price trend matter?". */
+const TRENDS = [-0.3, 0, 0.2, 0.5, 1.0];
+
 /** Real start dates for "What really happened" and the stress test (only those inside the data). */
 const STORIES = ['2017-12-17', '2021-11-10', '2020-02-13', '2023-01-01'];
 
@@ -145,7 +155,7 @@ async function run(id, terms, settings, garch, post = postMessage) {
   // the slider stops below the margin-call LTV (above it, a new loan would start in a margin call)
   const ltvMax = (terms.marginCallLtv || terms.liquidationLtv) - 0.04;
   for (let x = 0.1; x < ltvMax; x += 0.05) ltvGrid.push(Math.round(x * 100) / 100);
-  const total = 4 + levers.length + ltvGrid.length;
+  const total = 4 + levers.length + ltvGrid.length + TRENDS.length;
   let done = 0;
   // after each step: report progress and give the page a moment to repaint
   const tick = async () => { post({ type: 'progress', id, done: ++done, total }); await new Promise((r) => setTimeout(r, 0)); };
@@ -155,7 +165,6 @@ async function run(id, terms, settings, garch, post = postMessage) {
   const buy = terms.purpose === 'buy';
   const result = { currency: terms.currency, garch: s.garch, facts: s.facts, history: { from: s.hourly.time[0], to: s.hourly.time[s.hourly.time.length - 1] } };
   result.main = simulate(terms, s, settings, { samplePaths: 40, leverage: buy }); // 2 × 20 for "show 20 others" await tick();
-  result.outlook = settings.trend !== 0 ? simulate(terms, s, settings, { trend: settings.trend, leverage: buy }) : null;
   result.garchMc = simulate(terms, s, settings, { model: 'garch' }); await tick();
   result.replay = replayAll(s.hourly, terms); await tick();
   result.stories = STORIES.map((iso) => story(s, terms, iso)).filter(Boolean);
@@ -173,6 +182,14 @@ async function run(id, terms, settings, garch, post = postMessage) {
     await tick();
   }
   result.levers.sort((a, b) => a.p - b.p);
+  // "Does the price trend matter?": the same loan at fixed yearly trends of the middle path.
+  // Same random paths as the main answer, only shifted, so "no trend" is exactly the answer above.
+  result.trends = [];
+  for (const trend of TRENDS) {
+    const sim = trend === 0 ? result.main : simulate(terms, s, settings, { trend, leverage: buy });
+    result.trends.push({ trend, p: sim.pLiquidation + sim.pPartial, more: sim.leverage ? sim.leverage.more : null });
+    await tick();
+  }
   result.leverBase = simulate(terms, s, settings, { nPaths: 2000, seed: 7 }).pLiquidation; // same paths as the levers, for a fair comparison
   result.slider = [];
   for (const ltv of ltvGrid) {

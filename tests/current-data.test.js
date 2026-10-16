@@ -43,7 +43,8 @@ describe.skipIf(!hasData('USD') || !hasData('EUR'))('reference loans on the newe
       if (loanTerms(ref).purpose === 'buy') {
         expect(k.leverage.more + k.leverage.lessKept + k.leverage.liquidated).toBeCloseTo(1, 9);
       }
-      if (k.outlook) expect(k.outlook.pLiquidation).toBeLessThanOrEqual(k.pLiquidation + 0.03); // +50% a year: not riskier
+      // a stronger trend never makes a sale more likely (tolerance for simulation noise)
+      for (let i = 1; i < k.trends.length; i++) expect(k.trends[i].p).toBeLessThanOrEqual(k.trends[i - 1].p + 0.03);
       // loan arithmetic
       expect(r.loan.payments).toHaveLength(loanTerms(ref).durationMonths);
       expect(r.loan.totalPayback).toBeGreaterThanOrEqual(loanTerms(ref).loanAmount);

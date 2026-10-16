@@ -35,7 +35,7 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 /** Escaped HTML with [[term]] turned into glossary links. */
 export function rich(s) {
   return esc(s).replace(/\[\[(\w+)\]\]/g, (_, id) => {
-    const g = TEXTS[lang].glossary[id];
+    const g = TEXTS[lang].glossary.terms[id];
     return g ? `<a href="#g-${id}" class="gloss">${esc(g.term)}</a>` : id;
   });
 }

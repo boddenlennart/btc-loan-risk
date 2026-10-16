@@ -22,7 +22,6 @@ const META = JSON.parse(document.getElementById('meta').textContent);
 const STORE_KEY = 'btc-loan-risk:form';
 const $ = (sel, root = document) => root.querySelector(sel);
 const today = () => new Date().toISOString().slice(0, 10);
-const PRESETS = { bear: -30, none: 0, moderate: 20, bull: 50, run: 100 };
 const STORY_COLORS = ['var(--story-1)', 'var(--story-2)', 'var(--story-3)', 'var(--story-4)'];
 const SOURCE_NAMES = { coinbase: 'Coinbase', kraken: 'Kraken', binance: 'Binance', coingecko: 'CoinGecko', embedded: '' };
 const MAIN_FIELDS = ['loanAmount', 'initialLtv', 'liquidationLtv', 'durationMonths', 'rateAnnual'];
@@ -82,7 +81,7 @@ function toTerms(s) {
   const settings = {
     nPaths: Number(s.simPaths) || 10000,
     blockDays: Math.max(1, Math.round(numOr(s.bootstrapBlockDays, 30))),
-    trend: numOr(s.outlook, 0) / 100,
+    trend: 0, // the page always assumes no trend; the trend comparison is computed separately
   };
   return { terms, settings };
 }
@@ -231,7 +230,6 @@ function onInput(e) {
   const v = e.target.value;
   if (k === 'currency') { lastRisk = null; change((s) => { s.currency = v; }, { rerenderForm: true }); loadPrice(true); ensureRecent(v); return; }
   if (k === 'btcPrice') { priceInfo = { source: 'manual' }; change((s) => { s.btcPrice = v; s.priceManual = true; }); renderPriceLine(); return; }
-  if (k === 'outlook') { change((s) => { s.outlook = Number(v); }); renderOutlook(); return; }
   if (k === 'marginCallLtv') { const wasEmpty = state.marginCallLtv === '' || state.marginCallLtv === null; change((s) => { s.marginCallLtv = v; }, { rerenderForm: wasEmpty !== (v === '') }); return; }
   if (k === 'marginCallConsequence') { change((s) => { s.marginCallConsequence = v; }, { rerenderForm: true }); return; }
   change((s) => setPath(s, k, v));
@@ -257,8 +255,6 @@ function onClick(e) {
     }, { rerenderForm: true });
     return;
   }
-  const preset = e.target.closest('[data-preset]');
-  if (preset) { change((s) => { s.outlook = PRESETS[preset.dataset.preset]; }); renderOutlook(); return; }
   const tgt = e.target;
   if (tgt.matches('[data-add-rate]')) {
     const last = state.ratePath[state.ratePath.length - 1];
@@ -520,12 +516,11 @@ function renderRisk() {
   $('#dots').innerHTML = dotsHtml([[nLiq, 'd-liq'], [nPart, 'd-part'], [nMargin, 'd-margin'], [nNone, 'd-none']], headline)
     + legendHtml([[nLiq, 'd-liq', R.legendLiquidated], [nPart, 'd-part', R.legendPartial], [nMargin, 'd-margin', R.legendMargin], [nNone, 'd-none', R.legendNothing]]);
   $('#kept-line').textContent = m.keptAfterSale && m.pPartial >= 0.005 ? t('results.kept', { kept: pct(m.keptAfterSale.q50, 0) }) : '';
-  $('#outlook-line').textContent = r.outlook ? t('results.outlookLine', { trend: signedPct(riskSettings.trend), n: of100(r.outlook.pLiquidation + r.outlook.pPartial) }) : '';
   const lastHour = Math.max(META.prices[cur].to, appended[cur] && appended[cur].length ? appended[cur].at(-1).time : 0);
   $('#basis-line').textContent = `${t('results.basis', { g: of100(r.garchMc.pLiquidation + r.garchMc.pPartial) })}`;
   // the whole period the results are based on, and when the stored data was last updated
   $('#data-period').textContent = t('ui.dataThrough', { from: date(META.prices[cur].from), to: date(lastHour), updated: date(META.dataUpdated || META.prices[cur].to) });
-  renderSafer(); renderOutlook();
+  renderSafer(); renderTrend();
   if (tm.purpose === 'buy') renderLeverage();
   $('#history-text').innerHTML = historyText();
   if ($('#sec-falls').open) renderFutures();
@@ -575,47 +570,22 @@ function renderSafer() {
   });
 }
 
-function renderOutlook() {
-  const r = lastRisk; const R = texts().results;
-  const trend = numOr(state.outlook, 0);
-  const presetOf = Object.entries(PRESETS).find(([, v]) => v === trend);
-  const chips = Object.entries(PRESETS).map(([k, v]) => `<button type="button" data-preset="${k}" aria-pressed="${v === trend}">${esc(R.presets[k])} <span class="sub">${signedPct(v / 100)}</span></button>`).join('');
-  let anchor = '';
-  if (r && r.facts) {
-    const f = r.facts.fourYear; const by = r.facts.fourYearByStart; const a = by[0]; const z = by[by.length - 1];
-    anchor = `<p class="hint">${esc(t('results.outlookAnchor', { worst: signedPct(f.worst), median: signedPct(f.median), best: signedPct(f.best), firstFrom: a.from, firstTo: a.to, firstRate: signedPct(a.perYear), lastFrom: z.from, lastTo: z.to, lastRate: signedPct(z.perYear) }))}</p>
-      <p class="hint">${esc(t('results.outlookSwings', { deep: r.facts.deepYears, years: r.facts.years }))}</p>`;
-  }
-  const active = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.k === 'outlook';
-  if (active) { // keep the slider under the finger; only update the label
-    $('#outlook-value').textContent = presetOf ? `${R.presets[presetOf[0]]}: ${signedPct(trend / 100)} ${t('ui.perYear')}` : t('results.outlookCustom', { trend: signedPct(trend / 100) });
-    for (const b of document.querySelectorAll('[data-preset]')) b.setAttribute('aria-pressed', String(PRESETS[b.dataset.preset] === trend));
-    renderOutlookResult();
-    return;
-  }
-  $('#outlook-body').innerHTML = `<p class="hint">${esc(R.outlookIntro)}</p><div class="chips" role="group" aria-label="${esc(R.outlookTitle)}">${chips}</div>
-    <label class="range-label"><span id="outlook-value">${esc(presetOf ? `${R.presets[presetOf[0]]}: ${signedPct(trend / 100)} ${t('ui.perYear')}` : t('results.outlookCustom', { trend: signedPct(trend / 100) }))}</span>
-    <input type="range" min="-50" max="150" step="5" data-k="outlook" value="${trend}"></label>
-    <div id="outlook-result" aria-live="polite"></div>${anchor}`;
-  renderOutlookResult();
+// "Does the price trend matter?": the visitor's loan at fixed yearly trends of the middle path.
+function trendRows(r, value, label) {
+  return r.trends.map((x) => `<div class="lv${x.trend === 0 ? ' base' : ''}"><span>${esc(t(x.trend === 0 ? 'history.trendNone' : 'history.trendRow', { trend: signedPct(x.trend) }))}</span><span class="b"><i style="width:${value(x) * 100}%"></i></span><b>${of100(value(x))}</b></div>`).join('')
+    + `<p class="sub">${esc(label)}</p>`;
 }
-
-// The effect of the chosen outlook, shown right where it is chosen.
-function renderOutlookResult() {
-  const el = $('#outlook-result'); const r = lastRisk; const R = texts().results;
-  if (!el || !r || !riskSettings) return;
-  const chosen = numOr(state.outlook, 0);
-  const shownFor = Math.round(riskSettings.trend * 100);
-  const base = r.main.pLiquidation + r.main.pPartial;
-  const bar = (label, p, cls) => `<div class="lv${cls}"><span>${esc(label)}</span><span class="b"><i style="width:${p * 100}%"></i></span><b>${of100(p)}</b></div>`;
-  let html = `<div class="levers">${bar(R.outlookBarNone, base, ' base')}`;
-  if (chosen === 0) html += `</div><p class="hint">${esc(R.outlookPick)}</p>`;
-  else if (shownFor !== chosen || !r.outlook) html += `</div><p class="progress">${esc(t('ui.computing', { done: '…', total: '…' }))}</p>`;
-  else {
-    const p = r.outlook.pLiquidation + r.outlook.pPartial;
-    html += `${bar(t('results.outlookBarYours', { trend: signedPct(chosen / 100) }), p, '')}</div><p class="big-line">${esc(t('results.outlookDiff', { m: of100(p), n: of100(base) }))}</p>`;
-  }
-  el.innerHTML = `${html}<p class="hint">${esc(R.outlookAffects)}</p>`;
+function renderTrend() {
+  const r = lastRisk; const el = $('#trend-body'); if (!el) return;
+  if (!r || !r.trends) { el.innerHTML = `<p class="progress">${esc(t('ui.computing', { done: '…', total: '…' }))}</p>`; return; }
+  const H = texts().history; const f = r.facts;
+  const top = r.trends.at(-1); const none = r.trends.find((x) => x.trend === 0);
+  const by = f.fourYearByStart; const a = by[0]; const z = by[by.length - 1];
+  el.innerHTML = `<p class="hint">${rich(H.trendIntro)}</p><div class="levers">${trendRows(r, (x) => x.p, H.trendUnit)}</div>
+    <p class="big-line">${esc(t('history.trendConclusion', { none: of100(none.p), top: of100(top.p), topTrend: signedPct(top.trend) }))}</p>
+    <p class="hint">${esc(t('history.trendUncertainty', { estimate: signedPct(f.trendRange.estimate), low: signedPct(f.trendRange.low), high: signedPct(f.trendRange.high) }))}</p>
+    <p class="hint">${esc(t('history.trendPast', { worst: signedPct(f.fourYear.worst), median: signedPct(f.fourYear.median), best: signedPct(f.fourYear.best), firstFrom: a.from, firstTo: a.to, firstRate: signedPct(a.perYear), lastFrom: z.from, lastTo: z.to, lastRate: signedPct(z.perYear) }))}</p>
+    <p class="hint">${esc(t('history.trendSwings', { deep: f.deepYears, years: f.years }))}</p>`;
 }
 
 function renderLeverage() {
@@ -630,7 +600,7 @@ function renderLeverage() {
     const sentence = t('cost.levHeadline', { more, less: lessKept + liq, liq });
     html += `<p class="big-line">${esc(sentence)}</p>${dotsHtml([[more, 'd-good'], [lessKept, 'd-none'], [liq, 'd-liq']], sentence)}
       ${legendHtml([[more, 'd-good', C.levLegendMore], [lessKept, 'd-none', C.levLegendLess], [liq, 'd-liq', C.levLegendLiq]])}`;
-    if (r.outlook && r.outlook.leverage) html += `<p class="hint">${esc(t('results.outlookLine', { trend: signedPct(riskSettings.trend), n: of100(r.outlook.leverage.more) }))} (${esc(C.levLegendMore)})</p>`;
+    if (r.trends && r.trends[0].more !== null) html += `<h4>${esc(C.levTrendTitle)}</h4><div class="levers">${trendRows(r, (x) => x.more, C.levTrendUnit)}</div>`;
   }
   if (lenderRules(tm).liquidationSale === 'all') {
     const lq = costIfLiquidated(tm, { price: liquidationPrices(tm).atStart, debt: tm.loanAmount });
@@ -752,7 +722,7 @@ function renderAll() {
   renderStatic();
   renderForm();
   update();
-  if (lastRisk) renderRisk(); else renderOutlook();
+  if (lastRisk) renderRisk();
 }
 
 // ------------------------------------------------------------------ start

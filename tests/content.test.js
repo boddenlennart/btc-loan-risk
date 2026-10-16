@@ -32,14 +32,14 @@ const INPUTS = {
 // Every result, and where it is explained.
 const OUTPUTS = {
   headline: 'results.headlineHelp', dots: 'results.legendLiquidated', saleLine: 'falls.measure', limits: 'results.limits',
-  slider: 'results.sliderNote', levers: 'results.otherOptions', outlook: 'results.outlookIntro', ladder: 'falls.marginCure',
+  slider: 'results.sliderNote', levers: 'results.otherOptions', trend: 'history.trendIntro', leverageTrend: 'cost.levTrendUnit', ladder: 'falls.marginCure',
   futures: 'falls.futuresHelp', cost: 'glossary.terms.aprVsRate', breakeven: 'cost.sellIntro', leverage: 'cost.levFacts',
   replay: 'glossary.terms.historicalReplay', stories: 'history.storiesLine', method: 'method.text', fan: 'method.fanNote',
   compare: 'method.barrierNote', feedback: 'feedback.intro', donate: 'donate.public',
 };
 const GLOSSARY = ['ltv', 'marginCall', 'liquidation', 'partialLiquidation', 'collateral', 'curePeriod', 'originationFee', 'aprVsRate',
   'drawdown', 'ohlc', 'compounding', 'dayCount', 'priceIndex', 'counterpartyRisk', 'rehypothecation', 'simulatedFuture',
-  'blockBootstrap', 'garch', 'historicalReplay', 'priceOutlook'];
+  'blockBootstrap', 'garch', 'historicalReplay', 'priceTrend'];
 
 const MARKET_CLAIMS = [/\btypical/i, /\busually\b/i, /\bnormally\b/i, /\bmostly\b/i, /\bcommon(ly)?\b/i, /\bmarket (rate|standard|value)/i, /\bmost lenders\b/i, /\bstandard rate\b/i,
   /\bmeist(ens)?\b/i, /üblich/i, /typisch/i, /normalerweise/i, /marktüblich/i, /die meisten (Anbieter|Kreditgeber)/i, /gängig/i, /in der Regel/i];
@@ -159,6 +159,23 @@ describe('every text the page code asks for exists', () => {
     for (const lang of ['en', 'de']) {
       const tx = await load(lang);
       for (const k of keys) expect(typeof get(tx, k), `${lang}: ${k}`).toBe('string');
+    }
+  });
+});
+
+describe('glossary links', () => {
+  it('every [[term]] in the texts names a glossary entry, and the page turns it into a link with the term', async () => {
+    globalThis.document ??= { documentElement: {} }; // setLang marks the page language
+    const { rich, setLang } = await import('../src/app/i18n.js');
+    for (const lang of ['en', 'de']) {
+      const tx = await load(lang);
+      setLang(lang);
+      for (const [path, s] of allStrings(tx)) {
+        for (const [, id] of s.matchAll(/\[\[(\w+)\]\]/g)) {
+          expect(tx.glossary.terms[id], `${lang} ${path}: [[${id}]]`).toBeDefined();
+          expect(rich(`[[${id}]]`)).toBe(`<a href="#g-${id}" class="gloss">${tx.glossary.terms[id].term}</a>`);
+        }
+      }
     }
   });
 });

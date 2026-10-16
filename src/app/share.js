@@ -5,7 +5,7 @@
 const KEYS = ['mode', 'currency', 'loanAmount', 'ltvInput', 'initialLtv', 'collateralBtc', 'liquidationLtv', 'durationMonths', 'rateType',
   'rateAnnual', 'ratePath', 'purpose', 'repayWith', 'repayment', 'compounding', 'originationFee', 'marginCallLtv', 'marginCallConsequence',
   'curePeriodHours', 'liquidationSale', 'cureTargetLtv', 'liquidationFee', 'liquidationFeeBasis', 'reserveAmount', 'taxRateNow',
-  'taxRateAtMaturity', 'dayCount', 'simPaths', 'bootstrapBlockDays', 'outlook'];
+  'taxRateAtMaturity', 'dayCount', 'simPaths', 'bootstrapBlockDays'];
 
 const toB64url = (s) => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const fromB64url = (s) => decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))));

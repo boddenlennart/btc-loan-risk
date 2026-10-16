@@ -28,7 +28,7 @@ const settings = { nPaths: 2000, blockDays: 30, trend: 0 };
 
 /** Each loan exercises different parts of the engine (named in `uses`). */
 export const REFERENCE_LOANS = [
-  { id: 'example-eur', currency: 'EUR', uses: 'interest monthly, margin call as warning', terms: {} },
+  { id: 'example-eur', currency: 'EUR', uses: 'interest monthly, margin call as warning, five price trends compared', terms: {} },
   { id: 'test-offer-eur', currency: 'EUR', uses: 'added interest with compounding, sale after 48 h, fees', terms: { initialLtv: 0.5, liquidationLtv: 0.83, rate: { type: 'fixed', annual: 0.115 }, repayment: 'bullet', compounding: 'monthly', originationFee: { type: 'percent', value: 0.015 }, liquidationFee: { value: 0.04, basis: 'debt' }, marginCallConsequence: 'liquidateAfterCure' } },
   { id: 'amortizing-usd', currency: 'USD', uses: 'equal payments, 36 months, fixed fee', terms: { durationMonths: 36, repayment: 'amortizing', rate: { type: 'fixed', annual: 0.0725 }, originationFee: { type: 'fixed', value: 250 }, initialLtv: 0.35 } },
   { id: 'variable-rate-usd', currency: 'USD', uses: 'variable rate path, actual days / 365', terms: { rate: { type: 'variable', path: [{ fromMonth: 0, annual: 0.08 }, { fromMonth: 6, annual: 0.12 }] }, dayCount: 'act/365' } },
@@ -39,7 +39,6 @@ export const REFERENCE_LOANS = [
   { id: 'existing-loan-eur', currency: 'EUR', uses: 'existing loan: LTV from BTC pledged, already above margin call', terms: { mode: 'existing', collateralInput: 0.34, initialLtv: 15000 / (0.34 * 60000), originationFee: { type: 'percent', value: 0 }, cureTargetLtv: 0.5, marginCallConsequence: 'liquidateAfterCure' } },
   { id: 'buy-btc-sell-usd', currency: 'USD', uses: 'buy more BTC, repay by selling, result counted in BTC', terms: { purpose: 'buy', repayWith: 'sell', initialLtv: 0.4 } },
   { id: 'buy-btc-cash-eur', currency: 'EUR', uses: 'buy more BTC, repay with new money, 24 months', terms: { purpose: 'buy', repayWith: 'cash', durationMonths: 24, initialLtv: 0.3 } },
-  { id: 'outlook-bull-eur', currency: 'EUR', uses: 'price outlook +50% a year next to no trend', terms: {}, settings: { trend: 0.5 } },
   { id: 'taxes-short-usd', currency: 'USD', uses: '6 months, taxes in the borrow-or-sell comparison', terms: { durationMonths: 6, taxRateNow: 0.25, taxRateAtMaturity: 0 } },
 ];
 
@@ -85,7 +84,7 @@ export async function resultsFor(ref, job, garch) {
     pLiquidation: m.pLiquidation, pPartial: m.pPartial, pMarginCall: m.pMarginCall, cumulativeByMonth: m.cumulativeByMonth,
     fanLastMonth: m.fanByMonth.at(-1), keptAfterSale: m.keptAfterSale ?? null, leverage: m.leverage ?? null,
     samplePaths: { count: m.samplePaths.length, sold: m.samplePaths.filter((p) => p.event).length, firstEvent: m.samplePaths.find((p) => p.event)?.event ?? null },
-    outlook: res.outlook ? { pLiquidation: res.outlook.pLiquidation, pPartial: res.outlook.pPartial, leverage: res.outlook.leverage ?? null } : null,
+    trends: res.trends,
     garch: { pLiquidation: res.garchMc.pLiquidation, pPartial: res.garchMc.pPartial },
     replay: { starts: res.replay.starts, liquidatedShare: res.replay.liquidatedShare, partialShare: res.replay.partialShare, marginCallShare: res.replay.marginCallShare, worst: res.replay.worst, reserve: res.replay.reserveBtcNeeded },
     stories: res.stories.map((x) => ({ start: x.start, sale: x.sale, btcLeft: x.btcLeft, endRel: x.endRel })),

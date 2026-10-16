@@ -133,7 +133,6 @@ export default {
     saleLinePartialLiq: 'Bei {price} (−{drop}) verkauft der Kreditgeber einen Teil Ihrer BTC, um den LTV wieder zu senken.',
     kept: 'Wo BTC verkauft wurden, behalten Sie etwa {kept} davon (mittlerer Wert).',
     rising: 'Weil Zinsen addiert werden, steigt dieser Kurs bis zum Ende auf {end}.',
-    outlookLine: 'Mit Ihrem Kursausblick ({trend} pro Jahr): {n} von 100.',
     basis: 'Auf Basis echter BTC-Kursbewegungen seit 2014 · andere Methode: {g} von 100 · ohne Kurstrend gerechnet · keine Prognose',
     howMade: 'Wie diese Zahlen entstehen',
     limitsTitle: 'Was das nicht abbildet',
@@ -160,17 +159,6 @@ export default {
       monthlyInterest: 'Zinsen monatlich zahlen statt addieren',
     },
     higherLiqNote: 'Ein höherer Liquidations-LTV hilft nur, wenn die Margin-Call-Regeln nicht vorher verkaufen. Fragen Sie Ihren Kreditgeber, was nach einem Margin Call passiert.',
-    outlookTitle: 'Ihr Kursausblick',
-    outlookIntro: 'Die Simulation nimmt keinen Trend an: BTC schwankt wie in der Vergangenheit, und die Hälfte der simulierten Zukünfte endet über dem heutigen Kurs, die Hälfte darunter. Wählen Sie einen Trend, um zu sehen, wie stark er die Antwort ändert. Die Schwankungen bleiben drin.',
-    presets: { bear: 'Bär', none: 'Kein Trend', moderate: 'Moderat', bull: 'Bulle', run: 'Generationen-Lauf' },
-    outlookPick: 'Wählen Sie einen Trend, um ihn mit der Antwort ohne Trend zu vergleichen.',
-    outlookBarNone: 'Kein Trend (die Antwort oben)',
-    outlookBarYours: 'Ihr Ausblick ({trend} pro Jahr)',
-    outlookDiff: 'Mit Ihrem Ausblick enden {m} von 100 Zukünften mit einem Verkauf, statt {n} von 100.',
-    outlookAffects: 'Der Ausblick fügt nur diesen Vergleich hinzu (auch unter der Antwort und bei "Lohnt sich der Hebel?"). Der Rest der Seite bleibt bei "kein Trend", der vorsichtigen Annahme, die den Test an der Vergangenheit bestanden hat.',
-    outlookCustom: 'Eigener Wert: {trend} pro Jahr',
-    outlookAnchor: 'Zum Vergleich: Das jährliche Wachstum von BTC (mit Zinseszinseffekt) über 4-Jahres-Zeiträume seit 2014 lag zwischen {worst} (schwächster) und {best} (stärkster), mittlerer Wert {median}. Es hat mit der Zeit abgenommen: {firstFrom}–{firstTo} {firstRate} pro Jahr, {lastFrom}–{lastTo} {lastRate} pro Jahr.',
-    outlookSwings: 'In {deep} von {years} Kalenderjahren seit 2014 fiel BTC innerhalb desselben Jahres um mindestens 50 % von einem Hoch. Ein Kredit muss diese Einbrüche überstehen, egal wohin der langfristige Weg führt.',
   },
 
   sections: {
@@ -232,6 +220,8 @@ export default {
     levBreakeven: 'Gewinnschwelle: BTC muss am Ende {rise} höher stehen, ohne Verkauf unterwegs.',
     levCash: 'Rückzahlung mit neuem Geld: Sie behalten die gekauften BTC, sofern Ihre Sicherheit nicht verkauft wird, und zahlen {payback} aus anderem Geld.',
     levFacts: 'Seit 2014 stand BTC 4 Jahre später an {h4} der Starttage in den Daten dieser Seite höher. Ein Jahr später nur an {h1}, und das schlechteste Jahr endete bei {w1}. Ein Kredit muss den Weg überstehen, nicht nur das Ziel erreichen. Die Vergangenheit garantiert nicht die Zukunft.',
+    levTrendTitle: 'Spielt der Kurstrend hier eine Rolle?',
+    levTrendUnit: 'Zahl = Zukünfte von 100, in denen Sie am Ende mehr BTC haben als ohne Kredit.',
   },
 
   history: {
@@ -243,6 +233,15 @@ export default {
     partial: '{date}: nach {days} Tagen teilweise verkauft; Sie behalten {left} Ihrer BTC.',
     survived: '{date}: kein Verkauf. Ein Jahr später stand BTC beim {end}-fachen des Starts.',
     byMonth: 'Mehr als die Hälfte aller Liquidationen in der Simulation passiert in den ersten {months} Monaten.',
+    trendTitle: 'Spielt der Kurstrend eine Rolle?',
+    trendIntro: 'Niemand weiß, wohin sich BTC bewegt. Hier ist Ihr Kredit mit fünf verschiedenen jährlichen Werten für den [[priceTrend]]. Die Schwankungen bleiben wie in der Vergangenheit.',
+    trendRow: '{trend} pro Jahr',
+    trendNone: 'Kein Trend (die Antwort oben)',
+    trendUnit: 'Zahl = Zukünfte von 100, die mit einem Verkauf enden.',
+    trendConclusion: 'Ohne Trend enden {none} von 100 Zukünften mit einem Verkauf. Selbst bei {topTrend} pro Jahr sind es noch {top} von 100. Ein Trend beseitigt die Einbrüche unterwegs nicht.',
+    trendUncertainty: 'Warum die Seite keinen Trend annimmt: Seit 2014 wuchs BTC um etwa {estimate} pro Jahr. Die Schwankungen sind aber so groß, dass dieser Wert nur irgendwo zwischen {low} und {high} liegt. Der frühere Trend ist zu unsicher, um darauf zu bauen.',
+    trendPast: 'Das jährliche Wachstum von BTC (mit Zinseszinseffekt) über 4-Jahres-Zeiträume seit 2014 lag zwischen {worst} (schwächster) und {best} (stärkster), mittlerer Wert {median}. Es hat mit der Zeit abgenommen: {firstFrom}–{firstTo} {firstRate} pro Jahr, {lastFrom}–{lastTo} {lastRate} pro Jahr.',
+    trendSwings: 'In {deep} von {years} Kalenderjahren seit 2014 fiel BTC innerhalb desselben Jahres um mindestens 50 % von einem Hoch. Ein Kredit muss diese Einbrüche überstehen, egal wohin der langfristige Weg führt.',
   },
 
   method: {
@@ -252,7 +251,7 @@ export default {
       'Vergangenheit: derselbe Kredit, an jedem Tag seit 2014 gestartet, gegen den echten tiefsten Kurs jeder Stunde.',
       'Die Regeln des Kreditgebers (Margin Call, Fristen, Teilverkäufe, Gebühren) werden in jedem Verlauf genau so angewendet, wie Sie sie einstellen.',
       'An der Vergangenheit getestet: Ab 2016 sah die Methode nur die Vergangenheit und sagte dann den tiefsten Kurs der nächsten 90 und 365 Tage voraus. Die Wirklichkeit lag in 0 bis 6 von 100 Fällen unter ihrem "schlechtesten 5 %"-Wert, nahe an oder unter den versprochenen 5. Die Methode ist eher vorsichtig als optimistisch.',
-      'Ohne gewählten Kursausblick wird kein Trend angenommen, denn mit dem früheren Durchschnittswachstum von BTC fiel der Test an der Vergangenheit durch.',
+      'Es wird kein Trend angenommen, denn mit dem früheren Durchschnittswachstum von BTC fiel der Test an der Vergangenheit durch. "Was die Vergangenheit zeigt" macht sichtbar, wie stark ein Trend Ihre Antwort ändern würde.',
     ],
     code: 'Der gesamte Code, die Daten und die Tests sind offen: {link}',
     expert: 'Details für Fachleute',
@@ -318,7 +317,7 @@ export default {
       blockBootstrap: { term: 'Block-Bootstrap', text: 'Die Methode hinter den simulierten Zukünften: Stücke echter Kurshistorie (je 30 Tage) werden zufällig ausgewählt und aneinandergereiht.' },
       garch: { term: 'GARCH-Modell', text: 'Ein Statistikmodell für Kurse, in dem wilde Tage weitere wilde Tage wahrscheinlicher machen und sehr große Bewegungen häufiger vorkommen als im Lehrbuchmodell.' },
       historicalReplay: { term: 'Nachspielen der Vergangenheit', text: 'Der Kredit wird an jedem früheren Tag gestartet und mit dem verglichen, was der Kurs danach wirklich getan hat.' },
-      priceOutlook: { term: 'Kursausblick', text: 'Eine angenommene jährliche Kursänderung der mittleren simulierten Zukunft (mit Zinseszinseffekt). Sie verschiebt alle simulierten Zukünfte nach oben oder unten; die Schwankungen bleiben gleich.' },
+      priceTrend: { term: 'Kurstrend', text: 'Eine angenommene jährliche Kursänderung der mittleren simulierten Zukunft (mit Zinseszinseffekt). Sie verschiebt alle simulierten Zukünfte nach oben oder unten; die Schwankungen bleiben gleich.' },
     },
   },
 

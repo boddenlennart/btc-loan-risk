@@ -1,6 +1,6 @@
-// Regression (golden master): 13 reference loans that together use every main function
+// Regression (golden master): 12 reference loans that together use every main function
 // (all repayment types, fees, variable rates, every margin-call rule, partial sales,
-// reserve, existing loan, buy-more-BTC with both repayment ways, price outlook, taxes).
+// reserve, existing loan, buy-more-BTC with both repayment ways, five price trends, taxes).
 // On the frozen history (up to 2026-10-01, which new data never changes) every result
 // must equal the stored golden file: payment plans, trigger prices, APR, simulation,
 // GARCH, replay, stories, levers, slider, result counted in BTC, history facts.
@@ -34,7 +34,7 @@ describe.skipIf(!hasData('USD') || !hasData('EUR'))('golden master on the frozen
   it('the GARCH fit is unchanged', () => {
     expect(firstDifference(JSON.parse(JSON.stringify(garch, (k, v) => (typeof v === 'number' ? Math.round(v * 1e9) / 1e9 : v))), golden.garch)).toBeNull();
   });
-  it('covers 13 reference loans', () => expect(golden.loans.map((l) => l.id)).toEqual(REFERENCE_LOANS.map((r) => r.id)));
+  it('covers 12 reference loans', () => expect(golden.loans.map((l) => l.id)).toEqual(REFERENCE_LOANS.map((r) => r.id)));
   for (const ref of REFERENCE_LOANS) {
     it(`${ref.id}: ${ref.uses}`, async () => {
       const now = await resultsFor(ref, job, golden.garch[ref.currency]);

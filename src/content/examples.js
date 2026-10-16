@@ -35,7 +35,6 @@ export const EXAMPLE_FORM = {
   dayCount: '30/360',
   simPaths: '10000',
   bootstrapBlockDays: 30,
-  outlook: 0,
   notes: '',
 };
 

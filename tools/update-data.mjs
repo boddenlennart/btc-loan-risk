@@ -5,7 +5,7 @@
 //   4. re-fits the model settings (GARCH) and compares a reference loan before and after
 //   5. writes a plain-language summary for the pull request
 // Exits with code 1 (and explains why) if a check fails; nothing is changed then.
-// Drift guard: if the new hours move the result of any of the 13 reference loans by more
+// Drift guard: if the new hours move the result of any of the 12 reference loans by more
 // than 5 of 100, the update also stops, so a person looks at it first.
 // Usage: node tools/update-data.mjs [summary-file]
 import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
@@ -142,7 +142,7 @@ function stopIfFailed() {
 }
 stopIfFailed();
 
-// Drift guard over all 13 reference loans (tests/helpers/regression.js), old vs new data.
+// Drift guard over all 12 reference loans (tests/helpers/regression.js), old vs new data.
 const DRIFT_LIMIT = 0.05;
 async function allResults(gzByCur) {
   const out = {};
@@ -161,7 +161,7 @@ if (changed) {
   if (worst.size > DRIFT_LIMIT) {
     failures.push(`**Drift guard:** the new hours moved the result of the reference loan "${worst.id}" by ${Math.round(worst.size * 100)} of 100 (limit 5). That is far more than a week of normal data does. A person should look at the new hours before they are used.`);
   } else {
-    lines.push(`Drift guard: across all 13 reference loans (tests/helpers/regression.js), the largest change is ${Math.round(worst.size * 1000) / 10} of 100 ("${worst.id}"); limit 5.`, '');
+    lines.push(`Drift guard: across all 12 reference loans (tests/helpers/regression.js), the largest change is ${Math.round(worst.size * 1000) / 10} of 100 ("${worst.id}"); limit 5.`, '');
   }
 }
 stopIfFailed();

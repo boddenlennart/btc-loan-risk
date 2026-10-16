@@ -21,7 +21,7 @@
  "loans": [
   {
    "id": "example-eur",
-   "uses": "interest monthly, margin call as warning",
+   "uses": "interest monthly, margin call as warning, five price trends compared",
    "loan": {
     "collateralBtc": 0.5,
     "amountReceived": 14850,
@@ -106,7 +106,33 @@
       "kind": "liquidationLtv"
      }
     },
-    "outlook": null,
+    "trends": [
+     {
+      "trend": -0.3,
+      "p": 0.714,
+      "more": null
+     },
+     {
+      "trend": 0,
+      "p": 0.5655,
+      "more": null
+     },
+     {
+      "trend": 0.2,
+      "p": 0.485,
+      "more": null
+     },
+     {
+      "trend": 0.5,
+      "p": 0.412,
+      "more": null
+     },
+     {
+      "trend": 1,
+      "p": 0.3085,
+      "more": null
+     }
+    ],
     "garch": {
      "pLiquidation": 0.451,
      "pPartial": 0
@@ -261,6 +287,11 @@
     ]
    },
    "facts": {
+    "trendRange": {
+     "estimate": 0.468748289,
+     "low": 0.011162727,
+     "high": 1.133406898
+    },
     "higherAfter1y": 0.680261011,
     "worst1y": -0.823967712,
     "higherAfter4y": 1,
@@ -412,7 +443,33 @@
       "kind": "cureExpired"
      }
     },
-    "outlook": null,
+    "trends": [
+     {
+      "trend": -0.3,
+      "p": 0.793,
+      "more": null
+     },
+     {
+      "trend": 0,
+      "p": 0.6505,
+      "more": null
+     },
+     {
+      "trend": 0.2,
+      "p": 0.568,
+      "more": null
+     },
+     {
+      "trend": 0.5,
+      "p": 0.4685,
+      "more": null
+     },
+     {
+      "trend": 1,
+      "p": 0.361,
+      "more": null
+     }
+    ],
     "garch": {
      "pLiquidation": 0.577,
      "pPartial": 0
@@ -582,6 +639,11 @@
     ]
    },
    "facts": {
+    "trendRange": {
+     "estimate": 0.468748289,
+     "low": 0.011162727,
+     "high": 1.133406898
+    },
     "higherAfter1y": 0.680261011,
     "worst1y": -0.823967712,
     "higherAfter4y": 1,
@@ -781,7 +843,33 @@
       "kind": "liquidationLtv"
      }
     },
-    "outlook": null,
+    "trends": [
+     {
+      "trend": -0.3,
+      "p": 0.468,
+      "more": null
+     },
+     {
+      "trend": 0,
+      "p": 0.2575,
+      "more": null
+     },
+     {
+      "trend": 0.2,
+      "p": 0.185,
+      "more": null
+     },
+     {
+      "trend": 0.5,
+      "p": 0.122,
+      "more": null
+     },
+     {
+      "trend": 1,
+      "p": 0.0625,
+      "more": null
+     }
+    ],
     "garch": {
      "pLiquidation": 0.211,
      "pPartial": 0
@@ -936,6 +1024,11 @@
     ]
    },
    "facts": {
+    "trendRange": {
+     "estimate": 0.446372898,
+     "low": -0.013256421,
+     "high": 1.120099489
+    },
     "higherAfter1y": 0.677231415,
     "worst1y": -0.833551354,
     "higherAfter4y": 1,
@@ -1087,7 +1180,33 @@
       "kind": "liquidationLtv"
      }
     },
-    "outlook": null,
+    "trends": [
+     {
+      "trend": -0.3,
+      "p": 0.7145,
+      "more": null
+     },
+     {
+      "trend": 0,
+      "p": 0.5755,
+      "more": null
+     },
+     {
+      "trend": 0.2,
+      "p": 0.499,
+      "more": null
+     },
+     {
+      "trend": 0.5,
+      "p": 0.4215,
+      "more": null
+     },
+     {
+      "trend": 1,
+      "p": 0.326,
+      "more": null
+     }
+    ],
     "garch": {
      "pLiquidation": 0.454,
      "pPartial": 0
@@ -1242,6 +1361,11 @@
     ]
    },
    "facts": {
+    "trendRange": {
+     "estimate": 0.446372898,
+     "low": -0.013256421,
+     "high": 1.120099489
+    },
     "higherAfter1y": 0.677231415,
     "worst1y": -0.833551354,
     "higherAfter4y": 1,
@@ -1393,7 +1517,33 @@
       "kind": "partial"
      }
     },
-    "outlook": null,
+    "trends": [
+     {
+      "trend": -0.3,
+      "p": 0.8115,
+      "more": null
+     },
+     {
+      "trend": 0,
+      "p": 0.6845,
+      "more": null
+     },
+     {
+      "trend": 0.2,
+      "p": 0.6175,
+      "more": null
+     },
+     {
+      "trend": 0.5,
+      "p": 0.526,
+      "more": null
+     },
+     {
+      "trend": 1,
+      "p": 0.432,
+      "more": null
+     }
+    ],
     "garch": {
      "pLiquidation": 0.076,
      "pPartial": 0.499
@@ -1558,6 +1708,11 @@
     ]
    },
    "facts": {
+    "trendRange": {
+     "estimate": 0.468748289,
+     "low": 0.011162727,
+     "high": 1.133406898
+    },
     "higherAfter1y": 0.680261011,
     "worst1y": -0.823967712,
     "higherAfter4y": 1,
@@ -1709,7 +1864,33 @@
       "kind": "partial"
      }
     },
-    "outlook": null,
+    "trends": [
+     {
+      "trend": -0.3,
+      "p": 0.761,
+      "more": null
+     },
+     {
+      "trend": 0,
+      "p": 0.6145,
+      "more": null
+     },
+     {
+      "trend": 0.2,
+      "p": 0.538,
+      "more": null
+     },
+     {
+      "trend": 0.5,
+      "p": 0.455,
+      "more": null
+     },
+     {
+      "trend": 1,
+      "p": 0.3555,
+      "more": null
+     }
+    ],
     "garch": {
      "pLiquidation": 0,
      "pPartial": 0.5285
@@ -1874,6 +2055,11 @@
     ]
    },
    "facts": {
+    "trendRange": {
+     "estimate": 0.446372898,
+     "low": -0.013256421,
+     "high": 1.120099489
+    },
     "higherAfter1y": 0.677231415,
     "worst1y": -0.833551354,
     "higherAfter4y": 1,
@@ -2018,7 +2204,33 @@
       "kind": "liquidationLtv"
      }
     },
-    "outlook": null,
+    "trends": [
+     {
+      "trend": -0.3,
+      "p": 0.59,
+      "more": null
+     },
+     {
+      "trend": 0,
+      "p": 0.4215,
+      "more": null
+     },
+     {
+      "trend": 0.2,
+      "p": 0.3575,
+      "more": null
+     },
+     {
+      "trend": 0.5,
+      "p": 0.2715,
+      "more": null
+     },
+     {
+      "trend": 1,
+      "p": 0.193,
+      "more": null
+     }
+    ],
     "garch": {
      "pLiquidation": 0.319,
      "pPartial": 0
@@ -2188,6 +2400,11 @@
     ]
    },
    "facts": {
+    "trendRange": {
+     "estimate": 0.468748289,
+     "low": 0.011162727,
+     "high": 1.133406898
+    },
     "higherAfter1y": 0.680261011,
     "worst1y": -0.823967712,
     "higherAfter4y": 1,
@@ -2339,7 +2556,33 @@
       "kind": "liquidationLtv"
      }
     },
-    "outlook": null,
+    "trends": [
+     {
+      "trend": -0.3,
+      "p": 0.6665,
+      "more": null
+     },
+     {
+      "trend": 0,
+      "p": 0.5015,
+      "more": null
+     },
+     {
+      "trend": 0.2,
+      "p": 0.4235,
+      "more": null
+     },
+     {
+      "trend": 0.5,
+      "p": 0.3415,
+      "more": null
+     },
+     {
+      "trend": 1,
+      "p": 0.2565,
+      "more": null
+     }
+    ],
     "garch": {
      "pLiquidation": 0.4085,
      "pPartial": 0
@@ -2504,6 +2747,11 @@
     ]
    },
    "facts": {
+    "trendRange": {
+     "estimate": 0.468748289,
+     "low": 0.011162727,
+     "high": 1.133406898
+    },
     "higherAfter1y": 0.680261011,
     "worst1y": -0.823967712,
     "higherAfter4y": 1,
@@ -2655,7 +2903,33 @@
       "kind": "liquidationLtv"
      }
     },
-    "outlook": null,
+    "trends": [
+     {
+      "trend": -0.3,
+      "p": 0.993,
+      "more": null
+     },
+     {
+      "trend": 0,
+      "p": 0.9865,
+      "more": null
+     },
+     {
+      "trend": 0.2,
+      "p": 0.984,
+      "more": null
+     },
+     {
+      "trend": 0.5,
+      "p": 0.9775,
+      "more": null
+     },
+     {
+      "trend": 1,
+      "p": 0.968,
+      "more": null
+     }
+    ],
     "garch": {
      "pLiquidation": 0.994,
      "pPartial": 0
@@ -2823,6 +3097,11 @@
     ]
    },
    "facts": {
+    "trendRange": {
+     "estimate": 0.468748289,
+     "low": 0.011162727,
+     "high": 1.133406898
+    },
     "higherAfter1y": 0.680261011,
     "worst1y": -0.823967712,
     "higherAfter4y": 1,
@@ -2983,7 +3262,33 @@
       "kind": "liquidationLtv"
      }
     },
-    "outlook": null,
+    "trends": [
+     {
+      "trend": -0.3,
+      "p": 0.553,
+      "more": 0.2155
+     },
+     {
+      "trend": 0,
+      "p": 0.402,
+      "more": 0.3935
+     },
+     {
+      "trend": 0.2,
+      "p": 0.3285,
+      "more": 0.4905
+     },
+     {
+      "trend": 0.5,
+      "p": 0.251,
+      "more": 0.597
+     },
+     {
+      "trend": 1,
+      "p": 0.1685,
+      "more": 0.7235
+     }
+    ],
     "garch": {
      "pLiquidation": 0.2865,
      "pPartial": 0
@@ -3138,6 +3443,11 @@
     ]
    },
    "facts": {
+    "trendRange": {
+     "estimate": 0.446372898,
+     "low": -0.013256421,
+     "high": 1.120099489
+    },
     "higherAfter1y": 0.677231415,
     "worst1y": -0.833551354,
     "higherAfter4y": 1,
@@ -3322,7 +3632,33 @@
       "kind": "liquidationLtv"
      }
     },
-    "outlook": null,
+    "trends": [
+     {
+      "trend": -0.3,
+      "p": 0.6105,
+      "more": 0.3895
+     },
+     {
+      "trend": 0,
+      "p": 0.385,
+      "more": 0.615
+     },
+     {
+      "trend": 0.2,
+      "p": 0.271,
+      "more": 0.729
+     },
+     {
+      "trend": 0.5,
+      "p": 0.1685,
+      "more": 0.8315
+     },
+     {
+      "trend": 1,
+      "p": 0.086,
+      "more": 0.914
+     }
+    ],
     "garch": {
      "pLiquidation": 0.308,
      "pPartial": 0
@@ -3477,316 +3813,11 @@
     ]
    },
    "facts": {
-    "higherAfter1y": 0.680261011,
-    "worst1y": -0.823967712,
-    "higherAfter4y": 1,
-    "fourYear": {
-     "worst": 0.076492523,
-     "p10": 0.228441495,
-     "median": 0.617126805,
-     "best": 1.719472197
+    "trendRange": {
+     "estimate": 0.468748289,
+     "low": 0.011162727,
+     "high": 1.133406898
     },
-    "fourYearByStart": [
-     {
-      "from": 2014,
-      "to": 2018,
-      "perYear": 1.126560472
-     },
-     {
-      "from": 2015,
-      "to": 2019,
-      "perYear": 0.889887856
-     },
-     {
-      "from": 2016,
-      "to": 2020,
-      "perYear": 1.000642012
-     },
-     {
-      "from": 2017,
-      "to": 2021,
-      "perYear": 1.243417506
-     },
-     {
-      "from": 2018,
-      "to": 2022,
-      "perYear": 0.391609165
-     },
-     {
-      "from": 2019,
-      "to": 2023,
-      "perYear": 0.467951043
-     },
-     {
-      "from": 2020,
-      "to": 2024,
-      "perYear": 0.581975177
-     },
-     {
-      "from": 2021,
-      "to": 2025,
-      "perYear": 0.395697557
-     },
-     {
-      "from": 2022,
-      "to": 2026,
-      "perYear": 0.157788782
-     }
-    ],
-    "deepYears": 6,
-    "years": 13,
-    "worstYear": {
-     "year": 2018,
-     "fall": 0.803791643
-    }
-   }
-  },
-  {
-   "id": "outlook-bull-eur",
-   "uses": "price outlook +50% a year next to no trend",
-   "loan": {
-    "collateralBtc": 0.5,
-    "amountReceived": 14850,
-    "totalInterest": 1500,
-    "totalPayback": 16500,
-    "totalCost": 1650,
-    "effectiveApr": 0.116393705,
-    "payments": [
-     125,
-     125,
-     125,
-     125,
-     125,
-     125,
-     125,
-     125,
-     125,
-     125,
-     125,
-     15125
-    ],
-    "liquidation": [
-     37500,
-     37812.5
-    ],
-    "marginCall": [
-     42857.142857143,
-     43214.285714286
-    ],
-    "drop": 0.375,
-    "topUp": {
-     "btc": 0.2,
-     "value": 8571.428571429,
-     "repayInstead": 4285.714285714
-    },
-    "ifLiquidated": {
-     "btcSold": 0.42,
-     "btcReturned": 0.08,
-     "feeAmount": 750,
-     "valueReturned": 3000
-    },
-    "breakeven": 0.111111111
-   },
-   "risk": {
-    "pLiquidation": 0.5655,
-    "pPartial": 0,
-    "pMarginCall": 0.6845,
-    "cumulativeByMonth": [
-     0.056,
-     0.1525,
-     0.249,
-     0.312,
-     0.3645,
-     0.406,
-     0.4425,
-     0.4795,
-     0.4985,
-     0.5255,
-     0.5495,
-     0.5655
-    ],
-    "fanLastMonth": {
-     "month": 12,
-     "day": 365,
-     "q05": 18641.670552429,
-     "q25": 35814.64174462,
-     "q50": 58338.930552152,
-     "q75": 91541.83095414,
-     "q95": 183793.062372375
-    },
-    "keptAfterSale": {
-     "q10": 0.16,
-     "q50": 0.16,
-     "q90": 0.16
-    },
-    "leverage": null,
-    "samplePaths": {
-     "count": 40,
-     "sold": 21,
-     "firstEvent": {
-      "day": 8,
-      "kind": "liquidationLtv"
-     }
-    },
-    "outlook": {
-     "pLiquidation": 0.412,
-     "pPartial": 0,
-     "leverage": null
-    },
-    "garch": {
-     "pLiquidation": 0.451,
-     "pPartial": 0
-    },
-    "replay": {
-     "starts": 4292,
-     "liquidatedShare": 0.393988816,
-     "partialShare": 0,
-     "marginCallShare": 0.47972973,
-     "worst": {
-      "startTime": 1513468800,
-      "startPrice": 16106,
-      "maxDrawdown": 0.827805787,
-      "minLowTime": 1544886000,
-      "liquidationTime": 1513926000
-     },
-     "reserve": {
-      "q50": 0,
-      "q90": 0.727501463,
-      "q95": 0.929757195,
-      "max": 2.657852949
-     }
-    },
-    "stories": [
-     {
-      "start": "2017-12-17",
-      "sale": {
-       "day": 5,
-       "reason": "liquidationLtv"
-      },
-      "btcLeft": 0.16,
-      "endRel": 0.192202285
-     },
-     {
-      "start": "2021-11-10",
-      "sale": {
-       "day": 58,
-       "reason": "liquidationLtv"
-      },
-      "btcLeft": 0.16,
-      "endRel": 0.298368707
-     },
-     {
-      "start": "2020-02-13",
-      "sale": {
-       "day": 28,
-       "reason": "liquidationLtv"
-      },
-      "btcLeft": 0.16,
-      "endRel": 4.088378718
-     },
-     {
-      "start": "2023-01-01",
-      "sale": null,
-      "btcLeft": 1,
-      "endRel": 2.596967537
-     }
-    ],
-    "barrier": {
-     "sigma": 0.666580541,
-     "p": 0.480750133
-    },
-    "levers": [
-     {
-      "id": "lowerLtv",
-      "value": 0.3,
-      "p": 0.192
-     },
-     {
-      "id": "lowerLtv",
-      "value": 0.4,
-      "p": 0.3685
-     },
-     {
-      "id": "shorter",
-      "value": 6,
-      "p": 0.3875
-     },
-     {
-      "id": "higherLiq",
-      "value": 0.95,
-      "p": 0.4125
-     },
-     {
-      "id": "reserve",
-      "value": 3000,
-      "p": 0.457
-     }
-    ],
-    "leverBase": 0.5445,
-    "slider": [
-     {
-      "ltv": 0.1,
-      "p": 0.0035,
-      "btc": 2.5
-     },
-     {
-      "ltv": 0.15,
-      "p": 0.0255,
-      "btc": 1.666666667
-     },
-     {
-      "ltv": 0.2,
-      "p": 0.067,
-      "btc": 1.25
-     },
-     {
-      "ltv": 0.25,
-      "p": 0.1265,
-      "btc": 1
-     },
-     {
-      "ltv": 0.3,
-      "p": 0.192,
-      "btc": 0.833333333
-     },
-     {
-      "ltv": 0.35,
-      "p": 0.2725,
-      "btc": 0.714285714
-     },
-     {
-      "ltv": 0.4,
-      "p": 0.3685,
-      "btc": 0.625
-     },
-     {
-      "ltv": 0.45,
-      "p": 0.4655,
-      "btc": 0.555555556
-     },
-     {
-      "ltv": 0.5,
-      "p": 0.5445,
-      "btc": 0.5
-     },
-     {
-      "ltv": 0.55,
-      "p": 0.628,
-      "btc": 0.454545455
-     },
-     {
-      "ltv": 0.6,
-      "p": 0.717,
-      "btc": 0.416666667
-     },
-     {
-      "ltv": 0.65,
-      "p": 0.7935,
-      "btc": 0.384615385
-     }
-    ]
-   },
-   "facts": {
     "higherAfter1y": 0.680261011,
     "worst1y": -0.823967712,
     "higherAfter4y": 1,
@@ -3926,7 +3957,33 @@
       "kind": "liquidationLtv"
      }
     },
-    "outlook": null,
+    "trends": [
+     {
+      "trend": -0.3,
+      "p": 0.529,
+      "more": null
+     },
+     {
+      "trend": 0,
+      "p": 0.416,
+      "more": null
+     },
+     {
+      "trend": 0.2,
+      "p": 0.371,
+      "more": null
+     },
+     {
+      "trend": 0.5,
+      "p": 0.3225,
+      "more": null
+     },
+     {
+      "trend": 1,
+      "p": 0.2605,
+      "more": null
+     }
+    ],
     "garch": {
      "pLiquidation": 0.271,
      "pPartial": 0
@@ -4081,6 +4138,11 @@
     ]
    },
    "facts": {
+    "trendRange": {
+     "estimate": 0.446372898,
+     "low": -0.013256421,
+     "high": 1.120099489
+    },
     "higherAfter1y": 0.677231415,
     "worst1y": -0.833551354,
     "higherAfter4y": 1,

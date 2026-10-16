@@ -7,7 +7,7 @@ import de from '../src/content/text.de.js';
 
 const GROUPS = [
   ['ui', 'Page frame and short messages'], ['form', 'Input form'], ['where', '"Where to find these numbers"'],
-  ['results', 'Answer, "Make it safer", price outlook'], ['sections', 'Section titles'], ['falls', 'Section: what happens when BTC falls'],
+  ['results', 'Answer, "Make it safer"'], ['sections', 'Section titles'], ['falls', 'Section: what happens when BTC falls'],
   ['cost', 'Section: costs, borrow or sell, leverage'], ['history', 'Section: what history says'], ['method', 'Section: how these numbers are made'],
   ['feedback', 'Feedback panel'], ['donate', 'Donation box'], ['footer', 'Footer'], ['glossary', 'Glossary'], ['errors', 'Error messages'],
   ['legal', 'Impressum and privacy notice (templates; review by a lawyer)'], ['meta', 'Page title and search description'],

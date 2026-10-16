@@ -138,7 +138,6 @@ export default {
     saleLinePartialLiq: 'At {price} (−{drop}) the lender sells part of your BTC to bring the LTV back down.',
     kept: 'Where BTC was sold, you keep about {kept} of it (middle value).',
     rising: 'Because interest is added, this price rises to {end} by the end.',
-    outlookLine: 'With your price outlook ({trend} a year): {n} of 100.',
     basis: 'Based on real BTC price moves since 2014 · other method: {g} of 100 · no price trend assumed · not a forecast',
     howMade: 'How these numbers are made',
     limitsTitle: 'What this does not include',
@@ -165,17 +164,6 @@ export default {
       monthlyInterest: 'Pay interest every month instead of adding it',
     },
     higherLiqNote: 'A higher liquidation LTV only helps if the margin-call rules do not sell first. Ask your lender what happens after a margin call.',
-    outlookTitle: 'Your price outlook',
-    outlookIntro: 'The simulation assumes no trend: BTC swings as it did in the past, and half of the simulated futures end above today\'s price, half below. Choose a trend to see how much it changes the answer. The swings stay in.',
-    presets: { bear: 'Bear', none: 'No trend', moderate: 'Moderate', bull: 'Bull', run: 'Generational run' },
-    outlookPick: 'Choose a trend to compare it with the no-trend answer.',
-    outlookBarNone: 'No trend (the answer above)',
-    outlookBarYours: 'Your outlook ({trend} a year)',
-    outlookDiff: 'With your outlook, {m} of 100 futures end in a sale, instead of {n} of 100.',
-    outlookAffects: 'The outlook adds only this comparison (also shown under the answer, and in "Is the leverage worth it?"). The rest of the page stays on "no trend", the cautious assumption that passed the test against history.',
-    outlookCustom: 'Your own: {trend} a year',
-    outlookAnchor: 'For comparison, BTC\'s yearly growth (compounded) over 4-year periods since 2014: weakest {worst}, middle {median}, strongest {best}. It has fallen over time: {firstFrom}–{firstTo} {firstRate} a year, {lastFrom}–{lastTo} {lastRate} a year.',
-    outlookSwings: 'In {deep} of {years} calendar years since 2014, BTC fell at least 50% from a high within the same year. A loan has to survive these falls, whatever the long-term direction.',
   },
 
   sections: {
@@ -237,6 +225,8 @@ export default {
     levBreakeven: 'Breakeven: BTC must be {rise} higher at the end, without a sale on the way.',
     levCash: 'Repaying with new money: you keep the bought BTC unless your collateral is sold, and pay {payback} from other money.',
     levFacts: 'Since 2014, BTC was higher 4 years later on {h4} of start days in this page\'s data. One year later it was higher on only {h1}, and the worst year ended {w1}. A loan has to survive the path, not just reach the destination. The past does not guarantee the future.',
+    levTrendTitle: 'Does the price trend matter here?',
+    levTrendUnit: 'Number = futures of 100 in which you end with more BTC than without the loan.',
   },
 
   history: {
@@ -248,6 +238,15 @@ export default {
     partial: '{date}: part sold after {days} days; you keep {left} of your BTC.',
     survived: '{date}: no sale. One year later BTC was {end}× the start.',
     byMonth: 'More than half of all liquidations in the simulation happen in the first {months} months.',
+    trendTitle: 'Does the price trend matter?',
+    trendIntro: 'Nobody knows where BTC goes next. Here is your loan with five different yearly [[priceTrend]] values. The swings stay as they were in the past.',
+    trendRow: '{trend} a year',
+    trendNone: 'No trend (the answer above)',
+    trendUnit: 'Number = futures of 100 that end in a sale.',
+    trendConclusion: 'With no trend, {none} of 100 futures end in a sale. Even at {topTrend} a year, it is still {top} of 100. A trend does not remove the falls on the way.',
+    trendUncertainty: 'Why the page assumes no trend: since 2014, BTC grew by about {estimate} a year. But the swings are so large that this is only known to lie between {low} and {high}. The past trend is too uncertain to build on.',
+    trendPast: 'BTC\'s yearly growth (compounded) over 4-year periods since 2014: weakest {worst}, middle {median}, strongest {best}. It has fallen over time: {firstFrom}–{firstTo} {firstRate} a year, {lastFrom}–{lastTo} {lastRate} a year.',
+    trendSwings: 'In {deep} of {years} calendar years since 2014, BTC fell at least 50% from a high within the same year. A loan has to survive these falls, whatever the long-term direction.',
   },
 
   method: {
@@ -257,7 +256,7 @@ export default {
       'History: the same loan, started on every day since 2014, against the real lowest price of every hour.',
       'The lender\'s rules (margin call, deadlines, partial sales, fees) are applied exactly as you set them, in every path.',
       'Tested against history: from 2016 on, the method only saw the past and then predicted the lowest price of the next 90 and 365 days. Reality fell below its "worst 5%" level in 0 to 6 of 100 cases, close to or below the promised 5. The method is cautious rather than optimistic.',
-      'No trend is assumed unless you choose a price outlook, because with BTC\'s past average growth built in, the test against history failed.',
+      'No trend is assumed, because with BTC\'s past average growth built in, the test against history failed. "What history says" shows how much a trend would change your answer.',
     ],
     code: 'All code, data and tests are open: {link}',
     expert: 'Expert details',
@@ -323,7 +322,7 @@ export default {
       blockBootstrap: { term: 'Block bootstrap', text: 'The method behind the simulated futures: pieces of real price history (30 days each) are picked at random and joined together.' },
       garch: { term: 'GARCH model', text: 'A statistics model for prices in which wild days make further wild days more likely, and very large moves happen more often than in the textbook model.' },
       historicalReplay: { term: 'Historical replay', text: 'The loan is started on every past day and checked against what the price really did afterwards.' },
-      priceOutlook: { term: 'Price outlook', text: 'An assumed yearly price change of the middle simulated future (compounded). It shifts all simulated futures up or down; the swings stay the same.' },
+      priceTrend: { term: 'Price trend', text: 'An assumed yearly price change of the middle simulated future (compounded). It shifts all simulated futures up or down; the swings stay the same.' },
     },
   },
 
