@@ -590,11 +590,32 @@ function renderOutlook() {
   if (active) { // keep the slider under the finger; only update the label
     $('#outlook-value').textContent = presetOf ? `${R.presets[presetOf[0]]}: ${signedPct(trend / 100)} ${t('ui.perYear')}` : t('results.outlookCustom', { trend: signedPct(trend / 100) });
     for (const b of document.querySelectorAll('[data-preset]')) b.setAttribute('aria-pressed', String(PRESETS[b.dataset.preset] === trend));
+    renderOutlookResult();
     return;
   }
   $('#outlook-body').innerHTML = `<p class="hint">${esc(R.outlookIntro)}</p><div class="chips" role="group" aria-label="${esc(R.outlookTitle)}">${chips}</div>
     <label class="range-label"><span id="outlook-value">${esc(presetOf ? `${R.presets[presetOf[0]]}: ${signedPct(trend / 100)} ${t('ui.perYear')}` : t('results.outlookCustom', { trend: signedPct(trend / 100) }))}</span>
-    <input type="range" min="-50" max="150" step="5" data-k="outlook" value="${trend}"></label>${anchor}`;
+    <input type="range" min="-50" max="150" step="5" data-k="outlook" value="${trend}"></label>
+    <div id="outlook-result" aria-live="polite"></div>${anchor}`;
+  renderOutlookResult();
+}
+
+// The effect of the chosen outlook, shown right where it is chosen.
+function renderOutlookResult() {
+  const el = $('#outlook-result'); const r = lastRisk; const R = texts().results;
+  if (!el || !r || !riskSettings) return;
+  const chosen = numOr(state.outlook, 0);
+  const shownFor = Math.round(riskSettings.trend * 100);
+  const base = r.main.pLiquidation + r.main.pPartial;
+  const bar = (label, p, cls) => `<div class="lv${cls}"><span>${esc(label)}</span><span class="b"><i style="width:${p * 100}%"></i></span><b>${of100(p)}</b></div>`;
+  let html = `<div class="levers">${bar(R.outlookBarNone, base, ' base')}`;
+  if (chosen === 0) html += `</div><p class="hint">${esc(R.outlookPick)}</p>`;
+  else if (shownFor !== chosen || !r.outlook) html += `</div><p class="progress">${esc(t('ui.computing', { done: '…', total: '…' }))}</p>`;
+  else {
+    const p = r.outlook.pLiquidation + r.outlook.pPartial;
+    html += `${bar(t('results.outlookBarYours', { trend: signedPct(chosen / 100) }), p, '')}</div><p class="big-line">${esc(t('results.outlookDiff', { m: of100(p), n: of100(base) }))}</p>`;
+  }
+  el.innerHTML = `${html}<p class="hint">${esc(R.outlookAffects)}</p>`;
 }
 
 function renderLeverage() {

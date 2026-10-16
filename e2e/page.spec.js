@@ -107,6 +107,9 @@ test('price outlook: a preset adds the outlook line next to the no-trend answer'
   await open(page); await waitDone(page);
   await page.locator('[data-preset="bull"]').click();
   await expect(page.locator('#outlook-line')).toContainText('+50%');
+  // the effect is also shown right where the outlook is chosen
+  await expect(page.locator('#outlook-result')).toContainText(/With your outlook, \d+ of 100 futures end in a sale, instead of \d+ of 100/);
+  await expect(page.locator('#outlook-result .lv')).toHaveCount(2);
 });
 
 test('margin-call rule "sells part at once": the answer mentions partial sales', async ({ page }) => {
