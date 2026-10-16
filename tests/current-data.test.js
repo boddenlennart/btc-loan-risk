@@ -38,6 +38,10 @@ describe.skipIf(!hasData('USD') || !hasData('EUR'))('reference loans on the newe
       expect(k.stories.length).toBeGreaterThanOrEqual(3);
       // a lower starting LTV never helps less than 3 points of random noise allow
       for (const l of k.levers.filter((x) => x.id === 'lowerLtv')) expect(l.p).toBeLessThanOrEqual(k.leverBase + 0.03);
+      // "Make it safer" uses the answer's own paths: "your terms" and the slider at the visitor's LTV equal the headline exactly
+      expect(k.leverBase).toBe(k.pLiquidation);
+      const own = k.slider.find((x) => Math.abs(x.ltv - loanTerms(ref).initialLtv) < 1e-9);
+      if (own) expect(own.p).toBe(k.pLiquidation);
       // the slider: higher LTV, never clearly lower risk
       for (let i = 1; i < k.slider.length; i++) expect(k.slider[i].p).toBeGreaterThanOrEqual(k.slider[i - 1].p - 0.03);
       if (loanTerms(ref).purpose === 'buy') {

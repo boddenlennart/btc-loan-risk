@@ -155,6 +155,10 @@ async function run(id, terms, settings, garch, post = postMessage) {
   // the slider stops below the margin-call LTV (above it, a new loan would start in a margin call)
   const ltvMax = (terms.marginCallLtv || terms.liquidationLtv) - 0.04;
   for (let x = 0.1; x < ltvMax; x += 0.05) ltvGrid.push(Math.round(x * 100) / 100);
+  // the visitor's own LTV is always on the slider, so it can show exactly the headline number
+  if (terms.initialLtv < ltvMax && !ltvGrid.some((x) => Math.abs(x - terms.initialLtv) < 1e-9)) {
+    ltvGrid.push(terms.initialLtv); ltvGrid.sort((a, b) => a - b);
+  }
   const total = 4 + levers.length + ltvGrid.length + TRENDS.length;
   let done = 0;
   // after each step: report progress and give the page a moment to repaint
@@ -174,14 +178,18 @@ async function run(id, terms, settings, garch, post = postMessage) {
     p: gbmBarrierHitProbability({ s0: terms.btcPrice, barrier: lp.atStart, mu: s.sigma ** 2 / 2, sigma: s.sigma, years: loanDays(terms) / 365 }),
   };
   await tick();
-  post({ type: 'partial', id, result: { ...result, levers: null, slider: null } }); // the answer first
+  post({ type: 'partial', id, result: { ...result, levers: null, slider: null, trends: null } }); // the answer first
 
+  // "Make it safer" uses the same random paths as the answer, so "your terms as they are" is exactly
+  // the headline number and every option differs only by the one change it makes
   result.levers = [];
   for (const l of levers) {
-    result.levers.push({ id: l.id, value: l.value, p: simulate(l.terms, s, settings, { nPaths: 2000, seed: 7 }).pLiquidation });
+    result.levers.push({ id: l.id, value: l.value, p: simulate(l.terms, s, settings).pLiquidation });
     await tick();
   }
   result.levers.sort((a, b) => a.p - b.p);
+  result.leverBase = result.main.pLiquidation;
+  post({ type: 'partial', id, result: { ...result, slider: null } }); // the best option under the answer, before the rest
   // "Does the price trend matter?": the same loan at fixed yearly trends of the middle path.
   // Same random paths as the main answer, only shifted, so "no trend" is exactly the answer above.
   result.trends = [];
@@ -190,11 +198,11 @@ async function run(id, terms, settings, garch, post = postMessage) {
     result.trends.push({ trend, p: sim.pLiquidation + sim.pPartial, more: sim.leverage ? sim.leverage.more : null });
     await tick();
   }
-  result.leverBase = simulate(terms, s, settings, { nPaths: 2000, seed: 7 }).pLiquidation; // same paths as the levers, for a fair comparison
   result.slider = [];
   for (const ltv of ltvGrid) {
     const t = { ...terms, initialLtv: ltv, ...(terms.marginCallLtv && terms.marginCallLtv <= ltv ? { marginCallLtv: null } : {}) };
-    result.slider.push({ ltv, p: simulate(t, s, settings, { nPaths: 2000, seed: 7 }).pLiquidation, btc: collateralBtc(t) });
+    const own = Math.abs(ltv - terms.initialLtv) < 1e-9;
+    result.slider.push({ ltv, p: own ? result.main.pLiquidation : simulate(t, s, settings).pLiquidation, btc: collateralBtc(t) });
     await tick();
   }
   return result;

@@ -142,6 +142,8 @@ export default {
       'Kurse können über den Verkaufskurs hinweg springen, etwa bei einem Börsenausfall. Dann bekommen Sie womöglich weniger zurück.',
       'Ihr Kreditgeber misst den BTC-Kurs womöglich anders als diese Seite.',
     ],
+    sharedNote: 'Jemand hat diese Berechnung mit Ihnen geteilt. Die Bedingungen stehen im Formular oben; ändern Sie eine davon für ein neues Ergebnis.',
+    bestLever: 'Eine geänderte Bedingung senkt diese Zahl: {lever} → {p} von 100. Weitere Möglichkeiten unten.',
     safer: 'Sicherer machen',
     sliderLine: 'Start-LTV {ltv} → {p} von 100 liquidiert · Sie hinterlegen {btc}',
     sliderLineExisting: 'LTV {ltv} → {p} von 100 liquidiert · {btc} hinterlegt ({add} nachschießen)',

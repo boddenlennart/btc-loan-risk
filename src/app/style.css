@@ -224,3 +224,9 @@ dl dd { margin: 2px 0 0; }
 dt, details, h3 { scroll-margin-top: 64px; }
 @media (max-width: 420px) { .donate { flex-direction: column; } }
 @media print { .top { position: static; } button { display: none; } details { display: block; } }
+
+/* a shared link scrolls to the answer; keep it clear of the sticky top bar */
+#answer { scroll-margin-top: 72px; }
+.shared-note { margin: 0 0 12px; padding: 8px 12px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); font-size: 0.9rem; }
+.best-lever { margin: 8px 0 0; font-weight: 600; }
+.best-lever:empty { display: none; }

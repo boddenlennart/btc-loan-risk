@@ -134,10 +134,33 @@ test('all sections open with their charts; donation QR, Impressum and privacy no
   expect(errors).toEqual([]);
 });
 
-test('shared link restores the inputs', async ({ page }) => {
-  await open(page, { hash: encodeState({ ...EXAMPLE_FORM, initialLtv: 35, durationMonths: 24 }) });
+test('shared link restores the inputs, says it was shared, and opens on the answer (phone)', async ({ page }) => {
+  await open(page, { width: 375, hash: encodeState({ ...EXAMPLE_FORM, initialLtv: 35, durationMonths: 24 }) });
   await expect(page.locator('#f-initialLtv')).toHaveValue('35');
   await expect(page.locator('#headline-text')).toContainText('24 months');
+  await expect(page.locator('#shared-note')).toBeVisible();
+  await expect(page.locator('#headline-text')).toBeInViewport();
+  // once the visitor changes a term, the numbers are their own
+  await page.locator('#f-initialLtv').fill('40');
+  await expect(page.locator('#shared-note')).toBeHidden();
+});
+
+test('without a shared link the page opens at the top, with no "shared" note', async ({ page }) => {
+  await open(page); await waitDone(page);
+  await expect(page.locator('#shared-note')).toBeHidden();
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+});
+
+test('"Make it safer" shows exactly the headline number for your own terms, and the best option sits under the answer', async ({ page }) => {
+  await open(page); await waitDone(page);
+  const n = await headlineNumber(page);
+  await expect(page.locator('#slider-line')).toContainText(`Starting LTV 50% → ${n} of 100`);
+  await expect(page.locator('#safer .lv.base b')).toHaveText(String(n));
+  const best = (await page.locator('#best-lever').textContent()).match(/→ (\d+) of 100/);
+  expect(best).not.toBeNull();
+  expect(Number(best[1])).toBeLessThan(n);
+  // it is the first (lowest) option in "Make it safer"
+  await expect(page.locator('#safer .lv:not(.base) b').first()).toHaveText(best[1]);
 });
 
 test('feedback: the copied e-mail text contains the answers', async ({ page, context }) => {

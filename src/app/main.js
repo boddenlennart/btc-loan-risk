@@ -35,6 +35,7 @@ let lastTerms = null; let lastSettings = null; let lastRisk = null; let timer = 
 let riskTerms = null; let riskSettings = null; const pending = {};
 let showOtherPaths = false;
 
+const openedFromLink = !!decodeState(location.hash); let scrolledToAnswer = false;
 function loadState() {
   const fromLink = decodeState(location.hash);
   let saved = null;
@@ -217,6 +218,7 @@ function setPath(obj, path, value) {
 }
 function change(mutate, { rerenderForm = false } = {}) {
   state = structuredClone(state); mutate(state); saveState();
+  $('#shared-note').hidden = true; // the inputs are now the visitor's own
   if (rerenderForm) renderForm();
   update();
 }
@@ -365,6 +367,8 @@ function onWorkerMessage(m) {
     lastRisk = m.result; [riskTerms, riskSettings] = pending[m.id];
     if (m.type === 'result') { busy = false; $('#progress').hidden = true; }
     renderRisk();
+    // a shared link opens on the answer the sender saw, not on the form
+    if (openedFromLink && !scrolledToAnswer) { scrolledToAnswer = true; $('#shared-note').hidden = false; $('#answer').scrollIntoView({ block: 'start' }); }
   } else if (m.type === 'error') {
     busy = false; $('#progress').textContent = m.message;
   }
@@ -513,6 +517,8 @@ function renderRisk() {
   const headline = m.pPartial >= 0.005 ? t('results.headlinePartial', { n: nLiq, m: nPart, months })
     : t(tm.mode === 'existing' ? 'results.headlineLiqExisting' : 'results.headlineLiq', { n: nLiq, months });
   $('#headline-text').innerHTML = esc(headline).replace(/(\d+) (of|von) 100/, '<em>$1 $2 100</em>');
+  headlineShown = { p: m.pLiquidation, n: nLiq };
+  $('#best-lever').textContent = bestLeverText(r);
   $('#dots').innerHTML = dotsHtml([[nLiq, 'd-liq'], [nPart, 'd-part'], [nMargin, 'd-margin'], [nNone, 'd-none']], headline)
     + legendHtml([[nLiq, 'd-liq', R.legendLiquidated], [nPart, 'd-part', R.legendPartial], [nMargin, 'd-margin', R.legendMargin], [nNone, 'd-none', R.legendNothing]]);
   $('#kept-line').textContent = m.keptAfterSale && m.pPartial >= 0.005 ? t('results.kept', { kept: pct(m.keptAfterSale.q50, 0) }) : '';
@@ -529,8 +535,21 @@ function renderRisk() {
   $('#data-range').textContent = `${t('ui.dataUntil', { from: date(META.prices[cur].from), to: date(META.prices[cur].to) })}${appended[cur] && appended[cur].length ? ` ${t('ui.dataAppended', { to: dateTime(appended[cur].at(-1).time) })}` : ''}`;
 }
 
+// The visitor's own number is shown exactly as in the headline (which rounds so the dots add up to 100).
+let headlineShown = null;
+const shown = (p) => (headlineShown && p === headlineShown.p ? headlineShown.n : of100(p));
+const leverLabel = (l, tm) => t(`results.levers.${l.id}`, {
+  value: l.id === 'reserve' ? money0(l.value, tm.currency) : l.id === 'shorter' ? l.value : l.value !== null ? pct(l.value, 0) : '', months: tm.durationMonths,
+});
+// Under the answer: the one change from "Make it safer" that lowers the number most
+function bestLeverText(r) {
+  const best = r.levers && r.levers[0];
+  if (!best || shown(best.p) >= shown(r.main.pLiquidation)) return '';
+  return t('results.bestLever', { lever: leverLabel(best, riskTerms), p: shown(best.p) });
+}
+
 function renderSafer() {
-  const r = lastRisk; const tm = riskTerms; const R = texts().results; const cur = tm.currency;
+  const r = lastRisk; const tm = riskTerms; const R = texts().results;
   const el = $('#safer-body');
   if (!r.slider) { el.innerHTML = `<p class="progress">${esc(t('ui.computing', { done: '…', total: '…' }))}</p>`; return; }
   const grid = r.slider;
@@ -541,16 +560,14 @@ function renderSafer() {
     if (tm.mode === 'existing') {
       const btcNeeded = tm.loanAmount / (g.ltv * tm.btcPrice);
       const add = btcNeeded - tm.collateralInput;
-      return add > 0.00005 ? t('results.sliderLineExisting', { ltv: pct(g.ltv, 0), p: of100(g.p), btc: btc(btcNeeded), add: btc(add) })
-        : t('results.sliderLineExistingNow', { ltv: pct(g.ltv, 0), p: of100(g.p), btc: btc(btcNeeded) });
+      return add > 0.00005 ? t('results.sliderLineExisting', { ltv: pct(g.ltv, 0), p: shown(g.p), btc: btc(btcNeeded), add: btc(add) })
+        : t('results.sliderLineExistingNow', { ltv: pct(g.ltv, 0), p: shown(g.p), btc: btc(btcNeeded) });
     }
-    return t('results.sliderLine', { ltv: pct(g.ltv, 0), p: of100(g.p), btc: btc(g.btc) });
+    return t('results.sliderLine', { ltv: pct(g.ltv, 0), p: shown(g.p), btc: btc(g.btc) });
   };
   const levers = r.levers || [];
-  const label = (l) => t(`results.levers.${l.id}`, {
-    value: l.id === 'reserve' ? money0(l.value, cur) : l.id === 'shorter' ? l.value : l.value !== null ? pct(l.value, 0) : '', months: tm.durationMonths,
-  });
-  const row = (text, p, base) => `<div class="lv${base ? ' base' : ''}"><span>${esc(text)}</span><span class="b"><i style="width:${p * 100}%"></i></span><b>${of100(p)}</b></div>`;
+  const label = (l) => leverLabel(l, tm);
+  const row = (text, p, base) => `<div class="lv${base ? ' base' : ''}"><span>${esc(text)}</span><span class="b"><i style="width:${p * 100}%"></i></span><b>${shown(p)}</b></div>`;
   const higher = levers.find((l) => l.id === 'higherLiq');
   el.innerHTML = `<div class="slider"><label for="ltv-slider" id="slider-line">${esc(line(idx))}</label>
     <input id="ltv-slider" type="range" min="0" max="${grid.length - 1}" step="1" value="${idx}">

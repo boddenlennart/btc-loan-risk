@@ -147,6 +147,8 @@ export default {
       'Prices can jump past the sale price, for example during an exchange outage. You may then get back less.',
       'Your lender may measure the BTC price differently from this page.',
     ],
+    sharedNote: 'Someone shared this calculation with you. The terms are in the form above; change any of them to see a new result.',
+    bestLever: 'One change to your terms lowers this: {lever} → {p} of 100. More options below.',
     safer: 'Make it safer',
     sliderLine: 'Starting LTV {ltv} → {p} of 100 liquidated · you pledge {btc}',
     sliderLineExisting: 'LTV {ltv} → {p} of 100 liquidated · {btc} pledged (add {add})',
