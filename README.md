@@ -237,7 +237,7 @@ Model risk (the future can be wilder than the past), lender failure, custody and
 | BTC/EUR hourly candles, 2014–2016 | Kraken public API (`/0/public/Trades`, pair XBTEUR), every single trade grouped into hourly candles by `tools/fetch_history.py` | Kraken was the larger EUR market then |
 | BTC/EUR hourly candles, 2017 to build date | Bitstamp public API (`/api/v2/ohlc/btceur`) | |
 | Recent hours after the build date | Bitstamp public API, fetched by the page on load | optional; the page works without it |
-| Current price | Coinbase → Kraken → Binance → CoinGecko (first that answers within 4 s) | Binance has no BTC/USD market; BTC/USDT is used for USD there |
+| Current price | Coinbase → Kraken → Binance → CoinGecko (first that answers within 4 s) | Binance has no BTC/USD market; BTC/USDT is used for USD there. Works on GitHub Pages and locally; **not** in a private claude.ai test copy, whose host blocks outside requests (the page then uses the stored price and says so) |
 | Fallback price | Last close stored in the page | shown with a "not current" warning |
 
 Prices are stored in cents in a compact compressed format (`src/data/codec.js`, `data/*.bin.gz`). A test checks that they equal the raw downloads to the cent.
@@ -307,7 +307,7 @@ Run with `npm test` (266 tests) and `npm run test:e2e` (14 browser tests). Tests
 | D3 Readability | short sentences | 11 words average | ≤ 14 average, none over 30 (test) |
 | D4 Accessibility (axe-core, WCAG 2.2 AA), light + dark, 320 px to desktop | 0 serious/critical | – | **0** (`node tools/build-audit.mjs`, then run axe in `ux/audit/`) |
 | D5 Phone layout at 320 px | no sideways scrolling, 44 px targets | – | **passes** (links inside running text excepted, as WCAG allows) |
-| D6 First answer on a mid-range phone | ≤ 5 s | – | **not yet measured on a real phone.** In Node: first answer after 0.6 s, all results after 1.1 s |
+| D6 First answer on a phone | ≤ 5 s | – | **1–2 s** on the owner's phone (2026-10-16, private test copy) |
 
 ### Calibration results (assumed trend 0%)
 
