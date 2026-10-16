@@ -1,4 +1,5 @@
-// Tiny local web server for previewing docs/index.html: node tools/serve.mjs [port]
+// Tiny local web server for previewing docs/index.html: node tools/serve.mjs [port] [folder] [host]
+// host 0.0.0.0 makes it reachable from other devices in your own Wi-Fi (for testing on a phone).
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -14,4 +15,4 @@ createServer(async (req, res) => {
     const body = await readFile(root + file);
     res.writeHead(200, { 'content-type': file.endsWith('.html') ? 'text/html; charset=utf-8' : 'application/octet-stream' }).end(body);
   } catch { res.writeHead(404).end('not found'); }
-}).listen(port, '127.0.0.1', () => console.log(`http://127.0.0.1:${port}/`));
+}).listen(port, process.argv[4] || '127.0.0.1', () => console.log(`serving on port ${port}`));
