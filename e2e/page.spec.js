@@ -69,6 +69,16 @@ test('the example answer is there the moment the page opens, and the live calcul
   await expect(page.locator('#example-story')).toContainText('Borrow €10,000 for 12 months');
 });
 
+test('"Example" only while every term is the example\'s; while calculating, the answer shows a placeholder, not an empty panel', async ({ page }) => {
+  await open(page); await waitDone(page);
+  await expect(page.locator('#ans-label')).toHaveText('Example');
+  await page.locator('details.more[data-remember="more"] > summary').click();
+  await page.locator('[data-set="repayment"][data-val="bullet"]').click(); // a term outside the five main fields
+  await expect(page.locator('#ans-label')).toHaveText('Your terms');
+  await expect(page.locator('#example-story')).toBeHidden();
+  await expect(page.locator('.answer .meta').first()).not.toContainText('· ·');
+});
+
 test('a lower starting LTV gives a lower answer', async ({ page }) => {
   await open(page); await waitDone(page);
   const before = await headlineNumber(page);
@@ -125,9 +135,11 @@ test('impossible terms show a plain-language error and no result', async ({ page
   await expect(page.locator('body')).toHaveClass(/invalid/);
 });
 
+const chooseLang = async (page, l) => { await page.locator('#lang-btn').click(); await page.locator(`[data-lang="${l}"]`).click(); };
+
 test('German: switch language, everything in German', async ({ page }) => {
   await open(page); await waitDone(page);
-  await page.locator('#lang-btn').click();
+  await chooseLang(page, 'de');
   await expect(page.locator('#headline-text')).toContainText('von 100');
   await expect(page.locator('.brand')).toHaveText('Bitcoin-Kredit-Check');
   await expect(page.locator('h1')).toHaveText('Ein unabhängiger Check für jedes Bitcoin-Kreditangebot.');
@@ -215,11 +227,31 @@ test('German address /de/ starts in German; the language button switches the add
   await page.goto('/de/');
   await expect(page.locator('h1')).toHaveText('Ein unabhängiger Check für jedes Bitcoin-Kreditangebot.');
   await expect(page.locator('html')).toHaveAttribute('lang', 'de');
-  await page.locator('#lang-btn').click();
+  await chooseLang(page, 'en');
   await expect(page.locator('h1')).toHaveText('An independent check for any Bitcoin loan offer.');
   expect(new URL(page.url()).pathname).toBe('/');
-  await page.locator('#lang-btn').click();
+  await chooseLang(page, 'de');
   expect(new URL(page.url()).pathname).toBe('/de/');
+});
+
+test('language menu: shows the current language, lists both with a tick, offers "Your language is missing?", closes with Escape', async ({ page }) => {
+  await open(page);
+  const btn = page.locator('#lang-btn');
+  await expect(btn).toContainText('EN');
+  await expect(page.locator('#lang-list')).toBeHidden();
+  await btn.click();
+  await expect(btn).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator('[data-lang="en"]')).toHaveAttribute('aria-current', 'true');
+  await expect(page.locator('[data-lang="de"]')).toHaveAttribute('aria-current', 'false');
+  await expect(page.locator('#lang-missing')).toHaveAttribute('href', /^mailto:boddenlennart@proton\.me\?subject=Language%20request/);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#lang-list')).toBeHidden();
+  await expect(btn).toBeFocused();
+  // choosing the current language changes nothing; a click elsewhere closes the menu
+  await btn.click(); await page.locator('h1').click();
+  await expect(page.locator('#lang-list')).toBeHidden();
+  await chooseLang(page, 'de');
+  await expect(btn).toContainText('DE');
 });
 
 test('Share (desktop): copies a summary with the visitor\'s numbers and the link', async ({ page, context }) => {

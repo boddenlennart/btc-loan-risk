@@ -84,7 +84,17 @@ p { margin: 8px 0; }
 .top-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; }
 .brand { display: flex; align-items: center; gap: 8px; font: 600 18px/1 var(--serif); color: var(--text); text-decoration: none; min-height: 44px; }
 .brand .mark { flex: none; }
-button.lang { font: 600 14px var(--sans); color: var(--accent-ink); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0 12px; min-height: 44px; }
+/* language menu: the current language, a short list, and "Your language is missing?" */
+.lang-menu { position: relative; }
+button.lang { display: inline-flex; align-items: center; gap: 6px; font: 600 14px var(--sans); color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0 12px; min-height: 44px; }
+button.lang[aria-expanded="true"] { border-color: var(--accent); }
+.lang-list { position: absolute; right: 0; top: calc(100% + 6px); min-width: 220px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18); padding: 6px; z-index: 10; }
+.lang-list[hidden] { display: none; }
+.lang-list button, .lang-list a { display: flex; align-items: center; width: 100%; min-height: 44px; padding: 0 10px; border: none; background: none; color: var(--text); font: 400 16px var(--sans); text-align: left; border-radius: 4px; cursor: pointer; }
+.lang-list button[aria-current="true"] { font-weight: 600; }
+.lang-list button[aria-current="true"]::after { content: "✓"; margin-left: auto; color: var(--accent); }
+.lang-list button:hover, .lang-list a:hover { background: var(--surface-2); }
+.lang-list a { color: var(--accent-ink); font-size: 14px; border-top: 1px solid var(--border); margin-top: 4px; padding-top: 4px; border-radius: 0; text-decoration: underline; }
 
 /* positioning */
 .intro { padding: 20px 0 4px; }

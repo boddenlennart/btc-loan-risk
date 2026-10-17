@@ -25,7 +25,6 @@ const STORE_KEY = 'btc-loan-risk:form';
 const $ = (sel, root = document) => root.querySelector(sel);
 const STORY_COLORS = ['var(--story-1)', 'var(--story-2)', 'var(--story-3)', 'var(--story-4)'];
 const SOURCE_NAMES = { coinbase: 'Coinbase', kraken: 'Kraken', binance: 'Binance', coingecko: 'CoinGecko', embedded: '' };
-const MAIN_FIELDS = ['loanAmount', 'initialLtv', 'liquidationLtv', 'durationMonths', 'rateAnnual'];
 
 // ------------------------------------------------------------------ state
 const linkData = decodeLink(location.hash);
@@ -94,7 +93,7 @@ const getPath = (obj, path) => path.split('.').reduce((o, k) => (o == null ? o :
 
 // ------------------------------------------------------------------ form
 function isExample() {
-  return !compare && state.mode === 'new' && MAIN_FIELDS.every((k) => String(state[k]) === String(EXAMPLE_FORM[k]));
+  return !compare && state.mode === 'new' && exampleKey(state) === exampleKey({ ...EXAMPLE_FORM, btcPrice: state.btcPrice });
 }
 
 const openDetails = new Set();
@@ -172,7 +171,7 @@ function renderForm() {
     <div class="field" data-field="durationMonths"><span class="label" id="l-dur">${esc(existing ? f.durationMonths.labelExisting : f.durationMonths.label)}</span>
       <div class="chips" role="group" aria-labelledby="l-dur">${durChips}<span class="with-unit other"><input type="number" step="1" min="1" inputmode="numeric" data-k="durationMonths" aria-label="${esc(fm.otherDuration)}" placeholder="${esc(fm.otherDuration)}" value="${other ? esc(state.durationMonths) : ''}"><span class="unit">${esc(t('ui.months'))}</span></span></div>${existing ? '' : `<p class="hint">${esc(f.durationMonths.hint)}</p>`}<p class="err" role="alert" hidden></p></div>
     ${rate}
-    ${refi ? '' : seg('purpose', [['spend', f.purpose.spend], ['buy', f.purpose.buy]], f.purpose.label)}
+    ${refi ? '' : seg('purpose', [['spend', f.purpose.spend], ['buy', f.purpose.buy]], f.purpose.label) + `<p class="hint purpose-hint">${esc(f.purpose.hint)}</p>`}
     <p class="price-line" id="price-line" aria-live="polite"></p>
     <div class="field" data-field="btcPrice" id="price-edit" hidden><span class="with-unit"><input type="number" step="any" inputmode="decimal" data-k="btcPrice" aria-label="BTC ${esc(cur)}" value="${esc(state.btcPrice ?? '')}"><span class="unit">${esc(cur)}</span></span><p class="err" role="alert" hidden></p></div>
     <details class="more" data-remember="more"><summary>${esc(refi ? Cm.moreTerms : existing ? fm.moreTermsExisting : fm.moreTerms)} <span class="sum" id="more-sum"></span></summary>${more}</details>
@@ -387,7 +386,7 @@ function onWorkerMessage(m) {
   if (m.id !== runId) return;
   if (quietRuns.has(m.id) && m.type !== 'result' && m.type !== 'error') return;
   if (m.type === 'progress') {
-    $('#progress').hidden = false; $('#progress').textContent = t('ui.computing', { done: m.done, total: m.total });
+    $('#progress').hidden = false; $('#progress').textContent = t('ui.computing', { pct: Math.min(99, Math.round((m.done / m.total) * 100)) });
   } else if (m.type === 'partial' || m.type === 'result') {
     garchCache[m.result.currency] = m.result.garch;
     lastRisk = m.result; [riskTerms, riskSettings] = pending[m.id];
@@ -443,6 +442,7 @@ function update() {
       ? t('compare.newLoanLine', { amount: money0(terms.loanAmount, terms.currency), btc: num(terms.collateralInput, 4), ltv: pct(terms.initialLtv, 1) })
       : `LTV ${pct(terms.initialLtv, 1)}`;
   }
+  if (!lastRisk) $('#headline-text').innerHTML = `<em class="hero-n">…</em> <span class="of">${esc(texts().results.heroOf)}</span> <span class="sentence">${esc(texts().ui.computingShort)}</span>`;
   renderCompare(); // also while the selected offer has an error, so the table and names stay current
   if (compare) $('#ans-label').textContent = offerName(compare.active);
   if (!v.ok) { document.body.classList.add('invalid'); return; }
@@ -456,7 +456,7 @@ function update() {
   if (sameAsEmbedded) { riskTerms = terms; riskSettings = settings; } // same answer, today's price for the charts
   else if (lastRisk) document.body.classList.add('outdated');
   if (!started) return;
-  if (!sameAsEmbedded) { $('#progress').hidden = false; $('#progress').textContent = t('ui.computing', { done: 0, total: '…' }); }
+  if (!sameAsEmbedded) { $('#progress').hidden = false; $('#progress').textContent = t('ui.computing', { pct: 0 }); }
   timer = setTimeout(() => { requestRisk(terms, settings); if (sameAsEmbedded) quietRuns.add(runId); }, 300);
 }
 
@@ -778,7 +778,7 @@ function bestLeverText(r) {
 function renderSafer() {
   const r = lastRisk; const tm = riskTerms; const R = texts().results;
   const el = $('#safer-body');
-  if (!r.slider) { el.innerHTML = `<p class="progress">${esc(t('ui.computing', { done: '…', total: '…' }))}</p>`; return; }
+  if (!r.slider) { el.innerHTML = `<p class="progress">${esc(texts().ui.computingShort)}</p>`; return; }
   const grid = r.slider;
   if (!grid.length) { el.innerHTML = ''; return; }
   const idx = grid.reduce((best, g, i) => (Math.abs(g.ltv - tm.initialLtv) < Math.abs(grid[best].ltv - tm.initialLtv) ? i : best), 0);
@@ -840,7 +840,7 @@ function trendRows(r, value, label) {
 }
 function renderTrend() {
   const r = lastRisk; const el = $('#trend-body'); if (!el) return;
-  if (!r || !r.trends) { el.innerHTML = `<p class="progress">${esc(t('ui.computing', { done: '…', total: '…' }))}</p>`; return; }
+  if (!r || !r.trends) { el.innerHTML = `<p class="progress">${esc(texts().ui.computingShort)}</p>`; return; }
   const H = texts().history;
   const top = r.trends.at(-1);
   el.innerHTML = `<p class="hint">${rich(H.trendIntro)}</p><div class="levers">${trendRows(r, (x) => x.p, H.trendUnit)}</div>
@@ -952,6 +952,9 @@ function renderStatic() {
   const tx = texts();
   document.title = tx.meta.title;
   $('#code-link').href = SITE.codeUrl;
+  $('#basis-line').textContent = t('results.basis');
+  const cur0 = state.currency;
+  if (META.prices[cur0]) $('#data-period').textContent = t('ui.dataThrough', { from: date(META.prices[cur0].from), to: date(META.prices[cur0].to), updated: date(META.dataUpdated || META.prices[cur0].to) });
   $('#maker').textContent = t('footer.maker', { name: SITE.maker });
   $('#share-btn').textContent = tx.ui.share;
   $('#lang-missing').textContent = tx.feedback.languageMissing;
@@ -959,9 +962,9 @@ function renderStatic() {
   $('#terms-toggle').textContent = t(termsOpen ? 'form.closeTerms' : 'form.editTerms');
   $('meta[name="description"]').setAttribute('content', tx.meta.description);
   for (const el of document.querySelectorAll('[data-t]')) el.innerHTML = rich(t(el.dataset.t));
-  $('#lang-btn').textContent = tx.ui.language;
-  $('#lang-btn').setAttribute('lang', getLang() === 'de' ? 'en' : 'de');
-  $('#lang-btn').setAttribute('aria-label', `${tx.ui.languageSwitch}: ${tx.ui.language}`);
+  $('#lang-code').textContent = getLang().toUpperCase();
+  $('#lang-btn').setAttribute('aria-label', `${tx.ui.languageSwitch} (${tx.ui.languageName})`);
+  for (const b of document.querySelectorAll('[data-lang]')) b.setAttribute('aria-current', String(b.dataset.lang === getLang()));
   $('#limits').innerHTML = tx.results.limits.map((x) => `<li>${esc(x)}</li>`).join('');
   for (const b of document.querySelectorAll('#answer button.q, #sec-falls button.q')) b.setAttribute('aria-label', tx.ui.more);
   $('#headline-help').innerHTML = rich(tx.results.headlineHelp);
@@ -1017,7 +1020,14 @@ initLang();
 document.addEventListener('input', onInput);
 document.addEventListener('click', onClick);
 document.addEventListener('toggle', onToggle, true);
-$('#lang-btn').addEventListener('click', () => { setLang(getLang() === 'de' ? 'en' : 'de'); renderAll(); });
+// language menu: opened by the generic show/hide for aria-controls buttons; closes on choice, Escape or a click elsewhere
+const closeLangMenu = () => { $('#lang-list').hidden = true; $('#lang-btn').setAttribute('aria-expanded', 'false'); };
+document.addEventListener('click', (e) => {
+  const choice = e.target.closest('[data-lang]');
+  if (choice) { closeLangMenu(); if (choice.dataset.lang !== getLang()) { setLang(choice.dataset.lang); renderAll(); } $('#lang-btn').focus(); return; }
+  if (!e.target.closest('.lang-menu')) closeLangMenu();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('#lang-list').hidden) { closeLangMenu(); $('#lang-btn').focus(); } });
 $('#reset-btn').addEventListener('click', () => { state = { ...EXAMPLE_FORM, currency: state.currency, btcPrice: state.btcPrice, priceManual: state.priceManual }; saveState(); renderAll(); });
 $('#forget-btn').addEventListener('click', () => {
   try { localStorage.removeItem(STORE_KEY); localStorage.removeItem('btc-loan-risk:lang'); } catch { /* ignore */ }
