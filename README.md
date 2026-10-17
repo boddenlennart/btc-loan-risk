@@ -20,14 +20,22 @@ The finished page is one file per language: [`docs/index.html`](docs/index.html)
 
 If your browser refuses to start the background calculation from a local file, the page does the calculation directly instead. The page may then pause for a few seconds while it calculates.
 
-## Publish it with GitHub Pages
+## Publish it with Cloudflare Pages
 
-1. On GitHub, open the repository **Settings → Pages**.
-2. Under **Build and deployment → Source**, choose **Deploy from a branch**.
-3. Choose branch **`main`** and folder **`/docs`**, then **Save**.
-4. After a minute the page is live at `https://<your-user-name>.github.io/btc-loan-risk/`.
+The page is hosted by **Cloudflare Pages**; GitHub only stores the code, runs the tests and the weekly data update. GitHub Pages is not used (leave it switched off). Cloudflare publishes the `docs/` folder of the `main` branch, and makes a **preview address for every other branch and pull request**, so a change can be tried on a phone before it goes live.
 
-The repository must be public for free GitHub Pages.
+One-time setup (the Cloudflare screens may be worded slightly differently):
+
+1. In the Cloudflare dashboard: **Workers & Pages → Create → Pages → Connect to Git**.
+2. Allow Cloudflare to read **only this repository** (`btc-loan-risk`) on GitHub.
+3. Build settings:
+   - Project name: `bitcoinloancheck`
+   - Production branch: `main`
+   - Framework preset: **None**; build command: **empty** (the page is already built and committed)
+   - Build output directory: **`docs`**
+4. **Save and Deploy.** The live address is `https://bitcoinloancheck.pages.dev` until the domain is connected (below).
+5. Previews: each branch gets `https://<branch>.bitcoinloancheck.pages.dev`, for example `https://ux-redesign.bitcoinloancheck.pages.dev`. Each pull request gets its own link in a comment by Cloudflare. Preview addresses are not secret, but nobody can guess them, and Cloudflare tells search engines not to list them.
+6. Do **not** switch on Cloudflare Web Analytics: the page promises no tracking.
 
 ## Hosting and privacy
 
@@ -59,23 +67,16 @@ Delete the sentence in «…» brackets once you have dealt with it. Then run `n
 
 **Whether you need an Impressum at all** depends on whether the page counts as a business-like service (§ 5 DDG) or contains journalistic-editorial content (§ 18 MStV). The template assumes you show one. These templates are a starting point, not legal advice. Have them checked by a lawyer before you publish.
 
-### Connect your own domain (custom domain)
+### Connect your own domain (bitcoinloancheck.com)
 
-You need a domain from a domain registrar (for example the company where you bought it) and access to its DNS settings. Example below: `example.com`; replace it with yours.
+The domain is registered at Cloudflare and its DNS is managed there, so Cloudflare sets up the records itself.
 
-1. **Verify the domain with GitHub first** (this stops others from using your domain on GitHub). On GitHub, click your profile picture → **Settings → Pages → Add a domain**. Enter `example.com`. GitHub shows a TXT record. Add that TXT record in your registrar's DNS settings, wait a few minutes, then press **Verify**.
-2. **Choose the address.** Either `www.example.com` (simplest) or the bare `example.com`. You can set up both. GitHub then redirects one to the other.
-3. **Add DNS records at your registrar:**
-   - For `www.example.com`: a **CNAME** record, name `www`, value `boddenlennart.github.io`.
-   - For the bare `example.com`: four **A** records, name `@`, with the values `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`. For IPv6, four **AAAA** records with `2606:50c0:8000::153`, `2606:50c0:8001::153`, `2606:50c0:8002::153`, `2606:50c0:8003::153`.
-   - Remove any other A/AAAA/CNAME records for the same names (for example a registrar's "parking page").
-4. **Tell GitHub Pages the domain.** In the repository: **Settings → Pages → Custom domain**, enter `www.example.com` (or `example.com`), press **Save**. GitHub commits a file `docs/CNAME` containing the domain. Keep this file. A later `node tools/build.mjs` does not delete it.
-5. **Wait** until GitHub shows "DNS check successful". This can take from a few minutes up to 24 hours.
-6. **Switch on HTTPS:** tick **Enforce HTTPS** in the same Pages settings. GitHub sets up the certificate automatically. This can take up to an hour after the DNS check.
-7. **Test:** open `https://www.example.com` and `https://example.com`. Both should show the page with a lock symbol.
-8. **Update the privacy notice** if needed: if your domain registrar or DNS provider also processes visitor data (for example a proxy or CDN service in front of GitHub), name it there.
-
-GitHub's own guide: "Managing a custom domain for your GitHub Pages site" in the GitHub Pages documentation.
+1. Already done: the domain is **verified on GitHub** (Settings → Pages → Verified domains; keep the TXT record `_github-pages-challenge-boddenlennart`). This stops anyone from attaching the domain to another GitHub page.
+2. Already done: two **no-mail records** (the domain sends no e-mail): TXT `@` = `v=spf1 -all`, TXT `_dmarc` = `v=DMARC1; p=reject; sp=reject; adkim=s; aspf=s`.
+3. At launch, in the Pages project: **Custom domains → Set up a custom domain →** `bitcoinloancheck.com`. Cloudflare adds the DNS record and the certificate (lock symbol) by itself; this takes a few minutes.
+4. Add `www.bitcoinloancheck.com` the same way, then a **redirect rule** (Rules → Redirect Rules) from `www.bitcoinloancheck.com/*` to `https://bitcoinloancheck.com/$1` (status 301), so there is one address.
+5. **Test:** open `https://bitcoinloancheck.com`, `https://bitcoinloancheck.com/de/` and `https://www.bitcoinloancheck.com`. All show the page with a lock symbol.
+6. Account safety: two-factor login on the Cloudflare account, DNSSEC on, automatic domain renewal on.
 
 ## Rebuild after changes
 
@@ -142,7 +143,7 @@ The pull request is **assigned to you and asks for your review**. GitHub always 
    - there is no "Please look at these hours" (if there is, see below),
    - the reference loan moved by 3 of 100 or less.
 3. The pull request shows a green check mark **"Weekly update: all tests and browser tests"**. The tests already ran *before* the pull request was opened: if any test fails, there is no pull request, only an issue. The check mark links to the full test run.
-4. Click **Merge pull request**, then **Confirm merge**. GitHub Pages republishes the page within a few minutes.
+4. Click **Merge pull request**, then **Confirm merge**. Cloudflare Pages republishes the page within a few minutes. (Before merging you can open the pull request's preview link from Cloudflare's comment.)
 
 If you skip a week, that's fine. The next update contains both weeks and closes the older pull request by itself.
 
@@ -240,7 +241,7 @@ Model risk (the future can be wilder than the past), lender failure, custody and
 | BTC/EUR hourly candles, 2014–2016 | Kraken public API (`/0/public/Trades`, pair XBTEUR), every single trade grouped into hourly candles by `tools/fetch_history.py` | Kraken was the larger EUR market then |
 | BTC/EUR hourly candles, 2017 to build date | Bitstamp public API (`/api/v2/ohlc/btceur`) | |
 | Recent hours after the build date | Bitstamp public API, fetched by the page on load | optional; the page works without it |
-| Current price | Coinbase → Kraken → Binance → CoinGecko (first that answers within 4 s) | Binance has no BTC/USD market; BTC/USDT is used for USD there. Works on GitHub Pages and locally; **not** in a private claude.ai test copy, whose host blocks outside requests (the page then uses the stored price and says so) |
+| Current price | Coinbase → Kraken → Binance → CoinGecko (first that answers within 4 s) | Binance has no BTC/USD market; BTC/USDT is used for USD there. Works on the published page and locally; **not** in a private claude.ai test copy, whose host blocks outside requests (the page then uses the stored price and says so) |
 | Fallback price | Last close stored in the page | shown with a "not current" warning |
 | CHF, GBP, CAD, AUD, CZK, PLN | hourly BTC/EUR × the [European Central Bank's](https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/) daily reference rate (`src/data/fx.js`, rates in `data/fx-ecb.csv`); weekends use the last published rate | Checked against real exchange prices on 17 Oct 2026 (`tools/check-fx.mjs`): Kraken CHF/GBP/CAD/AUD, last 30 days: typical difference 0.07–0.13%, 95% of hours within 0.23–0.54%; Bitstamp GBP, 2021–2024: 0.10–0.16%, within 0.38–0.84%. Effect on the answer: the example loan gives 60.0–60.3 of 100 in every currency (EUR 60.0). The weekly update repeats the check (limits 0.5% typical, 2% in 95 of 100 hours). Known real move: 15 Jan 2015, the Swiss National Bank ended its minimum franc rate. |
 
