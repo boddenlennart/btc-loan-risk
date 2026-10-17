@@ -15,7 +15,11 @@ describe.skipIf(!existsSync(page))('built page: self-hosted, no external resourc
     expect(html).not.toMatch(/<script[^>]+src=/i);
     expect(html).not.toMatch(/<link[^>]+rel=["']?stylesheet/i);
     expect(html).not.toMatch(/<(img|iframe|audio|video|source)[^>]+src=["']?https?:/i);
-    expect(html).not.toMatch(/@import|@font-face|fonts\.googleapis|fonts\.gstatic/i);
+    expect(html).not.toMatch(/@import|fonts\.googleapis|fonts\.gstatic/i);
+    // fonts only from inside the page (data: addresses), never from another server
+    const faces = [...html.matchAll(/@font-face\{[^}]*\}/gi)].map((m) => m[0]);
+    expect(faces.length).toBeGreaterThan(0);
+    for (const f of faces) expect([...f.matchAll(/url\(([^)]*)\)/g)].every((u) => u[1].startsWith('data:font/'))).toBe(true);
     expect(html).not.toMatch(/url\(\s*["']?https?:/i);
   });
   it('every web address in the page is an allowed price service or a plain text link', () => {
