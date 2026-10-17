@@ -9,6 +9,9 @@ import { gunzipSync } from 'node:zlib';
 import { decodeHourly } from '../src/data/codec.js';
 import { dailyFromHourly, dailyReturns } from '../src/engine/history.js';
 import { fitGarchT } from '../src/engine/garch.js';
+import { setData as jobSetData, run as jobRun } from '../src/app/riskjob.js';
+import { EXAMPLE_FORM } from '../src/content/examples.js';
+import { toTerms, exampleKey } from '../src/app/terms.js';
 
 const root = new URL('../', import.meta.url);
 const read = (p) => readFileSync(new URL(p, root), 'utf8');
@@ -28,6 +31,21 @@ const b64 = (cur) => (currencies.includes(cur) ? readFileSync(file(cur)).toStrin
 // have to (it is the slowest step). The few recent hours added on load barely change it.
 const garch = Object.fromEntries(currencies.map((c) => [c, fitGarchT(dailyReturns(dailyFromHourly(decodeHourly(gunzipSync(readFileSync(file(c)))))).returns)]));
 const pageMeta = { prices: Object.fromEntries(currencies.map((c) => [c, meta[c]])), garch, dataUpdated: meta.updated, built: Math.floor(Date.now() / 1000) };
+
+// The example answer, computed here with the page's own calculation on the embedded history,
+// so a first-time visitor sees it at once (0 s). With the LTV fixed, the liquidation chance does
+// not depend on the BTC price; the page recomputes it with the live price and recent hours anyway.
+// The 40 sample paths are left out (they are only drawn when "What happens when BTC falls" opens),
+// and so is the replay's list per start day (not shown).
+if (currencies.includes(EXAMPLE_FORM.currency)) {
+  const cur = EXAMPLE_FORM.currency;
+  const exState = { ...EXAMPLE_FORM, btcPrice: meta[cur].lastClose };
+  jobSetData(cur, b64(cur));
+  const { terms, settings } = toTerms(exState);
+  const res = await jobRun(0, terms, settings, garch[cur], () => {});
+  const { perStart, ...replay } = res.replay; // the per-start-day list is not shown on the page
+  pageMeta.example = { key: exampleKey(exState), result: { ...res, main: { ...res.main, samplePaths: null }, replay } };
+}
 
 // Donation QR code: made here at build time and stored in the page as an SVG picture.
 const qr = (await QRCode.toString(`bitcoin:${SITE.donationAddress}`, { type: 'svg', errorCorrectionLevel: 'M', margin: 2 }))

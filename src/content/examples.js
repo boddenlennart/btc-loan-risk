@@ -1,6 +1,7 @@
 // Starting values for the form. Made-up round numbers so they can never be mistaken
-// for a real lender's quote. The banner "Example values. Replace them with your offer."
-// stays until the visitor changes one of the five main numbers.
+// for a real lender's quote. The answer is labelled "Example" and told as a story
+// until the visitor changes one of the five main numbers. The build computes its result in
+// advance (tools/build.mjs), so it appears at once.
 // Percentages are in percent here (50 = 50%), as typed in the form.
 
 export const EXAMPLE_FORM = {

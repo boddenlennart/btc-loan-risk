@@ -56,6 +56,19 @@ test('loads, shows the answer, and the answer equals the engine run directly (sa
   expect(errors).toEqual([]);
 });
 
+test('the example answer is there the moment the page opens, and the live calculation confirms it', async ({ page }) => {
+  await page.route(/^https:\/\//, (route) => (route.request().url().includes('api.coinbase.com') ? route.fulfill({ json: { data: { amount: String(PRICE) } } })
+    : route.request().url().includes('www.bitstamp.net') ? route.fulfill({ json: { data: { ohlc: [] } } }) : route.abort()));
+  await page.addInitScript(() => { try { localStorage.clear(); localStorage.setItem('btc-loan-risk:lang', 'en'); } catch {} });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  const atOnce = await page.evaluate(() => document.querySelector('#headline-text').textContent);
+  expect(atOnce).toMatch(/^\d+ of 100 simulated futures/);
+  await waitDone(page);
+  expect(await page.locator('#headline-text').textContent()).toBe(atOnce);
+  await expect(page.locator('#ans-label')).toHaveText('Example');
+  await expect(page.locator('#example-story')).toContainText('Borrow €10,000 for 12 months');
+});
+
 test('a lower starting LTV gives a lower answer', async ({ page }) => {
   await open(page); await waitDone(page);
   const before = await headlineNumber(page);

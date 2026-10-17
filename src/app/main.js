@@ -15,13 +15,13 @@ import { lenderRules, partialSaleBtc } from '../engine/lender.js';
 import { getSpotPrice } from '../live/price.js';
 import { setData as jobSetData, run as jobRun } from './riskjob.js';
 import { encodeState, decodeState } from './share.js';
+import { toTerms, numOr, today, exampleKey } from './terms.js';
 import { feedbackText, mailtoLink } from './feedback.js';
 import { dataAge } from '../data/candles.js';
 
 const META = JSON.parse(document.getElementById('meta').textContent);
 const STORE_KEY = 'btc-loan-risk:form';
 const $ = (sel, root = document) => root.querySelector(sel);
-const today = () => new Date().toISOString().slice(0, 10);
 const STORY_COLORS = ['var(--story-1)', 'var(--story-2)', 'var(--story-3)', 'var(--story-4)'];
 const SOURCE_NAMES = { coinbase: 'Coinbase', kraken: 'Kraken', binance: 'Binance', coingecko: 'CoinGecko', embedded: '' };
 const MAIN_FIELDS = ['loanAmount', 'initialLtv', 'liquidationLtv', 'durationMonths', 'rateAnnual'];
@@ -34,6 +34,8 @@ let lastTerms = null; let lastSettings = null; let lastRisk = null; let timer = 
 // the terms and settings the current risk results were calculated for (charts must use these, not newer inputs)
 let riskTerms = null; let riskSettings = null; const pending = {};
 let showOtherPaths = false;
+// the example answer computed by the build (META.example), shown at once while the page recomputes it
+let embeddedKey = null;
 let termsOpen = false;
 function setTermsOpen(open, { focus = false } = {}) {
   termsOpen = open;
@@ -50,48 +52,12 @@ function loadState() {
   const s = { ...EXAMPLE_FORM, ...(saved && saved.state), ...(fromLink || {}) };
   if (fromLink) s.priceManual = false;
   if (!META.prices[s.currency]) s.currency = Object.keys(META.prices)[0];
+  // until the live price arrives, start from the last stored price, so the answer can show at once
+  if (numOr(s.btcPrice, null) === null) { s.btcPrice = META.prices[s.currency].lastClose; s.priceManual = false; }
   return s;
 }
 function saveState() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify({ state })); } catch { /* ignore */ }
-}
-
-const numOr = (v, d = NaN) => (v === '' || v === null || v === undefined || Number.isNaN(Number(v)) ? d : Number(v));
-const pctOrNull = (v) => { const n = numOr(v, null); return n === null ? null : n / 100; };
-
-/** Form state -> engine terms (fractions) and simulation settings. */
-function toTerms(s) {
-  const price = numOr(s.btcPrice);
-  const existing = s.mode === 'existing';
-  const amount = numOr(s.loanAmount);
-  const byBtc = existing || s.ltvInput === 'btc';
-  const collateralInput = numOr(s.collateralBtc);
-  const fee = s.originationFee;
-  const terms = {
-    mode: s.mode, ltvInput: s.ltvInput, collateralInput,
-    currency: s.currency, btcPrice: price, loanAmount: amount, startDate: existing ? today() : (s.startDate || today()),
-    durationMonths: numOr(s.durationMonths),
-    initialLtv: byBtc ? amount / (collateralInput * price) : numOr(s.initialLtv) / 100,
-    marginCallLtv: pctOrNull(s.marginCallLtv),
-    liquidationLtv: numOr(s.liquidationLtv) / 100,
-    rate: s.rateType === 'variable'
-      ? { type: 'variable', path: s.ratePath.map((r) => ({ fromMonth: numOr(r.fromMonth), annual: numOr(r.rate) / 100 })) }
-      : { type: 'fixed', annual: numOr(s.rateAnnual) / 100 },
-    repayment: s.repayment, compounding: s.repayment === 'bullet' ? s.compounding : 'none', dayCount: s.dayCount,
-    originationFee: existing ? { type: 'percent', value: 0 } : { type: fee.type, value: fee.type === 'percent' ? numOr(fee.value) / 100 : numOr(fee.value) },
-    liquidationFee: { value: numOr(s.liquidationFee) / 100, basis: s.liquidationFeeBasis },
-    earlyRepaymentFee: 0,
-    curePeriodHours: numOr(s.curePeriodHours, 0), marginCallConsequence: s.marginCallConsequence, liquidationSale: s.liquidationSale,
-    cureTargetLtv: pctOrNull(s.cureTargetLtv) ?? (existing ? 0.5 : null), reserveAmount: numOr(s.reserveAmount, 0),
-    taxRateNow: (pctOrNull(s.taxRateNow) ?? 0), taxRateAtMaturity: (pctOrNull(s.taxRateAtMaturity) ?? 0),
-    purpose: s.purpose, repayWith: s.repayWith,
-  };
-  const settings = {
-    nPaths: Number(s.simPaths) || 10000,
-    blockDays: Math.max(1, Math.round(numOr(s.bootstrapBlockDays, 30))),
-    trend: 0, // the page always assumes no trend; the trend comparison is computed separately
-  };
-  return { terms, settings };
 }
 
 // ------------------------------------------------------------------ small HTML helpers
@@ -426,7 +392,9 @@ function update() {
   moreSummary(terms);
   renderLoan();
   clearTimeout(timer);
-  if (lastRisk) document.body.classList.add('outdated');
+  const sameAsEmbedded = embeddedKey !== null && exampleKey(state) === embeddedKey;
+  if (sameAsEmbedded) { riskTerms = terms; riskSettings = settings; } // same answer, today's price for the charts
+  else if (lastRisk) document.body.classList.add('outdated');
   if (!started) return;
   $('#progress').hidden = false; $('#progress').textContent = t('ui.computing', { done: 0, total: '…' });
   timer = setTimeout(() => requestRisk(terms, settings), 300);
@@ -813,6 +781,14 @@ function renderFeedbackForm() {
     <p class="hint" id="fb-copied" hidden>${esc(t('feedback.copied', { email: SITE.feedbackEmail }))}</p>`;
 }
 
+function showEmbeddedExample() {
+  const ex = META.example;
+  if (!ex || !lastTerms || exampleKey(state) !== ex.key || !META.prices[state.currency]) return;
+  embeddedKey = ex.key;
+  lastRisk = ex.result; riskTerms = lastTerms; riskSettings = lastSettings;
+  renderRisk();
+}
+
 function renderAll() {
   renderStatic();
   renderForm();
@@ -834,6 +810,7 @@ $('#forget-btn').addEventListener('click', () => {
 });
 if (state.priceManual && numOr(state.btcPrice, null) !== null) priceInfo = { source: 'manual' };
 renderAll();
+showEmbeddedExample();
 makeWorker();
 const waitMax = (p, ms) => Promise.race([p, new Promise((r) => setTimeout(r, ms))]);
 // wait for the live price (at most 4 s) and the recent hours (at most 1.5 s); later candles are used in the next recalculation
