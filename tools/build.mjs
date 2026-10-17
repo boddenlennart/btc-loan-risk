@@ -33,9 +33,16 @@ const pageMeta = { prices: Object.fromEntries(currencies.map((c) => [c, meta[c]]
 const qr = (await QRCode.toString(`bitcoin:${SITE.donationAddress}`, { type: 'svg', errorCorrectionLevel: 'M', margin: 2 }))
   .replace('<svg ', `<svg role="img" aria-label="QR: bitcoin:${SITE.donationAddress}" `);
 
+// Source Serif 4 (SIL Open Font License, see licenses/OFL-source-serif-4.txt), weight 600,
+// embedded so the page makes no font request. Two character sets: Latin and extended Latin (zł, Kč).
+const fontDir = new URL('node_modules/@fontsource/source-serif-4/files/', root);
+const fontFace = (set, range) => `@font-face{font-family:"Source Serif 4";font-style:normal;font-weight:600;font-display:swap;src:url(data:font/woff2;base64,${readFileSync(new URL(`source-serif-4-${set}-600-normal.woff2`, fontDir)).toString('base64')}) format("woff2");unicode-range:${range}}`;
+const fonts = fontFace('latin', 'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD')
+  + fontFace('latin-ext', 'U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1E9F,U+20A0-20AB,U+20AD-20C4,U+2C60-2C7F,U+A720-A7FF');
+
 let html = read('src/app/index.html');
 const parts = {
-  '/*STYLE*/': read('src/app/style.css'),
+  '/*STYLE*/': read('src/app/style.css').replace('/*FONTS*/', () => fonts),
   '/*META*/': JSON.stringify(pageMeta),
   '/*DATA_USD*/': b64('USD'),
   '/*DATA_EUR*/': b64('EUR'),
