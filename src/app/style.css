@@ -125,7 +125,9 @@ button.link.strong { font-weight: 600; text-decoration: none; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--text-2); margin: 4px 0; }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
 .best-lever { margin: 12px 0 0; padding: 10px 12px; background: var(--surface-2); border-radius: 6px; font-size: 14px; }
-.best-lever:empty { display: none; }
+.best-lever:empty, .assume:empty, .methods:empty { display: none; }
+.assume { font-size: 14px; color: var(--text-2); margin: 8px 0 0; }
+.methods { font-size: 14px; color: var(--text-2); margin: 6px 0 0; }
 .tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0 0; }
 .tile { background: var(--surface-2); border-radius: 6px; padding: 10px; min-width: 0; }
 .tile .v { font: 600 17px/1.2 var(--serif); margin-top: 4px; overflow-wrap: anywhere; }

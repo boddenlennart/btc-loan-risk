@@ -203,6 +203,10 @@ test('"Make it safer" shows exactly the headline number for your own terms, and 
   expect(Number(best[1])).toBeLessThan(n);
   // it is the first (lowest) option in "Make it safer"
   await expect(page.locator('#safer .lv:not(.base) b').first()).toHaveText(best[1]);
+  // fairness: the top-up assumption and the two other methods are shown with the answer
+  await expect(page.locator('#assume-line')).toContainText('assumes you add no BTC or money after a margin call');
+  await expect(page.locator('#methods-line')).toContainText(/started on every day since 2014, \d+ of 100 were liquidated; a volatility model gives \d+ of 100/);
+  await expect(page.locator('#tiles')).toContainText('effective 11.6% a year');
 });
 
 test('feedback: the copied e-mail text contains the answers', async ({ page, context }) => {

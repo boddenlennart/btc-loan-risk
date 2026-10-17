@@ -743,7 +743,12 @@ function renderRisk() {
     + legendHtml([[nLiq, 'd-liq', R.legendLiquidated], [nPart, 'd-part', R.legendPartial], [nMargin, 'd-margin', R.legendMargin], [nNone, 'd-none', R.legendNothing]]);
   $('#kept-line').textContent = m.keptAfterSale && m.pPartial >= 0.005 ? t('results.kept', { kept: pct(m.keptAfterSale.q50, 0) }) : '';
   const lastHour = Math.max(META.prices[cur].to, appended[cur] && appended[cur].length ? appended[cur].at(-1).time : 0);
-  $('#basis-line').textContent = `${t('results.basis', { g: of100(r.garchMc.pLiquidation + r.garchMc.pPartial) })}`;
+  $('#basis-line').textContent = t('results.basis');
+  // the assumption behind the number, and the two other methods next to it (fairness: the
+  // simulation is the most cautious; the real history and the volatility model are shown with it)
+  const rules = lenderRules(tm);
+  $('#assume-line').textContent = !rules.afterCure ? '' : tm.reserveAmount > 0 ? t('results.assumeReserve', { reserve: money0(tm.reserveAmount, cur) }) : texts().results.assumeNoTopUp;
+  $('#methods-line').textContent = t('results.otherMethods', { h: of100(r.replay.liquidatedShare), g: of100(r.garchMc.pLiquidation) });
   // the whole period the results are based on, and when the stored data was last updated
   $('#data-period').textContent = t('ui.dataThrough', { from: date(META.prices[cur].from), to: date(lastHour), updated: date(META.dataUpdated || META.prices[cur].to) });
   renderSafer(); renderTrend(); renderCompare();
