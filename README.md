@@ -1,11 +1,11 @@
-# BTC loan risk check
+# Bitcoin Loan Check
 
-A single web page that helps you judge a bitcoin-backed loan. It estimates:
+**An independent check for any Bitcoin loan offer** (bitcoinloancheck.com; German: Bitcoin-Kredit-Check at `/de/`). A single web page that helps you judge a bitcoin-backed loan. It estimates:
 
 - the **chance that the loan gets liquidated** before it ends (your BTC sold by the lender), and
 - what the loan **costs compared with selling BTC** instead.
 
-You enter the terms from your own offer. The page has no lender presets and no lender names. It is **not financial, investment or tax advice**. Your lender's own figures always win over this page.
+You enter the terms from your own offer, in EUR, USD, CHF, GBP, CAD, AUD, CZK or PLN. The page has no lender presets and no lender names. It is **not financial, investment or tax advice**. Your lender's own figures always win over this page.
 
 Everything runs in your browser. There is no server, no tracking and no cookies. The only network requests are public price lookups (see [Data sources](#data-sources)). Nothing you type is sent anywhere.
 
@@ -13,10 +13,10 @@ Everything runs in your browser. There is no server, no tracking and no cookies.
 
 ## Open the page on your computer
 
-The finished page is one file: [`docs/index.html`](docs/index.html).
+The finished page is one file per language: [`docs/index.html`](docs/index.html) (English) and [`docs/de/index.html`](docs/de/index.html) (German).
 
 1. Download or clone this repository.
-2. Double-click `docs/index.html`. It opens in your browser and works offline (with the stored price history).
+2. Double-click `docs/index.html`. It opens in your browser and works offline (with the stored price history). The language button switches to German.
 
 If your browser refuses to start the background calculation from a local file, the page does the calculation directly instead. The page may then pause for a few seconds while it calculates.
 
@@ -31,7 +31,7 @@ The repository must be public for free GitHub Pages.
 
 ## Hosting and privacy
 
-- **Everything is self-hosted inside `docs/index.html`**: styles, scripts, the price history and the icon. The page uses the device's own system fonts, so no font is downloaded. No CDN, no Google Fonts, no analytics. A Content Security Policy in the page blocks any other outside request, and `tests/hosting.test.js` checks the built file.
+- **Everything is self-hosted inside `docs/index.html`**: styles, scripts, the price history, the exchange rates, the icon and the font. The serif font (Source Serif 4, [SIL Open Font License](licenses/OFL-source-serif-4.txt)) is embedded in the page; body text uses the device's own system font. No CDN, no Google Fonts, no analytics. A Content Security Policy in the page blocks any other outside request, and `tests/hosting.test.js` checks the built file.
 - **The only outside requests** are made by the visitor's browser when the page opens (chosen: automatic on load):
   - current price: `api.coinbase.com`; only if that fails, `api.kraken.com`, `api.binance.com`, `api.coingecko.com`, one after the other
   - recent hourly prices: `www.bitstamp.net`
@@ -86,7 +86,10 @@ npm install                                  # test and build tools
 python3 tools/fetch_history.py usd           # download USD price history (a few minutes)
 python3 tools/fetch_history.py eur           # download EUR price history (slow: a few hours)
 node tools/build-data.mjs                    # compress the history into data/
-node tools/build.mjs                         # write docs/index.html
+node tools/update-fx.mjs                     # refresh the ECB exchange rates in data/fx-ecb.csv
+node tools/check-fx.mjs                      # compare the converted prices with real exchange prices
+node tools/build.mjs                         # write docs/index.html and docs/de/index.html
+node tools/build-og.mjs                      # link-preview images and icons (only when name, headline or logo change)
 npm test                                     # run all automated tests
 npm run test:e2e                             # test the finished page in a browser (first: npx playwright install chromium)
 ```
@@ -107,14 +110,15 @@ The page contains BTC price history up to a fixed date. A scheduled **GitHub Act
    - no missing hours, no duplicates
    - no impossible values (zero, negative, low above high, more than a doubling or halving within one hour)
    - both exchanges agree: in a typical hour they differ by about 0.01%; the check fails above 0.5% typical, above 2% for more than 1 hour in 100, or above 5% in any single hour
-4. It adds the hours, re-fits the model settings and rebuilds the page. Then it runs the **full regression**:
-   - all 266 automated tests, among them:
+4. It refreshes the **European Central Bank's exchange rates** (for CHF, GBP, CAD, AUD, CZK, PLN) and checks them: no gaps over 7 days, no impossible values, no day-to-day move over 10% (except the known 2015 franc event), earlier days unchanged. It compares the converted BTC prices with real exchange prices (Kraken, Bitstamp); the check fails above 0.5% in a typical hour or 2% in 95 of 100 hours.
+5. It adds the hours, re-fits the model settings and rebuilds both language pages. Then it runs the **full regression**:
+   - all 302 automated tests, among them:
      - the 12 reference loans on frozen history, which must match the stored results exactly
      - the same 12 loans on the newest data, where every result must be valid
      - the test against history
-   - **the 14 browser tests of the finished page**
+   - **the 21 browser tests of the finished page**
    - the **drift guard**: if the new hours move the result of any reference loan by more than 5 of 100, the update stops and you get an issue instead of a pull request.
-5. It opens a **pull request** called "Weekly price data update [date]". The description says, in plain words:
+6. It opens a **pull request** called "Weekly price data update [date]". The description says, in plain words:
    - old and new end date
    - whether the exchanges agreed
    - any hours to look at
@@ -201,18 +205,17 @@ Once a year (for example in January):
 
 All simulations run in a background Web Worker. The GARCH model is fitted once when the page is built (it was the slowest step in the browser).
 
-### What the visitor sees (UX redesign, see `ux/`)
+### What the visitor sees (UX redesign and review, see `ux/`)
 
-- **Answer first:** "In N of 100 simulated futures, this loan is liquidated within M months", with 100 coloured dots and the price at which the BTC is sold.
-- **Make it safer:** an LTV slider and the effect of each other option (shorter loan, cash reserve, other margin-call rules, higher liquidation LTV), computed on the visitor's own numbers.
-- **Does the price trend matter?** In "What history says": the visitor's loan at five fixed yearly trends (−30%, none, +20%, +50%, +100%), on the same simulated futures, only shifted. The same five trends are shown for the result counted in BTC. Below it: why the page assumes no trend (the past trend since 2014 is only known to lie between about +1% and +112% a year), 4-year growth since 2014, and the years with a fall of 50% or more. Every other number on the page assumes no trend.
-- **Sections, closed by default:**
-  - what happens when BTC falls (price ladder, 20 possible futures, questions to ask a lender)
-  - costs and "borrow or sell?" / "is the leverage worth it?"
-  - what history says (4 real start dates)
-  - how these numbers are made
-  - feedback
-- **Also:** "I already have a loan", entering BTC instead of the LTV, a shareable link (inputs only after "#"), a feedback e-mail built in the visitor's own mail app, a donation box with a QR code made at build time.
+Design and reasons: [ux/C-design-spec.md](ux/C-design-spec.md) (look, layout, logo), [ux/D-share-preview.md](ux/D-share-preview.md) (link previews), [ux/E-test-plan.md](ux/E-test-plan.md) (tests with people). Screenshots: [phone, light](ux/redesign/phone-light.jpg), [phone, dark](ux/redesign/phone-dark.jpg).
+
+- **First screen:** the name, the headline "An independent check for any Bitcoin loan offer", a trust line (runs only in your browser · no tracking · open source), and the answer. A first-time visitor sees an example answer at once: the build computes it in advance.
+- **The answer:** one large number ("60 of 100 simulated futures end with this loan liquidated within 12 months"), 100 dots, the one change that lowers it most, and key figures: sale price, margin call, full cost, break-even. The number is in ink, not red: the page checks terms, it does not warn against loans.
+- **Your terms:** folded into a short summary on phones ("Change" opens the form), a side panel on desktop.
+- **Make it safer:** an LTV slider and the effect of each other option, on the same simulated futures as the answer (so "your terms" equals the headline exactly).
+- **Does the price trend matter?** In "Your loan in every crash since 2014": the loan at five fixed yearly trends (−30%, none, +20%, +50%, +100%), and why the page assumes none.
+- **Sections, closed by default:** what happens when BTC falls; costs and borrow-or-sell / is the leverage worth it; your loan in every crash since 2014; how these numbers are made; what this does not include; feedback.
+- **Also:** "a loan I already have", entering BTC instead of the LTV, eight currencies, Share (system share sheet on phones with a short summary; link and summary copied elsewhere), a feedback e-mail built in the visitor's own mail app with an optional language question, "Your language is missing?", a donation box with a QR code, and the maker line in the footer.
 
 ### Assumptions (all visible and editable on the page)
 
@@ -239,6 +242,7 @@ Model risk (the future can be wilder than the past), lender failure, custody and
 | Recent hours after the build date | Bitstamp public API, fetched by the page on load | optional; the page works without it |
 | Current price | Coinbase → Kraken → Binance → CoinGecko (first that answers within 4 s) | Binance has no BTC/USD market; BTC/USDT is used for USD there. Works on GitHub Pages and locally; **not** in a private claude.ai test copy, whose host blocks outside requests (the page then uses the stored price and says so) |
 | Fallback price | Last close stored in the page | shown with a "not current" warning |
+| CHF, GBP, CAD, AUD, CZK, PLN | hourly BTC/EUR × the [European Central Bank's](https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/) daily reference rate (`src/data/fx.js`, rates in `data/fx-ecb.csv`); weekends use the last published rate | Checked against real exchange prices on 17 Oct 2026 (`tools/check-fx.mjs`): Kraken CHF/GBP/CAD/AUD, last 30 days: typical difference 0.07–0.13%, 95% of hours within 0.23–0.54%; Bitstamp GBP, 2021–2024: 0.10–0.16%, within 0.38–0.84%. Effect on the answer: the example loan gives 60.0–60.3 of 100 in every currency (EUR 60.0). The weekly update repeats the check (limits 0.5% typical, 2% in 95 of 100 hours). Known real move: 15 Jan 2015, the Swiss National Bank ended its minimum franc rate. |
 
 Prices are stored in cents in a compact compressed format (`src/data/codec.js`, `data/*.bin.gz`). A test checks that they equal the raw downloads to the cent.
 
@@ -267,7 +271,7 @@ Public APIs can change their rules at any time; the page then falls back to the 
 
 ## Tests and how each was verified
 
-Run with `npm test` (266 tests) and `npm run test:e2e` (14 browser tests). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
+Run with `npm test` (302 tests) and `npm run test:e2e` (21 browser tests). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
 
 | # | Test | How it was verified |
 |---|---|---|
@@ -284,7 +288,11 @@ Run with `npm test` (266 tests) and `npm run test:e2e` (14 browser tests). Tests
 | + | GARCH fitting (`tests/garch.test.js`) | Data invented from known GARCH settings; the fit must recover them. |
 | Regression | Golden master (`tests/regression.test.js`) | 12 reference loans that together use every main function: all repayment types, fees, variable rate, every margin-call rule, partial sales, reserve, existing loan, buy-more-BTC both ways, five price trends, taxes. On the frozen history (up to 1 Oct 2026, which new data never changes), every result must equal `tests/fixtures/regression-golden.json` to 9 decimal places: payment plans, trigger prices, APR, simulation, GARCH, replay, stories, levers, slider, result in BTC, history facts. **Checked by deliberately breaking the code three times:** a fee off by 1%, 31-day instead of 30-day price stretches, interest 0.01% too high. Each was caught and named. Regenerate with `node tools/update-golden.mjs` only when a change is intended, and say why in the commit. |
 | Regression | Newest data (`tests/current-data.test.js`) | The same 12 loans on the full current history: no missing or invalid numbers, chances between 0 and 1, monthly chance never falling, price bands in order, 40 sample paths, history stories present, lower LTV never clearly riskier, slider in order, buy-more-BTC shares add up, a stronger price trend never clearly riskier. |
-| Regression | Finished page in a browser (`e2e/page.spec.js`, Playwright + Chromium) | 16 scenarios:<br>• the page loads without errors, and its answer equals the engine run directly on the same data<br>• only the named price services are contacted<br>• a lower LTV gives a lower answer; the slider works<br>• impossible terms show the error<br>• German works<br>• "a loan I already have", "buy more BTC", the five price trends and "sells part at once" all work<br>• all charts, the QR code, the Impressum and the privacy notice render<br>• the shared link restores the inputs, says it was shared and opens on the answer<br>• "Make it safer" shows exactly the headline number for your own terms; the best option sits under the answer<br>• the feedback text is correct<br>• no sideways scrolling at 375 px<br>• offline, the stored price is used with a warning |
+| Regression | Finished page in a browser (`e2e/page.spec.js`, Playwright + Chromium) | 21 scenarios:<br>• the page loads without errors, and its answer equals the engine run directly on the same data<br>• the example answer is there the moment the page opens, and the live calculation confirms it<br>• only the named price services are contacted<br>• a lower LTV gives a lower answer; the slider works<br>• impossible terms show the error<br>• German works; the German address /de/ starts in German and the language button switches the address<br>• "a loan I already have", "buy more BTC", the five price trends and "sells part at once" all work<br>• Swiss francs: computed from the converted euro history, close to the euro answer, no new outside addresses<br>• all charts, the QR code, the Impressum and the privacy notice render<br>• the shared link restores the inputs, says it was shared and opens on the answer (phone)<br>• "Make it safer" shows exactly the headline number for your own terms; the best option sits under the answer<br>• Share copies a summary with the visitor's numbers and the link<br>• the feedback text is correct<br>• first phone screen (375 × 812) holds name, headline, trust line and the answer; the number is in ink, not red<br>• no sideways scrolling at 375 px<br>• offline, the stored price is used with a warning |
+| UX | Design rules (`tests/design.test.js`) | Every text colour reaches at least 4.5:1 on page, panel and tile backgrounds, white on buttons 4.5:1, field borders and data marks 3:1, in light and dark mode; only the sizes of the type scale are used; the main number uses the text colour; "nothing happened" is a ring. Accessibility audit (axe-core, `tools/build-audit.mjs`) after the redesign: 0 issues in light and dark. |
+| UX | Share preview (`tests/share-preview.test.js`) | Both language pages carry language, title, description, canonical and language links, and the preview tags for messengers and X; preview images are 1200 × 630 and under 300 KB; texts fit the platforms' length limits; no tracking parameters. |
+| UX | Instant example (`tests/terms.test.js`) | The key that decides whether the example answer computed by the build can be shown does not depend on the BTC price or start date, and changes with every term that changes the answer. |
+| + | Currencies (`tests/fx.test.js`, `tests/current-data.test.js`) | Reading the ECB file, the rate for each hour (weekends: last published), the conversion, gaps and jumps caught (the 2015 franc event listed as known), the stored rates file passes all checks; on the full history every converted currency gives the example loan within 3 of 100 of the euro answer. |
 | + | Data update checks (`tests/candles.test.js`, `tests/workflow.test.js`) | Gaps, duplicates, impossible values, jumps and disagreement between exchanges are caught; a deep low on one exchange is listed for review; the 45-day page warning; the workflow runs weekly, tests before opening a pull request, reports failures, never merges and uses no stored secrets. |
 | + | Live price (`tests/liveprice.test.js`) | Fallback order, timeouts, bad answers, stale fallback, and that no user data is in any request (with fake network answers). |
 | + | Hosting (`tests/hosting.test.js`) | The built page has no external scripts, styles, fonts or images; every web address in it is one of the named price services (or a plain text link); the Content Security Policy allows exactly those services. The privacy notice must name every service (`tests/content.test.js`). |
@@ -346,19 +354,23 @@ Limits: below "worst 5%" at most 10%, below "worst 10%" at most 20%, below media
 ## Project structure
 
 ```
-docs/index.html          the finished page (built)
+docs/index.html          the finished page, English (built); docs/de/index.html: German
+docs/og-*.png, favicon…  link-preview images and icons (tools/build-og.mjs)
 src/engine/              calculations (loan, replay, Monte Carlo, GARCH, barrier, validation)
 src/content/             all page text (de, en) and the example values
 src/app/                 page layout, charts, worker, styles
 src/live/price.js        live price fallback chain
 src/data/codec.js        compact price-history format
-data/                    compressed price history + meta.json (data/raw/ is not committed)
+src/data/fx.js           ECB exchange rates and the converted currencies
+src/app/terms.js         form → loan terms (shared by page and build)
+licenses/                licence of the embedded font (SIL Open Font License)
+data/                    compressed price history, meta.json, fx-ecb.csv (data/raw/ is not committed)
 reference/               independent Python reference + spreadsheet
 tests/                   automated tests and their fixtures (incl. regression golden file)
 e2e/                     browser tests of the finished page
 tools/                   download, weekly data update, data build, page build, audit copy, local preview server
 .github/workflows/       the weekly data-update workflow
-ux/                      UX redesign: decisions, profiles, validation plan, content inventory, success criteria, sketches
+ux/                      UX redesign and review: decisions, profiles, critique, design spec, share preview, test plan, sketches, screenshots
 ```
 
 No keys or secrets are needed or stored. All APIs used are public.
@@ -367,7 +379,7 @@ No keys or secrets are needed or stored. All APIs used are public.
 
 ## Licence
 
-[MIT](LICENSE). The software is provided **"as is", without warranty of any kind**; the page footer says so too. The BTC price history in `data/` and inside `docs/index.html` comes from the public APIs of the exchanges Bitstamp and Kraken and is not covered by the MIT licence.
+[MIT](LICENSE). The software is provided **"as is", without warranty of any kind**; the page footer says so too. The BTC price history in `data/` and inside `docs/index.html` comes from the public APIs of the exchanges Bitstamp and Kraken and is not covered by the MIT licence. The exchange rates come from the European Central Bank (free to use with the source named). The embedded font Source Serif 4 is under the [SIL Open Font License 1.1](licenses/OFL-source-serif-4.txt).
 
 ## Repository check before the first push (2026-10-15)
 
