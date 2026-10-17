@@ -170,7 +170,7 @@ function renderForm() {
     ${top}
     ${numField('liquidationLtv', f.liquidationLtv.label, '%', { help: fm.help.liquidationLtv })}
     <div class="field" data-field="durationMonths"><span class="label" id="l-dur">${esc(existing ? f.durationMonths.labelExisting : f.durationMonths.label)}</span>
-      <div class="chips" role="group" aria-labelledby="l-dur">${durChips}<span class="with-unit other"><input type="number" step="1" min="1" inputmode="numeric" data-k="durationMonths" aria-label="${esc(fm.otherDuration)}" placeholder="${esc(fm.otherDuration)}" value="${other ? esc(state.durationMonths) : ''}"><span class="unit">${esc(t('ui.months'))}</span></span></div><p class="err" role="alert" hidden></p></div>
+      <div class="chips" role="group" aria-labelledby="l-dur">${durChips}<span class="with-unit other"><input type="number" step="1" min="1" inputmode="numeric" data-k="durationMonths" aria-label="${esc(fm.otherDuration)}" placeholder="${esc(fm.otherDuration)}" value="${other ? esc(state.durationMonths) : ''}"><span class="unit">${esc(t('ui.months'))}</span></span></div>${existing ? '' : `<p class="hint">${esc(f.durationMonths.hint)}</p>`}<p class="err" role="alert" hidden></p></div>
     ${rate}
     ${refi ? '' : seg('purpose', [['spend', f.purpose.spend], ['buy', f.purpose.buy]], f.purpose.label)}
     <p class="price-line" id="price-line" aria-live="polite"></p>
@@ -794,18 +794,36 @@ function renderSafer() {
   const label = (l) => leverLabel(l, tm);
   const row = (text, p, base) => `<div class="lv${base ? ' base' : ''}"><span>${esc(text)}</span><span class="b"><i style="width:${p * 100}%"></i></span><b>${shown(p)}</b></div>`;
   const higher = levers.find((l) => l.id === 'higherLiq');
+  // The slider moves by the LTV itself (0-1000 = lowest to highest LTV on the grid) and snaps to
+  // the nearest computed point, so a label sits exactly where its LTV is, also when the visitor's
+  // own LTV (say 47%) lies between two points. Labels: every 10%.
+  const lo = grid[0].ltv; const hi = grid[grid.length - 1].ltv;
+  const posOf = (ltv) => Math.round(((ltv - lo) / (hi - lo)) * 1000);
+  const nearest = (pos) => grid.reduce((b, g, i) => (Math.abs(posOf(g.ltv) - pos) < Math.abs(posOf(grid[b].ltv) - pos) ? i : b), 0);
+  const tickLtvs = []; for (let x = Math.ceil(lo * 10 - 1e-9) / 10; x <= hi + 1e-9; x += 0.1) tickLtvs.push(Math.round(x * 100) / 100);
   el.innerHTML = `<div class="slider"><label for="ltv-slider" id="slider-line">${esc(line(idx))}</label>
-    <input id="ltv-slider" type="range" min="0" max="${grid.length - 1}" step="1" value="${idx}">
-    <div class="ticks" aria-hidden="true">${grid.filter((_, i) => i % 2 === 0).map((g) => `<span>${pct(g.ltv, 0)}</span>`).join('')}</div>
+    <input id="ltv-slider" type="range" min="0" max="1000" step="1" value="${posOf(grid[idx].ltv)}" style="--fill:${posOf(grid[idx].ltv) / 10}%">
+    <div class="ticks" aria-hidden="true">${tickLtvs.map((x) => `<span style="--at:${posOf(x) / 1000}">${pct(x, 0)}</span>`).join('')}</div>
     <p class="hint">${esc(R.sliderNote)}</p></div>
     <p class="sub">${esc(R.otherOptions)}</p>
     <div class="levers">${row(R.yourTerms, r.leverBase, true)}${levers.map((l) => row(label(l), l.p)).join('')}</div>
     ${higher && Math.abs(higher.p - r.leverBase) < 0.05 ? `<p class="hint">${esc(R.higherLiqNote)}</p>` : ''}`;
   const slider = $('#ltv-slider');
-  slider.addEventListener('input', () => { $('#slider-line').textContent = line(Number(slider.value)); });
+  const snap = () => { const i = nearest(Number(slider.value)); slider.value = posOf(grid[i].ltv); slider.style.setProperty('--fill', `${posOf(grid[i].ltv) / 10}%`); return i; };
+  slider.setAttribute('aria-valuetext', line(idx));
+  // arrow keys jump to the next computed point (the native step of 1 in 1000 would snap back)
+  slider.addEventListener('keydown', (e) => {
+    const d = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
+    if (!d) return;
+    e.preventDefault();
+    const i = Math.min(grid.length - 1, Math.max(0, nearest(Number(slider.value)) + d));
+    slider.value = posOf(grid[i].ltv);
+    slider.dispatchEvent(new Event('input'));
+  });
+  slider.addEventListener('input', () => { const i = snap(); $('#slider-line').textContent = line(i); slider.setAttribute('aria-valuetext', line(i)); });
   slider.addEventListener('change', () => {
     if (state.refi) return; // the BTC of a refinancing offer follows from "What changes?"
-    const g = grid[Number(slider.value)];
+    const g = grid[snap()];
     change((s) => {
       if (s.mode === 'existing' || s.ltvInput === 'btc') s.collateralBtc = String(+(numOr(s.loanAmount) / (g.ltv * numOr(s.btcPrice))).toFixed(6));
       else s.initialLtv = Math.round(g.ltv * 100);

@@ -77,7 +77,7 @@ export default {
       initialLtv: { label: 'Start-LTV', unit: '%' },
       collateralBtc: { label: 'BTC, die Sie hinterlegen', labelExisting: 'Hinterlegte BTC' },
       liquidationLtv: { label: 'Liquidations-LTV', unit: '%' },
-      durationMonths: { label: 'Laufzeit', labelExisting: 'Restlaufzeit' },
+      durationMonths: { label: 'Laufzeit', labelExisting: 'Restlaufzeit', hint: 'Kein festes Ende (eine Kreditlinie)? Geben Sie ein, wie lange Sie sie voraussichtlich nutzen.' },
       rateAnnual: { label: 'Zinssatz', unit: '% pro Jahr' },
       purpose: { label: 'Was machen Sie mit dem Geld?', spend: 'Ausgeben', buy: 'Mehr BTC kaufen' },
       repayment: { label: 'Wann zahlen Sie die Zinsen?', interestOnly: 'Jeden Monat', bullet: 'Zum Kredit addiert, am Ende gezahlt', amortizing: 'Gleiche Monatsraten' },

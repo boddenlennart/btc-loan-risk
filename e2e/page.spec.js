@@ -85,6 +85,25 @@ test('the LTV slider changes the starting LTV', async ({ page }) => {
   await expect(page.locator('#f-initialLtv')).toHaveValue('10');
 });
 
+test('LTV slider: each label sits exactly under the handle at its LTV; arrow keys move point by point', async ({ page }) => {
+  await open(page); await waitDone(page);
+  const slider = page.locator('#ltv-slider');
+  await slider.focus();
+  await page.keyboard.press('Home');
+  for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowRight'); // 10 → 15 → 20 → 25 → 30
+  await expect(page.locator('#slider-line')).toContainText('Starting LTV 30%');
+  const handleX = async () => {
+    const b = await slider.boundingBox(); const v = Number(await slider.inputValue());
+    return b.x + 11 + (v / 1000) * (b.width - 22); // 22 px handle (style.css)
+  };
+  const labelX = async (txt) => { const b = await page.locator('.ticks span', { hasText: new RegExp(`^${txt}$`) }).boundingBox(); return b.x + b.width / 2; };
+  expect(Math.abs((await handleX()) - (await labelX('30%')))).toBeLessThan(1.5);
+  await page.keyboard.press('ArrowLeft'); // 25%: exactly halfway between the 20% and 30% labels
+  await expect(page.locator('#slider-line')).toContainText('Starting LTV 25%');
+  const mid = ((await labelX('20%')) + (await labelX('30%'))) / 2;
+  expect(Math.abs((await handleX()) - mid)).toBeLessThan(1.5);
+});
+
 test('impossible terms show a plain-language error and no result', async ({ page }) => {
   await open(page); await waitDone(page);
   await page.locator('#f-liquidationLtv').fill('40');

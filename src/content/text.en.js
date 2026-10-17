@@ -81,7 +81,7 @@ export default {
       initialLtv: { label: 'Starting LTV', unit: '%' },
       collateralBtc: { label: 'BTC you pledge', labelExisting: 'BTC pledged' },
       liquidationLtv: { label: 'Liquidation LTV', unit: '%' },
-      durationMonths: { label: 'Duration', labelExisting: 'Months left' },
+      durationMonths: { label: 'Duration', labelExisting: 'Months left', hint: 'No end date (a credit line)? Enter how long you expect to keep it.' },
       rateAnnual: { label: 'Interest rate', unit: '% a year' },
       purpose: { label: 'What will you do with the money?', spend: 'Spend it', buy: 'Buy more BTC' },
       repayment: { label: 'When do you pay the interest?', interestOnly: 'Every month', bullet: 'Added to the loan, paid at the end', amortizing: 'Equal monthly payments' },
