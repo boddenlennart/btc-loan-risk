@@ -1,4 +1,4 @@
-// Health check on the newest data (runs after every weekly update): the same 13
+// Health check on the newest data (runs after every weekly update): the same 12
 // reference loans run through the whole risk calculation on the full current history,
 // and every result must be valid. This catches new data that would break the page.
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -55,6 +55,36 @@ describe.skipIf(!hasData('USD') || !hasData('EUR'))('reference loans on the newe
       expect(r.loan.liquidation[0]).toBeGreaterThan(0);
       expect(loanDays(loanTerms(ref))).toBeGreaterThan(27);
       share(r.facts.higherAfter1y);
+    }, 60_000);
+  }
+});
+
+// The six currencies computed from the euro history: every one gives valid results, and the
+// liquidation chance stays close to the euro answer (the currencies move little against the
+// euro compared with BTC). Measured on 17 Oct 2026: at most 1 of 100 apart for the example loan.
+import { readFileSync } from 'node:fs';
+import { parseEcbCsv, FX_CURRENCIES } from '../src/data/fx.js';
+import { toTerms } from '../src/app/terms.js';
+import { EXAMPLE_FORM } from '../src/content/examples.js';
+
+describe.skipIf(!hasData('EUR'))('currencies computed from the euro history', () => {
+  const fx = parseEcbCsv(readFileSync(new URL('../data/fx-ecb.csv', import.meta.url), 'utf8'), { fromIso: '1999-01-01' });
+  const run = async (cur) => {
+    const { terms, settings } = toTerms({ ...EXAMPLE_FORM, currency: cur, btcPrice: 70000 });
+    return (await job.run(0, terms, settings, null, () => {})).main.pLiquidation;
+  };
+  let eur;
+  beforeAll(async () => {
+    const b64 = toBase64(loadHourly('EUR'));
+    job.setData('EUR', b64);
+    for (const c of FX_CURRENCIES) job.setData(c, b64, null, { days: fx.days, rates: { [c]: fx.rates[c] } });
+    eur = await run('EUR');
+  }, 120_000);
+  for (const c of FX_CURRENCIES) {
+    it(`${c}: the example's liquidation chance is within 3 of 100 of the euro answer`, async () => {
+      const p = await run(c);
+      expect(Number.isFinite(p)).toBe(true);
+      expect(Math.abs(p - eur)).toBeLessThanOrEqual(0.03);
     }, 60_000);
   }
 });

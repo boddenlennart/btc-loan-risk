@@ -4,6 +4,7 @@
 //   'partial' after the headline numbers, then 'result' with everything.
 import { gunzipSync } from 'fflate';
 import { decodeHourly } from '../data/codec.js';
+import { convertHourly } from '../data/fx.js';
 import { dailyFromHourly, dailyReturns } from '../engine/history.js';
 import { fitGarchT } from '../engine/garch.js';
 import { runMonteCarlo } from '../engine/montecarlo.js';
@@ -68,8 +69,11 @@ function historyFacts(daily, hourly) {
   };
 }
 
-function setData(currency, base64, appended) {
-  const h = decodeHourly(gunzipSync(b64ToBytes(base64)));
+/** `fx` (optional): ECB rates { days, rates: { [currency]: [...] } }; then `base64` is the euro history
+ *  and is converted to `currency` hour by hour. `appended` candles are already in `currency`. */
+function setData(currency, base64, appended, fx) {
+  const eur = decodeHourly(gunzipSync(b64ToBytes(base64)));
+  const h = fx ? convertHourly(eur, fx, currency) : eur;
   let hourly = h;
   if (appended && appended.length) {
     const last = h.time[h.time.length - 1];

@@ -18,6 +18,7 @@ import { encodeState, decodeState } from './share.js';
 import { toTerms, numOr, today, exampleKey } from './terms.js';
 import { feedbackText, mailtoLink } from './feedback.js';
 import { dataAge } from '../data/candles.js';
+import { gunzipSync, strFromU8 } from 'fflate';
 
 const META = JSON.parse(document.getElementById('meta').textContent);
 const STORE_KEY = 'btc-loan-risk:form';
@@ -309,7 +310,9 @@ async function fetchRecentCandles(cur) {
 async function ensureRecent(cur) {
   if (appended[cur]) return;
   appended[cur] = [];
-  const candles = await fetchRecentCandles(cur);
+  // currencies computed from the euro history: recent euro hours × the last ECB rate
+  const fx = fxFor(cur); const r = fx ? fx.rates[cur].at(-1) : 1;
+  const candles = fx ? (await fetchRecentCandles('EUR')).map((c) => ({ time: c.time, open: c.open * r, high: c.high * r, low: c.low * r, close: c.close * r })) : await fetchRecentCandles(cur);
   appended[cur] = candles;
   if (candles.length) sentData.delete(cur); // picked up by the next recalculation
 }
@@ -327,10 +330,18 @@ function makeWorker() {
     worker.onerror = () => { useInline = true; worker = null; update(); };
   } catch { useInline = true; worker = null; }
 }
+// rates for the currencies computed from the euro history (CHF, GBP, CAD, AUD, CZK, PLN)
+let fxTable = null;
+function fxFor(cur) {
+  if (!META.prices[cur].fromEur) return null;
+  if (!fxTable) fxTable = JSON.parse(strFromU8(gunzipSync(Uint8Array.from(atob(document.getElementById('data-FX').textContent.trim()), (ch) => ch.charCodeAt(0)))));
+  return { days: fxTable.days, rates: { [cur]: fxTable.rates[cur] } };
+}
 function sendData(cur) {
   if (sentData.has(cur)) return;
-  const base64 = document.getElementById(`data-${cur}`).textContent.trim();
-  if (useInline) jobSetData(cur, base64, appended[cur]); else worker.postMessage({ type: 'data', currency: cur, base64, appended: appended[cur] });
+  const fx = fxFor(cur);
+  const base64 = document.getElementById(`data-${fx ? 'EUR' : cur}`).textContent.trim();
+  if (useInline) jobSetData(cur, base64, appended[cur], fx); else worker.postMessage({ type: 'data', currency: cur, base64, appended: appended[cur], fx });
   sentData.add(cur);
 }
 function onWorkerMessage(m) {

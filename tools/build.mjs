@@ -6,13 +6,14 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { build } from 'esbuild';
 import QRCode from 'qrcode';
 import { SITE } from '../src/content/site.js';
-import { gunzipSync } from 'node:zlib';
+import { gunzipSync, gzipSync } from 'node:zlib';
 import { decodeHourly } from '../src/data/codec.js';
 import { dailyFromHourly, dailyReturns } from '../src/engine/history.js';
 import { fitGarchT } from '../src/engine/garch.js';
 import { setData as jobSetData, run as jobRun } from '../src/app/riskjob.js';
 import { EXAMPLE_FORM } from '../src/content/examples.js';
 import { toTerms, exampleKey } from '../src/app/terms.js';
+import { parseEcbCsv, checkFx, convertHourly, lastRate, FX_CURRENCIES } from '../src/data/fx.js';
 import en from '../src/content/text.en.js';
 import de from '../src/content/text.de.js';
 
@@ -34,6 +35,21 @@ const b64 = (cur) => (currencies.includes(cur) ? readFileSync(file(cur)).toStrin
 // have to (it is the slowest step). The few recent hours added on load barely change it.
 const garch = Object.fromEntries(currencies.map((c) => [c, fitGarchT(dailyReturns(dailyFromHourly(decodeHourly(gunzipSync(readFileSync(file(c)))))).returns)]));
 const pageMeta = { prices: Object.fromEntries(currencies.map((c) => [c, meta[c]])), garch, dataUpdated: meta.updated, built: Math.floor(Date.now() / 1000) };
+
+// Six more currencies: hourly BTC/EUR × the ECB's daily rate (src/data/fx.js). The page gets the
+// rates table (small) and converts the euro history itself; the GARCH model is fitted here.
+const fx = parseEcbCsv(read('data/fx-ecb.csv'), { fromIso: '1999-01-01' });
+const fxProblems = checkFx(fx);
+if (fxProblems.length) throw new Error(`data/fx-ecb.csv: ${fxProblems.join('; ')}`);
+let fxB64 = '';
+if (currencies.includes('EUR')) {
+  const eurHourly = decodeHourly(gunzipSync(readFileSync(file('EUR'))));
+  for (const c of FX_CURRENCIES) {
+    garch[c] = fitGarchT(dailyReturns(dailyFromHourly(convertHourly(eurHourly, fx, c))).returns);
+    pageMeta.prices[c] = { ...meta.EUR, lastClose: Math.round(meta.EUR.lastClose * lastRate(fx, c) * 100) / 100, sources: ['bitstamp', 'kraken', 'ecb'], fromEur: true, fxTo: fx.days.at(-1) * 86400 };
+  }
+  fxB64 = gzipSync(JSON.stringify(fx)).toString('base64');
+}
 
 // The example answer, computed here with the page's own calculation on the embedded history,
 // so a first-time visitor sees it at once (0 s). With the LTV fixed, the liquidation chance does
@@ -67,6 +83,7 @@ const parts = {
   '/*META*/': JSON.stringify(pageMeta),
   '/*DATA_USD*/': b64('USD'),
   '/*DATA_EUR*/': b64('EUR'),
+  '/*DATA_FX*/': fxB64,
   '/*WORKER*/': safe(await bundle('src/app/worker.js')),
   '/*APP*/': safe(await bundle('src/app/main.js')),
   '/*QR*/': qr,

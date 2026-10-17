@@ -287,6 +287,7 @@ export default {
   method: {
     text: [
       'Price data: hourly prices from the exchanges Bitstamp (USD since 2014, EUR since 2017) and Kraken (EUR 2014–2016), as published by the exchanges.',
+      'Other currencies (CHF, GBP, CAD, AUD, CZK, PLN): the euro prices, converted hour by hour with the daily exchange rate of the European Central Bank. Compared with real exchange prices, half of all hours differ by 0.2% or less.',
       'Possible futures: real daily price moves since 2014, cut into 30-day pieces and joined at random into 10,000 paths. Each day\'s lowest price counts, so short crashes are not missed. A second method (a [[garch]] model, in which wild days make more wild days likely) checks the first.',
       'History: the same loan, started on every day since 2014, against the real lowest price of every hour.',
       'The lender\'s rules (margin call, deadlines, partial sales, fees) are applied exactly as you set them, in every path.',
@@ -338,7 +339,7 @@ export default {
     license: 'Open source under the MIT licence. Provided "as is", without warranty of any kind: use it at your own risk.',
     notAdvice: 'This page is not financial, investment or tax advice. It is a calculator with a model of past price moves. It cannot know your situation or the future. Check every number against your lender\'s documents.',
     privacy: 'Everything you type stays in your browser; this page has no server of its own, no tracking and no cookies. It remembers your inputs in your browser\'s local storage; "Forget my inputs" deletes them. When the page opens, your browser asks public price services for the current BTC price: api.coinbase.com, and only if that fails api.kraken.com, api.binance.com or api.coingecko.com; it also loads recent hourly prices from www.bitstamp.net. These services see your IP address and browser type, but nothing you entered. A copied link contains your inputs after the "#" sign, which browsers do not send to any server. The page itself is hosted by GitHub Pages.',
-    sources: 'Data: Bitstamp (USD 2014–, EUR 2017–), Kraken (EUR 2014–2016). Current price: Coinbase, Kraken, Binance or CoinGecko. Known gap: Bitstamp was offline from 5 to 9 January 2015.',
+    sources: 'Data: Bitstamp (USD 2014–, EUR 2017–), Kraken (EUR 2014–2016); CHF, GBP, CAD, AUD, CZK and PLN converted with the daily exchange rates of the European Central Bank. Current price: Coinbase, Kraken, Binance or CoinGecko. Known gap: Bitstamp was offline from 5 to 9 January 2015.',
   },
 
   glossary: {

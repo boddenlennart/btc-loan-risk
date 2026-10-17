@@ -282,6 +282,7 @@ export default {
   method: {
     text: [
       'Kursdaten: stündliche Kurse der Börsen Bitstamp (USD seit 2014, EUR seit 2017) und Kraken (EUR 2014–2016), wie von den Börsen veröffentlicht.',
+      'Weitere Währungen (CHF, GBP, CAD, AUD, CZK, PLN): die Euro-Kurse, Stunde für Stunde mit dem täglichen Wechselkurs der Europäischen Zentralbank umgerechnet. Gegenüber echten Börsenkursen weicht die Hälfte aller Stunden um höchstens 0,2 % ab.',
       'Mögliche Zukünfte: echte tägliche Kursbewegungen seit 2014, in 30-Tage-Stücke geschnitten und zufällig zu 10.000 Verläufen aneinandergereiht. Der tiefste Kurs jedes Tages zählt, kurze Einbrüche gehen also nicht verloren. Eine zweite Methode (ein [[garch]], in dem wilde Tage weitere wilde Tage wahrscheinlicher machen) prüft die erste.',
       'Vergangenheit: derselbe Kredit, an jedem Tag seit 2014 gestartet, gegen den echten tiefsten Kurs jeder Stunde.',
       'Die Regeln des Kreditgebers (Margin Call, Fristen, Teilverkäufe, Gebühren) werden in jedem Verlauf genau so angewendet, wie Sie sie einstellen.',
@@ -333,7 +334,7 @@ export default {
     license: 'Open Source unter der MIT-Lizenz. Bereitgestellt "wie besehen" ("as is"), ohne jede Gewährleistung: Nutzung auf eigenes Risiko.',
     notAdvice: 'Diese Seite ist keine Finanz-, Anlage- oder Steuerberatung. Sie ist ein Rechner mit einem Modell früherer Kursbewegungen. Sie kennt weder Ihre Lage noch die Zukunft. Prüfen Sie jede Zahl anhand der Unterlagen Ihres Kreditgebers.',
     privacy: 'Alles, was Sie eingeben, bleibt in Ihrem Browser; diese Seite hat keinen eigenen Server, kein Tracking und keine Cookies. Sie merkt sich Ihre Eingaben im lokalen Speicher Ihres Browsers; "Meine Eingaben löschen" entfernt sie. Beim Öffnen fragt Ihr Browser öffentliche Kursdienste nach dem aktuellen BTC-Kurs: api.coinbase.com und nur wenn das scheitert api.kraken.com, api.binance.com oder api.coingecko.com; außerdem lädt er die neuesten Stundenkurse von www.bitstamp.net. Diese Dienste sehen Ihre IP-Adresse und Ihren Browsertyp, aber nichts von Ihren Eingaben. Ein kopierter Link enthält Ihre Eingaben nach dem "#"-Zeichen; diesen Teil senden Browser an keinen Server. Die Seite selbst wird von GitHub Pages bereitgestellt.',
-    sources: 'Daten: Bitstamp (USD ab 2014, EUR ab 2017), Kraken (EUR 2014–2016). Aktueller Kurs: Coinbase, Kraken, Binance oder CoinGecko. Bekannte Lücke: Bitstamp war vom 5. bis 9. Januar 2015 offline.',
+    sources: 'Daten: Bitstamp (USD ab 2014, EUR ab 2017), Kraken (EUR 2014–2016); CHF, GBP, CAD, AUD, CZK und PLN umgerechnet mit den täglichen Wechselkursen der Europäischen Zentralbank. Aktueller Kurs: Coinbase, Kraken, Binance oder CoinGecko. Bekannte Lücke: Bitstamp war vom 5. bis 9. Januar 2015 offline.',
   },
 
   glossary: {

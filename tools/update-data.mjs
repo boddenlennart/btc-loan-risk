@@ -3,7 +3,9 @@
 //   2. checks them: no gaps, duplicates or impossible values; Kraken agrees with Bitstamp
 //   3. appends them to data/btc-*-1h.bin.gz and updates data/meta.json
 //   4. re-fits the model settings (GARCH) and compares a reference loan before and after
-//   5. writes a plain-language summary for the pull request
+//   5. refreshes the ECB exchange rates (CHF, GBP, CAD, AUD, CZK, PLN), checks them, and compares
+//      the computed BTC prices in those currencies with real exchange prices (Kraken, Bitstamp)
+//   6. writes a plain-language summary for the pull request
 // Exits with code 1 (and explains why) if a check fails; nothing is changed then.
 // Drift guard: if the new hours move the result of any of the 12 reference loans by more
 // than 5 of 100, the update also stops, so a person looks at it first.
@@ -17,6 +19,10 @@ import { fitGarchT } from '../src/engine/garch.js';
 import { setData, run } from '../src/app/riskjob.js';
 import * as job from '../src/app/riskjob.js';
 import { REFERENCE_LOANS, resultsFor } from '../tests/helpers/regression.js';
+
+import { fetchFx } from './update-fx.mjs';
+import { crossCheckFx } from './check-fx.mjs';
+import { parseEcbCsv } from '../src/data/fx.js';
 
 const root = new URL('../', import.meta.url);
 const summaryFile = process.argv[2] || 'data-update-summary.md';
@@ -142,6 +148,37 @@ function stopIfFailed() {
 }
 stopIfFailed();
 
+// Exchange rates (ECB) for the currencies computed from the euro history.
+// Limits: the computed prices may differ from a real exchange by 0.5% in a typical hour, 2% in 95 of 100 hours.
+let newFxCsv = null;
+{
+  const fxFile = new URL('data/fx-ecb.csv', root);
+  const oldCsv = readFileSync(fxFile, 'utf8');
+  lines.push('### Exchange rates (European Central Bank)');
+  try {
+    const { table, csv, problems } = await fetchFx();
+    for (const p of problems) failures.push(`ECB rates: ${p}`);
+    const old = parseEcbCsv(oldCsv, { fromIso: '1999-01-01' });
+    const revised = old.days.filter((d, i) => { const j = table.days.indexOf(d); return j < 0 || Object.keys(old.rates).some((c) => Math.abs(table.rates[c][j] / old.rates[c][i] - 1) > 0.005); });
+    if (revised.length) failures.push(`ECB rates: ${revised.length} earlier days changed or disappeared (first: ${new Date(revised[0] * 86400000).toISOString().slice(0, 10)}). A person should look at this.`);
+    const added = table.days.length - old.days.length;
+    lines.push(added > 0 ? `${added} new business days, up to ${csv.trim().split('\n').at(-1).slice(0, 10)}.` : 'No new rates.');
+    if (added > 0) { newFxCsv = csv; changed = true; }
+    const eurGz = newData.EUR || oldData.EUR;
+    const rows = await crossCheckFx(decodeHourly(gunzipSync(eurGz)), table);
+    lines.push('', '| Computed price | Compared with | Hours | Typical difference | 95% of hours within |', '|---|---|---|---|---|');
+    for (const r of rows) {
+      if (r.error || !r.hours) { lines.push(`| ${r.pair} | ${r.source} | – | not available | ${r.error || 'no data'} |`); continue; }
+      lines.push(`| ${r.pair} | ${r.source} | ${r.hours} | ${r.median.toFixed(2)}% | ${r.p95.toFixed(2)}% |`);
+      if (r.median > 0.5 || r.p95 > 2) failures.push(`Computed ${r.pair} differs from ${r.source} by ${r.median.toFixed(2)}% in a typical hour (limit 0.5%) or ${r.p95.toFixed(2)}% in 95 of 100 hours (limit 2%).`);
+    }
+    lines.push('');
+  } catch (e) {
+    failures.push(`ECB rates could not be downloaded: ${e.message || e}`);
+  }
+}
+stopIfFailed();
+
 // Drift guard over all 12 reference loans (tests/helpers/regression.js), old vs new data.
 const DRIFT_LIMIT = 0.05;
 async function allResults(gzByCur) {
@@ -168,6 +205,7 @@ stopIfFailed();
 
 if (changed) {
   for (const [cur, gz] of Object.entries(newData)) writeFileSync(file(cur), gz);
+  if (newFxCsv) writeFileSync(new URL('data/fx-ecb.csv', root), newFxCsv);
   meta.updated = NOW; // shown on the page as "last updated"
   writeFileSync(new URL('data/meta.json', root), JSON.stringify(meta, null, 1));
   const garch = Object.fromEntries(['USD', 'EUR'].map((c) => [c, fitGarchT(dailyReturns(dailyFromHourly(decodeHourly(gunzipSync(readFileSync(file(c)))))).returns)]));

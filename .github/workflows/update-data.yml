@@ -59,7 +59,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$branch"
-          git add data docs/index.html
+          git add data docs
           git commit -m "Weekly price data update $(date -u +%Y-%m-%d)"
           git push --force origin "$branch"
           # Pull requests opened by a workflow do not start other checks (a GitHub rule), so the

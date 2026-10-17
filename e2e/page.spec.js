@@ -230,6 +230,20 @@ test('first phone screen (375 x 812): name, headline, trust line and the answer 
   expect(hero).toBe(text);
 });
 
+test('Swiss francs: the answer is computed from the euro history converted with ECB rates', async ({ page }) => {
+  const { hosts } = await open(page); await waitDone(page);
+  const eur = await headlineNumber(page);
+  await page.locator('select.cur').selectOption('CHF');
+  await expect(page.locator('#price-line')).toContainText('CHF 60,000');
+  await waitDone(page);
+  await expect(page.locator('#tiles')).toContainText('CHF');
+  const chf = await headlineNumber(page);
+  expect(Math.abs(chf - eur)).toBeLessThanOrEqual(3);
+  await expect(page.locator('footer')).toContainText('European Central Bank');
+  // no new outside addresses: the rates are inside the page
+  for (const h of hosts) expect(ALLOWED, h).toContain(h);
+});
+
 test('phone width 375 px: no sideways scrolling', async ({ page }) => {
   await open(page, { width: 375 }); await waitDone(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
