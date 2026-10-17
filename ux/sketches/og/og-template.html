@@ -1,0 +1,38 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>og</title>
+<style>
+/* 1200 x 630 link-preview image. Everything important sits in the centre 600 px, so a square crop keeps it.
+   Production uses the embedded Source Serif 4; the system serif stands in here. */
+:root { --paper:#f6f5f1; --ink:#15140f; --ink2:#46443e; --muted:#65635c; --brand:#1f4e79; --serif:"Source Serif 4",Charter,"Iowan Old Style",Georgia,serif; --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+* { box-sizing:border-box; margin:0; }
+html,body { width:1200px; height:630px; background:var(--paper); overflow:hidden; }
+body { font-family:var(--sans); color:var(--ink); position:relative; }
+.col { position:absolute; left:300px; width:600px; top:0; bottom:0; display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:58px; }
+.brand { display:flex; align-items:center; gap:12px; font:600 30px/1 var(--serif); }
+h1 { font:600 54px/1.1 var(--serif); letter-spacing:-0.01em; margin:38px 0 22px; }
+.facts { font:400 23px/1.4 var(--sans); color:var(--ink2); }
+.facts b { color:var(--ink); font-weight:600; }
+.foot { position:absolute; bottom:44px; font:600 20px var(--sans); color:var(--muted); }
+.foot .dom { color:var(--brand); }
+.line { position:absolute; left:0; right:0; top:452px; height:0; }
+.side { position:absolute; top:0; bottom:0; width:300px; }
+</style></head>
+<body>
+  <svg class="side" style="left:0" viewBox="0 0 300 630" aria-hidden="true"><circle cx="150" cy="200" r="34" fill="#1f4e79" opacity=".9"/><path d="M150 248v150" stroke="#1f4e79" stroke-width="4" stroke-dasharray="9 10" opacity=".9"/><path d="M132 382l18 16 18-16" fill="none" stroke="#1f4e79" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 412h220" stroke="#15140f" stroke-width="6" stroke-linecap="round"/></svg>
+  <svg class="side" style="right:0" viewBox="0 0 300 630" aria-hidden="true"><path d="M40 412h220" stroke="#15140f" stroke-width="6" stroke-linecap="round"/></svg>
+  <div class="col">
+    <div class="brand"><svg width="44" height="44" viewBox="0 0 32 32"><circle cx="16" cy="8.5" r="5" fill="#1f4e79"/><path d="M16 15v7" stroke="#1f4e79" stroke-width="2" stroke-dasharray="2 2.2"/><path d="M3 25.5h26" stroke="#15140f" stroke-width="2.4" stroke-linecap="round"/><path d="M12 22.5l4 3 4-3" fill="none" stroke="#1f4e79" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="name"></span></div>
+    <h1 id="head"></h1>
+    <p class="facts" id="facts"></p>
+    <div class="foot"><span class="dom">bitcoinloancheck.com</span> · <span id="trust"></span></div>
+  </div>
+<script>
+const T = {
+  en: { name: 'Bitcoin Loan Check', head: 'An independent check for any Bitcoin loan offer.', facts: '<b>Liquidation chance</b>, <b>sale price</b> and <b>full cost</b>, tested on real BTC prices since 2014. Runs in your browser.', trust: 'Free · Open source', l1: 'BTC PRICE TODAY', l2: 'PRICE AT WHICH BTC IS SOLD' },
+  de: { name: 'Bitcoin-Kredit-Check', head: 'Ein unabhängiger Check für jedes Bitcoin-Kreditangebot.', facts: '<b>Liquidationsrisiko</b>, <b>Verkaufskurs</b> und <b>Gesamtkosten</b>, geprüft an echten BTC-Kursen seit 2014. Läuft in Ihrem Browser.', trust: 'Kostenlos · Open Source', l1: 'BTC-KURS HEUTE', l2: 'KURS, BEI DEM BTC VERKAUFT WIRD' },
+};
+const t = T[new URLSearchParams(location.search).get('lang') || 'en'];
+for (const k of ['name','head','trust']) document.getElementById(k).textContent = t[k];
+document.getElementById('facts').innerHTML = t.facts;
+</script>
+</body></html>

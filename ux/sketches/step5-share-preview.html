@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Step 5 share preview</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #d9d7d0; font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #15140f; }
+.board { max-width: 1240px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font: 600 28px/1.2 Charter, Georgia, serif; margin: 0 0 4px; }
+.lead { margin: 0 0 24px; max-width: 780px; color: #3a3934; }
+.cap { font: 600 13px/1.3 system-ui; text-transform: uppercase; letter-spacing: .06em; color: #3a3934; margin: 0 0 8px; }
+.row { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; margin-bottom: 36px; }
+.col { width: 360px; }
+.note { font-size: 13px; color: #3a3934; margin: 8px 0 0; }
+img.og { display: block; width: 100%; }
+
+/* X */
+.x { background: #fff; border-radius: 14px; padding: 12px 14px; color: #0f1419; }
+.x .who { font-weight: 700; } .x .who span { color: #536471; font-weight: 400; }
+.x .card { margin-top: 10px; border-radius: 16px; overflow: hidden; border: 1px solid #cfd9de; position: relative; }
+.x .dom { position: absolute; left: 10px; bottom: 10px; background: #0009; color: #fff; font-size: 13px; padding: 1px 6px; border-radius: 4px; }
+/* WhatsApp */
+.wa { background: #efeae2; border-radius: 14px; padding: 14px; }
+.wa .bubble { background: #d9fdd3; border-radius: 10px; padding: 4px; max-width: 320px; margin-left: auto; box-shadow: 0 1px 0 #0001; }
+.wa .prev { background: #cfe9c7; border-radius: 7px; overflow: hidden; }
+.wa .prev .t { padding: 6px 8px 8px; font-size: 13px; }
+.wa .prev .t b { display: block; font-size: 14px; }
+.wa .prev .t span { color: #54656f; font-size: 12px; }
+.wa .msg { padding: 6px 6px 2px; font-size: 14.5px; }
+.wa .msg a { color: #027eb5; }
+/* Telegram */
+.tg { background: #8fb59a; border-radius: 14px; padding: 14px; }
+.tg .bubble { background: #effdde; border-radius: 12px; padding: 8px 10px; max-width: 330px; margin-left: auto; }
+.tg .msg a { color: #168acd; }
+.tg .prev { border-left: 3px solid #4fae4e; padding-left: 8px; margin-top: 6px; font-size: 13.5px; }
+.tg .prev .s { color: #4fae4e; font-weight: 600; }
+.tg .prev img { border-radius: 6px; margin-top: 6px; }
+/* Google */
+.g { background: #fff; border-radius: 14px; padding: 16px 18px; font-family: Arial, sans-serif; }
+.g .site { display: flex; gap: 10px; align-items: center; font-size: 14px; color: #202124; }
+.g .site small { display: block; color: #4d5156; font-size: 12px; }
+.g .fav { width: 28px; height: 28px; border-radius: 50%; background: #f1f3f4; display: grid; place-items: center; }
+.g h3 { color: #1a0dab; font: 400 20px/1.3 Arial, sans-serif; margin: 6px 0 4px; }
+.g p { color: #4d5156; font-size: 14px; margin: 0; }
+table { border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; font-size: 13.5px; width: 100%; }
+td, th { border-bottom: 1px solid #e2dfd6; padding: 7px 10px; text-align: left; vertical-align: top; }
+th { background: #efede6; font-weight: 600; }
+code { font-size: 12.5px; }
+</style>
+</head>
+<body>
+<div class="board">
+  <h1>Step 5: how a shared link looks</h1>
+  <p class="lead">The preview image is the real 1200 × 630 image (rendered from <code>og/og-template.html</code>). The apps around it are simplified sketches. Important: every link to the page shows this same preview, also a link to someone's calculation (see the spec), so the message text carries the personal part.</p>
+
+  <div class="row">
+    <div class="col">
+      <p class="cap">X (large image card)</p>
+      <div class="x">
+        <div class="who">Someone <span>@someone · 2h</span></div>
+        <div>Checked my loan offer before signing. 60 of 100 simulated futures end in liquidation at LTV 50%, 22 of 100 at 30%.</div>
+        <div class="card"><img class="og" src="og/og-en.png" alt=""><span class="dom">bitcoinloancheck.com</span></div>
+      </div>
+      <p class="note">X shows only the image and the domain, no title. So the image itself must say what the page is.</p>
+    </div>
+
+    <div class="col">
+      <p class="cap">WhatsApp / Signal (shared from the page)</p>
+      <div class="wa">
+        <div class="bubble">
+          <div class="prev"><img class="og" src="og/og-en.png" alt=""><div class="t"><b>Bitcoin Loan Check: an independent check for any Bitcoin loan offer</b>See how likely a Bitcoin-backed loan is to be liquidated, at which price BTC is sold, and what it costs.<br><span>bitcoinloancheck.com</span></div></div>
+          <div class="msg">Loan offer checked: 60 of 100 simulated futures end in liquidation within 12 months. BTC is sold at €45,348 (−38%). Full cost €1,100.<br><a href="#">https://bitcoinloancheck.com/#s=eyJ2Ijox…</a></div>
+        </div>
+      </div>
+      <p class="note">The text above the link comes from the page's Share button (filled in, editable before sending). Signal shows the same preview, a little smaller.</p>
+    </div>
+
+    <div class="col">
+      <p class="cap">Telegram (German visitor)</p>
+      <div class="tg">
+        <div class="bubble">
+          <div class="msg">Kreditangebot geprüft: In 60 von 100 simulierten Zukünften wird der Kredit innerhalb von 12 Monaten liquidiert. BTC wird bei 45.348 € verkauft (−38 %). Gesamtkosten 1.100 €.<br><a href="#">https://bitcoinloancheck.com/de/#s=eyJ2Ijox…</a></div>
+          <div class="prev"><div class="s">Bitcoin-Kredit-Check</div><b>Bitcoin-Kredit-Check: ein unabhängiger Check für jedes Bitcoin-Kreditangebot</b><div>Wie wahrscheinlich wird ein Bitcoin-besicherter Kredit liquidiert, bei welchem Kurs wird BTC verkauft, und was kostet er?</div><img class="og" src="og/og-de.png" alt=""></div>
+        </div>
+      </div>
+      <p class="note">A German link (<code>/de/</code>) gets the German title, description and image.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col" style="width:560px">
+      <p class="cap">Google search result</p>
+      <div class="g">
+        <div class="site"><span class="fav"><svg width="18" height="18" viewBox="0 0 32 32"><circle cx="16" cy="8.5" r="5" fill="#1f4e79"/><path d="M16 15v7" stroke="#1f4e79" stroke-width="2" stroke-dasharray="2 2.2"/><path d="M3 25.5h26" stroke="#15140f" stroke-width="2.4" stroke-linecap="round"/></svg></span><div>Bitcoin Loan Check<small>https://bitcoinloancheck.com</small></div></div>
+        <h3>Bitcoin Loan Check: liquidation risk of any BTC loan</h3>
+        <p>See how likely a Bitcoin-backed loan is to be liquidated, at which price BTC is sold, and what it costs. Free, open source, runs in your browser.</p>
+      </div>
+      <div class="g" style="margin-top:12px">
+        <div class="site"><span class="fav"><svg width="18" height="18" viewBox="0 0 32 32"><circle cx="16" cy="8.5" r="5" fill="#1f4e79"/><path d="M16 15v7" stroke="#1f4e79" stroke-width="2" stroke-dasharray="2 2.2"/><path d="M3 25.5h26" stroke="#15140f" stroke-width="2.4" stroke-linecap="round"/></svg></span><div>Bitcoin-Kredit-Check<small>https://bitcoinloancheck.com › de</small></div></div>
+        <h3>Bitcoin-Kredit-Check: Liquidationsrisiko jedes BTC-Kredits</h3>
+        <p>Wie wahrscheinlich wird ein Bitcoin-besicherter Kredit liquidiert, bei welchem Kurs wird BTC verkauft, was kostet er? Kostenlos, Open Source, im Browser.</p>
+      </div>
+      <p class="note">Google decides itself whether to show the description; it usually does when it matches the search.</p>
+    </div>
+    <div class="col" style="width:600px">
+      <p class="cap">Image in a square crop (small WhatsApp preview, some apps)</p>
+      <div style="width:300px;height:300px;overflow:hidden;border-radius:10px;position:relative;background:#f6f5f1"><img src="og/og-en.png" alt="" style="position:absolute;height:300px;left:-135.7px"></div>
+      <p class="note">When an app crops the centre to a square, name, headline, facts and domain all stay inside it. That is why everything important sits in the centre 600 px, and the sides only carry the price-and-sale-line drawing.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>
