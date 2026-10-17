@@ -34,6 +34,13 @@ let lastTerms = null; let lastSettings = null; let lastRisk = null; let timer = 
 // the terms and settings the current risk results were calculated for (charts must use these, not newer inputs)
 let riskTerms = null; let riskSettings = null; const pending = {};
 let showOtherPaths = false;
+let termsOpen = false;
+function setTermsOpen(open, { focus = false } = {}) {
+  termsOpen = open;
+  $('#terms').classList.toggle('closed', !open);
+  const tg = $('#terms-toggle'); tg.setAttribute('aria-expanded', String(open)); tg.textContent = t(open ? 'form.closeTerms' : 'form.editTerms');
+  if (focus) { $('#terms').scrollIntoView({ block: 'start' }); const f = $('#form input'); if (f) f.focus({ preventScroll: true }); }
+}
 
 const openedFromLink = !!decodeState(location.hash); let scrolledToAnswer = false;
 function loadState() {
@@ -164,7 +171,7 @@ function renderForm() {
 
   $('#form').innerHTML = `
     ${seg('mode', [['new', fm.modeNew], ['existing', fm.modeExisting]], '', { id: 'mode' })}
-    ${isExample() ? `<p class="banner">${esc(t('ui.exampleBanner'))} <button type="button" class="link" aria-expanded="false" aria-controls="where">${esc(t('ui.whereLink'))}</button></p>` : `<p class="hint"><button type="button" class="link" aria-expanded="false" aria-controls="where">${esc(t('ui.whereLink'))}</button></p>`}
+    <p class="hint"><button type="button" class="link" aria-expanded="false" aria-controls="where">${esc(t('ui.whereLink'))}</button></p>
     <div id="where" class="where" hidden>${whereHtml()}</div>
     <div class="amount-row">${numField('loanAmount', existing ? f.loanAmount.labelExisting : f.loanAmount.label, '', { hint: existing ? f.loanAmount.hintExisting : '' })}${currencySel}</div>
     ${ltvBlock}
@@ -238,6 +245,7 @@ function onInput(e) {
 }
 
 function onClick(e) {
+  if (e.target.closest('#terms-toggle')) { setTermsOpen(!termsOpen); return; }
   const ctl = e.target.closest('button[aria-controls]');
   if (ctl) {
     const box = document.getElementById(ctl.getAttribute('aria-controls'));
@@ -269,9 +277,10 @@ function onClick(e) {
     loadPrice(true);
   } else if (tgt.matches('[data-other-paths]')) {
     showOtherPaths = !showOtherPaths; renderFutures();
-  } else if (tgt.matches('[data-copy-link]')) {
-    const url = `${location.origin}${location.pathname}${encodeState(state)}`;
-    navigator.clipboard?.writeText(url).then(() => { $('#link-copied').hidden = false; });
+  } else if (tgt.closest('[data-open-terms]')) {
+    setTermsOpen(true, { focus: true });
+  } else if (tgt.closest('[data-share]')) {
+    share();
   } else if (tgt.matches('[data-fb-send], [data-fb-copy]')) {
     const body = feedbackText({
       ...feedback, use: feedback.use ? texts().feedback.useOptions[feedback.use] : '', terms: feedback.attach ? { ...lastTerms } : null,
@@ -368,7 +377,7 @@ function onWorkerMessage(m) {
     if (m.type === 'result') { busy = false; $('#progress').hidden = true; }
     renderRisk();
     // a shared link opens on the answer the sender saw, not on the form
-    if (openedFromLink && !scrolledToAnswer) { scrolledToAnswer = true; $('#shared-note').hidden = false; $('#answer').scrollIntoView({ block: 'start' }); }
+    if (openedFromLink && !scrolledToAnswer) { scrolledToAnswer = true; $('#shared-note').hidden = false; renderAnswerTop(riskTerms); $('#answer').scrollIntoView({ block: 'start' }); }
   } else if (m.type === 'error') {
     busy = false; $('#progress').textContent = m.message;
   }
@@ -400,7 +409,9 @@ function showErrors(errors) {
     if (e.field === 'btcPrice' && priceInfo) $('#price-edit').hidden = false; // not while the price is still loading
     const det = el.closest('details'); if (det && !det.open) det.open = true;
   }
-  $('#error-banner').hidden = errors.filter((e) => !(e.field === 'btcPrice' && !priceInfo)).length === 0;
+  const shownErrors = errors.filter((e) => !(e.field === 'btcPrice' && !priceInfo)).length;
+  $('#error-banner').hidden = shownErrors === 0;
+  if (shownErrors && !termsOpen) setTermsOpen(true);
 }
 
 function update() {
@@ -409,13 +420,13 @@ function update() {
   showErrors(v.errors);
   const ltvToday = $('#ltv-today');
   if (ltvToday) ltvToday.textContent = Number.isFinite(terms.initialLtv) ? `LTV ${pct(terms.initialLtv, 1)}` : '';
-  if (!v.ok) { $('#results').classList.add('invalid'); return; }
-  $('#results').classList.remove('invalid');
+  if (!v.ok) { document.body.classList.add('invalid'); return; }
+  document.body.classList.remove('invalid');
   lastTerms = terms; lastSettings = settings;
   moreSummary(terms);
   renderLoan();
   clearTimeout(timer);
-  if (lastRisk) $('#risk').classList.add('outdated');
+  if (lastRisk) document.body.classList.add('outdated');
   if (!started) return;
   $('#progress').hidden = false; $('#progress').textContent = t('ui.computing', { done: 0, total: '…' });
   timer = setTimeout(() => requestRisk(terms, settings), 300);
@@ -438,8 +449,70 @@ function renderLoan() {
   else sale = t('results.saleLine', v);
   const rising = tm.repayment === 'bullet' && lp.atMaturity > lp.atStart * 1.005 ? ` ${t('results.rising', { end: money0(lp.atMaturity, cur) })}` : '';
   $('#sale-line').textContent = sale + rising;
+  renderAnswerTop(tm);
+  renderTiles(tm);
+  renderTermsChips(tm);
   renderFallsText();
   renderCost();
+}
+
+// The label above the answer ("Example" / "Your terms" / "Shared with you") and the example as a story.
+function renderAnswerTop(tm) {
+  const R = texts().results; const ex = isExample();
+  $('#ans-label').textContent = ex ? R.labelExample : openedFromLink && !$('#shared-note').hidden ? R.labelShared : R.labelYours;
+  $('#example-story').textContent = ex ? t('results.exampleStory', {
+    amount: money0(tm.loanAmount, tm.currency), months: tm.durationMonths, value: money0(tm.loanAmount / tm.initialLtv, tm.currency),
+    ltv: pct(tm.initialLtv, 0), liq: pct(tm.liquidationLtv, 0),
+  }) : '';
+  $('#own-terms-link').textContent = ex ? R.ownTerms : R.editTerms;
+  $('#own-terms-btn').textContent = ex ? R.ownTermsButton : R.editTerms;
+}
+
+// Key figures under the answer. All of them need no simulation, so they follow typing at once.
+function renderTiles(tm) {
+  const R = texts().results; const cur = tm.currency;
+  const { lp, mp, rules } = salePrices(tm);
+  const s = loanSummary(tm);
+  const tile = (label, value, sub, cls = '') => `<div class="tile${cls}"><div class="label">${esc(label)}</div><div class="v">${esc(value)}</div><div class="s">${esc(sub)}</div></div>`;
+  let html = tile(rules.liquidationSale === 'partial' ? R.tilePartSold : R.tileSold, money0(lp.atStart, cur), t('results.tileSoldSub', { drop: `−${pct(dropToLiquidation(tm), 0)}` }));
+  const marginTile = mp ? tile(R.tileMargin, money0(mp.atStart, cur), rules.behaviour === 'autoPartial' ? R.tileMarginAuto : rules.afterCure ? t('results.tileMarginHours', { hours: tm.curePeriodHours }) : R.tileMarginWarning, ' desk-only') : '';
+  if (tm.mode === 'existing') {
+    html += tile(R.tileInterest, money0(s.totalInterest, cur), R.tileInterestSub);
+    html += mp ? marginTile.replace(' desk-only', '') : '';
+  } else {
+    html += marginTile;
+    html += tile(R.tileCost, money0(s.totalCost, cur), t('results.tileCostSub', { apr: pct(s.effectiveApr, 1) }));
+    const rise = tm.purpose === 'buy' ? s.totalPayback / s.amountReceived - 1 : breakevenReturn(tm, { taxRateNow: tm.taxRateNow, taxRateAtMaturity: tm.taxRateAtMaturity });
+    html += tile(R.tileBreakeven, signedPct(rise, 0), R.tileBreakevenSub);
+  }
+  $('#tiles').innerHTML = html;
+}
+
+// The key terms in one line (phones, while the form is folded away).
+function renderTermsChips(tm) {
+  const f = F(); const cur = tm.currency;
+  const parts = [money0(tm.loanAmount, cur), `LTV ${pct(tm.initialLtv, 0)}`, `${f.liquidationLtv.label} ${pct(tm.liquidationLtv, 0)}`,
+    `${tm.durationMonths} ${t('ui.months')}`, tm.rate.type === 'fixed' ? `${pct(tm.rate.annual, 1)} ${t('ui.perYear')}` : f.rateAnnual.label];
+  if (tm.marginCallLtv) parts.push(`${f.marginCallLtv.label} ${pct(tm.marginCallLtv, 0)}`);
+  $('#terms-chips').innerHTML = parts.map((p) => `<span>${esc(p)}</span>`).join('');
+}
+
+// Share: the system share sheet on phones, otherwise link and summary to the clipboard.
+function shareText() {
+  const tm = riskTerms || lastTerms; const r = lastRisk;
+  if (!tm || !r || !headlineShown) return '';
+  const { lp } = salePrices(tm); const s = loanSummary(tm);
+  return t(tm.mode === 'existing' ? 'share.existing' : 'share.one', {
+    n: headlineShown.n, months: tm.durationMonths, price: money0(lp.atStart, tm.currency), drop: `−${pct(dropToLiquidation(tm), 0)}`, cost: money0(s.totalCost, tm.currency),
+  });
+}
+async function share() {
+  const url = `${location.origin}${location.pathname}${encodeState(state)}`;
+  const text = shareText();
+  if (navigator.share && matchMedia('(pointer: coarse)').matches) {
+    try { await navigator.share({ title: texts().meta.name, text, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  navigator.clipboard?.writeText(text ? `${text}\n${url}` : url).then(() => { $('#link-copied').hidden = false; });
 }
 
 function renderFallsText() {
@@ -509,14 +582,15 @@ function splitTo100(parts) { // rounds shares so they add up to exactly 100
 function renderRisk() {
   const r = lastRisk; const tm = riskTerms;
   if (!r || !tm || r.currency !== tm.currency) return;
-  $('#risk').classList.remove('outdated');
+  document.body.classList.remove('outdated');
   const R = texts().results; const cur = tm.currency; const months = tm.durationMonths;
   const m = r.main;
   const pMarginOnly = m.pMarginCall === null ? 0 : Math.max(0, m.pMarginCall - m.pLiquidation - m.pPartial);
   const [nLiq, nPart, nMargin, nNone] = splitTo100([m.pLiquidation, m.pPartial, pMarginOnly, 1 - m.pLiquidation - m.pPartial - pMarginOnly]);
-  const headline = m.pPartial >= 0.005 ? t('results.headlinePartial', { n: nLiq, m: nPart, months })
-    : t(tm.mode === 'existing' ? 'results.headlineLiqExisting' : 'results.headlineLiq', { n: nLiq, months });
-  $('#headline-text').innerHTML = esc(headline).replace(/(\d+) (of|von) 100/, '<em>$1 $2 100</em>');
+  const rest = m.pPartial >= 0.005 ? t('results.heroPartial', { m: nPart, months })
+    : t(tm.mode === 'existing' ? 'results.heroLiqExisting' : 'results.heroLiq', { months });
+  const headline = `${nLiq} ${R.heroOf} ${rest}`;
+  $('#headline-text').innerHTML = `<em class="hero-n">${nLiq}</em> <span class="of">${esc(R.heroOf)}</span> <span class="sentence">${esc(rest)}</span>`;
   headlineShown = { p: m.pLiquidation, n: nLiq };
   $('#best-lever').textContent = bestLeverText(r);
   $('#dots').innerHTML = dotsHtml([[nLiq, 'd-liq'], [nPart, 'd-part'], [nMargin, 'd-margin'], [nNone, 'd-none']], headline)
@@ -696,6 +770,10 @@ function renderExpertCharts() {
 function renderStatic() {
   const tx = texts();
   document.title = tx.meta.title;
+  $('#code-link').href = SITE.codeUrl;
+  $('#maker').textContent = t('footer.maker', { name: SITE.maker });
+  $('#share-btn').textContent = tx.ui.share;
+  $('#terms-toggle').textContent = t(termsOpen ? 'form.closeTerms' : 'form.editTerms');
   $('meta[name="description"]').setAttribute('content', tx.meta.description);
   for (const el of document.querySelectorAll('[data-t]')) el.innerHTML = rich(t(el.dataset.t));
   $('#lang-btn').textContent = tx.ui.language;

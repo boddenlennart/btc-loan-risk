@@ -77,14 +77,15 @@ test('impossible terms show a plain-language error and no result', async ({ page
   await page.locator('#f-liquidationLtv').fill('40');
   await expect(page.locator('[data-field="liquidationLtv"] .err')).toContainText('not higher than the starting LTV');
   await expect(page.locator('#error-banner')).toBeVisible();
-  await expect(page.locator('#results')).toHaveClass(/invalid/);
+  await expect(page.locator('body')).toHaveClass(/invalid/);
 });
 
 test('German: switch language, everything in German', async ({ page }) => {
   await open(page); await waitDone(page);
   await page.locator('#lang-btn').click();
   await expect(page.locator('#headline-text')).toContainText('von 100');
-  await expect(page.locator('h1')).toHaveText('BTC-Kredit-Check');
+  await expect(page.locator('.brand')).toHaveText('Bitcoin-Kredit-Check');
+  await expect(page.locator('h1')).toHaveText('Ein unabhängiger Check für jedes Bitcoin-Kreditangebot.');
   await expect(page.locator('#data-period')).toContainText('Kursdaten: 1. Jan. 2014 bis');
 });
 
@@ -140,6 +141,11 @@ test('shared link restores the inputs, says it was shared, and opens on the answ
   await expect(page.locator('#headline-text')).toContainText('24 months');
   await expect(page.locator('#shared-note')).toBeVisible();
   await expect(page.locator('#headline-text')).toBeInViewport();
+  await expect(page.locator('#ans-label')).toHaveText('Shared with you');
+  // on a phone the terms are folded into a short summary; "Change" opens the form
+  await expect(page.locator('#terms-chips')).toContainText('LTV 35%');
+  await expect(page.locator('#f-initialLtv')).toBeHidden();
+  await page.locator('#terms-toggle').click();
   // once the visitor changes a term, the numbers are their own
   await page.locator('#f-initialLtv').fill('40');
   await expect(page.locator('#shared-note')).toBeHidden();
