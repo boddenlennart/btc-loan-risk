@@ -101,7 +101,7 @@ button.link { background: none; border: none; color: var(--accent-ink); text-dec
 button.link.strong { font-weight: 600; text-decoration: none; }
 .buttons, .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
-.notice { background: var(--surface-2); border-left: 4px solid var(--field); padding: 10px 12px; border-radius: 6px; font-size: 15px; }
+.notice { background: var(--surface-2); border-left: 4px solid var(--field); padding: 10px 12px; border-radius: 6px; font-size: 14px; }
 .notice.error { border-left-color: var(--critical); background: var(--critical-bg); }
 .banner { background: var(--warn-bg); border: 1px solid var(--warning); border-radius: 6px; padding: 8px 12px; font-size: 14px; }
 
@@ -222,7 +222,7 @@ details.section > summary::marker { color: var(--accent); }
 details.section > summary h3 { display: inline; }
 details.section[open] { padding-bottom: 14px; }
 details.limits > summary { cursor: pointer; color: var(--accent-ink); font-size: 14px; padding: 6px 0; }
-#limits { padding-left: 1.2em; font-size: 15px; }
+#limits { padding-left: 1.2em; font-size: 16px; }
 .ladder { position: relative; height: 74px; margin: 10px 4px 6px; }
 .ladder .ln { position: absolute; left: 0; right: 0; top: 24px; height: 4px; border-radius: 2px; background: var(--grid); }
 .ladder .pt { position: absolute; top: -16px; transform: translateX(-50%); text-align: center; font-size: 12px; line-height: 1.25; white-space: nowrap; }

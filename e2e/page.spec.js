@@ -218,6 +218,18 @@ test('feedback: the copied e-mail text contains the answers', async ({ page, con
   expect(text).toContain('(no loan terms attached)');
 });
 
+test('first phone screen (375 x 812): name, headline, trust line and the answer with its number, in ink not red', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await open(page); await waitDone(page);
+  for (const sel of ['.brand', 'h1', '.trust', '#headline-text .hero-n', '#headline-text .sentence', '#dots']) {
+    const box = await page.locator(sel).boundingBox();
+    expect(box, sel).not.toBeNull();
+    expect(box.y + box.height, `${sel} ends below the first screen`).toBeLessThanOrEqual(812);
+  }
+  const [hero, text] = await page.evaluate(() => [getComputedStyle(document.querySelector('.hero-n')).color, getComputedStyle(document.body).color]);
+  expect(hero).toBe(text);
+});
+
 test('phone width 375 px: no sideways scrolling', async ({ page }) => {
   await open(page, { width: 375 }); await waitDone(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
