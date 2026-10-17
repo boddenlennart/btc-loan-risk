@@ -136,7 +136,9 @@ describe('German and English cover exactly the same texts', () => {
   });
   it('German is actually translated (no long English sentence copied over)', async () => {
     const en = Object.fromEntries(allStrings(await load('en')));
-    for (const [path, s] of allStrings(await load('de'))) if (s.length > 20) expect(s, path).not.toBe(en[path]);
+    // names are the same in every language (site and owner name in the Impressum)
+    const SAME_ON_PURPOSE = ['legal.impressum.1'];
+    for (const [path, s] of allStrings(await load('de'))) if (s.length > 20 && !SAME_ON_PURPOSE.includes(path)) expect(s, path).not.toBe(en[path]);
   });
 });
 
