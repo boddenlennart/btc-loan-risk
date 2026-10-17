@@ -170,6 +170,29 @@ test('without a shared link the page opens at the top, with no "shared" note', a
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
 });
 
+test('German address /de/ starts in German; the language button switches the address', async ({ page }) => {
+  await page.route(/^https:\/\//, (route) => (route.request().url().includes('api.coinbase.com') ? route.fulfill({ json: { data: { amount: String(PRICE) } } }) : route.abort()));
+  await page.goto('/de/');
+  await expect(page.locator('h1')).toHaveText('Ein unabhängiger Check für jedes Bitcoin-Kreditangebot.');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'de');
+  await page.locator('#lang-btn').click();
+  await expect(page.locator('h1')).toHaveText('An independent check for any Bitcoin loan offer.');
+  expect(new URL(page.url()).pathname).toBe('/');
+  await page.locator('#lang-btn').click();
+  expect(new URL(page.url()).pathname).toBe('/de/');
+});
+
+test('Share (desktop): copies a summary with the visitor\'s numbers and the link', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await open(page); await waitDone(page);
+  const n = await headlineNumber(page);
+  await page.locator('#share-btn').click();
+  await expect(page.locator('#link-copied')).toBeVisible();
+  const text = await page.evaluate(() => navigator.clipboard.readText());
+  expect(text).toContain(`Loan offer checked: ${n} of 100 simulated futures end in liquidation within 12 months.`);
+  expect(text).toMatch(/\nhttp:\/\/127\.0\.0\.1:8799\/#s=/);
+});
+
 test('"Make it safer" shows exactly the headline number for your own terms, and the best option sits under the answer', async ({ page }) => {
   await open(page); await waitDone(page);
   const n = await headlineNumber(page);

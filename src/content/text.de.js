@@ -10,6 +10,8 @@ export default {
     title: 'Bitcoin-Kredit-Check: Liquidationsrisiko jedes BTC-Kredits',
     ogTitle: 'Bitcoin-Kredit-Check: ein unabhängiger Check für jedes Bitcoin-Kreditangebot',
     description: 'Wie wahrscheinlich wird ein Bitcoin-besicherter Kredit liquidiert, bei welchem Kurs wird BTC verkauft, was kostet er? Kostenlos, Open Source, im Browser.',
+    ogFacts: '<b>Liquidationsrisiko</b>, <b>Verkaufskurs</b> und <b>Gesamtkosten</b>, geprüft an echten BTC-Kursen seit 2014. Läuft in Ihrem Browser.',
+    ogTrust: 'Kostenlos · Open Source',
   },
 
   ui: {

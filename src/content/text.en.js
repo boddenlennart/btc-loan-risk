@@ -13,6 +13,8 @@ export default {
     title: 'Bitcoin Loan Check: liquidation risk of any BTC loan',
     ogTitle: 'Bitcoin Loan Check: an independent check for any Bitcoin loan offer',
     description: 'See how likely a Bitcoin-backed loan is to be liquidated, at which price BTC is sold, and what it costs. Free, open source, runs in your browser.',
+    ogFacts: '<b>Liquidation chance</b>, <b>sale price</b> and <b>full cost</b>, tested on real BTC prices since 2014. Runs in your browser.',
+    ogTrust: 'Free · Open source',
   },
 
   ui: {

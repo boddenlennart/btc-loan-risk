@@ -6,11 +6,24 @@ import de from '../content/text.de.js';
 const TEXTS = { en, de };
 let lang = 'en';
 
+// The site has an English address (/) and a German one (/de/), so links and search results
+// carry the language. Other paths (a test copy elsewhere) keep their address.
+const SITE_PATH = /^(.*?\/)(de\/)?(index\.html)?$/;
+function syncPath() {
+  if (typeof location === 'undefined' || typeof history === 'undefined') return; // not in a browser (tests)
+  const m = location.pathname.match(SITE_PATH);
+  if (!m) return;
+  const path = `${m[1]}${lang === 'de' ? 'de/' : ''}`;
+  if (path !== location.pathname) history.replaceState(null, '', `${path}${location.search}${location.hash}`);
+}
+
 export function initLang() {
   let saved = null;
   try { saved = localStorage.getItem('btc-loan-risk:lang'); } catch { /* storage may be blocked */ }
-  lang = saved === 'de' || saved === 'en' ? saved : (navigator.language || '').toLowerCase().startsWith('de') ? 'de' : 'en';
+  const fromPath = /\/de\/(index\.html)?$/.test(location.pathname) ? 'de' : null;
+  lang = fromPath || (saved === 'de' || saved === 'en' ? saved : (navigator.language || '').toLowerCase().startsWith('de') ? 'de' : 'en');
   document.documentElement.lang = lang;
+  syncPath();
   return lang;
 }
 
@@ -18,6 +31,7 @@ export function setLang(l) {
   lang = l;
   document.documentElement.lang = l;
   try { localStorage.setItem('btc-loan-risk:lang', l); } catch { /* ignore */ }
+  syncPath();
 }
 
 export const getLang = () => lang;

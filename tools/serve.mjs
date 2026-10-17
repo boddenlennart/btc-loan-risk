@@ -9,10 +9,11 @@ const root = fileURLToPath(new URL(`../${process.argv[3] || 'docs'}/`, import.me
 const port = Number(process.argv[2] || 8765);
 createServer(async (req, res) => {
   const path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-  const file = path === '/' ? 'index.html' : path.slice(1);
+  const file = path.endsWith('/') ? `${path.slice(1)}index.html` : path.slice(1);
   if (file.includes('..')) { res.writeHead(400).end(); return; }
   try {
     const body = await readFile(root + file);
-    res.writeHead(200, { 'content-type': file.endsWith('.html') ? 'text/html; charset=utf-8' : 'application/octet-stream' }).end(body);
+    const types = { html: 'text/html; charset=utf-8', png: 'image/png', svg: 'image/svg+xml' };
+    res.writeHead(200, { 'content-type': types[file.split('.').pop()] || 'application/octet-stream' }).end(body);
   } catch { res.writeHead(404).end('not found'); }
 }).listen(port, process.argv[4] || '127.0.0.1', () => console.log(`serving on port ${port}`));

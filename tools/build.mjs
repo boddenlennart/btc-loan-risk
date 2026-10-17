@@ -1,4 +1,5 @@
-// Builds the single-file page: docs/index.html (GitHub Pages serves the docs folder).
+// Builds the single-file page in two languages: docs/index.html (English) and docs/de/index.html
+// (German, starts in German). The hosting service serves the docs folder.
 // Inlines the styles, the app code, the worker code and the compressed price history.
 // Usage: node tools/build.mjs
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
@@ -12,6 +13,8 @@ import { fitGarchT } from '../src/engine/garch.js';
 import { setData as jobSetData, run as jobRun } from '../src/app/riskjob.js';
 import { EXAMPLE_FORM } from '../src/content/examples.js';
 import { toTerms, exampleKey } from '../src/app/terms.js';
+import en from '../src/content/text.en.js';
+import de from '../src/content/text.de.js';
 
 const root = new URL('../', import.meta.url);
 const read = (p) => readFileSync(new URL(p, root), 'utf8');
@@ -74,6 +77,39 @@ for (const lang of ['de', 'en']) {
   const n = (read(`src/content/text.${lang}.js`).match(/«[^»]*»/g) || []).length;
   if (n) console.warn(`NOTE: src/content/text.${lang}.js still has ${n} «placeholders» in the Impressum / privacy notice`);
 }
-mkdirSync(new URL('docs/', root), { recursive: true });
-writeFileSync(new URL('docs/index.html', root), html);
-console.log(`docs/index.html: ${(html.length / 1024 / 1024).toFixed(2)} MB`);
+// Head per language: title and description for search, preview tags for messengers and X
+// (ux/D-share-preview.md). The preview images and icons are made by tools/build-og.mjs.
+const attr = (v) => v.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+const BASE = `https://${SITE.domain}/`;
+function head(lang) {
+  const tx = { en, de }[lang].meta; const url = lang === 'de' ? `${BASE}de/` : BASE; const up = lang === 'de' ? '../' : '';
+  return [
+    `<title>${attr(tx.title)}</title>`,
+    `<meta name="description" content="${attr(tx.description)}">`,
+    `<link rel="canonical" href="${url}">`,
+    `<link rel="alternate" hreflang="en" href="${BASE}">`,
+    `<link rel="alternate" hreflang="de" href="${BASE}de/">`,
+    `<link rel="alternate" hreflang="x-default" href="${BASE}">`,
+    '<meta property="og:type" content="website">',
+    `<meta property="og:site_name" content="${attr(tx.name)}">`,
+    `<meta property="og:title" content="${attr(tx.ogTitle)}">`,
+    `<meta property="og:description" content="${attr(tx.description)}">`,
+    `<meta property="og:url" content="${url}">`,
+    `<meta property="og:image" content="${BASE}og-${lang}.png">`,
+    '<meta property="og:image:width" content="1200">',
+    '<meta property="og:image:height" content="630">',
+    `<meta property="og:image:alt" content="${attr(tx.ogTitle)}">`,
+    `<meta property="og:locale" content="${lang === 'de' ? 'de_DE' : 'en_US'}">`,
+    `<meta property="og:locale:alternate" content="${lang === 'de' ? 'en_US' : 'de_DE'}">`,
+    '<meta name="twitter:card" content="summary_large_image">',
+    `<link rel="apple-touch-icon" href="${up}apple-touch-icon.png">`,
+    '<meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">',
+    '<meta name="theme-color" content="#121210" media="(prefers-color-scheme: dark)">',
+  ].join('\n');
+}
+mkdirSync(new URL('docs/de/', root), { recursive: true });
+for (const [lang, out] of [['en', 'docs/index.html'], ['de', 'docs/de/index.html']]) {
+  const page = html.replace('<html lang="en">', `<html lang="${lang}">`).replace('/*HEAD*/', () => head(lang));
+  writeFileSync(new URL(out, root), page);
+  console.log(`${out}: ${(page.length / 1024 / 1024).toFixed(2)} MB`);
+}
