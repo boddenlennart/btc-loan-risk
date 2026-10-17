@@ -575,7 +575,7 @@ function renderCompare() {
   const cell = (v, sub = '') => `<td>${v}${sub ? `<small>${esc(sub)}</small>` : ''}</td>`;
   const dash = '–'; const wait = '…';
   const nLiq = idx.map((i) => { const m = mainOf(i); return T[i] && m ? heroSplit(m)[0] : null; });
-  const head = `<tr><th scope="col"></th>${idx.map((i) => `<th scope="col"><button type="button" class="col${i === compare.active ? ' active' : ''}" data-offer="${i}" aria-pressed="${i === compare.active}">${esc(offerName(i))}</button></th>`).join('')}</tr>`;
+  const head = `<tr><td></td>${idx.map((i) => `<th scope="col"><button type="button" class="col${i === compare.active ? ' active' : ''}" data-offer="${i}" aria-pressed="${i === compare.active}">${esc(offerName(i))}</button></th>`).join('')}</tr>`;
   const row = (label, sub, cells, cls = '') => `<tr${cls ? ` class="${cls}"` : ''}><th scope="row">${esc(label)}${sub ? `<small>${esc(sub)}</small>` : ''}</th>${cells.join('')}</tr>`;
   const sold = idx.map((i) => (T[i] ? cell(esc(money0(liquidationPrices(T[i]).atStart, cur)), `−${pct(dropToLiquidation(T[i]), 0)}`) : cell(Cm.fixTerms)));
   let rows = ''; const notes = [];
