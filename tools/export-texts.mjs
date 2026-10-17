@@ -7,11 +7,14 @@ import de from '../src/content/text.de.js';
 
 const GROUPS = [
   ['ui', 'Page frame and short messages'], ['form', 'Input form'], ['where', '"Where to find these numbers"'],
-  ['results', 'Answer, "Make it safer"'], ['sections', 'Section titles'], ['falls', 'Section: what happens when BTC falls'],
+  ['results', 'Answer, "Make it safer"'], ['compare', 'Comparing offers and refinancing'], ['share', 'Share summary'], ['sections', 'Section titles'], ['falls', 'Section: what happens when BTC falls'],
   ['cost', 'Section: costs, borrow or sell, leverage'], ['history', 'Section: what history says'], ['method', 'Section: how these numbers are made'],
   ['feedback', 'Feedback panel'], ['donate', 'Donation box'], ['footer', 'Footer'], ['glossary', 'Glossary'], ['errors', 'Error messages'],
   ['legal', 'Impressum and privacy notice (templates; review by a lawyer)'], ['meta', 'Page title and search description'],
 ];
+// every text group must be listed above, so no text is left out of the review
+const missing = Object.keys(en).filter((k) => !GROUPS.some(([g]) => g === k));
+if (missing.length) throw new Error(`export-texts: add these text groups to GROUPS: ${missing.join(', ')}`);
 const flat = (o, p = '') => (typeof o === 'string' ? [[p, o]] : Object.entries(o).flatMap(([k, v]) => flat(v, p ? `${p}.${k}` : k)));
 const cell = (s) => s.replace(/\|/g, '\\|').replace(/\n/g, ' ');
 let n = 0;
