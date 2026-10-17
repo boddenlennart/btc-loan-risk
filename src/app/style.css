@@ -90,7 +90,8 @@ button.lang { font: 600 14px var(--sans); color: var(--accent-ink); background: 
 .intro { padding: 20px 0 4px; }
 .pos { font-size: 26px; line-height: 1.2; letter-spacing: -0.005em; }
 .subhead { color: var(--text-2); font-size: 14px; line-height: 1.45; max-width: 62ch; }
-.trust { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--muted); font-size: 13px; margin: 8px 0 16px; }
+.trust { color: var(--muted); font-size: 13px; margin: 8px 0 16px; }
+.trust > :not(.sep) { white-space: nowrap; } /* each part stays whole; a line may end with a dot */
 .trust a { color: var(--accent-ink); }
 
 /* buttons */
