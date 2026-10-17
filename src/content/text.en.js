@@ -58,7 +58,6 @@ export default {
     moreTerms: 'More terms from your offer',
     moreTermsExisting: 'More terms of your loan',
     expert: 'Expert settings',
-    note: 'Add a note about where these numbers come from',
     otherDuration: 'other',
     rateChanges: 'The rate can change',
     rateFixed: 'The rate is fixed',
@@ -106,7 +105,6 @@ export default {
       dayCount: { label: 'How days are counted', '30/360': 'Yearly rate ÷ 12 each month', 'act/365': 'Actual days ÷ 365', 'act/360': 'Actual days ÷ 360' },
       simPaths: { label: 'Simulated futures', 2000: '2,000 (fast)', 10000: '10,000', 20000: '20,000 (slow on phones)' },
       bootstrapBlockDays: { label: 'Length of copied price stretches (days)' },
-      notes: { label: 'Note' },
     },
     // the six "?" places: four here, two in results
     help: {

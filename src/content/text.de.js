@@ -55,7 +55,6 @@ export default {
     moreTerms: 'Weitere Bedingungen aus Ihrem Angebot',
     moreTermsExisting: 'Weitere Bedingungen Ihres Kredits',
     expert: 'Experten-Einstellungen',
-    note: 'Notiz zur Herkunft dieser Zahlen hinzufügen',
     otherDuration: 'andere',
     rateChanges: 'Der Zins kann sich ändern',
     rateFixed: 'Der Zins ist fest',
@@ -102,7 +101,6 @@ export default {
       dayCount: { label: 'Wie Tage gezählt werden', '30/360': 'Jahreszins ÷ 12 pro Monat', 'act/365': 'Tatsächliche Tage ÷ 365', 'act/360': 'Tatsächliche Tage ÷ 360' },
       simPaths: { label: 'Simulierte Zukünfte', 2000: '2.000 (schnell)', 10000: '10.000', 20000: '20.000 (langsam auf Handys)' },
       bootstrapBlockDays: { label: 'Länge der kopierten Kursabschnitte (Tage)' },
-      notes: { label: 'Notiz' },
     },
     help: {
       initialLtv: 'LTV = Kredit ÷ Wert der hinterlegten BTC. Ein niedrigerer LTV heißt: mehr BTC hinter demselben Kredit, der Kurs kann also tiefer fallen. Beispiel: Kredit 10.000 € bei 50 % LTV heißt, Sie hinterlegen BTC im Wert von 20.000 €. Bei einem BTC-Kurs von 50.000 € sind das 0,4 BTC.',

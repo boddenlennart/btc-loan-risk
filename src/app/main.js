@@ -177,8 +177,7 @@ function renderForm() {
     <div class="field" data-field="btcPrice" id="price-edit" hidden><span class="with-unit"><input type="number" step="any" inputmode="decimal" data-k="btcPrice" aria-label="BTC ${esc(cur)}" value="${esc(state.btcPrice ?? '')}"><span class="unit">${esc(cur)}</span></span><p class="err" role="alert" hidden></p></div>
     <details class="more" data-remember="more"><summary>${esc(refi ? Cm.moreTerms : existing ? fm.moreTermsExisting : fm.moreTerms)} <span class="sum" id="more-sum"></span></summary>${more}</details>
     ${switching}
-    <details class="more" data-remember="expert"><summary>${esc(fm.expert)}</summary>${expert}</details>
-    <details class="more" data-remember="note"><summary>${esc(fm.note)}</summary><textarea data-k="notes" rows="3" aria-label="${esc(f.notes.label)}">${esc(state.notes || '')}</textarea></details>`;
+    <details class="more" data-remember="expert"><summary>${esc(fm.expert)}</summary>${expert}</details>`;
   for (const d of document.querySelectorAll('#form details[data-remember]')) if (openDetails.has(d.dataset.remember)) d.open = true;
   renderPriceLine();
 }

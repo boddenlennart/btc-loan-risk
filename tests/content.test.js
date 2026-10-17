@@ -27,7 +27,7 @@ const INPUTS = {
   marginCallConsequence: 'form.help.marginCall', curePeriodHours: 'glossary.terms.curePeriod', liquidationSale: 'glossary.terms.partialLiquidation',
   cureTargetLtv: 'form.fields.cureTargetLtv.hint', liquidationFee: 'glossary.terms.liquidation', repayWith: 'cost.levCash',
   currency: 'form.fields.currency.label', startDate: 'form.fields.startDate.hint', dayCount: 'glossary.terms.dayCount',
-  simPaths: 'glossary.terms.simulatedFuture', bootstrapBlockDays: 'glossary.terms.blockBootstrap', notes: 'form.note',
+  simPaths: 'glossary.terms.simulatedFuture', bootstrapBlockDays: 'glossary.terms.blockBootstrap',
 };
 // Every result, and where it is explained.
 const OUTPUTS = {

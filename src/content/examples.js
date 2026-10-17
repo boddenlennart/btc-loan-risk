@@ -36,7 +36,6 @@ export const EXAMPLE_FORM = {
   dayCount: '30/360',
   simPaths: '10000',
   bootstrapBlockDays: 30,
-  notes: '',
 };
 
 // kept for the content test: every example is marked as such
