@@ -244,6 +244,7 @@ export default {
   cost: {
     line: 'Sie erhalten {received} und zahlen {payback} zurück. Der Kredit kostet {cost}, wenn nichts schiefgeht ({apr} pro Jahr inklusive Gebühren).',
     lineExisting: 'Sie zahlen ab heute insgesamt {payback} zurück, davon {interest} Zinsen.',
+    timingNote: 'Der Jahreszins inklusive Gebühren berücksichtigt, wann Sie zahlen: Derselbe Gesamtbetrag, früher gezahlt, zum Beispiel Zinsen jeden Monat statt am Ende, ergibt einen höheren Zins.',
     schedule: 'Monatlichen Zahlungsplan anzeigen',
     scheduleHead: ['Monat', 'Datum', 'Zinsen', 'Tilgung', 'Zahlung', 'Restschuld danach'],
     sellIntro: 'Leihen schlägt den Verkauf von BTC heute nur, wenn BTC genug steigt. Angenommen, Sie zahlen am Ende durch einen BTC-Verkauf zurück:',

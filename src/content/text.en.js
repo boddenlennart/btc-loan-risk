@@ -249,6 +249,7 @@ export default {
   cost: {
     line: 'You receive {received} and pay back {payback}. The loan costs {cost} if nothing goes wrong ({apr} a year including fees).',
     lineExisting: 'You pay back {payback} in total from today, of which {interest} is interest.',
+    timingNote: 'The yearly rate including fees counts when you pay: the same total paid earlier, for example interest every month instead of at the end, gives a higher rate.',
     schedule: 'Show the monthly payment plan',
     scheduleHead: ['Month', 'Date', 'Interest', 'Repayment', 'Payment', 'Owed afterwards'],
     sellIntro: 'Borrowing only beats selling BTC today if BTC rises enough. Assuming you repay by selling BTC at the end:',

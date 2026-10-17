@@ -104,6 +104,19 @@ test('LTV slider: each label sits exactly under the handle at its LTV; arrow key
   expect(Math.abs((await handleX()) - mid)).toBeLessThan(1.5);
 });
 
+test('payment plan: stays open when the terms change, and shows the new plan (interest paid at the end)', async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.locator('#sec-cost > summary').click();
+  await page.locator('#cost-body details summary').click();
+  await expect(page.locator('#cost-body tbody tr').first()).toContainText('€83.33');
+  await expect(page.locator('#cost-body tbody tr').first().locator('td').nth(4)).toHaveText('€83.33'); // paid every month
+  await page.locator('details.more[data-remember="more"] > summary').click();
+  await page.locator('[data-set="repayment"][data-val="bullet"]').click();
+  await expect(page.locator('#cost-body details')).toHaveAttribute('open', '');
+  await expect(page.locator('#cost-body tbody tr').first().locator('td').nth(4)).toHaveText('€0.00'); // nothing paid in month 1
+  await expect(page.locator('#cost-body tbody tr').first().locator('td').nth(5)).toHaveText('€10,083.33'); // the debt grows
+});
+
 test('impossible terms show a plain-language error and no result', async ({ page }) => {
   await open(page); await waitDone(page);
   await page.locator('#f-liquidationLtv').fill('40');
