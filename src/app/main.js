@@ -344,8 +344,11 @@ function sendData(cur) {
   if (useInline) jobSetData(cur, base64, appended[cur], fx); else worker.postMessage({ type: 'data', currency: cur, base64, appended: appended[cur], fx });
   sentData.add(cur);
 }
+// runs that only confirm the embedded example answer update quietly, once, at the end
+const quietRuns = new Set();
 function onWorkerMessage(m) {
   if (m.id !== runId) return;
+  if (quietRuns.has(m.id) && m.type !== 'result' && m.type !== 'error') return;
   if (m.type === 'progress') {
     $('#progress').hidden = false; $('#progress').textContent = t('ui.computing', { done: m.done, total: m.total });
   } else if (m.type === 'partial' || m.type === 'result') {
@@ -407,8 +410,8 @@ function update() {
   if (sameAsEmbedded) { riskTerms = terms; riskSettings = settings; } // same answer, today's price for the charts
   else if (lastRisk) document.body.classList.add('outdated');
   if (!started) return;
-  $('#progress').hidden = false; $('#progress').textContent = t('ui.computing', { done: 0, total: '…' });
-  timer = setTimeout(() => requestRisk(terms, settings), 300);
+  if (!sameAsEmbedded) { $('#progress').hidden = false; $('#progress').textContent = t('ui.computing', { done: 0, total: '…' }); }
+  timer = setTimeout(() => { requestRisk(terms, settings); if (sameAsEmbedded) quietRuns.add(runId); }, 300);
 }
 
 // ------------------------------------------------------------------ results: parts that need no simulation
