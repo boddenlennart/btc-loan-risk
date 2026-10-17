@@ -401,7 +401,9 @@ The embedded price data is excluded from the pattern search because random base6
 | No keys, tokens, passwords, private keys, IBANs, phone numbers or home paths | – | clean |
 | `boddenlennart@proton.me` | `src/content/site.js`, page | intended: feedback and Impressum contact |
 | `bc1qvj6c…pnpj8ld` | `src/content/site.js`, page | intended: donation address (public by design) |
-| `boddenlennart@gmail.com` | **author of every commit** (metadata, not file content) | **becomes public with a push.** The first commit, made on GitHub, already contains it. See the owner's decision in the project notes. |
+| `boddenlennart@gmail.com` | author of the very first commit only (`d45cd11`, made on GitHub; metadata, not file content) | already public; not rewritten (that would need a force-push). All later commits use the GitHub no-reply address `217341961+boddenlennart@users.noreply.github.com` (repository git setting). |
 | Spreadsheet creator | `reference/loan-reference.xlsx` | "openpyxl" only, no personal data |
+
+**Re-checked on 2026-10-17** before pushing the `ux-redesign` branch: same result, all 31 new commits use the no-reply address. The maker line names Lennart Bodden (owner's decision); the Impressum will show a service address (c/o), no home address.
 
 Not committed (in `.gitignore`): `.tools/`, `node_modules/`, `data/raw/`, `ux/audit/`, logs, `.claude/`, `.env*`, key files.
