@@ -18,11 +18,13 @@ import en from '../src/content/text.en.js';
 import de from '../src/content/text.de.js';
 
 const root = new URL('../', import.meta.url);
+// BUILD_OUT: another output folder (used only for the coverage measurement, with BUILD_MINIFY=0)
+const OUT = (process.env.BUILD_OUT || 'docs').replace(/\/$/, '');
 const read = (p) => readFileSync(new URL(p, root), 'utf8');
 const safe = (s) => s.replace(/<\/script/gi, '<\\/script').replace(/<!--/g, '<\\!--');
 
 async function bundle(entry) {
-  const r = await build({ entryPoints: [new URL(entry, root).pathname], bundle: true, write: false, format: 'iife', minify: true, target: ['es2020'], legalComments: 'none' });
+  const r = await build({ entryPoints: [new URL(entry, root).pathname], bundle: true, write: false, format: 'iife', minify: process.env.BUILD_MINIFY !== '0', target: ['es2020'], legalComments: 'none' });
   return r.outputFiles[0].text;
 }
 
@@ -124,10 +126,10 @@ function head(lang) {
     '<meta name="theme-color" content="#121210" media="(prefers-color-scheme: dark)">',
   ].join('\n');
 }
-mkdirSync(new URL('docs/de/', root), { recursive: true });
+mkdirSync(new URL(`${OUT}/de/`, root), { recursive: true });
 // Security headers for the hosting service (Cloudflare Pages reads docs/_headers).
-writeFileSync(new URL('docs/_headers', root), read('src/app/_headers'));
-for (const [lang, out] of [['en', 'docs/index.html'], ['de', 'docs/de/index.html']]) {
+writeFileSync(new URL(`${OUT}/_headers`, root), read('src/app/_headers'));
+for (const [lang, out] of [['en', `${OUT}/index.html`], ['de', `${OUT}/de/index.html`]]) {
   const page = html.replace('<html lang="en">', `<html lang="${lang}">`).replace('/*HEAD*/', () => head(lang));
   writeFileSync(new URL(out, root), page);
   console.log(`${out}: ${(page.length / 1024 / 1024).toFixed(2)} MB`);

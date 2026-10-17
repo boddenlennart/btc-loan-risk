@@ -8,6 +8,7 @@ export default defineConfig({
   expect: { timeout: 30_000 },
   workers: 3,
   reporter: [['list']],
-  use: { baseURL: 'http://127.0.0.1:8799', ...devices['Desktop Chrome'] },
-  webServer: { command: 'node tools/serve.mjs 8799', url: 'http://127.0.0.1:8799/', reuseExistingServer: true },
+  // E2E_DIR / E2E_PORT: test another build of the page (only for the coverage measurement)
+  use: { baseURL: `http://127.0.0.1:${process.env.E2E_PORT || 8799}`, ...devices['Desktop Chrome'] },
+  webServer: { command: `node tools/serve.mjs ${process.env.E2E_PORT || 8799} ${process.env.E2E_DIR || 'docs'}`, url: `http://127.0.0.1:${process.env.E2E_PORT || 8799}/`, reuseExistingServer: true },
 });

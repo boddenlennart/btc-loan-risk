@@ -19,3 +19,7 @@ ux/audit/
 *.p12
 test-results/
 playwright-report/
+
+# coverage measurement of the page (tools/coverage-e2e.mjs)
+ux/coverage-site/
+coverage/

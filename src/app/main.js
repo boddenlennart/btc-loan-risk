@@ -77,8 +77,12 @@ function loadState() {
   const fromLink = linkData && linkData.form;
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch { /* storage blocked */ }
+  // saved inputs are checked like a shared link: anything broken is ignored, never fatal
+  if (!saved || typeof saved !== 'object' || (saved.state && typeof saved.state !== 'object')) saved = null;
   const c = linkData ? linkData.compare : saved && saved.compare;
-  if (c) compare = { ...c, offers: c.offers.map((o) => ({ ...EXAMPLE_FORM, ...o })) };
+  const okCompare = c && typeof c === 'object' && ['offers', 'refi'].includes(c.kind) && Array.isArray(c.offers) && c.offers.length >= 2 && c.offers.length <= 3
+    && c.offers.every((o) => o && typeof o === 'object') && Number.isInteger(c.active) && c.active >= 0 && c.active < c.offers.length;
+  if (okCompare) compare = { kind: c.kind, active: c.active, names: Array.isArray(c.names) ? c.names.map((n) => String(n ?? '').slice(0, 40)) : [], offers: c.offers.map((o) => ({ ...EXAMPLE_FORM, ...o })) };
   const s = { ...EXAMPLE_FORM, ...(saved && saved.state), ...(fromLink || {}), ...(compare ? compare.offers[compare.active] : {}) };
   if (fromLink) s.priceManual = false;
   if (!META.prices[s.currency]) s.currency = Object.keys(META.prices)[0];
@@ -417,7 +421,7 @@ function onWorkerMessage(m) {
   } else if (m.type === 'partial' || m.type === 'result') {
     garchCache[m.result.currency] = m.result.garch;
     lastRisk = m.result; [riskTerms, riskSettings] = pending[m.id];
-    if (m.type === 'result') { busy = false; $('#progress').hidden = true; }
+    if (m.type === 'result') { busy = false; $('#progress').hidden = true; document.body.dataset.ready = '1'; }
     renderRisk();
     // a shared link opens on the answer the sender saw, not on the form
     if (openedFromLink && !scrolledToAnswer) { scrolledToAnswer = true; $('#shared-note').hidden = false; renderAnswerTop(riskTerms); $('#answer').scrollIntoView({ block: 'start' }); }
@@ -426,7 +430,7 @@ function onWorkerMessage(m) {
   }
 }
 function requestRisk(terms, settings) {
-  runId++;
+  runId++; document.body.dataset.ready = '0';
   if (busy && !useInline) { worker.terminate(); makeWorker(); }
   if (!worker && !useInline) makeWorker();
   sendData(terms.currency);
@@ -948,7 +952,11 @@ function chartCommon() {
   };
 }
 function renderFutures() {
-  const r = lastRisk; if (!r || !r.main.samplePaths) return;
+  const r = lastRisk;
+  if (!r || !r.main.samplePaths) { // the instant example has no sample paths: they arrive with the full calculation
+    $('#futures-chart').innerHTML = `<p class="progress">${esc(texts().ui.computingShort)}</p>`;
+    return;
+  }
   const Fa = texts().falls; const paths = r.main.samplePaths;
   const shown = showOtherPaths ? paths.slice(20, 40) : paths.slice(0, 20);
   $('#futures-line').textContent = t('falls.futuresLine', { k: shown.filter((p) => p.event).length });

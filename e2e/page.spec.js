@@ -6,6 +6,18 @@ import { readFileSync } from 'node:fs';
 import * as job from '../src/app/riskjob.js';
 import { encodeState } from '../src/app/share.js';
 import { EXAMPLE_FORM } from '../src/content/examples.js';
+import { mkdirSync, writeFileSync } from 'node:fs';
+
+// Coverage measurement (tools/coverage-e2e.mjs): with E2E_COVERAGE set, Chromium records which
+// parts of the page's own script each test runs. Off in normal test runs.
+if (process.env.E2E_COVERAGE) {
+  test.beforeEach(async ({ page }) => { await page.coverage.startJSCoverage({ resetOnNavigation: false }); });
+  test.afterEach(async ({ page }, info) => {
+    const entries = (await page.coverage.stopJSCoverage()).filter((e) => e.url.startsWith('http://127.0.0.1') && e.source && e.source.length > 100000);
+    mkdirSync(process.env.E2E_COVERAGE, { recursive: true });
+    writeFileSync(`${process.env.E2E_COVERAGE}/${info.testId}.json`, JSON.stringify(entries.map((e) => ({ source: e.source, functions: e.functions }))));
+  });
+}
 
 const ALLOWED = ['127.0.0.1', 'api.coinbase.com', 'api.kraken.com', 'api.binance.com', 'api.coingecko.com', 'www.bitstamp.net'];
 const PRICE = 60000;
@@ -29,7 +41,8 @@ async function open(page, { lang = 'en', hash = '', offline = false, width } = {
   return { hosts, errors };
 }
 const headlineNumber = async (page) => Number((await page.locator('#headline-text em').textContent()).match(/\d+/)[0]);
-const waitDone = (page) => expect(page.locator('#progress')).toBeHidden();
+// done = the full calculation for the current terms has arrived (also when the instant example was shown first)
+const waitDone = async (page) => { await expect(page.locator('#progress')).toBeHidden(); await expect(page.locator('body')).toHaveAttribute('data-ready', '1'); };
 
 test('loads, shows the answer, and the answer equals the engine run directly (same data, same inputs)', async ({ page }) => {
   const { hosts, errors } = await open(page);
@@ -262,7 +275,7 @@ test('Share (desktop): copies a summary with the visitor\'s numbers and the link
   await expect(page.locator('#link-copied')).toBeVisible();
   const text = await page.evaluate(() => navigator.clipboard.readText());
   expect(text).toContain(`Loan offer checked: ${n} of 100 simulated futures end in liquidation within 12 months.`);
-  expect(text).toMatch(/\nhttp:\/\/127\.0\.0\.1:8799\/#s=/);
+  expect(text).toMatch(/\nhttp:\/\/127\.0\.0\.1:\d+\/#s=/);
 });
 
 test('"Make it safer" shows exactly the headline number for your own terms, and the best option sits under the answer', async ({ page }) => {
@@ -350,7 +363,7 @@ test('compare offers: B next to A on the same futures; each column equals that o
   const link = text.split('\n').at(-1);
   const p2 = await page.context().newPage();
   await p2.route(/^https:\/\//, (route) => (route.request().url().includes('api.coinbase.com') ? route.fulfill({ json: { data: { amount: String(PRICE) } } }) : route.abort()));
-  await p2.goto(link.replace(/^http:\/\/127\.0\.0\.1:8799/, ''));
+  await p2.goto(link.replace(/^http:\/\/127\.0\.0\.1:\d+/, ''));
   await expect(p2.locator('#cmp tbody tr').first().locator('td .big')).toHaveText([String(a), String(b)]);
 });
 
@@ -425,4 +438,111 @@ test('offline: the stored price is used and a clear warning shown', async ({ pag
   await open(page, { offline: true });
   await expect(page.locator('#stale-banner')).toBeVisible();
   await expect(page.locator('#price-line')).toContainText('not current');
+});
+
+
+// ------------------------------------------------------------------ hostile input and broken environments
+
+test('a manipulated share link cannot inject code: offer names with HTML are shown as plain text', async ({ page }) => {
+  const evil = '<img src=x onerror="window.__hacked=1">';
+  const hash = encodeState(EXAMPLE_FORM, { kind: 'offers', active: 0, names: [evil, '<b>B</b>'], offers: [EXAMPLE_FORM, { ...EXAMPLE_FORM, initialLtv: 35 }] });
+  const { errors } = await open(page, { hash });
+  await expect(page.locator('#cmp')).toContainText('<img src=x');
+  expect(await page.locator('#cmp img, #answer img').count()).toBe(0);
+  expect(await page.evaluate(() => window.__hacked)).toBeUndefined();
+  expect(errors).toEqual([]);
+});
+
+test('a share link with nonsense values opens the page with an explanation, not a crash', async ({ page }) => {
+  const hash = encodeState({ ...EXAMPLE_FORM, initialLtv: -5, loanAmount: 'abc', durationMonths: 9999, currency: 'XYZ' });
+  const errors = []; page.on('pageerror', (e) => errors.push(String(e)));
+  await page.route(/^https:\/\//, (route) => (route.request().url().includes('api.coinbase.com') ? route.fulfill({ json: { data: { amount: String(PRICE) } } }) : route.abort()));
+  await page.goto(`/${hash}`);
+  // the page stays usable: currency falls back to a known one, impossible terms are explained at the fields
+  await expect(page.locator('select.cur')).not.toHaveValue('XYZ');
+  await expect(page.locator('#error-banner')).toBeVisible();
+  await expect(page.locator('[data-field="initialLtv"] .err')).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('corrupted saved inputs: the page starts from the example instead of breaking', async ({ page }) => {
+  await page.addInitScript(() => { try { localStorage.setItem('btc-loan-risk:form', '{"state": "nonsense", "compare": {"kind": 7}}'); localStorage.setItem('btc-loan-risk:lang', 'en'); } catch {} });
+  const errors = []; page.on('pageerror', (e) => errors.push(String(e)));
+  await page.route(/^https:\/\//, (route) => (route.request().url().includes('api.coinbase.com') ? route.fulfill({ json: { data: { amount: String(PRICE) } } }) : route.abort()));
+  await page.goto('/');
+  await expect(page.locator('#headline-text')).toContainText(/\d+ of 100/);
+  expect(errors).toEqual([]);
+});
+
+test('browser storage blocked (private mode): the page still works', async ({ page }) => {
+  await page.addInitScript(() => { Object.defineProperty(window, 'localStorage', { get() { throw new Error('blocked'); } }); });
+  const errors = []; page.on('pageerror', (e) => errors.push(String(e)));
+  await page.route(/^https:\/\//, (route) => (route.request().url().includes('api.coinbase.com') ? route.fulfill({ json: { data: { amount: String(PRICE) } } }) : route.abort()));
+  await page.goto('/');
+  await expect(page.locator('#headline-text')).toContainText(/\d+ of 100/);
+  await page.locator('#own-terms-link').click();
+  await page.locator('#f-initialLtv').fill('35');
+  await waitDone(page);
+  expect(errors).toEqual([]);
+});
+
+test('background calculation blocked: the page calculates directly and shows the same answer', async ({ page }) => {
+  await open(page, { hash: '#no-worker' }); await waitDone(page);
+  const direct = await headlineNumber(page);
+  const p2 = await page.context().newPage();
+  await p2.route(/^https:\/\//, (route) => (route.request().url().includes('api.coinbase.com') ? route.fulfill({ json: { data: { amount: String(PRICE) } } }) : route.abort()));
+  await p2.goto('/');
+  await expect(p2.locator('#progress')).toBeHidden();
+  expect(Number((await p2.locator('#headline-text em').textContent()).match(/\d+/)[0])).toBe(direct);
+});
+
+test('garbled recent price hours from the exchange are ignored', async ({ page }) => {
+  const errors = []; page.on('pageerror', (e) => errors.push(String(e)));
+  await page.addInitScript(() => { try { localStorage.clear(); localStorage.setItem('btc-loan-risk:lang', 'en'); } catch {} });
+  await page.route(/^https:\/\//, (route) => {
+    const u = route.request().url();
+    if (u.includes('api.coinbase.com')) return route.fulfill({ json: { data: { amount: String(PRICE) } } });
+    if (u.includes('www.bitstamp.net')) return route.fulfill({ json: { data: { ohlc: [{ timestamp: 'x', open: -1, high: 'NaN', low: 0, close: 1e30 }, { nonsense: true }] } } });
+    return route.abort();
+  });
+  await page.goto('/');
+  await expect(page.locator('#headline-text')).toContainText(/\d+ of 100/);
+  await waitDone(page);
+  expect(errors).toEqual([]);
+});
+
+test('comparison: a third offer, removing one, ending it; a refinancing offer kept on its own becomes a normal loan', async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.locator('#compare-btn').click();
+  await page.locator('[data-compare-add]').click();
+  await expect(page.locator('#cmp thead button.col')).toHaveText(['Offer A', 'Offer B', 'Offer C']);
+  await page.locator('[data-compare-remove]').click(); // removes the selected one (C)
+  await expect(page.locator('#cmp thead button.col')).toHaveText(['Offer A', 'Offer B']);
+  await page.locator('[data-compare-end]').click();
+  await expect(page.locator('#cmp')).toBeHidden();
+  await expect(page.locator('#compare-btn')).toBeVisible();
+  // refinancing: end the comparison while the refinancing offer is selected
+  await page.getByRole('button', { name: 'A loan I already have' }).click();
+  await page.locator('#f-loanAmount').fill('10000');
+  await page.locator('#f-collateralBtc').fill('0.4');
+  await waitDone(page);
+  await page.locator('#compare-btn').click();
+  await page.locator('[data-set="refi.change"][data-val="more"]').click();
+  await page.locator('#f-refiExtra').fill('1000');
+  await page.locator('[data-compare-end]').click();
+  // kept on its own, the refinancing becomes a new loan entered by BTC: 10,000 + 1,000 against 0.4 BTC
+  await expect(page.locator('#f-loanAmount')).toHaveValue('11000');
+  await expect(page.locator('#f-collateralBtc')).toHaveValue('0.4');
+  await expect(page.locator('#tiles')).toContainText('Sold at');
+});
+
+test('chart tooltips: moving over a chart shows the values at that point', async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.locator('#sec-falls > summary').click();
+  const chart = page.locator('#futures-chart svg');
+  await chart.scrollIntoViewIfNeeded();
+  const box = await chart.boundingBox();
+  await page.mouse.move(box.x + box.width * 0.6, box.y + box.height * 0.5);
+  await expect(page.locator('#futures-chart .tip')).toBeVisible();
+  await expect(page.locator('#futures-chart .tip')).toContainText(/month \d+/);
 });

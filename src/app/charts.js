@@ -39,7 +39,8 @@ function showTip(el, tip, svg, xView, html) {
 }
 
 function hover(el, svg, tip, pad, onX) {
-  const area = svg.querySelector('.hit');
+  // the whole chart listens (not only its background), so pointing at a line shows the values too
+  const area = svg;
   const move = (ev) => {
     const r = svg.getBoundingClientRect();
     const x = ((ev.clientX - r.left) / r.width) * W;
