@@ -315,11 +315,14 @@ export default {
     scaleLow: 'not at all',
     scaleHigh: 'fully',
     missing: 'What was confusing, or what is missing? (optional)',
+    language: 'Which language would you prefer for this page? (optional)',
+    languageMissing: 'Your language is missing? Tell us.',
+    languageSubject: 'Language request for Bitcoin Loan Check',
     attach: 'Attach my loan terms (no personal data)',
     write: 'Write e-mail',
     copy: 'Copy text',
     copied: 'Copied. Send it to {email}.',
-    subject: 'BTC loan check feedback',
+    subject: 'Bitcoin Loan Check feedback',
   },
 
   share: {

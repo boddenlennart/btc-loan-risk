@@ -310,11 +310,14 @@ export default {
     scaleLow: 'gar nicht',
     scaleHigh: 'voll und ganz',
     missing: 'Was war verwirrend, oder was fehlt? (optional)',
+    language: 'In welcher Sprache hätten Sie diese Seite gern? (freiwillig)',
+    languageMissing: 'Ihre Sprache fehlt? Sagen Sie es uns.',
+    languageSubject: 'Sprachwunsch für den Bitcoin-Kredit-Check',
     attach: 'Meine Kreditbedingungen anhängen (keine persönlichen Daten)',
     write: 'E-Mail schreiben',
     copy: 'Text kopieren',
     copied: 'Kopiert. Senden Sie ihn an {email}.',
-    subject: 'Feedback BTC-Kredit-Check',
+    subject: 'Feedback Bitcoin-Kredit-Check',
   },
 
   share: {

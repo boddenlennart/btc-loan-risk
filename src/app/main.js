@@ -30,7 +30,7 @@ const MAIN_FIELDS = ['loanAmount', 'initialLtv', 'liquidationLtv', 'durationMont
 // ------------------------------------------------------------------ state
 let state = loadState();
 let priceInfo = null; // { source, time, stale } | { source: 'manual' }
-const feedback = { use: '', meaning: '', useful: 0, easy: 0, missing: '', attach: false };
+const feedback = { use: '', meaning: '', useful: 0, easy: 0, missing: '', language: '', attach: false };
 let lastTerms = null; let lastSettings = null; let lastRisk = null; let timer = null; let started = false;
 // the terms and settings the current risk results were calculated for (charts must use these, not newer inputs)
 let riskTerms = null; let riskSettings = null; const pending = {};
@@ -752,6 +752,8 @@ function renderStatic() {
   $('#code-link').href = SITE.codeUrl;
   $('#maker').textContent = t('footer.maker', { name: SITE.maker });
   $('#share-btn').textContent = tx.ui.share;
+  $('#lang-missing').textContent = tx.feedback.languageMissing;
+  $('#lang-missing').href = mailtoLink(SITE.feedbackEmail, tx.feedback.languageSubject, `${tx.feedback.language}\n\n`);
   $('#terms-toggle').textContent = t(termsOpen ? 'form.closeTerms' : 'form.editTerms');
   $('meta[name="description"]').setAttribute('content', tx.meta.description);
   for (const el of document.querySelectorAll('[data-t]')) el.innerHTML = rich(t(el.dataset.t));
@@ -787,6 +789,7 @@ function renderFeedbackForm() {
     <fieldset><legend>${esc(Fb.useful)}</legend>${scale('useful')}</fieldset>
     <fieldset><legend>${esc(Fb.easy)}</legend>${scale('easy')}</fieldset>
     <label class="block">${esc(Fb.missing)}<textarea rows="2" data-fb="missing">${esc(feedback.missing)}</textarea></label>
+    <label class="block">${esc(Fb.language)}<input type="text" data-fb="language" value="${esc(feedback.language)}"></label>
     <label class="check"><input type="checkbox" data-fb="attach"${feedback.attach ? ' checked' : ''}> ${esc(Fb.attach)}</label>
     <p class="buttons"><button type="button" class="primary" data-fb-send>${esc(Fb.write)}</button><button type="button" class="secondary" data-fb-copy>${esc(Fb.copy)}</button></p>
     <p class="hint" id="fb-copied" hidden>${esc(t('feedback.copied', { email: SITE.feedbackEmail }))}</p>`;
