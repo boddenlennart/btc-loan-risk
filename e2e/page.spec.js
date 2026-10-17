@@ -276,8 +276,11 @@ test('"Make it safer" shows exactly the headline number for your own terms, and 
   // it is the first (lowest) option in "Make it safer"
   await expect(page.locator('#safer .lv:not(.base) b').first()).toHaveText(best[1]);
   // fairness: the top-up assumption and the two other methods are shown with the answer
-  await expect(page.locator('#assume-line')).toContainText('assumes you add no BTC or money after a margin call');
-  await expect(page.locator('#methods-line')).toContainText(/started on every day since 2014, \d+ of 100 were liquidated; a volatility model gives \d+ of 100/);
+  await expect(page.locator('#assume-line')).toHaveText('Assumes you add no BTC or money after a margin call.');
+  await expect(page.locator('#methods-line')).toContainText(/Other methods: real history since 2014 \d+ of 100, a volatility model \d+ of 100/);
+  // what a sale leaves: not "everything lost"
+  await expect(page.locator('#sold-line')).toContainText(/If sold: you get back about 0\.\d{4} of your 0\.\d{4} BTC/);
+  await expect(page.locator('#tiles')).toContainText('Beats selling if');
   await expect(page.locator('#tiles')).toContainText('effective 11.6% a year');
 });
 
@@ -381,6 +384,36 @@ test('refinancing: current loan vs. a cash-out offer, compared over the same mon
   await page.locator('#f-refiExtra').fill('5000');
   await expect(page.locator('#ltv-today')).toContainText('starting LTV');
   await expect(page.locator('#error-banner')).toBeVisible();
+});
+
+test('phone: while typing the terms, a bar shows the answer and the number before the change; "See the answer" scrolls up', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await open(page); await waitDone(page);
+  const before = await headlineNumber(page);
+  await page.locator('#own-terms-link').click();
+  await page.locator('#f-initialLtv').fill('35');
+  await waitDone(page);
+  const bar = page.locator('#answer-bar');
+  await expect(bar).toBeVisible();
+  const now = await headlineNumber(page);
+  expect(now).toBeLessThan(before);
+  await expect(bar).toContainText(`${now} of 100 liquidated (was ${before})`);
+  await page.locator('#answer-bar-btn').click();
+  await expect(page.locator('#headline-text')).toBeInViewport();
+  await expect(bar).toBeHidden(); // the answer is in view again
+});
+
+test('slider: releasing it says what changed, and Undo brings the old terms back', async ({ page }) => {
+  await open(page); await waitDone(page);
+  const slider = page.locator('#ltv-slider');
+  await slider.focus();
+  await page.keyboard.press('Home');
+  await slider.dispatchEvent('change');
+  await expect(page.locator('#slider-undo')).toContainText('Your starting LTV is now 10%.');
+  await expect(page.locator('#f-initialLtv')).toHaveValue('10');
+  await page.locator('#slider-undo-btn').click();
+  await expect(page.locator('#f-initialLtv')).toHaveValue('50');
+  await expect(page.locator('#slider-undo')).toBeHidden();
 });
 
 test('phone width 375 px: no sideways scrolling', async ({ page }) => {

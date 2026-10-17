@@ -41,13 +41,37 @@ let riskTerms = null; let riskSettings = null; const pending = {};
 let showOtherPaths = false;
 // the example answer computed by the build (META.example), shown at once while the page recomputes it
 let embeddedKey = null;
+let undoState = null; let sliderChanging = false;
+function undoSlider() {
+  if (!undoState) return;
+  state = undoState; undoState = null; $('#slider-undo').hidden = true;
+  saveState(); renderForm(); update();
+}
 let termsOpen = false;
 function setTermsOpen(open, { focus = false } = {}) {
   termsOpen = open;
   $('#terms').classList.toggle('closed', !open);
   const tg = $('#terms-toggle'); tg.setAttribute('aria-expanded', String(open)); tg.textContent = t(open ? 'form.closeTerms' : 'form.editTerms');
   if (focus) { $('#terms').scrollIntoView({ block: 'start' }); const f = $('#form input'); if (f) f.focus({ preventScroll: true }); }
+  updateAnswerBar();
 }
+
+// Phones: while the terms are open and the answer is out of sight, a bar at the bottom shows the
+// number (and the one before the last change), so every change can be seen while typing.
+let answerInView = true; let barNow = null; let barWas = null;
+const isPhone = () => matchMedia('(max-width: 1023px)').matches;
+function updateAnswerBar() {
+  const bar = $('#answer-bar'); if (!bar) return;
+  const show = termsOpen && !answerInView && isPhone();
+  bar.hidden = !show; document.body.classList.toggle('bar-on', show);
+  if (!show) return;
+  const busy = !lastRisk || document.body.classList.contains('outdated') || document.body.classList.contains('invalid');
+  const R = texts().results;
+  $('#answer-bar-text').innerHTML = busy || barNow === null ? esc(texts().ui.computingShort)
+    : esc(t('results.barLine', { n: '§' })).replace('§', `<b>${barNow}</b>`) + (barWas !== null && barWas !== barNow ? ` ${esc(t('results.barWas', { m: barWas }))}` : '');
+  $('#answer-bar-btn').textContent = R.barGo;
+}
+function toAnswer() { $('#answer').scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 
 function loadState() {
   const fromLink = linkData && linkData.form;
@@ -217,6 +241,7 @@ function setPath(obj, path, value) {
 }
 function change(mutate, { rerenderForm = false } = {}) {
   state = structuredClone(state); mutate(state); saveState();
+  if (!sliderChanging) { $('#slider-undo').hidden = true; undoState = null; }
   $('#shared-note').hidden = true; // the inputs are now the visitor's own
   if (rerenderForm) renderForm();
   update();
@@ -238,7 +263,9 @@ function onInput(e) {
 }
 
 function onClick(e) {
-  if (e.target.closest('#terms-toggle')) { setTermsOpen(!termsOpen); return; }
+  if (e.target.closest('#terms-toggle')) { const closing = termsOpen; setTermsOpen(!termsOpen); if (closing && isPhone()) toAnswer(); return; }
+  if (e.target.closest('[data-to-answer]')) { toAnswer(); return; }
+  if (e.target.closest('[data-slider-undo]')) { undoSlider(); return; }
   const ctl = e.target.closest('button[aria-controls]');
   if (ctl) {
     const box = document.getElementById(ctl.getAttribute('aria-controls'));
@@ -445,7 +472,7 @@ function update() {
   if (!lastRisk) $('#headline-text').innerHTML = `<em class="hero-n">…</em> <span class="of">${esc(texts().results.heroOf)}</span> <span class="sentence">${esc(texts().ui.computingShort)}</span>`;
   renderCompare(); // also while the selected offer has an error, so the table and names stay current
   if (compare) $('#ans-label').textContent = offerName(compare.active);
-  if (!v.ok) { document.body.classList.add('invalid'); return; }
+  if (!v.ok) { document.body.classList.add('invalid'); updateAnswerBar(); return; }
   document.body.classList.remove('invalid');
   lastTerms = terms; lastSettings = settings;
   moreSummary(terms);
@@ -455,6 +482,7 @@ function update() {
   const sameAsEmbedded = !compare && embeddedKey !== null && exampleKey(state) === embeddedKey;
   if (sameAsEmbedded) { riskTerms = terms; riskSettings = settings; } // same answer, today's price for the charts
   else if (lastRisk) document.body.classList.add('outdated');
+  updateAnswerBar();
   if (!started) return;
   if (!sameAsEmbedded) { $('#progress').hidden = false; $('#progress').textContent = t('ui.computing', { pct: 0 }); }
   timer = setTimeout(() => { requestRisk(terms, settings); if (sameAsEmbedded) quietRuns.add(runId); }, 300);
@@ -493,7 +521,6 @@ function renderAnswerTop(tm) {
     ltv: pct(tm.initialLtv, 0), liq: pct(tm.liquidationLtv, 0),
   }) : '';
   $('#own-terms-link').textContent = ex ? R.ownTerms : R.editTerms;
-  $('#own-terms-btn').textContent = ex ? R.ownTermsButton : R.editTerms;
 }
 
 // ------------------------------------------------------------------ comparing offers
@@ -627,9 +654,14 @@ function renderTiles(tm) {
     html += marginTile;
     html += tile(R.tileCost, money0(s.totalCost + switchCosts(state), cur), t('results.tileCostSub', { apr: pct(s.effectiveApr, 1) }));
     const rise = tm.purpose === 'buy' ? s.totalPayback / s.amountReceived - 1 : breakevenReturn(tm, { taxRateNow: tm.taxRateNow, taxRateAtMaturity: tm.taxRateAtMaturity });
-    html += tile(R.tileBreakeven, signedPct(rise, 0), R.tileBreakevenSub);
+    html += tile(tm.purpose === 'buy' ? R.tileBreakevenBuy : R.tileBreakeven, t('results.tileBreakevenValue', { rise: signedPct(rise, 0) }), R.tileBreakevenSub);
   }
   $('#tiles').innerHTML = html;
+  // what a sale leaves you with: "liquidated" does not mean "everything lost"
+  if (rules.liquidationSale === 'all') {
+    const lq = costIfLiquidated(tm, { price: lp.atStart, debt: tm.loanAmount });
+    $('#sold-line').textContent = t('results.soldGetBack', { back: num(Math.max(0, lq.btcReturned), 4), btc: num(collateralBtc(tm), 4) });
+  } else $('#sold-line').textContent = R.soldPartial;
 }
 
 // The key terms in one line (phones, while the form is folded away).
@@ -737,6 +769,8 @@ function renderRisk() {
     : t(tm.mode === 'existing' ? 'results.heroLiqExisting' : 'results.heroLiq', { months });
   const headline = `${nLiq} ${R.heroOf} ${rest}`;
   $('#headline-text').innerHTML = `<em class="hero-n">${nLiq}</em> <span class="of">${esc(R.heroOf)}</span> <span class="sentence">${esc(rest)}</span>`;
+  if (barNow !== null && barNow !== nLiq) barWas = barNow;
+  barNow = nLiq;
   headlineShown = { p: m.pLiquidation, n: nLiq };
   $('#best-lever').textContent = bestLeverText(r);
   $('#dots').innerHTML = dotsHtml([[nLiq, 'd-liq'], [nPart, 'd-part'], [nMargin, 'd-margin'], [nNone, 'd-none']], headline)
@@ -748,10 +782,10 @@ function renderRisk() {
   // simulation is the most cautious; the real history and the volatility model are shown with it)
   const rules = lenderRules(tm);
   $('#assume-line').textContent = !rules.afterCure ? '' : tm.reserveAmount > 0 ? t('results.assumeReserve', { reserve: money0(tm.reserveAmount, cur) }) : texts().results.assumeNoTopUp;
-  $('#methods-line').textContent = t('results.otherMethods', { h: of100(r.replay.liquidatedShare), g: of100(r.garchMc.pLiquidation) });
+  $('#methods-line').textContent = `${t('results.otherMethods', { h: of100(r.replay.liquidatedShare), g: of100(r.garchMc.pLiquidation) })} · `;
   // the whole period the results are based on, and when the stored data was last updated
   $('#data-period').textContent = t('ui.dataThrough', { from: date(META.prices[cur].from), to: date(lastHour), updated: date(META.dataUpdated || META.prices[cur].to) });
-  renderSafer(); renderTrend(); renderCompare();
+  renderSafer(); renderTrend(); renderCompare(); updateAnswerBar();
   if (tm.purpose === 'buy') renderLeverage();
   $('#history-text').innerHTML = historyText();
   $('#falls-month').textContent = fallsMonthText();
@@ -826,10 +860,18 @@ function renderSafer() {
   slider.addEventListener('change', () => {
     if (state.refi) return; // the BTC of a refinancing offer follows from "What changes?"
     const g = grid[snap()];
+    if (Math.abs(g.ltv - toTerms(state, { base: activeBase() }).terms.initialLtv) < 1e-9) return; // no change
+    // Undo goes back to the terms from before the first slider move (also after several moves)
+    if (!undoState) undoState = structuredClone(state);
+    sliderChanging = true;
+    $('#slider-undo-text').textContent = t('results.sliderUndone', { ltv: pct(g.ltv, 0) });
+    $('#slider-undo-btn').textContent = texts().results.sliderUndo;
+    $('#slider-undo').hidden = false;
     change((s) => {
       if (s.mode === 'existing' || s.ltvInput === 'btc') s.collateralBtc = String(+(numOr(s.loanAmount) / (g.ltv * numOr(s.btcPrice))).toFixed(6));
       else s.initialLtv = Math.round(g.ltv * 100);
     }, { rerenderForm: true });
+    sliderChanging = false;
   });
 }
 
@@ -963,7 +1005,7 @@ function renderStatic() {
   $('meta[name="description"]').setAttribute('content', tx.meta.description);
   for (const el of document.querySelectorAll('[data-t]')) el.innerHTML = rich(t(el.dataset.t));
   $('#lang-code').textContent = getLang().toUpperCase();
-  $('#lang-btn').setAttribute('aria-label', `${tx.ui.languageSwitch} (${tx.ui.languageName})`);
+  $('#lang-btn').setAttribute('aria-label', `${getLang().toUpperCase()}, ${tx.ui.languageSwitch}: ${tx.ui.languageName}`); // starts with the visible text
   for (const b of document.querySelectorAll('[data-lang]')) b.setAttribute('aria-current', String(b.dataset.lang === getLang()));
   $('#limits').innerHTML = tx.results.limits.map((x) => `<li>${esc(x)}</li>`).join('');
   for (const b of document.querySelectorAll('#answer button.q, #sec-falls button.q')) b.setAttribute('aria-label', tx.ui.more);
@@ -1037,6 +1079,10 @@ $('#forget-btn').addEventListener('click', () => {
 if (state.priceManual && numOr(state.btcPrice, null) !== null) priceInfo = { source: 'manual' };
 renderAll();
 showEmbeddedExample();
+// is the answer's number on screen? (decides whether the answer bar is needed)
+if ('IntersectionObserver' in window) {
+  new IntersectionObserver(([e]) => { answerInView = e.isIntersecting; updateAnswerBar(); }).observe($('#headline-text'));
+}
 makeWorker();
 const waitMax = (p, ms) => Promise.race([p, new Promise((r) => setTimeout(r, ms))]);
 // wait for the live price (at most 4 s) and the recent hours (at most 1.5 s); later candles are used in the next recalculation

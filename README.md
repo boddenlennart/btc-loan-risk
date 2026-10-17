@@ -117,7 +117,7 @@ The page contains BTC price history up to a fixed date. A scheduled **GitHub Act
      - the 12 reference loans on frozen history, which must match the stored results exactly
      - the same 12 loans on the newest data, where every result must be valid
      - the test against history
-   - **the 23 browser tests of the finished page**
+   - **the 29 browser tests of the finished page**
    - the **drift guard**: if the new hours move the result of any reference loan by more than 5 of 100, the update stops and you get an issue instead of a pull request.
 6. It opens a **pull request** called "Weekly price data update [date]". The description says, in plain words:
    - old and new end date
@@ -212,7 +212,8 @@ Design and reasons: [ux/C-design-spec.md](ux/C-design-spec.md) (look, layout, lo
 
 - **First screen:** the name, the headline "An independent check for any Bitcoin loan offer", a trust line (runs only in your browser · no tracking · open source), and the answer. A first-time visitor sees an example answer at once: the build computes it in advance.
 - **The answer:** one large number ("60 of 100 simulated futures end with this loan liquidated within 12 months"), 100 dots, the one change that lowers it most, and key figures: sale price, margin call, full cost, break-even. The number is in ink, not red: the page checks terms, it does not warn against loans.
-- **Your terms:** folded into a short summary on phones ("Change" opens the form), a side panel on desktop.
+- **Your terms:** folded into a short summary on phones ("Change" opens the form), a side panel on desktop. On phones, while the terms are open, a bar at the bottom shows the answer and the number before the last change ("40 of 100 liquidated (was 60) · See the answer ↑").
+- **Reading the answer:** the assumption behind it (no top-up after a margin call), what a sale leaves you ("you get back about 0.04 of your 0.27 BTC"), the other two methods in the small print, and a plain break-even tile ("Beats selling if BTC +11% by the end"). The slider says what it changed, with Undo.
 - **Compare offers:** "+ Compare an offer" puts up to three offers side by side (liquidated of 100, sale price, full cost, cash received; margin call on wide screens). No offer is marked as better. All offers run on the same simulated futures, so differences come only from the terms; the answer below follows the selected offer.
 - **Refinancing:** for "a loan I already have", "+ Compare with a refinancing offer" asks one question (same amount, borrow more, or take back BTC), copies the current terms and adds switching costs. Both loans are compared over the same months, plus the whole new term, cash received now and full cost. Not modelled, but listed as questions to ask a lender: how the transfer between lenders works and how long the BTC is in transit.
 - **Make it safer:** an LTV slider and the effect of each other option, on the same simulated futures as the answer (so "your terms" equals the headline exactly).
@@ -274,7 +275,7 @@ Public APIs can change their rules at any time; the page then falls back to the 
 
 ## Tests and how each was verified
 
-Run with `npm test` (313 tests) and `npm run test:e2e` (23 browser tests). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
+Run with `npm test` (313 tests) and `npm run test:e2e` (29 browser tests). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
 
 | # | Test | How it was verified |
 |---|---|---|

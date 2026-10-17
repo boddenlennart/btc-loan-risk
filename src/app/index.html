@@ -49,14 +49,14 @@
     <div class="help" id="headline-help" hidden></div>
     <div id="dots"></div>
     <p class="assume" id="assume-line"></p>
-    <p class="methods" id="methods-line"></p>
     <p class="best-lever" id="best-lever"></p>
     <div class="tiles" id="tiles"></div>
-    <p class="sale-line" id="sale-line"></p>
+    <p class="sold-line" id="sold-line"></p>
     <p class="sub" id="kept-line"></p>
-    <p class="actions"><button type="button" class="primary" data-open-terms id="own-terms-btn"></button><button type="button" class="secondary" data-compare-start id="compare-btn"></button><button type="button" class="secondary" data-share id="share-btn"></button></p>
+    <p class="actions"><button type="button" class="secondary" data-compare-start id="compare-btn"></button><button type="button" class="secondary" data-share id="share-btn"></button></p>
     <p class="hint" id="link-copied" data-t="ui.linkCopied" hidden></p>
-    <p class="meta"><span id="basis-line"></span> · <span id="data-period"></span> · <a href="#method" data-t="results.howToCheck"></a></p>
+    <p class="meta"><span id="methods-line"></span><a href="#method" data-t="results.howToCheck"></a></p>
+    <p class="meta"><span id="basis-line"></span> · <span id="data-period"></span></p>
     <p class="meta" data-t="results.counterpartyLine"></p>
   </section>
 
@@ -69,10 +69,12 @@
   <section class="block" id="safer" aria-labelledby="safer-h">
     <h2 id="safer-h" class="sec-title" data-t="results.safer"></h2>
     <div id="safer-body"></div>
+    <p class="undo-line" id="slider-undo" hidden><span id="slider-undo-text"></span> <button type="button" class="link strong" data-slider-undo id="slider-undo-btn"></button></p>
   </section>
 
   <details class="section" id="sec-falls">
     <summary><h3 data-t="sections.falls"></h3></summary>
+    <p class="sale-line" id="sale-line"></p>
     <div id="falls-text"></div>
     <p id="falls-month"></p>
     <div class="label-row"><h4 data-t="falls.futuresTitle"></h4><button type="button" class="q" aria-expanded="false" aria-controls="futures-help" aria-label="?">?</button></div>
@@ -154,6 +156,7 @@
     <p class="hint" data-t="footer.sources"></p>
   </footer>
 </main>
+<div class="answer-bar" id="answer-bar" hidden aria-live="polite"><span id="answer-bar-text"></span><button type="button" class="bar-go" id="answer-bar-btn" data-to-answer></button></div>
 <script type="application/json" id="meta">/*META*/</script>
 <script type="text/plain" id="data-USD">/*DATA_USD*/</script>
 <script type="text/plain" id="data-EUR">/*DATA_EUR*/</script>

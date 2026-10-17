@@ -42,7 +42,7 @@ const GLOSSARY = ['ltv', 'marginCall', 'liquidation', 'partialLiquidation', 'col
   'blockBootstrap', 'garch', 'historicalReplay', 'priceTrend'];
 
 const MARKET_CLAIMS = [/\btypical/i, /\busually\b/i, /\bnormally\b/i, /\bmostly\b/i, /\bcommon(ly)?\b/i, /\bmarket (rate|standard|value)/i, /\bmost lenders\b/i, /\bstandard rate\b/i,
-  /\bmeist(ens)?\b/i, /üblich/i, /typisch/i, /normalerweise/i, /marktüblich/i, /die meisten (Anbieter|Kreditgeber)/i, /gängig/i, /in der Regel/i];
+  /\bmeist(ens)?\b/i, /üblich/i, /typisch/i, /normalerweise/i, /marktüblich/i, /die meisten (Anbieter|Kreditgeber)/i, /\bgängig/i, /in der Regel/i];
 const ADVICE = [/\byou should\b/i, /\bwe recommend\b/i, /\bgreat deal\b/i, /\bbest (offer|lender)\b/i, /\bsollten Sie\b/i, /\bsolltest\b/i, /\bempfehlen\b/i, /\bempfehlung\b/i];
 const LENDER_NAMES = [/nexo/i, /ledn/i, /celsius/i, /blockfi/i, /unchained/i, /firefish/i, /salt lending/i, /hodl ?hodl/i, /debifi/i, /bitpanda/i, /bison/i, /two ?prime/i, /\bmilo\b/i, /coinbase/i, /kraken/i, /binance/i, /crypto\.com/i, /\baave\b/i, /\bstrike\b/i];
 // Parts where exchanges may be named because they are the data sources (and the privacy texts).
