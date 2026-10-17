@@ -29,5 +29,5 @@ jobs:
         run: npm test
       - name: The finished page in a real browser
         run: |
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium webkit firefox
           npm run test:e2e

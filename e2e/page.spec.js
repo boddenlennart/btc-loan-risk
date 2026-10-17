@@ -267,7 +267,8 @@ test('language menu: shows the current language, lists both with a tick, offers 
   await expect(btn).toContainText('DE');
 });
 
-test('Share (desktop): copies a summary with the visitor\'s numbers and the link', async ({ page, context }) => {
+test('Share (desktop): copies a summary with the visitor\'s numbers and the link', async ({ page, context, browserName }) => {
+  test.skip(browserName !== 'chromium', 'reading the clipboard is only possible in Chromium\'s test mode');
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page); await waitDone(page);
   const n = await headlineNumber(page);
@@ -297,7 +298,8 @@ test('"Make it safer" shows exactly the headline number for your own terms, and 
   await expect(page.locator('#tiles')).toContainText('effective 11.6% a year');
 });
 
-test('feedback: the copied e-mail text contains the answers', async ({ page, context }) => {
+test('feedback: the copied e-mail text contains the answers', async ({ page, context, browserName }) => {
+  test.skip(browserName !== 'chromium', 'reading the clipboard is only possible in Chromium\'s test mode');
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page); await waitDone(page);
   await page.locator('#sec-feedback > summary').click();
@@ -336,7 +338,7 @@ test('Swiss francs: the answer is computed from the euro history converted with 
   for (const h of hosts) expect(ALLOWED, h).toContain(h);
 });
 
-test('compare offers: B next to A on the same futures; each column equals that offer\'s own answer; no winner marked', async ({ page }) => {
+test('compare offers: B next to A on the same futures; each column equals that offer\'s own answer; no winner marked', async ({ page, browserName }) => {
   await open(page); await waitDone(page);
   const a = await headlineNumber(page);
   await page.locator('#compare-btn').click();
@@ -355,7 +357,8 @@ test('compare offers: B next to A on the same futures; each column equals that o
   await waitDone(page);
   expect(await headlineNumber(page)).toBe(a);
   await expect(page.locator('#f-initialLtv')).toHaveValue('50');
-  // a shared link brings the whole comparison back
+  // a shared link brings the whole comparison back (clipboard readable only in Chromium's test mode)
+  if (browserName !== 'chromium') return;
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.locator('#share-btn').click();
   const text = await page.evaluate(() => navigator.clipboard.readText());

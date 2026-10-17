@@ -92,7 +92,9 @@ node tools/check-fx.mjs                      # compare the converted prices with
 node tools/build.mjs                         # write docs/index.html and docs/de/index.html
 node tools/build-og.mjs                      # link-preview images and icons (only when name, headline or logo change)
 npm test                                     # run all automated tests
-npm run test:e2e                             # test the finished page in a browser (first: npx playwright install chromium)
+npm run test:e2e                             # test the finished page in Chrome's, Safari's and Firefox's engine (first: npx playwright install chromium webkit firefox)
+node tools/coverage-e2e.mjs                  # which page code the browser tests run
+node tools/mutation-check.mjs                # plant 18 bugs one by one; the tests must catch each (~10 min)
 ```
 
 **All page text** (German and English) is in [`src/content/text.de.js`](src/content/text.de.js) and [`src/content/text.en.js`](src/content/text.en.js). You can edit wording there without touching any calculation. The example values in the form are in [`src/content/examples.js`](src/content/examples.js).
@@ -113,11 +115,11 @@ The page contains BTC price history up to a fixed date. A scheduled **GitHub Act
    - both exchanges agree: in a typical hour they differ by about 0.01%; the check fails above 0.5% typical, above 2% for more than 1 hour in 100, or above 5% in any single hour
 4. It refreshes the **European Central Bank's exchange rates** (for CHF, GBP, CAD, AUD, CZK, PLN) and checks them: no gaps over 7 days, no impossible values, no day-to-day move over 10% (except the known 2015 franc event), earlier days unchanged. It compares the converted BTC prices with real exchange prices (Kraken, Bitstamp); the check fails above 0.5% in a typical hour or 2% in 95 of 100 hours.
 5. It adds the hours, re-fits the model settings and rebuilds both language pages. Then it runs the **full regression**:
-   - all 313 automated tests, among them:
+   - all 316 automated tests, among them:
      - the 12 reference loans on frozen history, which must match the stored results exactly
      - the same 12 loans on the newest data, where every result must be valid
      - the test against history
-   - **the 29 browser tests of the finished page**
+   - **the 37 browser tests of the finished page, in Chrome's, Safari's and Firefox's engine**
    - the **drift guard**: if the new hours move the result of any reference loan by more than 5 of 100, the update stops and you get an issue instead of a pull request.
 6. It opens a **pull request** called "Weekly price data update [date]". The description says, in plain words:
    - old and new end date
@@ -275,7 +277,7 @@ Public APIs can change their rules at any time; the page then falls back to the 
 
 ## Tests and how each was verified
 
-Run with `npm test` (313 tests) and `npm run test:e2e` (29 browser tests). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
+Run with `npm test` (316 tests) and `npm run test:e2e` (37 browser tests, each in Chrome's, Safari's and Firefox's engine). Quality measurements: [ux/G-quality-report.md](ux/G-quality-report.md) (coverage, planted bugs, hostile input, browsers, speed, accessibility, security). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
 
 | # | Test | How it was verified |
 |---|---|---|

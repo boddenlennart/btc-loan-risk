@@ -47,7 +47,7 @@ jobs:
       - name: Test the finished page in a real browser
         if: steps.update.outputs.changed == 'true'
         run: |
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium webkit firefox
           npm run test:e2e
 
       - name: Open a pull request (never merged automatically)

@@ -129,6 +129,20 @@ function head(lang) {
 mkdirSync(new URL(`${OUT}/de/`, root), { recursive: true });
 // Security headers for the hosting service (Cloudflare Pages reads docs/_headers).
 writeFileSync(new URL(`${OUT}/_headers`, root), read('src/app/_headers'));
+// For search engines: robots.txt and a sitemap with both languages. A real "not found" page,
+// so the hosting service answers unknown addresses with 404 instead of the whole page.
+writeFileSync(new URL(`${OUT}/robots.txt`, root), `User-agent: *\nAllow: /\n\nSitemap: ${BASE}sitemap.xml\n`);
+const alt = `<xhtml:link rel="alternate" hreflang="en" href="${BASE}"/><xhtml:link rel="alternate" hreflang="de" href="${BASE}de/"/>`;
+writeFileSync(new URL(`${OUT}/sitemap.xml`, root), `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<url><loc>${BASE}</loc>${alt}</url>
+<url><loc>${BASE}de/</loc>${alt}</url>
+</urlset>
+`);
+writeFileSync(new URL(`${OUT}/404.html`, root), `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Not found · ${attr(en.meta.name)}</title>
+<style>body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f6f5f1;color:#15140f;display:grid;place-items:center;min-height:100vh;padding:16px}a{color:#1f4e79}@media(prefers-color-scheme:dark){body{background:#121210;color:#f2f0ea}a{color:#9cc0e8}}</style></head>
+<body><main><h1 style="font-size:24px">This page does not exist.</h1><p><a href="/">${attr(en.meta.name)}</a> · <a href="/de/" lang="de">${attr(de.meta.name)} (Deutsch)</a></p></main></body></html>
+`);
 for (const [lang, out] of [['en', `${OUT}/index.html`], ['de', `${OUT}/de/index.html`]]) {
   const page = html.replace('<html lang="en">', `<html lang="${lang}">`).replace('/*HEAD*/', () => head(lang));
   writeFileSync(new URL(out, root), page);
