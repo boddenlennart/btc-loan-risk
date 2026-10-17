@@ -56,3 +56,15 @@ describe('source code: no outside addresses beyond the allowed ones', () => {
     }
   });
 });
+
+describe.skipIf(!existsSync(new URL('../docs/_headers', import.meta.url)))('security headers for the hosting service (docs/_headers)', () => {
+  const h = existsSync(new URL('../docs/_headers', import.meta.url)) ? readFileSync(new URL('../docs/_headers', import.meta.url), 'utf8') : '';
+  it('apply to every file and forbid embedding, sniffing, referrers and device features', () => {
+    expect(h).toMatch(/^\/\*$/m);
+    for (const line of ["Content-Security-Policy: frame-ancestors 'none'", 'X-Frame-Options: DENY', 'X-Content-Type-Options: nosniff', 'Referrer-Policy: no-referrer']) expect(h).toContain(line);
+    expect(h).toMatch(/Permissions-Policy: camera=\(\), microphone=\(\), geolocation=\(\)/);
+  });
+  it('add no outside addresses (the price services stay limited by the page itself)', () => {
+    expect(h).not.toMatch(/https?:\/\//);
+  });
+});

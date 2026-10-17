@@ -125,6 +125,8 @@ function head(lang) {
   ].join('\n');
 }
 mkdirSync(new URL('docs/de/', root), { recursive: true });
+// Security headers for the hosting service (Cloudflare Pages reads docs/_headers).
+writeFileSync(new URL('docs/_headers', root), read('src/app/_headers'));
 for (const [lang, out] of [['en', 'docs/index.html'], ['de', 'docs/de/index.html']]) {
   const page = html.replace('<html lang="en">', `<html lang="${lang}">`).replace('/*HEAD*/', () => head(lang));
   writeFileSync(new URL(out, root), page);
