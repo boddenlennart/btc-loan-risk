@@ -755,6 +755,8 @@ function renderRisk() {
   renderSafer(); renderTrend(); renderCompare();
   if (tm.purpose === 'buy') renderLeverage();
   $('#history-text').innerHTML = historyText();
+  $('#falls-month').textContent = fallsMonthText();
+  renderTrendFacts();
   if ($('#sec-falls').open) renderFutures();
   if ($('#sec-history').open) renderStories();
   if ($('#method').open) renderExpertCharts();
@@ -834,18 +836,22 @@ function renderSafer() {
 
 // "Does the price trend matter?": the visitor's loan at fixed yearly trends of the middle path.
 function trendRows(r, value, label) {
-  return r.trends.map((x) => `<div class="lv${x.trend === 0 ? ' base' : ''}"><span>${esc(t(x.trend === 0 ? 'history.trendNone' : 'history.trendRow', { trend: signedPct(x.trend) }))}</span><span class="b"><i style="width:${value(x) * 100}%"></i></span><b>${of100(value(x))}</b></div>`).join('')
+  return r.trends.map((x) => `<div class="lv${x.trend === 0 ? ' base' : ''}"><span>${esc(t(x.trend === 0 ? 'history.trendNone' : 'history.trendRow', { trend: signedPct(x.trend) }))}</span><span class="b"><i style="width:${value(x) * 100}%"></i></span><b>${shown(value(x))}</b></div>`).join('')
     + `<p class="sub">${esc(label)}</p>`;
 }
 function renderTrend() {
   const r = lastRisk; const el = $('#trend-body'); if (!el) return;
   if (!r || !r.trends) { el.innerHTML = `<p class="progress">${esc(t('ui.computing', { done: '…', total: '…' }))}</p>`; return; }
-  const H = texts().history; const f = r.facts;
-  const top = r.trends.at(-1); const none = r.trends.find((x) => x.trend === 0);
-  const by = f.fourYearByStart; const a = by[0]; const z = by[by.length - 1];
+  const H = texts().history;
+  const top = r.trends.at(-1);
   el.innerHTML = `<p class="hint">${rich(H.trendIntro)}</p><div class="levers">${trendRows(r, (x) => x.p, H.trendUnit)}</div>
-    <p class="big-line">${esc(t('history.trendConclusion', { none: of100(none.p), top: of100(top.p), topTrend: signedPct(top.trend) }))}</p>
-    <p class="hint">${esc(t('history.trendUncertainty', { estimate: signedPct(f.trendRange.estimate), low: signedPct(f.trendRange.low), high: signedPct(f.trendRange.high) }))}</p>
+    <p>${esc(t('history.trendConclusion', { top: shown(top.p), topTrend: signedPct(top.trend) }))}</p>`;
+}
+// Why no trend is assumed: method justification, shown in "How these numbers are made"
+function renderTrendFacts() {
+  const r = lastRisk; const el = $('#trend-facts'); if (!el || !r || !r.facts) return;
+  const f = r.facts; const by = f.fourYearByStart; const a = by[0]; const z = by[by.length - 1];
+  el.innerHTML = `<p class="hint">${esc(t('history.trendUncertainty', { estimate: signedPct(f.trendRange.estimate), low: signedPct(f.trendRange.low), high: signedPct(f.trendRange.high) }))}</p>
     <p class="hint">${esc(t('history.trendPast', { worst: signedPct(f.fourYear.worst), median: signedPct(f.fourYear.median), best: signedPct(f.fourYear.best), firstFrom: a.from, firstTo: a.to, firstRate: signedPct(a.perYear), lastFrom: z.from, lastTo: z.to, lastRate: signedPct(z.perYear) }))}</p>
     <p class="hint">${esc(t('history.trendSwings', { deep: f.deepYears, years: f.years }))}</p>`;
 }
@@ -874,16 +880,21 @@ function renderLeverage() {
   el.innerHTML = html;
 }
 
+// Real history first, then one sentence that connects it with the answer at the top
 function historyText() {
   const r = lastRisk; const rp = r.replay;
   const partial = rp.partialShare >= 0.005 ? t('history.replayPartial', { m: of100(rp.partialShare) }) : '';
-  let html = `<p class="big-line">${esc(t('history.replay', { n: of100(rp.liquidatedShare), partial }))}</p>`;
-  const cum = r.main.cumulativeByMonth; const total = cum.at(-1);
-  if (total > 0.02) {
-    const half = cum.findIndex((x) => x >= total / 2) + 1;
-    if (half > 0 && half < cum.length) html += `<p>${esc(t('history.byMonth', { months: half }))}</p>`;
-  }
+  const h = of100(rp.liquidatedShare); const n = shown(r.main.pLiquidation);
+  let html = `<p class="big-line">${esc(t('history.replay', { n: h, partial }))}</p>`;
+  if (h !== n) html += `<p>${esc(t(h < n ? 'history.bridgeLower' : 'history.bridgeOther', { n }))}</p>`;
   return html;
+}
+// When the simulated liquidations happen: shown in "What happens when BTC falls"
+function fallsMonthText() {
+  const cum = lastRisk.main.cumulativeByMonth; const total = cum.at(-1);
+  if (total <= 0.02) return '';
+  const half = cum.findIndex((x) => x >= total / 2) + 1;
+  return half > 0 && half < cum.length ? t('history.byMonth', { months: half }) : '';
 }
 
 // charts are drawn when their section is opened (and redrawn after new results)

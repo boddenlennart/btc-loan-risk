@@ -278,14 +278,17 @@ export default {
     trendIntro: 'Niemand weiß, wohin sich BTC bewegt. Hier ist Ihr Kredit mit fünf verschiedenen jährlichen Werten für den [[priceTrend]]. Die Schwankungen bleiben wie in der Vergangenheit.',
     trendRow: '{trend} pro Jahr',
     trendNone: 'Kein Trend (die Antwort oben)',
-    trendUnit: 'Zahl = Zukünfte von 100, die mit einem Verkauf enden.',
-    trendConclusion: 'Ohne Trend enden {none} von 100 Zukünften mit einem Verkauf. Selbst bei {topTrend} pro Jahr sind es noch {top} von 100. Ein Trend beseitigt die Einbrüche unterwegs nicht.',
+    trendUnit: 'Zahl = Zukünfte von 100, in denen der Kredit liquidiert wird.',
+    trendConclusion: 'Ein steigender Kurs senkt das Risiko, aber selbst bei {topTrend} pro Jahr enden noch {top} von 100 Zukünften mit einer Liquidation.',
+    bridgeLower: 'Die Antwort oben nennt {n}. Der Unterschied: Die echte Vergangenheit enthält den starken Anstieg von BTC seit 2014; die Simulation behält die Schwankungen, lässt den Anstieg aber weg, weil niemand weiß, ob er sich fortsetzt.',
+    bridgeOther: 'Die Antwort oben nennt {n}. Vergangenheit und Simulation müssen nicht übereinstimmen: siehe „Wie diese Zahlen entstehen“.',
     trendUncertainty: 'Warum die Seite keinen Trend annimmt: Seit 2014 wuchs BTC um etwa {estimate} pro Jahr. Die Schwankungen sind aber so groß, dass dieser Wert nur irgendwo zwischen {low} und {high} liegt. Der frühere Trend ist zu unsicher, um darauf zu bauen.',
     trendPast: 'Das jährliche Wachstum von BTC (mit Zinseszinseffekt) über 4-Jahres-Zeiträume seit 2014 lag zwischen {worst} (schwächster) und {best} (stärkster), mittlerer Wert {median}. Es hat mit der Zeit abgenommen: {firstFrom}–{firstTo} {firstRate} pro Jahr, {lastFrom}–{lastTo} {lastRate} pro Jahr.',
     trendSwings: 'In {deep} von {years} Kalenderjahren seit 2014 fiel BTC innerhalb desselben Jahres um mindestens 50 % von einem Hoch. Ein Kredit muss diese Einbrüche überstehen, egal wohin der langfristige Weg führt.',
   },
 
   method: {
+    trendTitle: 'Warum kein Kurstrend angenommen wird',
     text: [
       'Kursdaten: stündliche Kurse der Börsen Bitstamp (USD seit 2014, EUR seit 2017) und Kraken (EUR 2014–2016), wie von den Börsen veröffentlicht.',
       'Weitere Währungen (CHF, GBP, CAD, AUD, CZK, PLN): die Euro-Kurse, Stunde für Stunde mit dem täglichen Wechselkurs der Europäischen Zentralbank umgerechnet. Gegenüber echten Börsenkursen weicht die Hälfte aller Stunden um höchstens 0,2 % ab.',

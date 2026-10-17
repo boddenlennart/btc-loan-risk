@@ -214,7 +214,8 @@ async function run(id, terms, settings, garch, post = postMessage) {
   result.trends = [];
   for (const trend of TRENDS) {
     const sim = trend === 0 ? result.main : simulate(terms, s, settings, { trend, leverage: buy });
-    result.trends.push({ trend, p: sim.pLiquidation + sim.pPartial, more: sim.leverage ? sim.leverage.more : null });
+    // liquidated only, like the answer at the top (partial sales are shown separately there)
+    result.trends.push({ trend, p: sim.pLiquidation, more: sim.leverage ? sim.leverage.more : null });
     await tick();
   }
   result.slider = [];

@@ -67,6 +67,7 @@
   <details class="section" id="sec-falls">
     <summary><h3 data-t="sections.falls"></h3></summary>
     <div id="falls-text"></div>
+    <p id="falls-month"></p>
     <div class="label-row"><h4 data-t="falls.futuresTitle"></h4><button type="button" class="q" aria-expanded="false" aria-controls="futures-help" aria-label="?">?</button></div>
     <div class="help" id="futures-help" hidden></div>
     <p class="sub" id="futures-line"></p>
@@ -88,17 +89,18 @@
   <details class="section" id="sec-history">
     <summary><h3 data-t="sections.history"></h3></summary>
     <div id="history-text"></div>
-    <h4 data-t="history.trendTitle"></h4>
-    <div id="trend-body"></div>
     <h4 data-t="history.storiesTitle"></h4>
     <p class="sub" data-t="history.storiesLine"></p>
     <div id="stories-chart"></div>
     <ul class="story-legend" id="stories-legend"></ul>
+    <details class="sub-details" id="trend-details"><summary data-t="history.trendTitle"></summary><div id="trend-body"></div></details>
   </details>
 
   <details class="section" id="method">
     <summary><h3 data-t="sections.method"></h3></summary>
     <ul class="method" id="method-text"></ul>
+    <h4 data-t="method.trendTitle"></h4>
+    <div id="trend-facts"></div>
     <h4 id="compare-h" data-t="method.compareTitle"></h4>
     <div class="table-wrap" id="compare" tabindex="0" role="region" aria-labelledby="compare-h"></div>
     <h4 data-t="method.fanTitle"></h4>

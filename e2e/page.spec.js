@@ -149,12 +149,20 @@ test('"buy more BTC": the result counted in BTC appears', async ({ page }) => {
   await expect(page.locator('#leverage')).toContainText(/In \d+ of 100 futures you end with more BTC/);
 });
 
-test('price trend: five fixed trends in "What history says" and in the BTC result', async ({ page }) => {
+test('history section: real history first, a sentence linking it to the answer, the trend table folded; trends also for the BTC result', async ({ page }) => {
   await open(page); await waitDone(page);
+  const n = await headlineNumber(page);
   await page.locator('#sec-history > summary').click();
+  await expect(page.locator('#history-text')).toContainText(/Started on any day since 2014, this exact loan would have been liquidated \d+ times in 100/);
+  await expect(page.locator('#history-text')).toContainText(`The answer at the top says ${n}. The difference: real history includes BTC's strong rise`);
+  await expect(page.locator('#trend-body')).toBeHidden(); // folded, one level deeper
+  await page.locator('#trend-details > summary').click();
   await expect(page.locator('#trend-body .lv')).toHaveCount(5);
-  await expect(page.locator('#trend-body')).toContainText('+100% a year');
-  await expect(page.locator('#trend-body')).toContainText(/With no trend, \d+ of 100 futures end in a sale/);
+  await expect(page.locator('#trend-body .lv.base b')).toHaveText(String(n)); // "the answer above" really is the answer above
+  await expect(page.locator('#trend-body')).toContainText(/even at \+100% a year, \d+ of 100 futures still end in liquidation/);
+  // the method justification moved to "How these numbers are made"
+  await page.locator('#method > summary').click();
+  await expect(page.locator('#trend-facts')).toContainText('Why the page assumes no trend');
   await page.getByRole('button', { name: 'Buy more BTC' }).click();
   await waitDone(page);
   await page.locator('#sec-cost > summary').click();

@@ -1520,27 +1520,27 @@
     "trends": [
      {
       "trend": -0.3,
-      "p": 0.8115,
+      "p": 0.1805,
       "more": null
      },
      {
       "trend": 0,
-      "p": 0.6845,
+      "p": 0.137,
       "more": null
      },
      {
       "trend": 0.2,
-      "p": 0.6175,
+      "p": 0.1255,
       "more": null
      },
      {
       "trend": 0.5,
-      "p": 0.526,
+      "p": 0.1075,
       "more": null
      },
      {
       "trend": 1,
-      "p": 0.432,
+      "p": 0.0845,
       "more": null
      }
     ],
@@ -1867,27 +1867,27 @@
     "trends": [
      {
       "trend": -0.3,
-      "p": 0.761,
+      "p": 0,
       "more": null
      },
      {
       "trend": 0,
-      "p": 0.6145,
+      "p": 0,
       "more": null
      },
      {
       "trend": 0.2,
-      "p": 0.538,
+      "p": 0,
       "more": null
      },
      {
       "trend": 0.5,
-      "p": 0.455,
+      "p": 0,
       "more": null
      },
      {
       "trend": 1,
-      "p": 0.3555,
+      "p": 0,
       "more": null
      }
     ],

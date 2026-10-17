@@ -283,14 +283,17 @@ export default {
     trendIntro: 'Nobody knows where BTC goes next. Here is your loan with five different yearly [[priceTrend]] values. The swings stay as they were in the past.',
     trendRow: '{trend} a year',
     trendNone: 'No trend (the answer above)',
-    trendUnit: 'Number = futures of 100 that end in a sale.',
-    trendConclusion: 'With no trend, {none} of 100 futures end in a sale. Even at {topTrend} a year, it is still {top} of 100. A trend does not remove the falls on the way.',
+    trendUnit: 'Number = futures of 100 in which the loan is liquidated.',
+    trendConclusion: 'A rising price lowers the risk, but even at {topTrend} a year, {top} of 100 futures still end in liquidation.',
+    bridgeLower: 'The answer at the top says {n}. The difference: real history includes BTC\'s strong rise since 2014; the simulation keeps the swings but leaves the rise out, because nobody knows if it will continue.',
+    bridgeOther: 'The answer at the top says {n}. History and simulation do not have to match: see "How these numbers are made".',
     trendUncertainty: 'Why the page assumes no trend: since 2014, BTC grew by about {estimate} a year. But the swings are so large that this is only known to lie between {low} and {high}. The past trend is too uncertain to build on.',
     trendPast: 'BTC\'s yearly growth (compounded) over 4-year periods since 2014: weakest {worst}, middle {median}, strongest {best}. It has fallen over time: {firstFrom}–{firstTo} {firstRate} a year, {lastFrom}–{lastTo} {lastRate} a year.',
     trendSwings: 'In {deep} of {years} calendar years since 2014, BTC fell at least 50% from a high within the same year. A loan has to survive these falls, whatever the long-term direction.',
   },
 
   method: {
+    trendTitle: 'Why no price trend is assumed',
     text: [
       'Price data: hourly prices from the exchanges Bitstamp (USD since 2014, EUR since 2017) and Kraken (EUR 2014–2016), as published by the exchanges.',
       'Other currencies (CHF, GBP, CAD, AUD, CZK, PLN): the euro prices, converted hour by hour with the daily exchange rate of the European Central Bank. Compared with real exchange prices, half of all hours differ by 0.2% or less.',
