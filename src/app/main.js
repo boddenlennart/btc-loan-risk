@@ -14,8 +14,8 @@ import {
 import { lenderRules, partialSaleBtc } from '../engine/lender.js';
 import { getSpotPrice } from '../live/price.js';
 import { setData as jobSetData, run as jobRun } from './riskjob.js';
-import { encodeState, decodeState } from './share.js';
-import { toTerms, numOr, today, exampleKey } from './terms.js';
+import { encodeState, decodeLink } from './share.js';
+import { toTerms, numOr, today, exampleKey, switchCosts } from './terms.js';
 import { feedbackText, mailtoLink } from './feedback.js';
 import { dataAge } from '../data/candles.js';
 import { gunzipSync, strFromU8 } from 'fflate';
@@ -28,6 +28,11 @@ const SOURCE_NAMES = { coinbase: 'Coinbase', kraken: 'Kraken', binance: 'Binance
 const MAIN_FIELDS = ['loanAmount', 'initialLtv', 'liquidationLtv', 'durationMonths', 'rateAnnual'];
 
 // ------------------------------------------------------------------ state
+const linkData = decodeLink(location.hash);
+const openedFromLink = !!linkData; let scrolledToAnswer = false;
+// A comparison: { kind: 'offers' | 'refi', active, offers: [forms], names: [] }. `state` is always
+// the selected offer's form; the others wait in compare.offers. null when nothing is compared.
+let compare = null;
 let state = loadState();
 let priceInfo = null; // { source, time, stale } | { source: 'manual' }
 const feedback = { use: '', meaning: '', useful: 0, easy: 0, missing: '', language: '', attach: false };
@@ -45,12 +50,13 @@ function setTermsOpen(open, { focus = false } = {}) {
   if (focus) { $('#terms').scrollIntoView({ block: 'start' }); const f = $('#form input'); if (f) f.focus({ preventScroll: true }); }
 }
 
-const openedFromLink = !!decodeState(location.hash); let scrolledToAnswer = false;
 function loadState() {
-  const fromLink = decodeState(location.hash);
+  const fromLink = linkData && linkData.form;
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch { /* storage blocked */ }
-  const s = { ...EXAMPLE_FORM, ...(saved && saved.state), ...(fromLink || {}) };
+  const c = linkData ? linkData.compare : saved && saved.compare;
+  if (c) compare = { ...c, offers: c.offers.map((o) => ({ ...EXAMPLE_FORM, ...o })) };
+  const s = { ...EXAMPLE_FORM, ...(saved && saved.state), ...(fromLink || {}), ...(compare ? compare.offers[compare.active] : {}) };
   if (fromLink) s.priceManual = false;
   if (!META.prices[s.currency]) s.currency = Object.keys(META.prices)[0];
   // until the live price arrives, start from the last stored price, so the answer can show at once
@@ -58,7 +64,8 @@ function loadState() {
   return s;
 }
 function saveState() {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify({ state })); } catch { /* ignore */ }
+  if (compare) compare.offers[compare.active] = state;
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({ state, compare })); } catch { /* ignore */ }
 }
 
 // ------------------------------------------------------------------ small HTML helpers
@@ -69,12 +76,12 @@ function numField(key, label, unit, { help, hint, step = 'any', id = key } = {})
   return `<div class="field" data-field="${id}">
     <div class="label-row"><label for="f-${id}">${esc(label)}</label>${help ? helpBtn(id, label) : ''}</div>
     ${help ? helpBox(id, help) : ''}
-    <div class="with-unit"><input id="f-${id}" data-k="${key}" type="number" inputmode="decimal" step="${step}" value="${esc(state[key] ?? '')}">${unit ? `<span class="unit">${esc(unit)}</span>` : ''}</div>
+    <div class="with-unit"><input id="f-${id}" data-k="${key}" type="number" inputmode="decimal" step="${step}" value="${esc(getPath(state, key) ?? '')}">${unit ? `<span class="unit">${esc(unit)}</span>` : ''}</div>
     ${hint ? `<p class="hint">${esc(hint)}</p>` : ''}
     <p class="err" role="alert" hidden></p></div>`;
 }
 function seg(key, options, label, { help, id = key } = {}) {
-  const btns = options.map(([v, l]) => `<button type="button" data-set="${key}" data-val="${esc(v)}" aria-pressed="${String(state[key]) === String(v)}">${esc(l)}</button>`).join('');
+  const btns = options.map(([v, l]) => `<button type="button" data-set="${key}" data-val="${esc(v)}" aria-pressed="${String(getPath(state, key)) === String(v)}">${esc(l)}</button>`).join('');
   return `<div class="field" data-field="${id}">${label ? `<div class="label-row"><span class="label" id="l-${id}">${esc(label)}</span>${help ? helpBtn(id, label) : ''}</div>` : ''}
     ${help ? helpBox(id, help) : ''}<div class="seg" role="group"${label ? ` aria-labelledby="l-${id}"` : ''}>${btns}</div><p class="err" role="alert" hidden></p></div>`;
 }
@@ -83,9 +90,11 @@ function select(key, options, label, { id = key } = {}) {
   return `<div class="field" data-field="${id}"><label for="f-${id}">${esc(label)}</label><select id="f-${id}" data-k="${key}">${opts}</select><p class="err" role="alert" hidden></p></div>`;
 }
 
+const getPath = (obj, path) => path.split('.').reduce((o, k) => (o == null ? o : o[k]), obj);
+
 // ------------------------------------------------------------------ form
 function isExample() {
-  return state.mode === 'new' && MAIN_FIELDS.every((k) => String(state[k]) === String(EXAMPLE_FORM[k]));
+  return !compare && state.mode === 'new' && MAIN_FIELDS.every((k) => String(state[k]) === String(EXAMPLE_FORM[k]));
 }
 
 const openDetails = new Set();
@@ -136,20 +145,38 @@ function renderForm() {
     ${select('simPaths', ['2000', '10000', '20000'].map((v) => [v, f.simPaths[v]]), f.simPaths.label)}
     ${numField('bootstrapBlockDays', f.bootstrapBlockDays.label, '', { step: '1' })}`;
 
-  $('#form').innerHTML = `
-    ${seg('mode', [['new', fm.modeNew], ['existing', fm.modeExisting]], '', { id: 'mode' })}
+  const Cm = texts().compare; const refi = !!state.refi;
+  const nameField = compare ? `<div class="field"><label for="f-offerName">${esc(Cm.nameLabel)}</label><input id="f-offerName" type="text" maxlength="40" data-offer-name value="${esc(compare.names[compare.active] || '')}" placeholder="${esc(offerName(compare.active))}"></div>` : '';
+  let top;
+  if (refi) {
+    const base = compare.offers[0];
+    const ch = state.refi.change;
+    top = `<p class="hint">${esc(t('compare.startsFrom', { owed: money0(numOr(base.loanAmount), cur), btc: num(numOr(base.collateralBtc), 4), months: base.durationMonths }))}</p>
+      ${seg('refi.change', [['same', Cm.same], ['more', Cm.more], ['back', Cm.back]], Cm.whatChanges, { id: 'refiChange' })}
+      ${ch === 'more' ? numField('refi.extra', Cm.extra, cur, { id: 'refiExtra' }) : ''}
+      ${ch === 'back' ? numField('refi.back', Cm.backBtc, 'BTC', { id: 'refiBack' }) : ''}
+      <p class="hint" id="ltv-today"></p>`;
+  } else {
+    top = `${compare ? '' : seg('mode', [['new', fm.modeNew], ['existing', fm.modeExisting]], '', { id: 'mode' })}
     <p class="hint"><button type="button" class="link" aria-expanded="false" aria-controls="where">${esc(t('ui.whereLink'))}</button></p>
     <div id="where" class="where" hidden>${whereHtml()}</div>
     <div class="amount-row">${numField('loanAmount', existing ? f.loanAmount.labelExisting : f.loanAmount.label, '', { hint: existing ? f.loanAmount.hintExisting : '' })}${currencySel}</div>
-    ${ltvBlock}
+    ${ltvBlock}`;
+  }
+  const switching = refi ? `<details class="more" data-remember="switch"><summary>${esc(Cm.switching)} <span class="sum">· ${esc(t('compare.switchingSum', { sum: money0(switchCosts(state), cur) }))}</span></summary>
+      ${numField('refi.exitFee', Cm.exitFee, cur, { id: 'refiExitFee' })}${numField('refi.transferFee', Cm.transferFee, cur, { id: 'refiTransfer' })}</details>` : '';
+  $('#form').innerHTML = `
+    ${nameField}
+    ${top}
     ${numField('liquidationLtv', f.liquidationLtv.label, '%', { help: fm.help.liquidationLtv })}
     <div class="field" data-field="durationMonths"><span class="label" id="l-dur">${esc(existing ? f.durationMonths.labelExisting : f.durationMonths.label)}</span>
       <div class="chips" role="group" aria-labelledby="l-dur">${durChips}<span class="with-unit other"><input type="number" step="1" min="1" inputmode="numeric" data-k="durationMonths" aria-label="${esc(fm.otherDuration)}" placeholder="${esc(fm.otherDuration)}" value="${other ? esc(state.durationMonths) : ''}"><span class="unit">${esc(t('ui.months'))}</span></span></div><p class="err" role="alert" hidden></p></div>
     ${rate}
-    ${seg('purpose', [['spend', f.purpose.spend], ['buy', f.purpose.buy]], f.purpose.label)}
+    ${refi ? '' : seg('purpose', [['spend', f.purpose.spend], ['buy', f.purpose.buy]], f.purpose.label)}
     <p class="price-line" id="price-line" aria-live="polite"></p>
     <div class="field" data-field="btcPrice" id="price-edit" hidden><span class="with-unit"><input type="number" step="any" inputmode="decimal" data-k="btcPrice" aria-label="BTC ${esc(cur)}" value="${esc(state.btcPrice ?? '')}"><span class="unit">${esc(cur)}</span></span><p class="err" role="alert" hidden></p></div>
-    <details class="more" data-remember="more"><summary>${esc(existing ? fm.moreTermsExisting : fm.moreTerms)} <span class="sum" id="more-sum"></span></summary>${more}</details>
+    <details class="more" data-remember="more"><summary>${esc(refi ? Cm.moreTerms : existing ? fm.moreTermsExisting : fm.moreTerms)} <span class="sum" id="more-sum"></span></summary>${more}</details>
+    ${switching}
     <details class="more" data-remember="expert"><summary>${esc(fm.expert)}</summary>${expert}</details>
     <details class="more" data-remember="note"><summary>${esc(fm.note)}</summary><textarea data-k="notes" rows="3" aria-label="${esc(f.notes.label)}">${esc(state.notes || '')}</textarea></details>`;
   for (const d of document.querySelectorAll('#form details[data-remember]')) if (openDetails.has(d.dataset.remember)) d.open = true;
@@ -201,10 +228,11 @@ function onInput(e) {
   const k = e.target.dataset.k;
   if (!k) {
     if (e.target.dataset.fb) feedback[e.target.dataset.fb] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    if (e.target.matches('[data-offer-name]') && compare) { compare.names[compare.active] = e.target.value.slice(0, 40); saveState(); renderCompare(); renderAnswerTop(lastTerms); }
     return;
   }
   const v = e.target.value;
-  if (k === 'currency') { lastRisk = null; change((s) => { s.currency = v; }, { rerenderForm: true }); loadPrice(true); ensureRecent(v); return; }
+  if (k === 'currency') { lastRisk = null; if (compare) for (const o of compare.offers) o.currency = v; change((s) => { s.currency = v; }, { rerenderForm: true }); loadPrice(true); ensureRecent(v); return; }
   if (k === 'btcPrice') { priceInfo = { source: 'manual' }; change((s) => { s.btcPrice = v; s.priceManual = true; }); renderPriceLine(); return; }
   if (k === 'marginCallLtv') { const wasEmpty = state.marginCallLtv === '' || state.marginCallLtv === null; change((s) => { s.marginCallLtv = v; }, { rerenderForm: wasEmpty !== (v === '') }); return; }
   if (k === 'marginCallConsequence') { change((s) => { s.marginCallConsequence = v; }, { rerenderForm: true }); return; }
@@ -228,7 +256,7 @@ function onClick(e) {
       if ((k === 'ltvInput' && v === 'btc') || (k === 'mode' && v === 'existing')) {
         if (!numOr(s.collateralBtc, 0)) s.collateralBtc = String(+(numOr(s.loanAmount) / ((numOr(s.initialLtv) / 100) * numOr(s.btcPrice))).toFixed(4));
       }
-      s[k] = v;
+      setPath(s, k, v);
     }, { rerenderForm: true });
     return;
   }
@@ -248,6 +276,16 @@ function onClick(e) {
     setTermsOpen(true, { focus: true });
   } else if (tgt.closest('[data-share]')) {
     share();
+  } else if (tgt.closest('[data-compare-start]')) {
+    startCompare();
+  } else if (tgt.closest('[data-compare-add]')) {
+    addOffer();
+  } else if (tgt.closest('[data-compare-remove]')) {
+    removeOffer(compare.active);
+  } else if (tgt.closest('[data-compare-end]')) {
+    endCompare();
+  } else if (tgt.closest('[data-offer]')) {
+    setActive(Number(tgt.closest('[data-offer]').dataset.offer));
   } else if (tgt.matches('[data-fb-send], [data-fb-copy]')) {
     const body = feedbackText({
       ...feedback, use: feedback.use ? texts().feedback.useOptions[feedback.use] : '', terms: feedback.attach ? { ...lastTerms } : null,
@@ -379,7 +417,9 @@ function requestRisk(terms, settings) {
 // ------------------------------------------------------------------ update
 function showErrors(errors) {
   for (const el of document.querySelectorAll('[data-field] .err')) { el.hidden = true; el.textContent = ''; }
-  const fieldFor = (f) => (f === 'rate' ? (state.rateType === 'variable' ? 'ratePath' : 'rateAnnual') : f === 'marginCallConsequence' ? 'marginCallLtv' : f);
+  // a refinancing offer has no amount or LTV fields: those problems are shown at "What changes?"
+  const fieldFor = (f) => (state.refi && ['loanAmount', 'collateralBtc', 'initialLtv'].includes(f) ? 'refiChange'
+    : f === 'rate' ? (state.rateType === 'variable' ? 'ratePath' : 'rateAnnual') : f === 'marginCallConsequence' ? 'marginCallLtv' : f);
   for (const e of errors) {
     if (e.field === 'btcPrice' && !priceInfo) continue; // the price is still loading
     const el = $(`[data-field="${fieldFor(e.field)}"] .err`);
@@ -395,18 +435,25 @@ function showErrors(errors) {
 }
 
 function update() {
-  const { terms, settings } = toTerms(state);
+  const { terms, settings } = toTerms(state, { base: activeBase() });
   const v = validateTerms(terms);
   showErrors(v.errors);
   const ltvToday = $('#ltv-today');
-  if (ltvToday) ltvToday.textContent = Number.isFinite(terms.initialLtv) ? `LTV ${pct(terms.initialLtv, 1)}` : '';
+  if (ltvToday) {
+    ltvToday.textContent = !Number.isFinite(terms.initialLtv) ? '' : state.refi
+      ? t('compare.newLoanLine', { amount: money0(terms.loanAmount, terms.currency), btc: num(terms.collateralInput, 4), ltv: pct(terms.initialLtv, 1) })
+      : `LTV ${pct(terms.initialLtv, 1)}`;
+  }
+  renderCompare(); // also while the selected offer has an error, so the table and names stay current
+  if (compare) $('#ans-label').textContent = offerName(compare.active);
   if (!v.ok) { document.body.classList.add('invalid'); return; }
   document.body.classList.remove('invalid');
   lastTerms = terms; lastSettings = settings;
   moreSummary(terms);
   renderLoan();
   clearTimeout(timer);
-  const sameAsEmbedded = embeddedKey !== null && exampleKey(state) === embeddedKey;
+  if (compare) settings.compareTerms = compare.offers.map((_, i) => (i === compare.active ? null : validTermsOf(i)));
+  const sameAsEmbedded = !compare && embeddedKey !== null && exampleKey(state) === embeddedKey;
   if (sameAsEmbedded) { riskTerms = terms; riskSettings = settings; } // same answer, today's price for the charts
   else if (lastRisk) document.body.classList.add('outdated');
   if (!started) return;
@@ -441,13 +488,129 @@ function renderLoan() {
 // The label above the answer ("Example" / "Your terms" / "Shared with you") and the example as a story.
 function renderAnswerTop(tm) {
   const R = texts().results; const ex = isExample();
-  $('#ans-label').textContent = ex ? R.labelExample : openedFromLink && !$('#shared-note').hidden ? R.labelShared : R.labelYours;
+  $('#ans-label').textContent = compare ? offerName(compare.active) : ex ? R.labelExample : openedFromLink && !$('#shared-note').hidden ? R.labelShared : R.labelYours;
   $('#example-story').textContent = ex ? t('results.exampleStory', {
     amount: money0(tm.loanAmount, tm.currency), months: tm.durationMonths, value: money0(tm.loanAmount / tm.initialLtv, tm.currency),
     ltv: pct(tm.initialLtv, 0), liq: pct(tm.liquidationLtv, 0),
   }) : '';
   $('#own-terms-link').textContent = ex ? R.ownTerms : R.editTerms;
   $('#own-terms-btn').textContent = ex ? R.ownTermsButton : R.editTerms;
+}
+
+// ------------------------------------------------------------------ comparing offers
+const offerName = (i) => {
+  const Cm = texts().compare;
+  if (compare && compare.names[i]) return compare.names[i];
+  if (compare && compare.kind === 'refi') return i === 0 ? Cm.current : Cm.refinanced;
+  return Cm.names[i];
+};
+const activeBase = () => (compare && compare.kind === 'refi' && compare.active > 0 ? { ...compare.offers[0], btcPrice: state.btcPrice, currency: state.currency } : null);
+function formOf(i) {
+  const f = i === compare.active ? state : compare.offers[i];
+  return { ...f, btcPrice: state.btcPrice, currency: state.currency };
+}
+function termsOf(i) {
+  const base = compare.kind === 'refi' && i > 0 ? formOf(0) : null;
+  return toTerms(formOf(i), { base }).terms;
+}
+function validTermsOf(i) { const tm = termsOf(i); return validateTerms(tm).ok ? tm : null; }
+
+function setActive(i) {
+  if (!compare || i === compare.active || i < 0 || i >= compare.offers.length) return;
+  compare.offers[compare.active] = state;
+  state = formOf(i);
+  compare.active = i;
+  saveState(); renderForm(); update();
+  if (lastRisk) renderRisk();
+}
+function startCompare() {
+  const refi = state.mode === 'existing';
+  compare = { kind: refi ? 'refi' : 'offers', active: 0, offers: [structuredClone(state)], names: [] };
+  compare.offers.push(refi
+    ? { ...structuredClone(state), mode: 'new', ltvInput: 'btc', originationFee: { value: 0, type: 'percent' }, purpose: 'spend', refi: { change: 'same', extra: '', back: '', exitFee: '', transferFee: '' } }
+    : structuredClone(state));
+  setActive(1);
+  setTermsOpen(true, { focus: true });
+}
+function addOffer() {
+  if (!compare || compare.kind !== 'offers' || compare.offers.length >= 3) return;
+  compare.offers[compare.active] = state;
+  compare.offers.push(structuredClone(state));
+  setActive(compare.offers.length - 1);
+  setTermsOpen(true, { focus: true });
+}
+function removeOffer(i) {
+  if (!compare) return;
+  if (compare.offers.length <= 2 || (compare.kind === 'refi' && i === 0)) { endCompare(i === 0 ? 1 : 0); return; }
+  compare.offers.splice(i, 1); compare.names.splice(i, 1);
+  compare.active = 0; state = formOf(0);
+  saveState(); renderForm(); update();
+}
+function endCompare(keep = compare.active) {
+  const f = formOf(keep);
+  state = compare.kind === 'refi' && keep > 0 ? { ...toForm(f, formOf(0)) } : f;
+  compare = null; lastRisk = null;
+  saveState(); renderForm(); update();
+}
+// a refinancing offer kept on its own becomes an ordinary new-loan form
+const toForm = (f, base) => { const { refi, ...rest } = f; const tm = toTerms(f, { base }).terms; return { ...rest, mode: 'new', ltvInput: 'btc', loanAmount: tm.loanAmount, collateralBtc: String(tm.collateralInput) }; };
+
+// The four numbers of each offer as the headline shows them (rounded so the dots add up to 100)
+function heroSplit(m) {
+  const pMarginOnly = m.pMarginCall === null ? 0 : Math.max(0, m.pMarginCall - m.pLiquidation - m.pPartial);
+  return splitTo100([m.pLiquidation, m.pPartial, pMarginOnly, 1 - m.pLiquidation - m.pPartial - pMarginOnly]);
+}
+let lastCmp = null; // the numbers in the table, for the share summary
+function renderCompare() {
+  const el = $('#cmp');
+  $('#compare-btn').hidden = !!compare;
+  $('#compare-btn').textContent = state.mode === 'existing' ? texts().compare.addRefi : texts().compare.add;
+  if (!compare) { el.hidden = true; $('#showing').hidden = true; lastCmp = null; return; }
+  const Cm = texts().compare; const cur = state.currency;
+  const n = compare.offers.length; const idx = [...Array(n).keys()];
+  const T = idx.map((i) => { try { const tm = termsOf(i); return validateTerms(tm).ok ? tm : null; } catch { return null; } });
+  const ready = lastRisk && lastRisk.compare && lastRisk.compare.length === n && riskTerms && riskTerms.currency === cur;
+  const mainOf = (i) => (!ready ? null : i === compare.active ? lastRisk.main : lastRisk.compare[i]);
+  const big = (v) => `<span class="big">${v}</span>`;
+  const cell = (v, sub = '') => `<td>${v}${sub ? `<small>${esc(sub)}</small>` : ''}</td>`;
+  const dash = '–'; const wait = '…';
+  const nLiq = idx.map((i) => { const m = mainOf(i); return T[i] && m ? heroSplit(m)[0] : null; });
+  const head = `<tr><th scope="col"></th>${idx.map((i) => `<th scope="col"><button type="button" class="col${i === compare.active ? ' active' : ''}" data-offer="${i}" aria-pressed="${i === compare.active}">${esc(offerName(i))}</button></th>`).join('')}</tr>`;
+  const row = (label, sub, cells, cls = '') => `<tr${cls ? ` class="${cls}"` : ''}><th scope="row">${esc(label)}${sub ? `<small>${esc(sub)}</small>` : ''}</th>${cells.join('')}</tr>`;
+  const sold = idx.map((i) => (T[i] ? cell(esc(money0(liquidationPrices(T[i]).atStart, cur)), `−${pct(dropToLiquidation(T[i]), 0)}`) : cell(Cm.fixTerms)));
+  let rows = ''; const notes = [];
+  if (compare.kind === 'offers') {
+    rows += row(Cm.rowLiq, '', idx.map((i) => cell(T[i] ? big(nLiq[i] ?? wait) : dash, T[i] ? t('compare.withinMonths', { months: T[i].durationMonths }) : '')));
+    rows += row(Cm.rowSold, '', sold);
+    rows += row(Cm.rowCost, '', idx.map((i) => { if (!T[i]) return cell(dash); const s = loanSummary(T[i]); return cell(esc(money0(s.totalCost, cur)), t('compare.perYear', { apr: pct(s.effectiveApr, 1) })); }));
+    rows += row(Cm.rowReceive, '', idx.map((i) => cell(T[i] ? esc(money0(loanSummary(T[i]).amountReceived, cur)) : dash)));
+    rows += row(Cm.rowMargin, '', idx.map((i) => { const mp = T[i] && marginCallPrices(T[i]); if (!mp) return cell(dash); const r = lenderRules(T[i]); return cell(esc(money0(mp.atStart, cur)), r.behaviour === 'autoPartial' ? texts().results.tileMarginAuto : r.afterCure ? t('results.tileMarginHours', { hours: T[i].curePeriodHours }) : texts().results.tileMarginWarning); }), 'desk-only');
+    const ok = T.filter(Boolean);
+    if (new Set(ok.map((x) => Math.round(x.loanAmount))).size > 1) notes.push(Cm.diffAmount);
+    if (new Set(ok.map((x) => x.durationMonths)).size > 1) notes.push(Cm.diffMonths);
+    lastCmp = { kind: 'offers', list: idx.map((i) => `${offerName(i)} ${nLiq[i] ?? wait}`).join(', ') };
+  } else {
+    const cur0 = T[0]; const span = cur0 ? cur0.durationMonths : null;
+    const m1 = mainOf(1);
+    const sameSpan = T[1] && m1 ? (span <= T[1].durationMonths ? Math.round(m1.cumulativeByMonth[span - 1] * 100) : nLiq[1]) : null;
+    rows += row(Cm.rowLiq, span ? t('compare.nextMonths', { months: span }) : '', [cell(T[0] ? big(nLiq[0] ?? wait) : dash), cell(T[1] ? big(sameSpan ?? wait) : dash)]);
+    rows += row(Cm.rowLiq, T[1] ? t('compare.wholeTerm', { months: T[1].durationMonths }) : '', [cell(dash), cell(T[1] ? big(nLiq[1] ?? wait) : dash)]);
+    rows += row(Cm.rowSold, '', sold);
+    const refiForm1 = compare.active === 1 ? state : compare.offers[1];
+    rows += row(Cm.rowReceiveNow, '', [cell(dash), cell(T[1] && cur0 ? esc(money0(loanSummary(T[1]).amountReceived - cur0.loanAmount - switchCosts(refiForm1), cur)) : dash)]);
+    rows += row(Cm.rowCost, '', [cell(cur0 ? esc(money0(loanSummary(cur0).totalInterest, cur)) : dash, Cm.interestLeft), cell(T[1] ? esc(money0(loanSummary(T[1]).totalCost + switchCosts(refiForm1), cur)) : dash, Cm.inclSwitching)]);
+    if (T[1] && span && T[1].durationMonths < span) notes.push(Cm.shorterRefi);
+    lastCmp = { kind: 'refi', months: span, a: nLiq[0] ?? wait, b: sameSpan ?? wait };
+  }
+  el.hidden = false;
+  el.innerHTML = `<div class="label">${esc(compare.kind === 'refi' ? Cm.titleRefi : Cm.title)} · ${esc(Cm.sameFutures)}</div>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="${esc(compare.kind === 'refi' ? Cm.titleRefi : Cm.title)}"><table class="cmp"><thead>${head}</thead><tbody>${rows}</tbody></table></div>
+    <p class="meta">${esc(Cm.noWinner)}${notes.length ? ` ${notes.map(esc).join(' ')}` : ''}</p>
+    <p class="actions">${compare.kind === 'offers' && n < 3 ? `<button type="button" class="secondary" data-compare-add>${esc(Cm.addC)}</button>` : ''}
+      <button type="button" class="link" data-compare-remove>${esc(t('compare.remove', { name: offerName(compare.active) }))}</button>
+      <button type="button" class="link" data-compare-end>${esc(Cm.end)}</button></p>`;
+  $('#showing').hidden = false;
+  $('#showing').textContent = t('compare.showing', { name: offerName(compare.active) });
 }
 
 // Key figures under the answer. All of them need no simulation, so they follow typing at once.
@@ -463,7 +626,7 @@ function renderTiles(tm) {
     html += mp ? marginTile.replace(' desk-only', '') : '';
   } else {
     html += marginTile;
-    html += tile(R.tileCost, money0(s.totalCost, cur), t('results.tileCostSub', { apr: pct(s.effectiveApr, 1) }));
+    html += tile(R.tileCost, money0(s.totalCost + switchCosts(state), cur), t('results.tileCostSub', { apr: pct(s.effectiveApr, 1) }));
     const rise = tm.purpose === 'buy' ? s.totalPayback / s.amountReceived - 1 : breakevenReturn(tm, { taxRateNow: tm.taxRateNow, taxRateAtMaturity: tm.taxRateAtMaturity });
     html += tile(R.tileBreakeven, signedPct(rise, 0), R.tileBreakevenSub);
   }
@@ -482,6 +645,7 @@ function renderTermsChips(tm) {
 // Share: the system share sheet on phones, otherwise link and summary to the clipboard.
 function shareText() {
   const tm = riskTerms || lastTerms; const r = lastRisk;
+  if (lastCmp) return lastCmp.kind === 'refi' ? t('share.refi', { months: lastCmp.months, a: lastCmp.a, b: lastCmp.b }) : t('share.compare', { list: lastCmp.list });
   if (!tm || !r || !headlineShown) return '';
   const { lp } = salePrices(tm); const s = loanSummary(tm);
   return t(tm.mode === 'existing' ? 'share.existing' : 'share.one', {
@@ -489,7 +653,8 @@ function shareText() {
   });
 }
 async function share() {
-  const url = `${location.origin}${location.pathname}${encodeState(state)}`;
+  saveState();
+  const url = `${location.origin}${location.pathname}${encodeState(state, compare)}`;
   const text = shareText();
   if (navigator.share && matchMedia('(pointer: coarse)').matches) {
     try { await navigator.share({ title: texts().meta.name, text, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
@@ -567,8 +732,7 @@ function renderRisk() {
   document.body.classList.remove('outdated');
   const R = texts().results; const cur = tm.currency; const months = tm.durationMonths;
   const m = r.main;
-  const pMarginOnly = m.pMarginCall === null ? 0 : Math.max(0, m.pMarginCall - m.pLiquidation - m.pPartial);
-  const [nLiq, nPart, nMargin, nNone] = splitTo100([m.pLiquidation, m.pPartial, pMarginOnly, 1 - m.pLiquidation - m.pPartial - pMarginOnly]);
+  const [nLiq, nPart, nMargin, nNone] = heroSplit(m);
   const rest = m.pPartial >= 0.005 ? t('results.heroPartial', { m: nPart, months })
     : t(tm.mode === 'existing' ? 'results.heroLiqExisting' : 'results.heroLiq', { months });
   const headline = `${nLiq} ${R.heroOf} ${rest}`;
@@ -582,7 +746,7 @@ function renderRisk() {
   $('#basis-line').textContent = `${t('results.basis', { g: of100(r.garchMc.pLiquidation + r.garchMc.pPartial) })}`;
   // the whole period the results are based on, and when the stored data was last updated
   $('#data-period').textContent = t('ui.dataThrough', { from: date(META.prices[cur].from), to: date(lastHour), updated: date(META.dataUpdated || META.prices[cur].to) });
-  renderSafer(); renderTrend();
+  renderSafer(); renderTrend(); renderCompare();
   if (tm.purpose === 'buy') renderLeverage();
   $('#history-text').innerHTML = historyText();
   if ($('#sec-falls').open) renderFutures();
@@ -635,6 +799,7 @@ function renderSafer() {
   const slider = $('#ltv-slider');
   slider.addEventListener('input', () => { $('#slider-line').textContent = line(Number(slider.value)); });
   slider.addEventListener('change', () => {
+    if (state.refi) return; // the BTC of a refinancing offer follows from "What changes?"
     const g = grid[Number(slider.value)];
     change((s) => {
       if (s.mode === 'existing' || s.ltvInput === 'btc') s.collateralBtc = String(+(numOr(s.loanAmount) / (g.ltv * numOr(s.btcPrice))).toFixed(6));

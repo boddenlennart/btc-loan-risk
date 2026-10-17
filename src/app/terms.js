@@ -4,8 +4,27 @@ export const today = () => new Date().toISOString().slice(0, 10);
 export const numOr = (v, d = NaN) => (v === '' || v === null || v === undefined || Number.isNaN(Number(v)) ? d : Number(v));
 const pctOrNull = (v) => { const n = numOr(v, null); return n === null ? null : n / 100; };
 
-/** Form state -> engine terms (fractions) and simulation settings. */
-export function toTerms(s) {
+/** A refinancing offer starts from the current loan (`base`, a form in "a loan I already have"):
+ *  the new loan repays today's debt, against the same BTC, changed by one choice:
+ *  same amount (rollover or lender switch), borrow more (cash-out) or take back BTC.
+ *  Returns the refinancing form as an ordinary new-loan form with the BTC entered. */
+export function refiForm(r, base) {
+  const ch = r.refi || {};
+  const owed = numOr(base.loanAmount); const btc = numOr(base.collateralBtc);
+  const extra = ch.change === 'more' ? numOr(ch.extra, 0) : 0;
+  const back = ch.change === 'back' ? numOr(ch.back, 0) : 0;
+  return { ...r, mode: 'new', ltvInput: 'btc', currency: base.currency, btcPrice: base.btcPrice, startDate: '',
+    loanAmount: owed + extra, collateralBtc: String(btc - back) };
+}
+
+/** Costs of switching to the refinancing offer that are not part of the new loan itself
+ *  (early-repayment fee of the current loan, transfer and other costs), in money. */
+export const switchCosts = (r) => (r && r.refi ? numOr(r.refi.exitFee, 0) + numOr(r.refi.transferFee, 0) : 0);
+
+/** Form state -> engine terms (fractions) and simulation settings.
+ *  `base`: for a refinancing offer, the current loan it starts from. */
+export function toTerms(form, { base = null } = {}) {
+  const s = form.refi && base ? refiForm(form, base) : form;
   const price = numOr(s.btcPrice);
   const existing = s.mode === 'existing';
   const amount = numOr(s.loanAmount);

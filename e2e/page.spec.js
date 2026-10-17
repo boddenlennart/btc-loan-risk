@@ -244,6 +244,69 @@ test('Swiss francs: the answer is computed from the euro history converted with 
   for (const h of hosts) expect(ALLOWED, h).toContain(h);
 });
 
+test('compare offers: B next to A on the same futures; each column equals that offer\'s own answer; no winner marked', async ({ page }) => {
+  await open(page); await waitDone(page);
+  const a = await headlineNumber(page);
+  await page.locator('#compare-btn').click();
+  await expect(page.locator('#ans-label')).toHaveText('Offer B');
+  await page.locator('#f-initialLtv').fill('35');
+  await page.locator('#f-liquidationLtv').fill('85');
+  await waitDone(page);
+  const b = await headlineNumber(page);
+  expect(b).toBeLessThan(a);
+  const cells = page.locator('#cmp tbody tr').first().locator('td .big');
+  await expect(cells).toHaveText([String(a), String(b)]);
+  await expect(page.locator('#cmp')).toContainText('No offer is marked as better');
+  await expect(page.locator('#showing')).toContainText('Offer B');
+  // selecting A shows A's full answer below, with the same number as in the table
+  await page.locator('#cmp [data-offer="0"]').click();
+  await waitDone(page);
+  expect(await headlineNumber(page)).toBe(a);
+  await expect(page.locator('#f-initialLtv')).toHaveValue('50');
+  // a shared link brings the whole comparison back
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.locator('#share-btn').click();
+  const text = await page.evaluate(() => navigator.clipboard.readText());
+  expect(text).toContain(`Loan offers compared, liquidated within the term, of 100: Offer A ${a}, Offer B ${b}.`);
+  const link = text.split('\n').at(-1);
+  const p2 = await page.context().newPage();
+  await p2.route(/^https:\/\//, (route) => (route.request().url().includes('api.coinbase.com') ? route.fulfill({ json: { data: { amount: String(PRICE) } } }) : route.abort()));
+  await p2.goto(link.replace(/^http:\/\/127\.0\.0\.1:8799/, ''));
+  await expect(p2.locator('#cmp tbody tr').first().locator('td .big')).toHaveText([String(a), String(b)]);
+});
+
+test('refinancing: current loan vs. a cash-out offer, compared over the same months', async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.getByRole('button', { name: 'A loan I already have' }).click();
+  await page.locator('#f-loanAmount').fill('10000');
+  await page.locator('#f-collateralBtc').fill(String(+(10000 / (0.5 * PRICE)).toFixed(4)));
+  await page.locator('[data-field="durationMonths"] input').fill('8');
+  await waitDone(page);
+  await expect(page.locator('#compare-btn')).toHaveText('+ Compare with a refinancing offer');
+  const started = Date.now();
+  await page.locator('#compare-btn').click();
+  await page.locator('[data-set="refi.change"][data-val="more"]').click();
+  await page.locator('#f-refiExtra').fill('2000');
+  await page.locator('[data-set="durationMonths"][data-val="24"]').click();
+  await expect(page.locator('#ltv-today')).toContainText('New loan: €12,000');
+  await waitDone(page);
+  expect(Date.now() - started, 'set up within 60 s (test plan T6) — here typed by the test, so far faster').toBeLessThan(60_000);
+  const rows = page.locator('#cmp tbody tr');
+  await expect(rows.nth(0)).toContainText('next 8 months, both');
+  await expect(rows.nth(1)).toContainText('whole new term, 24 months');
+  const [cur, refiSpan] = await rows.nth(0).locator('td .big').allTextContents();
+  const whole = await rows.nth(1).locator('td .big').textContent();
+  // more debt on the same BTC: never safer over the same months; a longer loan: never safer over its whole term
+  expect(Number(refiSpan)).toBeGreaterThanOrEqual(Number(cur));
+  expect(Number(whole)).toBeGreaterThanOrEqual(Number(refiSpan));
+  expect(Number(whole)).toBe(await headlineNumber(page));
+  await expect(rows.nth(3)).toContainText('€2,000'); // you receive now
+  // too much extra cash: the new loan would start in a margin call; the reason is shown at once
+  await page.locator('#f-refiExtra').fill('5000');
+  await expect(page.locator('#ltv-today')).toContainText('starting LTV');
+  await expect(page.locator('#error-banner')).toBeVisible();
+});
+
 test('phone width 375 px: no sideways scrolling', async ({ page }) => {
   await open(page, { width: 375 }); await waitDone(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);

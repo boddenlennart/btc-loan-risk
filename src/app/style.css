@@ -141,6 +141,23 @@ body.outdated .answer, body.outdated #safer, body.outdated details.section { opa
 body.invalid .answer, body.invalid #safer, body.invalid details.section { opacity: 0.35; }
 .big-line { font-weight: 600; }
 
+/* comparing offers: a table above the answer; the answer below follows the selected column */
+.compare { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin: 0 0 8px; }
+table.cmp { margin-top: 8px; }
+table.cmp { table-layout: fixed; }
+table.cmp th, table.cmp td { vertical-align: top; padding: 8px 4px; white-space: normal; overflow-wrap: anywhere; }
+table.cmp thead th:first-child, table.cmp tbody th { width: 30%; }
+table.cmp thead th { padding: 0 2px 4px; }
+table.cmp tbody th { font-weight: 400; color: var(--text-2); white-space: normal; text-align: left; }
+table.cmp small { display: block; color: var(--muted); font-size: 12px; font-weight: 400; }
+table.cmp .big { font: 600 20px/1.1 var(--serif); }
+button.col { font: 600 14px/1.2 var(--serif); color: var(--text); background: none; border: none; border-bottom: 3px solid transparent; padding: 8px 4px; min-height: 44px; width: 100%; text-align: right; cursor: pointer; }
+button.col.active { border-bottom-color: var(--accent); }
+.compare .actions { margin: 10px 0 0; }
+.showing { margin: 0 0 8px; padding: 8px 12px; background: var(--surface-2); border-radius: 6px; font-size: 14px; }
+@media (max-width: 1023px) { tr.desk-only { display: none; } }
+@media (max-width: 420px) { .compare { padding: 12px 10px; } table.cmp tbody th, table.cmp td { font-size: 13px; } table.cmp .big { font-size: 20px; } }
+
 /* your terms */
 .terms { border-top: 1px solid var(--border); padding: 12px 0 4px; margin-top: 8px; }
 .terms-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }

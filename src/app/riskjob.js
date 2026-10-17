@@ -163,7 +163,9 @@ async function run(id, terms, settings, garch, post = postMessage) {
   if (terms.initialLtv < ltvMax && !ltvGrid.some((x) => Math.abs(x - terms.initialLtv) < 1e-9)) {
     ltvGrid.push(terms.initialLtv); ltvGrid.sort((a, b) => a - b);
   }
-  const total = 4 + levers.length + ltvGrid.length + TRENDS.length;
+  // other offers in a comparison (settings.compareTerms: one entry per offer, null for this one)
+  const others = settings.compareTerms || [];
+  const total = 4 + others.filter(Boolean).length + levers.length + ltvGrid.length + TRENDS.length;
   let done = 0;
   // after each step: report progress and give the page a moment to repaint
   const tick = async () => { post({ type: 'progress', id, done: ++done, total }); await new Promise((r) => setTimeout(r, 0)); };
@@ -172,7 +174,20 @@ async function run(id, terms, settings, garch, post = postMessage) {
 
   const buy = terms.purpose === 'buy';
   const result = { currency: terms.currency, garch: s.garch, facts: s.facts, history: { from: s.hourly.time[0], to: s.hourly.time[s.hourly.time.length - 1] } };
-  result.main = simulate(terms, s, settings, { samplePaths: 40, leverage: buy }); // 2 × 20 for "show 20 others" await tick();
+  result.main = simulate(terms, s, settings, { samplePaths: 40, leverage: buy }); // 2 × 20 for "show 20 others"
+  await tick();
+  // Comparison: every other offer on the same simulated futures, so differences come only from
+  // the terms. Each value equals what that offer's own full result shows when it is selected.
+  result.compare = null;
+  if (others.length) {
+    result.compare = [];
+    for (const t of others) {
+      if (!t) { result.compare.push(null); continue; }
+      const m = simulate(t, s, settings, { leverage: t.purpose === 'buy' });
+      result.compare.push({ pLiquidation: m.pLiquidation, pPartial: m.pPartial, pMarginCall: m.pMarginCall, cumulativeByMonth: m.cumulativeByMonth, leverageMore: m.leverage ? m.leverage.more : null });
+      await tick();
+    }
+  }
   result.garchMc = simulate(terms, s, settings, { model: 'garch' }); await tick();
   result.replay = replayAll(s.hourly, terms); await tick();
   result.stories = STORIES.map((iso) => story(s, terms, iso)).filter(Boolean);

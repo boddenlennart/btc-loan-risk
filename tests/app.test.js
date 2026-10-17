@@ -47,3 +47,27 @@ describe('feedback e-mail (criterion D9)', () => {
     expect(link).toBe('mailto:a@b.c?subject=BTC%20loan%20check%20feedback&body=line%201%0Aline%202%20%26%20more');
   });
 });
+
+describe('share link with a comparison', () => {
+  it('two or three offers, the selected one and their names come back; broken comparisons are ignored', async () => {
+    const { encodeState, decodeLink } = await import('../src/app/share.js');
+    const { EXAMPLE_FORM } = await import('../src/content/examples.js');
+    const B = { ...EXAMPLE_FORM, initialLtv: 35 };
+    const R = { ...EXAMPLE_FORM, refi: { change: 'more', extra: 2000 } };
+    const d = decodeLink(encodeState(B, { kind: 'offers', active: 1, names: ['', 'Mine'], offers: [EXAMPLE_FORM, B] }));
+    expect(d.form.initialLtv).toBe(35);
+    expect(d.compare.active).toBe(1);
+    expect(d.compare.names[1]).toBe('Mine');
+    expect(d.compare.offers.map((o) => o.initialLtv)).toEqual([50, 35]);
+    const r = decodeLink(encodeState(R, { kind: 'refi', active: 1, names: [], offers: [EXAMPLE_FORM, R] }));
+    expect(r.compare.offers[1].refi).toEqual({ change: 'more', extra: 2000 });
+    // a link with a broken comparison still opens the offer, without the comparison
+    const bad = decodeLink(encodeState(B, { kind: 'offers', active: 5, names: [], offers: [EXAMPLE_FORM, B] }));
+    expect(bad.form.initialLtv).toBe(35);
+    expect(bad.compare).toBeNull();
+    // the price and the private note are still left out
+    const p = decodeLink(encodeState({ ...B, btcPrice: 1, notes: 'x' }, { kind: 'offers', active: 0, names: [], offers: [{ ...B, btcPrice: 1, notes: 'x' }, B] }));
+    expect(p.form.btcPrice).toBeUndefined();
+    expect(p.compare.offers[0].notes).toBeUndefined();
+  });
+});
