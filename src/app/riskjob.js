@@ -189,7 +189,7 @@ async function run(id, terms, settings, garch, post = postMessage) {
     }
   }
   result.garchMc = simulate(terms, s, settings, { model: 'garch' }); await tick();
-  result.replay = replayAll(s.hourly, terms); await tick();
+  { const { perStart, ...replay } = replayAll(s.hourly, terms); result.replay = replay; } await tick(); // the per-start-day lists are not shown on the page
   result.stories = STORIES.map((iso) => story(s, terms, iso)).filter(Boolean);
   const lp = liquidationPrices(terms);
   // under the answer: how fast BTC fell as far as this loan's sale price at its fastest since 2014

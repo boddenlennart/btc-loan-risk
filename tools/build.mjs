@@ -66,8 +66,7 @@ if (currencies.includes(EXAMPLE_FORM.currency)) {
   jobSetData(cur, b64(cur));
   const { terms, settings } = toTerms(exState);
   const res = await jobRun(0, terms, settings, garch[cur], () => {});
-  const { perStart, ...replay } = res.replay; // the per-start-day list is not shown on the page
-  pageMeta.example = { key: exampleKey(exState), result: { ...res, main: { ...res.main, samplePaths: null }, replay } };
+  pageMeta.example = { key: exampleKey(exState), result: { ...res, main: { ...res.main, samplePaths: null } } };
 }
 
 // Donation QR code: made here at build time and stored in the page as an SVG picture.

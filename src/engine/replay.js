@@ -88,7 +88,7 @@ function run(hourly, terms, i0, skipDays = true, debtCache = null) {
   return {
     startTime: t0, startPrice, collateralBtc: c0, marginCall: s.firstMargin, liquidation: s.liquidation, topUp: s.topUp,
     partialSales: s.partialSales, collateralAtEnd: s.liquidation ? s.liquidation.btcReturned : s.c, debtScaleAtEnd: s.scale,
-    maxDrawdown: 1 - minLow / startPrice, minLowTime, reserveNeeded: Math.max(0, reserveNeeded),
+    maxDrawdown: 1 - minLow / startPrice, minLowTime, reserveNeeded: Math.max(0, reserveNeeded), endTime: tEnd, debtAtEnd: debt[debt.length - 1],
   };
 }
 
@@ -108,7 +108,8 @@ const nearestRank = (sorted, q) => sorted[Math.max(0, Math.ceil(q * sorted.lengt
  */
 export function replayAll(hourly, terms, { firstStart = -Infinity } = {}) {
   const last = hourly.time[hourly.time.length - 1];
-  const perStart = { time: [], liquidated: [], partial: [], marginCall: [], liquidationTime: [] };
+  // per start day; the details (start price, BTC and debt at the end, …) are used by the insights (src/insights/compute.js)
+  const perStart = { time: [], liquidated: [], partial: [], marginCall: [], liquidationTime: [], marginCallTime: [], startPrice: [], collateral: [], collateralAtEnd: [], debtAtEnd: [], endTime: [], reserveNeeded: [], maxDrawdown: [] };
   let liq = 0; let mc = 0; let part = 0;
   let worst = null; let fastest = null;
   const reserves = [];
@@ -125,6 +126,10 @@ export function replayAll(hourly, terms, { firstStart = -Infinity } = {}) {
     perStart.marginCall.push(!!r.marginCall);
     if (!r.liquidation && r.partialSales.length) part++;
     perStart.liquidationTime.push(r.liquidation ? r.liquidation.time : null);
+    perStart.marginCallTime.push(r.marginCall ? r.marginCall.time : null);
+    perStart.startPrice.push(r.startPrice); perStart.collateral.push(r.collateralBtc); perStart.collateralAtEnd.push(r.collateralAtEnd);
+    perStart.debtAtEnd.push(r.liquidation ? 0 : r.debtAtEnd * r.debtScaleAtEnd); perStart.endTime.push(r.endTime);
+    perStart.reserveNeeded.push(r.reserveNeeded); perStart.maxDrawdown.push(r.maxDrawdown);
     if (r.liquidation) liq++;
     if (r.marginCall) mc++;
     reserves.push(r.reserveNeeded);

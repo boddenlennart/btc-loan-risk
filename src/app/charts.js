@@ -243,3 +243,38 @@ export function storiesChart(el, data) {
     return { x: ax.x(d), html: `<b>${esc(data.monthLabel(Math.round(d / 30.44)))}</b><br>${data.stories.map((s, j) => `<span style="color:${data.colors[j]}">${esc(data.labels.names[j])}: ${esc(data.fmt(s.weekly[k] * data.s0))}</span>`).join('<br>')}` };
   });
 }
+
+/**
+ * A line over time with one marked point (the latest), e.g. 30-day price swings since 2014.
+ * data: { points: [[unixTime, value], ...], fmt(value), fmtDate(unixTime), title, markLabel }
+ */
+export function lineChart(el, data) {
+  const H = 240;
+  const pad = { l: 48, r: 16, t: 14, b: 30 };
+  const { svg, tip } = frame(el, H, data.title);
+  const pts = data.points; const n = pts.length;
+  const t0 = pts[0][0]; const t1 = pts[n - 1][0];
+  const maxV = Math.max(...pts.map((p) => p[1])) * 1.05;
+  const ticks = niceTicks(0, maxV);
+  const top = Math.max(maxV, ticks[ticks.length - 1]);
+  const x = (t) => pad.l + ((t - t0) / (t1 - t0)) * (W - pad.l - pad.r);
+  const y = (v) => pad.t + (1 - v / top) * (H - pad.t - pad.b);
+  const grid = ticks.map((v) => `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y(v)}" y2="${y(v)}" class="grid"/><text x="${pad.l - 6}" y="${y(v) + 4}" class="axis" text-anchor="end">${esc(data.fmt(v))}</text>`).join('');
+  const y0 = new Date(t0 * 1000).getUTCFullYear(); const y1 = new Date(t1 * 1000).getUTCFullYear();
+  const years = []; for (let yr = y0 + 1; yr <= y1; yr += y1 - y0 > 8 ? 2 : 1) years.push(yr);
+  const xt = years.map((yr) => `<text x="${x(Date.UTC(yr, 0, 1) / 1000)}" y="${H - 8}" class="axis" text-anchor="middle">${yr}</text>`).join('');
+  const line = `M${pts.map(([t, v]) => `${x(t).toFixed(1)},${y(v).toFixed(1)}`).join('L')}`;
+  const [lt, lv] = pts[n - 1];
+  svg.innerHTML = `${grid}${xt}<path d="${line}" class="line-series"/>
+    <circle cx="${x(lt)}" cy="${y(lv)}" r="5" class="mark-now"/>
+    <text x="${x(lt) - 8}" y="${y(lv) - 10}" class="label-now" text-anchor="end">${esc(data.markLabel)}</text>
+    <line class="cross" y1="${pad.t}" y2="${H - pad.b}" opacity="0"/>
+    <rect class="hit" x="${pad.l}" y="0" width="${W - pad.l - pad.r}" height="${H}" fill="transparent"/>`;
+  hover(el, svg, tip, pad, (xv) => {
+    const t = t0 + ((xv - pad.l) / (W - pad.l - pad.r)) * (t1 - t0);
+    let k = 0; while (k < n - 1 && pts[k + 1][0] <= t) k++;
+    const c = svg.querySelector('.cross');
+    c.setAttribute('x1', x(pts[k][0])); c.setAttribute('x2', x(pts[k][0])); c.setAttribute('opacity', 1);
+    return { x: x(pts[k][0]), html: `<b>${esc(data.fmtDate(pts[k][0]))}</b><br>${esc(data.fmt(pts[k][1]))}` };
+  });
+}

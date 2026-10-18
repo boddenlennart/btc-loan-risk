@@ -634,3 +634,42 @@ test('"Start over and forget my inputs": deletes what the browser stored, ends a
   expect(await page.evaluate(() => [localStorage.getItem('btc-loan-risk:form'), localStorage.getItem('btc-loan-risk:lang')])).toEqual([null, null]);
   await expect(page.locator('#reset-btn')).toHaveCount(0); // one button, not two
 });
+
+test('phone: the answer bar waits while the on-screen keyboard is open, and comes back when it closes', async ({ page }) => {
+  // a stand-in for the phone's "visual viewport", which shrinks when the keyboard opens
+  await page.addInitScript(() => {
+    const vv = new EventTarget(); vv.height = window.innerHeight; vv.scale = 1;
+    Object.defineProperty(window, 'visualViewport', { value: vv, configurable: true });
+    window.setKeyboard = (open) => { vv.height = open ? window.innerHeight - 330 : window.innerHeight; vv.dispatchEvent(new Event('resize')); };
+  });
+  await page.setViewportSize({ width: 375, height: 812 });
+  await open(page); await waitDone(page);
+  await page.locator('#own-terms-link').click();
+  const field = page.locator('#f-initialLtv');
+  await field.fill('35'); await waitDone(page);
+  const bar = page.locator('#answer-bar');
+  await expect(bar).toBeVisible(); // focused, but no keyboard (as on a computer)
+  await field.focus(); await page.evaluate(() => window.setKeyboard(true));
+  await expect(bar).toBeHidden(); // the keyboard is open: the bar would cover the field
+  await page.evaluate(() => { document.activeElement.blur(); window.setKeyboard(false); });
+  await expect(bar).toBeVisible();
+});
+
+test('phone: while the answer is recalculated, the field being typed in stays where it is on screen', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await open(page); await waitDone(page);
+  await page.locator('#own-terms-link').click();
+  const field = page.locator('#f-loanAmount');
+  await field.scrollIntoViewIfNeeded();
+  // record the field's position on screen every 20 ms during a whole recalculation
+  await page.evaluate(() => {
+    window.tops = [];
+    const el = document.querySelector('#f-loanAmount');
+    window.sampler = setInterval(() => window.tops.push(el.getBoundingClientRect().top), 20);
+  });
+  await field.fill('12000');
+  await waitDone(page);
+  const tops = await page.evaluate(() => { clearInterval(window.sampler); return window.tops; });
+  expect(tops.length).toBeGreaterThan(10);
+  expect(Math.max(...tops) - Math.min(...tops), `positions: ${[...new Set(tops.map(Math.round))].join(', ')}`).toBeLessThanOrEqual(2);
+});

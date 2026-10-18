@@ -59,16 +59,45 @@ function setTermsOpen(open, { focus = false } = {}) {
 // number (and the one before the last change), so every change can be seen while typing.
 let answerInView = true; let barNow = null; let barWas = null;
 const isPhone = () => matchMedia('(max-width: 1023px)').matches;
+// The on-screen keyboard is open: a text field has the focus and the visible area is much shorter than the
+// page's window (iPhone and Android shrink only the "visual viewport"). The bar would then float above the
+// keyboard and cover the field being typed in, so it waits until the keyboard closes.
+function keyboardOpen() {
+  const vv = window.visualViewport; const f = document.activeElement;
+  const editable = f && f.matches && f.matches('input:not([type=range]):not([type=checkbox]):not([type=radio]), textarea, select');
+  return !!(vv && editable && window.innerHeight - vv.height * vv.scale > 120);
+}
 function updateAnswerBar() {
   const bar = $('#answer-bar'); if (!bar) return;
-  const show = termsOpen && !answerInView && isPhone();
+  const show = termsOpen && !answerInView && isPhone() && !keyboardOpen();
   bar.hidden = !show; document.body.classList.toggle('bar-on', show);
   if (!show) return;
   const busy = !lastRisk || document.body.classList.contains('outdated') || document.body.classList.contains('invalid');
   const R = texts().results;
-  $('#answer-bar-text').innerHTML = busy || barNow === null ? esc(texts().ui.computingShort)
+  const html = busy || barNow === null ? esc(texts().ui.computingShort)
     : esc(t('results.barLine', { n: '§' })).replace('§', `<b>${barNow}</b>`) + (barWas !== null && barWas !== barNow ? ` ${esc(t('results.barWas', { m: barWas }))}` : '');
-  $('#answer-bar-btn').textContent = R.barGo;
+  // rewritten only when it changes: Safari drops a tap on the button if its text is replaced during the tap
+  if ($('#answer-bar-text').innerHTML !== html) $('#answer-bar-text').innerHTML = html;
+  if ($('#answer-bar-btn').textContent !== R.barGo) $('#answer-bar-btn').textContent = R.barGo;
+}
+// Keeps what the visitor looks at (or types in) in the same place on screen while results change above
+// it. Browsers like Chrome do this themselves ("scroll anchoring"); Safari on the iPhone does not.
+function anchorNow() {
+  const f = document.activeElement;
+  if (f && f !== document.body && f.closest && f.closest('main')) return { el: f, top: f.getBoundingClientRect().top };
+  if (window.scrollY < 1) return null; // at the top of the page nothing can jump
+  for (const y of [140, 220, 320]) {
+    const el = document.elementFromPoint(window.innerWidth / 2, y);
+    if (el && el.closest('main') && !el.closest('#answer-bar, #progress')) return { el, top: el.getBoundingClientRect().top };
+  }
+  return null;
+}
+function keepInPlace(fn) {
+  const a = anchorNow();
+  fn();
+  if (!a || !a.el.isConnected) return;
+  const d = a.el.getBoundingClientRect().top - a.top;
+  if (Math.abs(d) >= 1) window.scrollBy(0, d);
 }
 function toAnswer() { $('#answer').scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 
@@ -410,7 +439,7 @@ function onWorkerMessage(m) {
     garchCache[m.result.currency] = m.result.garch;
     lastRisk = m.result; [riskTerms, riskSettings] = pending[m.id];
     if (m.type === 'result') { busy = false; $('#progress').hidden = true; document.body.dataset.ready = '1'; }
-    renderRisk();
+    keepInPlace(renderRisk);
     // a shared link opens on the answer the sender saw, not on the form
     if (openedFromLink && !scrolledToAnswer) { scrolledToAnswer = true; $('#shared-note').hidden = false; renderAnswerTop(riskTerms); $('#answer').scrollIntoView({ block: 'start' }); }
   } else if (m.type === 'error') {
@@ -468,7 +497,7 @@ function update() {
   document.body.classList.remove('invalid');
   lastTerms = terms; lastSettings = settings;
   moreSummary(terms);
-  renderLoan();
+  keepInPlace(renderLoan);
   clearTimeout(timer);
   if (compare) settings.compareTerms = compare.offers.map((_, i) => (i === compare.active ? null : validTermsOf(i)));
   const sameAsEmbedded = !compare && embeddedKey !== null && exampleKey(state) === embeddedKey;
@@ -790,7 +819,9 @@ function renderRisk() {
   if (barNow !== null && barNow !== nLiq) barWas = barNow;
   barNow = nLiq;
   headlineShown = { p: m.pLiquidation, n: nLiq };
-  $('#best-lever').textContent = bestLeverText(r);
+  // until the options are computed, the line keeps its last text (dimmed) instead of disappearing and coming back
+  if (r.levers) $('#best-lever').textContent = bestLeverText(r);
+  $('#best-lever').classList.toggle('pending', !r.levers);
   $('#dots').innerHTML = dotsHtml([[nLiq, 'd-liq'], [nPart, 'd-part'], [nMargin, 'd-margin'], [nNone, 'd-none']], headline)
     + legendHtml([[nLiq, 'd-liq', R.legendLiquidated], [nPart, 'd-part', R.legendPartial], [nMargin, 'd-margin', R.legendMargin], [nNone, 'd-none', R.legendNothing]]);
   $('#kept-line').textContent = m.keptAfterSale && m.pPartial >= 0.005 ? t('results.kept', { kept: pct(m.keptAfterSale.q50, 0) }) : '';
@@ -1063,6 +1094,8 @@ if (state.priceManual && numOr(state.btcPrice, null) !== null) priceInfo = { sou
 renderAll();
 showEmbeddedExample();
 // is the answer's number on screen? (decides whether the answer bar is needed)
+if (window.visualViewport) window.visualViewport.addEventListener('resize', updateAnswerBar);
+document.addEventListener('focusin', updateAnswerBar); document.addEventListener('focusout', () => setTimeout(updateAnswerBar, 0));
 if ('IntersectionObserver' in window) {
   new IntersectionObserver(([e]) => { answerInView = e.isIntersecting; updateAnswerBar(); }).observe($('#headline-text'));
 }
