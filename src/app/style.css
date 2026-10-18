@@ -201,6 +201,9 @@ table.cmp .big { font: 600 20px/1.1 var(--serif); }
 button.col { font: 600 14px/1.2 var(--serif); color: var(--text); background: none; border: none; border-bottom: 3px solid transparent; padding: 8px 4px; min-height: 44px; width: 100%; text-align: right; cursor: pointer; }
 button.col.active { border-bottom-color: var(--accent); }
 .compare .actions { margin: 10px 0 0; }
+/* "End comparison and keep: [Offer A] [Offer B]": ending is also choosing what stays */
+.end-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 0; padding-top: 10px; border-top: 1px solid var(--border); font-size: 14px; }
+.end-row > span { width: 100%; color: var(--text-2); }
 .showing { margin: 0 0 8px; padding: 8px 12px; background: var(--surface-2); border-radius: 6px; font-size: 14px; }
 @media (max-width: 1023px) { tr.desk-only { display: none; } }
 @media (max-width: 420px) { .compare { padding: 12px 10px; } table.cmp tbody th, table.cmp td { font-size: 13px; } table.cmp .big { font-size: 20px; } }

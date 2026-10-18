@@ -523,7 +523,7 @@ test('comparison: a third offer, removing one, ending it; a refinancing offer ke
   await expect(page.locator('#cmp thead button.col')).toHaveText(['Offer A', 'Offer B', 'Offer C']);
   await page.locator('[data-compare-remove]').click(); // removes the selected one (C)
   await expect(page.locator('#cmp thead button.col')).toHaveText(['Offer A', 'Offer B']);
-  await page.locator('[data-compare-end]').click();
+  await page.locator('[data-compare-keep="0"]').click();
   await expect(page.locator('#cmp')).toBeHidden();
   await expect(page.locator('#compare-btn')).toBeVisible();
   // refinancing: end the comparison while the refinancing offer is selected
@@ -534,7 +534,7 @@ test('comparison: a third offer, removing one, ending it; a refinancing offer ke
   await page.locator('#compare-btn').click();
   await page.locator('[data-set="refi.change"][data-val="more"]').click();
   await page.locator('#f-refiExtra').fill('1000');
-  await page.locator('[data-compare-end]').click();
+  await page.locator('[data-compare-keep="1"]').click(); // keep the refinanced loan
   // kept on its own, the refinancing becomes a new loan entered by BTC: 10,000 + 1,000 against 0.4 BTC
   await expect(page.locator('#f-loanAmount')).toHaveValue('11000');
   await expect(page.locator('#f-collateralBtc')).toHaveValue('0.4');
@@ -693,4 +693,53 @@ test('inputs stay for this tab only, unless "Remember my inputs" is ticked (priv
   await expect(later.locator('[data-remember-inputs]')).toBeChecked();
   await later.locator('[data-remember-inputs]').uncheck(); // untick: deleted from the browser at once
   expect(await later.evaluate(() => [localStorage.getItem('btc-loan-risk:form'), localStorage.getItem('btc-loan-risk:remember')])).toEqual([null, null]);
+});
+
+test('ending a comparison: the visitor chooses which offer stays; nothing is dropped by surprise', async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.locator('#compare-btn').click(); // B is a copy of A and selected
+  await page.locator('#f-offerName').fill('Bank X');
+  await page.locator('#f-initialLtv').fill('35'); // B changed; A stays at 50
+  await waitDone(page);
+  const row = page.locator('#cmp .end-row');
+  await expect(row).toContainText('End the comparison and keep:');
+  await expect(row.locator('button')).toHaveText(['Offer A', 'Bank X']); // the visitor's own names
+  const bNumber = await headlineNumber(page);
+  // the original offer (A) is kept although B was the one selected and edited last
+  await page.locator('#f-initialLtv').fill('36'); // B is being recalculated while A is chosen:
+  // wait until B's first new number is shown and the rest of its calculation is still running
+  await page.waitForFunction(() => !document.body.classList.contains('outdated') && !document.querySelector('#progress').hidden);
+  const bNumber36 = await headlineNumber(page);
+  await expect(row.locator('button').first()).toHaveText('Offer A');
+  // click and record in one step, so only what is shown after the click counts
+  await page.evaluate(() => {
+    window.heads = [];
+    document.querySelector('#cmp .end-row button').click();
+    window.heads.push(document.querySelector('#headline-text').textContent);
+    window.sampler = setInterval(() => window.heads.push(document.querySelector('#headline-text').textContent), 20);
+  });
+  await waitDone(page);
+  const heads = await page.evaluate(() => { clearInterval(window.sampler); return window.heads; });
+  // A's answer, never B's number from the calculation that was still running
+  for (const h of heads) for (const n of new Set([bNumber, bNumber36])) expect(h).not.toMatch(new RegExp(`^${n}\\b`));
+  await expect(page.locator('#ans-label')).toHaveText('Example');
+  await expect(page.locator('#cmp')).toBeHidden();
+  await expect(page.locator('#f-initialLtv')).toHaveValue('50');
+  await expect(page.locator('#ended-note')).toHaveText('Offer A is now in your terms. The comparison has ended.');
+  await waitDone(page);
+  await page.locator('#f-initialLtv').fill('45');
+  await expect(page.locator('#ended-note')).toBeHidden(); // the note goes once the visitor changes something
+  // refinancing: keep the current loan
+  await page.getByRole('button', { name: 'A loan I already have' }).click();
+  await page.locator('#f-loanAmount').fill('10000');
+  await page.locator('#f-collateralBtc').fill('0.4');
+  await waitDone(page);
+  await page.locator('#compare-btn').click();
+  await page.locator('[data-set="refi.change"][data-val="more"]').click();
+  await page.locator('#f-refiExtra').fill('1000');
+  await expect(page.locator('#cmp .end-row button')).toHaveText(['Current loan', 'Refinancing']);
+  await page.locator('#cmp .end-row button').first().click();
+  await expect(page.locator('#f-loanAmount')).toHaveValue('10000');
+  await expect(page.locator('#f-collateralBtc')).toHaveValue('0.4');
+  await expect(page.getByRole('button', { name: 'A loan I already have' })).toHaveAttribute('aria-pressed', 'true');
 });

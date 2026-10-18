@@ -291,6 +291,7 @@ function change(mutate, { rerenderForm = false } = {}) {
   state = structuredClone(state); mutate(state); saveState();
   if (!sliderChanging) { $('#slider-undo').hidden = true; undoState = null; }
   $('#shared-note').hidden = true; // the inputs are now the visitor's own
+  $('#ended-note').hidden = true;
   if (rerenderForm) renderForm();
   update();
 }
@@ -359,8 +360,12 @@ function onClick(e) {
     addOffer();
   } else if (tgt.closest('[data-compare-remove]')) {
     removeOffer(compare.active);
-  } else if (tgt.closest('[data-compare-end]')) {
-    endCompare();
+  } else if (tgt.closest('[data-compare-keep]')) {
+    // ending a comparison: the visitor chooses which offer stays in the terms (nothing is dropped by surprise)
+    const keep = Number(tgt.closest('[data-compare-keep]').dataset.compareKeep);
+    const name = offerName(keep);
+    endCompare(keep);
+    $('#ended-note').textContent = t('compare.keptNote', { name }); $('#ended-note').hidden = false;
   } else if (tgt.closest('[data-offer]')) {
     setActive(Number(tgt.closest('[data-offer]').dataset.offer));
   }
@@ -521,6 +526,9 @@ function update() {
   moreSummary(terms);
   keepInPlace(renderLoan);
   clearTimeout(timer);
+  // the terms changed: results still arriving from the previous calculation are out of date and ignored
+  // (otherwise, during the short wait before the new calculation, the old offer's number could show up)
+  runId++;
   if (compare) settings.compareTerms = compare.offers.map((_, i) => (i === compare.active ? null : validTermsOf(i)));
   const sameAsEmbedded = !compare && embeddedKey !== null && exampleKey(state) === embeddedKey;
   if (sameAsEmbedded) { riskTerms = terms; riskSettings = settings; } // same answer, today's price for the charts
@@ -588,6 +596,7 @@ function setActive(i) {
   if (lastRisk) renderRisk();
 }
 function startCompare() {
+  $('#ended-note').hidden = true;
   const refi = state.mode === 'existing';
   compare = { kind: refi ? 'refi' : 'offers', active: 0, offers: [structuredClone(state)], names: [] };
   compare.offers.push(refi
@@ -615,6 +624,7 @@ function endCompare(keep = compare.active) {
   state = compare.kind === 'refi' && keep > 0 ? { ...toForm(f, formOf(0)) } : f;
   compare = null; lastRisk = null;
   saveState(); renderForm(); update();
+  showEmbeddedExample(); // if the kept offer is the example, its answer shows at once
 }
 // a refinancing offer kept on its own becomes an ordinary new-loan form
 const toForm = (f, base) => { const { refi, ...rest } = f; const tm = toTerms(f, { base }).terms; return { ...rest, mode: 'new', ltvInput: 'btc', loanAmount: tm.loanAmount, collateralBtc: String(tm.collateralInput) }; };
@@ -672,7 +682,8 @@ function renderCompare() {
     <p class="meta">${esc(Cm.noWinner)}${notes.length ? ` ${notes.map(esc).join(' ')}` : ''}</p>
     <p class="actions">${compare.kind === 'offers' && n < 3 ? `<button type="button" class="secondary" data-compare-add>${esc(Cm.addC)}</button>` : ''}
       <button type="button" class="link" data-compare-remove>${esc(t('compare.remove', { name: offerName(compare.active) }))}</button>
-      <button type="button" class="link" data-compare-end>${esc(Cm.end)}</button></p>`;
+    </p>
+    <p class="end-row"><span>${esc(Cm.endKeep)}</span>${idx.map((i) => `<button type="button" class="secondary" data-compare-keep="${i}">${esc(offerName(i))}</button>`).join('')}</p>`;
   $('#showing').hidden = false;
   $('#showing').textContent = t('compare.showing', { name: offerName(compare.active) });
 }
