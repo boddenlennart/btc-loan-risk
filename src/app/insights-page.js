@@ -7,5 +7,5 @@ initLang();
 initShell({ built: META.built });
 document.title = texts().insights.metaTitle;
 renderShell();
-document.getElementById('groups').innerHTML = texts().insights.groups.map((g) => `<li>${esc(g)}</li>`).join('');
+document.getElementById('groups').innerHTML = Object.values(texts().insights.groups).map((g) => `<li>${esc(g)}</li>`).join('');
 document.body.dataset.ready = '1';
