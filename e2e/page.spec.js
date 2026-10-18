@@ -620,3 +620,18 @@ test('switching between starting LTV and BTC pledged converts the current values
   await page.getByRole('button', { name: 'or enter the LTV' }).click();
   await expect(page.locator('#f-initialLtv')).toHaveValue('50'); // 15,000 / (0.5 × 60,000)
 });
+
+test('"Start over and forget my inputs": deletes what the browser stored, ends a comparison, shows the example again', async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.locator('#f-initialLtv').fill('35');
+  await page.locator('#compare-btn').click();
+  await waitDone(page);
+  expect(await page.evaluate(() => localStorage.getItem('btc-loan-risk:form'))).not.toBeNull();
+  await page.locator('#forget-btn').click();
+  await expect(page.locator('#forgotten')).toBeVisible();
+  await expect(page.locator('#cmp')).toBeHidden();
+  await expect(page.locator('#ans-label')).toHaveText('Example');
+  await expect(page.locator('#f-initialLtv')).toHaveValue('50');
+  expect(await page.evaluate(() => [localStorage.getItem('btc-loan-risk:form'), localStorage.getItem('btc-loan-risk:lang')])).toEqual([null, null]);
+  await expect(page.locator('#reset-btn')).toHaveCount(0); // one button, not two
+});

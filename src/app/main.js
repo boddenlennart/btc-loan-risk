@@ -1097,11 +1097,18 @@ document.addEventListener('click', (e) => {
   if (!e.target.closest('.lang-menu')) closeLangMenu();
 });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('#lang-list').hidden) { closeLangMenu(); $('#lang-btn').focus(); } });
-$('#reset-btn').addEventListener('click', () => { state = { ...EXAMPLE_FORM, currency: state.currency, btcPrice: state.btcPrice, priceManual: state.priceManual }; saveState(); renderAll(); });
+// "Start over and forget my inputs": deletes everything stored in this browser, ends a comparison,
+// and shows the example again (with the live price, not a price typed in before)
 $('#forget-btn').addEventListener('click', () => {
   try { localStorage.removeItem(STORE_KEY); localStorage.removeItem('btc-loan-risk:lang'); } catch { /* ignore */ }
+  const typedPrice = state.priceManual;
+  compare = null; undoState = null; lastRisk = null; barNow = null; barWas = null;
   state = { ...EXAMPLE_FORM, currency: state.currency, btcPrice: state.btcPrice, priceManual: false };
-  renderAll(); $('#forgotten').hidden = false;
+  $('#shared-note').hidden = true; $('#slider-undo').hidden = true;
+  setTermsOpen(false);
+  renderAll(); showEmbeddedExample();
+  if (typedPrice) loadPrice(true);
+  $('#forgotten').hidden = false;
 });
 if (state.priceManual && numOr(state.btcPrice, null) !== null) priceInfo = { source: 'manual' };
 renderAll();

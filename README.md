@@ -45,7 +45,7 @@ One-time setup (the Cloudflare screens may be worded slightly differently):
   - recent hourly prices: `www.bitstamp.net`
   
   They carry no cookies, no referrer and nothing the visitor typed. The page names these services in its privacy section and in the privacy notice.
-- The page stores the visitor's inputs and language in the browser's **local storage** (`btc-loan-risk:form`, `btc-loan-risk:lang`). The button "Forget my inputs" deletes them.
+- The page stores the visitor's inputs and language in the browser's **local storage** (`btc-loan-risk:form`, `btc-loan-risk:lang`). The button "Start over and forget my inputs" deletes them, ends any comparison and shows the example again.
 
 ### What you need to fill in before publishing
 

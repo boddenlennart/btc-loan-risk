@@ -34,8 +34,7 @@ export default {
     staleWarning: 'The BTC price shown is not current. All results depend on it. Enter today\'s price.',
     share: 'Share',
     linkCopied: 'Link and summary copied. The link contains your inputs, so share it only with people who may see them.',
-    resetExamples: 'Reset to example values',
-    forgetInputs: 'Forget my inputs',
+    forgetInputs: 'Start over and forget my inputs',
     forgotten: 'Your inputs were deleted from this browser.',
     of100: '{n} of 100',
     months: 'months',
@@ -407,7 +406,7 @@ export default {
     maker: 'Independent project by {name}. No lender pays for or influences this page.',
     license: 'Open source under the MIT licence. Provided "as is", without warranty of any kind: use it at your own risk.',
     notAdvice: 'This page is not financial, investment or tax advice. It is a calculator with a model of past price moves. It cannot know your situation or the future. Check every number against your lender\'s documents.',
-    privacy: 'Everything you type stays in your browser; this page has no server of its own, no tracking and no cookies. It remembers your inputs in your browser\'s local storage; "Forget my inputs" deletes them. When the page opens, your browser asks public price services for the current BTC price: api.coinbase.com, and only if that fails api.kraken.com, api.binance.com or api.coingecko.com; it also loads recent hourly prices from www.bitstamp.net. These services see your IP address and browser type, but nothing you entered. A copied link contains your inputs after the "#" sign, which browsers do not send to any server. The page itself is hosted by GitHub Pages.',
+    privacy: 'Everything you type stays in your browser; this page has no server of its own, no tracking and no cookies. It remembers your inputs in your browser\'s local storage; "Start over and forget my inputs" deletes them. When the page opens, your browser asks public price services for the current BTC price: api.coinbase.com, and only if that fails api.kraken.com, api.binance.com or api.coingecko.com; it also loads recent hourly prices from www.bitstamp.net. These services see your IP address and browser type, but nothing you entered. A copied link contains your inputs after the "#" sign, which browsers do not send to any server. The page itself is hosted by GitHub Pages.',
     sources: 'Data: Bitstamp (USD 2014–, EUR 2017–), Kraken (EUR 2014–2016); CHF, GBP, CAD, AUD, CZK and PLN converted with the daily exchange rates of the European Central Bank. Current price: Coinbase, Kraken, Binance or CoinGecko. Known gap: Bitstamp was offline from 5 to 9 January 2015.',
   },
 
@@ -483,7 +482,7 @@ export default {
       ] },
       { h: '4. Your inputs, local storage and shared links', p: [
         'All calculations take place in your browser. Your inputs are not sent to us or to anyone else.',
-        'So that your inputs and your language choice are still there on your next visit, the page stores them in the local storage of your browser (keys "btc-loan-risk:form" and "btc-loan-risk:lang"). This data stays on your device. You can delete it at any time with the button "Forget my inputs" or in your browser settings.',
+        'So that your inputs and your language choice are still there on your next visit, the page stores them in the local storage of your browser (keys "btc-loan-risk:form" and "btc-loan-risk:lang"). This data stays on your device. You can delete it at any time with the button "Start over and forget my inputs" or in your browser settings.',
         'If you use "Copy link to this calculation", your inputs are written into the link after the "#" sign. Browsers do not send this part to any server, including GitHub. Whoever you give the link to can see your inputs.',
         'Legal basis: § 25 (2) No. 2 TDDDG, because the storage is strictly necessary for the function you use. «Check this assessment.»',
       ] },

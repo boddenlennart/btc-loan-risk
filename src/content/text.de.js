@@ -31,8 +31,7 @@ export default {
     staleWarning: 'Der angezeigte BTC-Kurs ist nicht aktuell. Alle Ergebnisse hängen davon ab. Geben Sie den heutigen Kurs ein.',
     share: 'Teilen',
     linkCopied: 'Link und Zusammenfassung kopiert. Der Link enthält Ihre Eingaben; teilen Sie ihn nur mit Menschen, die sie sehen dürfen.',
-    resetExamples: 'Beispielwerte wiederherstellen',
-    forgetInputs: 'Meine Eingaben löschen',
+    forgetInputs: 'Neu beginnen und meine Eingaben löschen',
     forgotten: 'Ihre Eingaben wurden aus diesem Browser gelöscht.',
     of100: '{n} von 100',
     months: 'Monate',
@@ -402,7 +401,7 @@ export default {
     maker: 'Unabhängiges Projekt von {name}. Kein Kreditgeber bezahlt oder beeinflusst diese Seite.',
     license: 'Open Source unter der MIT-Lizenz. Bereitgestellt "wie besehen" ("as is"), ohne jede Gewährleistung: Nutzung auf eigenes Risiko.',
     notAdvice: 'Diese Seite ist keine Finanz-, Anlage- oder Steuerberatung. Sie ist ein Rechner mit einem Modell früherer Kursbewegungen. Sie kennt weder Ihre Lage noch die Zukunft. Prüfen Sie jede Zahl anhand der Unterlagen Ihres Kreditgebers.',
-    privacy: 'Alles, was Sie eingeben, bleibt in Ihrem Browser; diese Seite hat keinen eigenen Server, kein Tracking und keine Cookies. Sie merkt sich Ihre Eingaben im lokalen Speicher Ihres Browsers; "Meine Eingaben löschen" entfernt sie. Beim Öffnen fragt Ihr Browser öffentliche Kursdienste nach dem aktuellen BTC-Kurs: api.coinbase.com und nur wenn das scheitert api.kraken.com, api.binance.com oder api.coingecko.com; außerdem lädt er die neuesten Stundenkurse von www.bitstamp.net. Diese Dienste sehen Ihre IP-Adresse und Ihren Browsertyp, aber nichts von Ihren Eingaben. Ein kopierter Link enthält Ihre Eingaben nach dem "#"-Zeichen; diesen Teil senden Browser an keinen Server. Die Seite selbst wird von GitHub Pages bereitgestellt.',
+    privacy: 'Alles, was Sie eingeben, bleibt in Ihrem Browser; diese Seite hat keinen eigenen Server, kein Tracking und keine Cookies. Sie merkt sich Ihre Eingaben im lokalen Speicher Ihres Browsers; "Neu beginnen und meine Eingaben löschen" entfernt sie. Beim Öffnen fragt Ihr Browser öffentliche Kursdienste nach dem aktuellen BTC-Kurs: api.coinbase.com und nur wenn das scheitert api.kraken.com, api.binance.com oder api.coingecko.com; außerdem lädt er die neuesten Stundenkurse von www.bitstamp.net. Diese Dienste sehen Ihre IP-Adresse und Ihren Browsertyp, aber nichts von Ihren Eingaben. Ein kopierter Link enthält Ihre Eingaben nach dem "#"-Zeichen; diesen Teil senden Browser an keinen Server. Die Seite selbst wird von GitHub Pages bereitgestellt.',
     sources: 'Daten: Bitstamp (USD ab 2014, EUR ab 2017), Kraken (EUR 2014–2016); CHF, GBP, CAD, AUD, CZK und PLN umgerechnet mit den täglichen Wechselkursen der Europäischen Zentralbank. Aktueller Kurs: Coinbase, Kraken, Binance oder CoinGecko. Bekannte Lücke: Bitstamp war vom 5. bis 9. Januar 2015 offline.',
   },
 
@@ -478,7 +477,7 @@ export default {
       ] },
       { h: '4. Ihre Eingaben, lokale Speicherung und geteilte Links', p: [
         'Alle Berechnungen finden in Ihrem Browser statt. Ihre Eingaben werden weder an uns noch an Dritte übermittelt.',
-        'Damit Ihre Eingaben und Ihre Sprachwahl beim nächsten Besuch noch vorhanden sind, speichert die Seite sie im lokalen Speicher Ihres Browsers (Schlüssel "btc-loan-risk:form" und "btc-loan-risk:lang"). Diese Daten bleiben auf Ihrem Gerät. Sie können sie jederzeit mit der Schaltfläche "Meine Eingaben löschen" oder in den Einstellungen Ihres Browsers entfernen.',
+        'Damit Ihre Eingaben und Ihre Sprachwahl beim nächsten Besuch noch vorhanden sind, speichert die Seite sie im lokalen Speicher Ihres Browsers (Schlüssel "btc-loan-risk:form" und "btc-loan-risk:lang"). Diese Daten bleiben auf Ihrem Gerät. Sie können sie jederzeit mit der Schaltfläche "Neu beginnen und meine Eingaben löschen" oder in den Einstellungen Ihres Browsers entfernen.',
         'Wenn Sie "Link zu dieser Berechnung kopieren" nutzen, werden Ihre Eingaben in den Link nach dem "#"-Zeichen geschrieben. Diesen Teil senden Browser an keinen Server, auch nicht an GitHub. Wer den Link von Ihnen erhält, kann Ihre Eingaben sehen.',
         'Rechtsgrundlage: § 25 Abs. 2 Nr. 2 TDDDG, da die Speicherung für die von Ihnen genutzte Funktion unbedingt erforderlich ist. «Diese Einschätzung prüfen.»',
       ] },
