@@ -155,3 +155,30 @@ test('price ladder: the labels never overlap, also when margin call and liquidat
   await expect(page.locator('#falls-text .lab-sale')).toContainText('Liquidation');
   await expect.poll(overlaps).toEqual([]);
 });
+
+test('tile labels are never broken inside a word, only at spaces or proper hyphenation points (narrowest phone, both languages)', async ({ page }) => {
+  await visit(page, '/', { width: 320 });
+  for (const w of [320, 375]) {
+  await page.setViewportSize({ width: w, height: 812 });
+  const broken = () => page.locator('#tiles .label').evaluateAll((els) => els.filter((el) => {
+    // a word is broken if one of its letters starts a new line: compare each letter's line with the previous letter's
+    // a break at a space or a soft hyphen (Gesamt-kosten, a proper German hyphenation) is fine; Chrome reports the
+    // letter right after a soft-hyphen break on the old line, so the word restarts one letter later
+    const r = document.createRange(); const t = el.firstChild; let prevTop = null; let skip = 1;
+    for (let i = 0; t && i < t.length; i++) {
+      const ch = t.data[i];
+      if (/\s/.test(ch)) { skip = 1; continue; }
+      if (ch === '\u00AD') { skip = 2; continue; }
+      r.setStart(t, i); r.setEnd(t, i + 1); const top = Math.round(r.getBoundingClientRect().top);
+      if (skip > 0) skip--; else if (top > prevTop) return true;
+      prevTop = top;
+    }
+    return false;
+  }).map((el) => el.textContent));
+  await expect.poll(broken).toEqual([]);
+  await page.locator('#lang-btn').click(); await page.locator('[data-lang="de"]').click();
+  await expect(page.locator('#tiles')).toContainText('Liquidiert bei');
+  await expect.poll(broken).toEqual([]);
+  await page.locator('#lang-btn').click(); await page.locator('[data-lang="en"]').click();
+  }
+});

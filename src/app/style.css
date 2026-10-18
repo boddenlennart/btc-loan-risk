@@ -165,7 +165,7 @@ button.link.strong { font-weight: 600; text-decoration: none; }
 body.bar-on { padding-bottom: 72px; }
 @media (min-width: 1024px) { .answer-bar { display: none !important; } body.bar-on { padding-bottom: 0; } }
 .assume { font-size: 14px; color: var(--text-2); margin: 8px 0 0; }
-.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0 0; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); /* 3 per row on phones, 2 on the narrowest */ gap: 8px; margin: 12px 0 0; }
 .tile { background: var(--surface-2); border-radius: 6px; padding: 10px; min-width: 0; }
 .tile .v { font: 600 17px/1.2 var(--serif); margin-top: 4px; overflow-wrap: anywhere; }
 .tile .s { color: var(--text-2); font-size: 13px; line-height: 1.35; margin-top: 2px; }
@@ -392,3 +392,5 @@ dt, details, h3, #terms, .part { scroll-margin-top: 64px; }
 }
 @media (max-width: 1023px) { .tile.desk-only { display: none; } }
 #privacy-body h3 { font-size: 16px; margin: 16px 0 4px; }
+/* tile labels break between words only, never inside one ("LIQUIDATED AT" on a narrow phone) */
+.tile .label { letter-spacing: 0.02em; overflow-wrap: break-word; word-break: normal; } /* a word too long for any line breaks instead of spilling out */
