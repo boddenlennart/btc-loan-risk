@@ -72,6 +72,14 @@
     <p class="undo-line" id="slider-undo" hidden><span id="slider-undo-text"></span> <button type="button" class="link strong" data-slider-undo id="slider-undo-btn"></button></p>
   </section>
 
+  <section class="block" id="questions-block" aria-labelledby="questions-h">
+    <h2 id="questions-h" class="sec-title" data-t="falls.questionsTitle"></h2>
+    <ul class="questions" id="questions"></ul>
+    <p class="hint" data-t="falls.counterparty"></p>
+    <p class="actions"><button type="button" class="secondary" data-copy-questions data-t="falls.questionsCopy"></button></p>
+    <p class="hint" id="questions-copied" data-t="falls.questionsCopied" hidden></p>
+  </section>
+
   <details class="section" id="sec-falls">
     <summary><h3 data-t="sections.falls"></h3></summary>
     <p class="sale-line" id="sale-line"></p>
@@ -82,12 +90,9 @@
     <p class="sub" id="futures-line"></p>
     <div id="futures-chart"></div>
     <p class="hint" id="futures-note" data-t="falls.futuresMarginNote" hidden></p>
-    <p><button type="button" class="link" data-other-paths data-t="falls.showOthers"></button></p>
+    <p><button type="button" class="link" data-other-paths id="other-paths"></button></p>
     <p class="hint" data-t="falls.measure"></p>
     <p class="notice" data-t="falls.lenderWins"></p>
-    <h4 data-t="falls.questionsTitle"></h4>
-    <ul id="questions"></ul>
-    <p class="hint" data-t="falls.counterparty"></p>
   </details>
 
   <details class="section" id="sec-cost">

@@ -38,7 +38,7 @@ const feedback = { use: '', meaning: '', useful: 0, easy: 0, missing: '', langua
 let lastTerms = null; let lastSettings = null; let lastRisk = null; let timer = null; let started = false;
 // the terms and settings the current risk results were calculated for (charts must use these, not newer inputs)
 let riskTerms = null; let riskSettings = null; const pending = {};
-let showOtherPaths = false;
+let pathSet = 0; // which 20 of the 100 sample futures are shown
 // the example answer computed by the build (META.example), shown at once while the page recomputes it
 let embeddedKey = null;
 let undoState = null; let sliderChanging = false;
@@ -282,9 +282,13 @@ function onClick(e) {
     const k = set.dataset.set; let v = set.dataset.val;
     if (k === 'durationMonths') v = Number(v);
     change((s) => {
-      if ((k === 'ltvInput' && v === 'btc') || (k === 'mode' && v === 'existing')) {
-        if (!numOr(s.collateralBtc, 0)) s.collateralBtc = String(+(numOr(s.loanAmount) / ((numOr(s.initialLtv) / 100) * numOr(s.btcPrice))).toFixed(4));
-      }
+      const amount = numOr(s.loanAmount); const price = numOr(s.btcPrice);
+      const btcFromLtv = () => String(+(amount / ((numOr(s.initialLtv) / 100) * price)).toFixed(4));
+      // switching between "starting LTV" and "BTC you pledge" converts the current values both ways
+      if (k === 'ltvInput' && v === 'btc' && s.ltvInput !== 'btc' && numOr(s.initialLtv, 0) > 0) s.collateralBtc = btcFromLtv();
+      if (k === 'ltvInput' && v === 'ltv' && s.ltvInput === 'btc' && numOr(s.collateralBtc, 0) > 0) s.initialLtv = +((amount / (numOr(s.collateralBtc) * price)) * 100).toFixed(1);
+      // a loan I already have: start from the BTC that fits the current terms, unless BTC was entered before
+      if (k === 'mode' && v === 'existing' && !numOr(s.collateralBtc, 0)) s.collateralBtc = btcFromLtv();
       setPath(s, k, v);
     }, { rerenderForm: true });
     return;
@@ -300,9 +304,12 @@ function onClick(e) {
   } else if (tgt.matches('[data-reload-price]')) {
     loadPrice(true);
   } else if (tgt.matches('[data-other-paths]')) {
-    showOtherPaths = !showOtherPaths; renderFutures();
+    pathSet += 1; renderFutures();
   } else if (tgt.closest('[data-open-terms]')) {
     setTermsOpen(true, { focus: true });
+  } else if (tgt.closest('[data-copy-questions]')) {
+    const tx = texts().falls;
+    navigator.clipboard?.writeText(`${tx.questionsTitle}\n\n${tx.questions.map((q) => `- ${q}`).join('\n')}\n`).then(() => { $('#questions-copied').hidden = false; });
   } else if (tgt.closest('[data-share]')) {
     share();
   } else if (tgt.closest('[data-compare-start]')) {
@@ -643,6 +650,13 @@ function renderCompare() {
   $('#showing').textContent = t('compare.showing', { name: offerName(compare.active) });
 }
 
+// A partial sale at `price`: about how much BTC the lender sells (its fee included) and what is left.
+function partialAt(tm, price) {
+  const rules = lenderRules(tm); const btc = collateralBtc(tm);
+  const sold = partialSaleBtc(rules, tm.loanAmount, btc, price);
+  return { sold: num(sold, 4), left: num(btc - sold, 4), btc: num(btc, 4), target: pct(rules.target, 0) };
+}
+
 // Key figures under the answer. All of them need no simulation, so they follow typing at once.
 function renderTiles(tm) {
   const R = texts().results; const cur = tm.currency;
@@ -665,7 +679,7 @@ function renderTiles(tm) {
   if (rules.liquidationSale === 'all') {
     const lq = costIfLiquidated(tm, { price: lp.atStart, debt: tm.loanAmount });
     $('#sold-line').textContent = t('results.soldGetBack', { back: num(Math.max(0, lq.btcReturned), 4), btc: num(collateralBtc(tm), 4) });
-  } else $('#sold-line').textContent = R.soldPartial;
+  } else $('#sold-line').textContent = t('results.soldPartial', partialAt(tm, lp.atStart));
 }
 
 // The key terms in one line (phones, while the form is folded away).
@@ -708,11 +722,11 @@ function renderFallsText() {
   if (mp) {
     const top = topUpToCure(tm, { price: mp.atStart, debt: tm.loanAmount, targetLtv: target });
     const vals = { mcPrice: money0(mp.atStart, cur), topUp: num(top.btc, 4), topUpValue: money0(top.value, cur), repay: money0(top.repayInstead, cur), target: pct(target, 0), hours: tm.curePeriodHours };
-    if (rules.behaviour === 'autoPartial') html += `<p>${esc(t('falls.marginAuto', { ...vals, sold: num(partialSaleBtc(rules, tm.loanAmount, collateralBtc(tm), mp.atStart), 4) }))}</p>`;
-    else if (rules.afterCure) html += `<p>${esc(t('falls.marginCure', { ...vals, what: rules.cureSale === 'partial' ? t('falls.whatPartial', { target: pct(target, 0) }) : t('falls.whatAll') }))}</p>`;
+    if (rules.behaviour === 'autoPartial') html += `<p>${esc(t('falls.marginAuto', { ...vals, ...partialAt(tm, mp.atStart) }))}</p>`;
+    else if (rules.afterCure) html += `<p>${esc(t('falls.marginCure', { ...vals, what: rules.cureSale === 'partial' ? t('falls.whatPartial', partialAt(tm, mp.atStart)) : t('falls.whatAll') }))}</p>`;
     else html += `<p>${esc(t('falls.marginWarning', vals))}</p>`;
   }
-  if (rules.liquidationSale === 'partial') html += `<p>${esc(t('falls.liquidationPartial', { price: money0(lp.atStart, cur), target: pct(target, 0) }))}</p>`;
+  if (rules.liquidationSale === 'partial') html += `<p>${esc(t('falls.liquidationPartial', { price: money0(lp.atStart, cur), ...partialAt(tm, lp.atStart) }))}</p>`;
   else {
     const lq = costIfLiquidated(tm, { price: lp.atStart, debt: tm.loanAmount });
     html += `<p>${esc(t('falls.liquidationAll', { price: money0(lp.atStart, cur), sold: num(lq.btcSold, 4), returned: num(lq.btcReturned, 4), returnedValue: money0(lq.valueReturned, cur) }))}</p>`;
@@ -958,7 +972,9 @@ function renderFutures() {
     return;
   }
   const Fa = texts().falls; const paths = r.main.samplePaths;
-  const shown = showOtherPaths ? paths.slice(20, 40) : paths.slice(0, 20);
+  const sets = Math.max(1, Math.floor(paths.length / 20)); const set = pathSet % sets;
+  const shown = paths.slice(set * 20, set * 20 + 20);
+  $('#other-paths').textContent = t('falls.showOthers', { n: ((set + 1) % sets) + 1, sets });
   $('#futures-line').textContent = t('falls.futuresLine', { k: shown.filter((p) => p.event).length });
   futuresChart($('#futures-chart'), {
     ...chartCommon(), paths: shown,

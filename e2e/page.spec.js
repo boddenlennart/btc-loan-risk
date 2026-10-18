@@ -565,3 +565,54 @@ test('security rule: a script smuggled into the page is refused; normal use caus
   expect(await page.evaluate(() => [window.__ran, window.__ran2])).toEqual([undefined, undefined]);
   expect(errors.length).toBeGreaterThan(0); // the browser reported the refusals
 });
+
+test('partial sales: how much BTC the lender sells and what you keep, in the answer and in "What happens when BTC falls"', async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.locator('details.more[data-remember="more"] > summary').click();
+  await page.locator('[data-set="liquidationSale"][data-val="partial"]').click();
+  await expect(page.locator('#sold-line')).toContainText(/the lender sells about 0\.\d{4} of your 0\.\d{4} BTC to bring the LTV back to \d+%\. You keep 0\.\d{4} BTC/);
+  const [sold, btc, left] = (await page.locator('#sold-line').textContent()).match(/0\.\d{4}/g).map(Number);
+  expect(sold + left).toBeCloseTo(btc, 3); // sold + kept = all the BTC pledged
+  await page.locator('#sec-falls > summary').click();
+  await expect(page.locator('#falls-text')).toContainText(/\(liquidation\): the lender sells about 0\.\d{4} BTC, just enough to bring the LTV back to \d+%\. You keep 0\.\d{4} of your 0\.\d{4} BTC/);
+});
+
+test('"Show 20 other futures" goes through five different sets and says which one is next', async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.locator('#sec-falls > summary').click();
+  const btn = page.locator('#other-paths');
+  await expect(btn).toHaveText('Show 20 other futures (2 of 5)');
+  const seen = new Set();
+  for (let i = 0; i < 5; i++) {
+    seen.add(await page.locator('#futures-chart svg').innerHTML());
+    await btn.click();
+  }
+  expect(seen.size).toBe(5); // five different sets
+  await expect(btn).toHaveText('Show 20 other futures (2 of 5)'); // back to the first set
+});
+
+test('questions to ask the lender: their own visible block, not folded, and they can be copied', async ({ page, context, browserName }) => {
+  await open(page); await waitDone(page);
+  const block = page.locator('#questions-block');
+  await expect(block).toBeVisible(); // visible without opening any section
+  await expect(block.locator('h2')).toHaveText('Before you sign: questions to ask your lender');
+  await expect(block.locator('li')).toHaveCount(8);
+  test.skip(browserName !== 'chromium', 'reading the clipboard is only possible in Chromium\'s test mode');
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.locator('[data-copy-questions]').click();
+  const text = await page.evaluate(() => navigator.clipboard.readText());
+  expect(text).toMatch(/^Before you sign: questions to ask your lender\n\n- At which LTV do you sell my BTC\?/);
+});
+
+test('switching between starting LTV and BTC pledged converts the current values both ways', async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.locator('#f-loanAmount').fill('15000');
+  await page.locator('#f-initialLtv').fill('25');
+  await page.getByRole('button', { name: 'or enter the BTC you pledge' }).click();
+  // 15,000 / (25% × 60,000) = 1 BTC (the test price is 60,000); before the fix the old 0.3333 stayed
+  await expect(page.locator('#f-collateralBtc')).toHaveValue('1');
+  await expect(page.locator('#ltv-today')).toContainText('LTV 25.0%');
+  await page.locator('#f-collateralBtc').fill('0.5');
+  await page.getByRole('button', { name: 'or enter the LTV' }).click();
+  await expect(page.locator('#f-initialLtv')).toHaveValue('50'); // 15,000 / (0.5 × 60,000)
+});

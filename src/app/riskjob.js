@@ -174,7 +174,7 @@ async function run(id, terms, settings, garch, post = postMessage) {
 
   const buy = terms.purpose === 'buy';
   const result = { currency: terms.currency, garch: s.garch, facts: s.facts, history: { from: s.hourly.time[0], to: s.hourly.time[s.hourly.time.length - 1] } };
-  result.main = simulate(terms, s, settings, { samplePaths: 40, leverage: buy }); // 2 × 20 for "show 20 others"
+  result.main = simulate(terms, s, settings, { samplePaths: 100, leverage: buy }); // 5 × 20 for "show 20 other futures"
   await tick();
   // Comparison: every other offer on the same simulated futures, so differences come only from
   // the terms. Each value equals what that offer's own full result shows when it is selected.

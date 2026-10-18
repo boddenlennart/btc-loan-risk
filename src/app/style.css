@@ -260,6 +260,8 @@ input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius
 .lv .b i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--text-2); border-radius: 2px; }
 .lv b { text-align: right; }
 .lv.base { font-weight: 700; }
+.questions { padding-left: 1.2em; margin: 8px 0; }
+.questions li { margin: 6px 0; }
 .range-label { display: block; font-weight: 600; margin-top: 10px; }
 
 /* folded sections: hairlines, not cards */

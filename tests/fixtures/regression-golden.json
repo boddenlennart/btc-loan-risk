@@ -99,8 +99,8 @@
     },
     "leverage": null,
     "samplePaths": {
-     "count": 40,
-     "sold": 21,
+     "count": 100,
+     "sold": 58,
      "firstEvent": {
       "day": 8,
       "kind": "liquidationLtv"
@@ -436,8 +436,8 @@
     },
     "leverage": null,
     "samplePaths": {
-     "count": 40,
-     "sold": 25,
+     "count": 100,
+     "sold": 64,
      "firstEvent": {
       "day": 7,
       "kind": "cureExpired"
@@ -836,8 +836,8 @@
     },
     "leverage": null,
     "samplePaths": {
-     "count": 40,
-     "sold": 7,
+     "count": 100,
+     "sold": 28,
      "firstEvent": {
       "day": 352,
       "kind": "liquidationLtv"
@@ -1173,8 +1173,8 @@
     },
     "leverage": null,
     "samplePaths": {
-     "count": 40,
-     "sold": 20,
+     "count": 100,
+     "sold": 57,
      "firstEvent": {
       "day": 8,
       "kind": "liquidationLtv"
@@ -1510,8 +1510,8 @@
     },
     "leverage": null,
     "samplePaths": {
-     "count": 40,
-     "sold": 31,
+     "count": 100,
+     "sold": 73,
      "firstEvent": {
       "day": 5,
       "kind": "partial"
@@ -1857,8 +1857,8 @@
     },
     "leverage": null,
     "samplePaths": {
-     "count": 40,
-     "sold": 22,
+     "count": 100,
+     "sold": 61,
      "firstEvent": {
       "day": 6,
       "kind": "partial"
@@ -2197,8 +2197,8 @@
     },
     "leverage": null,
     "samplePaths": {
-     "count": 40,
-     "sold": 14,
+     "count": 100,
+     "sold": 44,
      "firstEvent": {
       "day": 60,
       "kind": "liquidationLtv"
@@ -2549,8 +2549,8 @@
     },
     "leverage": null,
     "samplePaths": {
-     "count": 40,
-     "sold": 17,
+     "count": 100,
+     "sold": 52,
      "firstEvent": {
       "day": 58,
       "kind": "liquidationLtv"
@@ -2896,8 +2896,8 @@
     },
     "leverage": null,
     "samplePaths": {
-     "count": 40,
-     "sold": 40,
+     "count": 100,
+     "sold": 100,
      "firstEvent": {
       "day": 2,
       "kind": "liquidationLtv"
@@ -3255,8 +3255,8 @@
      }
     },
     "samplePaths": {
-     "count": 40,
-     "sold": 14,
+     "count": 100,
+     "sold": 43,
      "firstEvent": {
       "day": 303,
       "kind": "liquidationLtv"
@@ -3625,8 +3625,8 @@
      }
     },
     "samplePaths": {
-     "count": 40,
-     "sold": 16,
+     "count": 100,
+     "sold": 41,
      "firstEvent": {
       "day": 630,
       "kind": "liquidationLtv"
@@ -3950,8 +3950,8 @@
     },
     "leverage": null,
     "samplePaths": {
-     "count": 40,
-     "sold": 13,
+     "count": 100,
+     "sold": 42,
      "firstEvent": {
       "day": 8,
       "kind": "liquidationLtv"
