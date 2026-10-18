@@ -30,6 +30,7 @@ export function renderShell() {
   $('#privacy-body').innerHTML = tx.legal.privacy.map((sec) => `<h3>${esc(sec.h)}</h3>${sec.p.map((x) => `<p>${em(x)}</p>`).join('')}`).join('');
   for (const n of document.querySelectorAll('.template-note')) n.hidden = !JSON.stringify(tx.legal).includes('«');
   $('#donate-address').textContent = SITE.donationAddress;
+  renderThemeBtn();
   renderFeedbackForm();
 }
 
@@ -47,6 +48,25 @@ function renderFeedbackForm() {
     ${attach}
     <p class="buttons"><button type="button" class="primary" data-fb-send>${esc(Fb.write)}</button><button type="button" class="secondary" data-fb-copy>${esc(Fb.copy)}</button></p>
     <p class="hint" id="fb-copied" hidden>${esc(t('feedback.copied', { email: SITE.feedbackEmail }))}</p>`;
+}
+
+// Light or dark: follows the device until the visitor chooses; the choice is remembered in this browser
+// (applied before the page is drawn by the small script in src/app/partials/theme-early.html).
+const THEME_KEY = 'btc-loan-risk:theme';
+const darkNow = () => (document.documentElement.dataset.theme ? document.documentElement.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches);
+function renderThemeBtn() {
+  const b = $('#theme-btn'); if (!b) return;
+  const dark = darkNow();
+  b.dataset.mode = dark ? 'dark' : 'light'; // the icon shows the mode a tap switches to
+  b.setAttribute('aria-label', t(dark ? 'ui.themeToLight' : 'ui.themeToDark'));
+  b.title = b.getAttribute('aria-label');
+  // the browser's own bar follows the chosen colours
+  for (const m of document.querySelectorAll('meta[name="theme-color"]')) m.setAttribute('content', dark ? '#121210' : '#f6f5f1');
+}
+export function setTheme(mode) {
+  if (mode) document.documentElement.dataset.theme = mode; else delete document.documentElement.dataset.theme;
+  try { if (mode) localStorage.setItem(THEME_KEY, mode); else localStorage.removeItem(THEME_KEY); } catch { /* storage blocked: for this visit only */ }
+  renderThemeBtn();
 }
 
 const closeLangMenu = () => { $('#lang-list').hidden = true; $('#lang-btn').setAttribute('aria-expanded', 'false'); };
@@ -73,6 +93,7 @@ export function initShell(o = {}) {
       $('#lang-btn').focus();
       return;
     }
+    if (tgt.closest('#theme-btn')) { setTheme(darkNow() ? 'light' : 'dark'); return; }
     if (tgt.closest('#lang-btn')) {
       const open = $('#lang-btn').getAttribute('aria-expanded') !== 'true';
       $('#lang-btn').setAttribute('aria-expanded', String(open)); $('#lang-list').hidden = !open;

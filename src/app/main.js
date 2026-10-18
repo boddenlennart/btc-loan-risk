@@ -16,7 +16,7 @@ import { getSpotPrice } from '../live/price.js';
 import { setData as jobSetData, run as jobRun } from './riskjob.js';
 import { encodeState, decodeLink } from './share.js';
 import { toTerms, numOr, today, exampleKey, switchCosts } from './terms.js';
-import { initShell, renderShell } from './shell.js';
+import { initShell, renderShell, setTheme } from './shell.js';
 import { dataAge } from '../data/candles.js';
 import { gunzipSync, strFromU8 } from 'fflate';
 
@@ -1081,6 +1081,7 @@ document.addEventListener('toggle', onToggle, true);
 // and shows the example again (with the live price, not a price typed in before)
 $('#forget-btn').addEventListener('click', () => {
   try { localStorage.removeItem(STORE_KEY); localStorage.removeItem('btc-loan-risk:lang'); } catch { /* ignore */ }
+  setTheme(null); // back to the device's light or dark setting
   const typedPrice = state.priceManual;
   compare = null; undoState = null; lastRisk = null; barNow = null; barWas = null;
   state = { ...EXAMPLE_FORM, currency: state.currency, btcPrice: state.btcPrice, priceManual: false };

@@ -40,8 +40,11 @@ describe.skipIf(!existsSync(page))(`built page ${name}: self-hosted, no external
     expect(scriptSrc).not.toContain("'unsafe-inline'");
     expect(scriptSrc).not.toContain("'unsafe-eval'");
     const runnable = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
-    expect(runnable).toHaveLength(1); // every other script block is data (JSON or plain text)
-    expect(scriptSrc).toContain(`'sha256-${createHash('sha256').update(runnable[0]).digest('base64')}'`);
+    // the light/dark script in <head> and the page's own script; every other script block is data (JSON or plain text)
+    expect(runnable).toHaveLength(2);
+    expect(runnable[0].length).toBeLessThan(200);
+    for (const r of runnable) expect(scriptSrc).toContain(`'sha256-${createHash('sha256').update(r).digest('base64')}'`);
+    expect(scriptSrc.match(/'sha256-/g)).toHaveLength(2);
     expect(html).not.toMatch(/<[^>]+\son[a-z]+=["']/i); // no onclick=, onsubmit= ... attributes
   });
   it('the Content Security Policy only allows the named price services (the check) or nothing (the other pages)', () => {

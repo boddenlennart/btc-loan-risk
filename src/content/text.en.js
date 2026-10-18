@@ -28,6 +28,8 @@ export default {
   ui: {
     languageName: 'English',
     languageSwitch: 'Language',
+    themeToLight: 'Switch to light mode',
+    themeToDark: 'Switch to dark mode',
     headline: 'An independent check for any Bitcoin loan offer.',
     subhead: 'Enter the terms from any lender. See the price at which BTC would be sold, how often that happened since 2014, and the full cost compared with selling.',
     trustBrowser: 'Runs only in your browser',

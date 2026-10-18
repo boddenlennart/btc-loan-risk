@@ -214,3 +214,39 @@ test('"Insights" on a 375 px phone: no sideways scrolling, neither the page nor 
     expect(await page.locator('.table-wrap').evaluateAll((ws) => ws.filter((w) => w.scrollWidth > w.clientWidth + 1).map((w) => w.getAttribute('aria-label')))).toEqual([]);
   }
 });
+
+test('light/dark switch: follows the device first, the choice sticks on every page and is applied before drawing; "Start over" forgets it', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  const errors = await visit(page, '/');
+  const bg = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const btn = page.locator('#theme-btn');
+  await expect(btn).toHaveAttribute('aria-label', 'Switch to light mode'); // the device is dark
+  const dark = await bg();
+  await btn.click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect(btn).toHaveAttribute('aria-label', 'Switch to dark mode');
+  expect(await bg()).not.toBe(dark);
+  // other page, then reload: still light, set before the page's own script runs
+  await page.locator('.desk-nav').getByText('How it works').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await page.addInitScript(() => document.addEventListener('DOMContentLoaded', () => { window.themeAtStart = document.documentElement.dataset.theme; }));
+  await page.reload();
+  expect(await page.evaluate(() => window.themeAtStart)).toBe('light');
+  await page.goto('/');
+  await page.locator('#forget-btn').click();
+  await expect(page.locator('html')).not.toHaveAttribute('data-theme', /./);
+  expect(await bg()).toBe(dark);
+  expect(errors).toEqual([]);
+});
+
+test('top bar on narrow phones (320 and 375 px): the name stays on one line, nothing overlaps', async ({ page }) => {
+  for (const width of [320, 375]) {
+    await visit(page, '/', { width });
+    const box = (s) => page.locator(s).boundingBox();
+    const [brand, theme, lang] = [await box('.brand span'), await box('#theme-btn'), await box('#lang-btn')];
+    expect(brand.height, `${width}px: name on one line`).toBeLessThan(30);
+    expect(brand.x + brand.width).toBeLessThanOrEqual(theme.x);
+    expect(theme.x + theme.width).toBeLessThanOrEqual(lang.x);
+    expect(lang.x + lang.width).toBeLessThanOrEqual(width);
+  }
+});

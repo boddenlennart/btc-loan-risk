@@ -111,12 +111,14 @@ const PAGES = [
 ];
 function assemble(page) {
   let html = read(page.src);
-  const parts = { '/*STYLE*/': style, '/*ICON*/': read('src/app/partials/icon.html').trim(), '/*HEADER*/': read('src/app/partials/header.html'), '/*FOOTER*/': footer(page.extra), ...page.parts };
+  const parts = { '/*THEME*/': read('src/app/partials/theme-early.html').trim(), '/*STYLE*/': style, '/*ICON*/': read('src/app/partials/icon.html').trim(), '/*HEADER*/': read('src/app/partials/header.html'), '/*FOOTER*/': footer(page.extra), ...page.parts };
   for (const [k, v] of Object.entries(parts)) html = html.replace(k, () => v);
   // Content Security Policy: only the page's own script may run, identified by its fingerprint
   // (SHA-256). Any other inline script, even an injected one, is refused by the browser.
-  const appScript = html.match(/<script>([\s\S]*?)<\/script>/)[1];
-  return html.replace('/*SCRIPT_HASH*/', `'sha256-${createHash('sha256').update(appScript).digest('base64')}'`);
+  // Two scripts may run: the tiny one in <head> that applies a chosen light/dark mode before the page
+  // is drawn (no flash of the wrong colours), and the page's own script.
+  const hashes = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => `'sha256-${createHash('sha256').update(m[1]).digest('base64')}'`);
+  return html.replace('/*SCRIPT_HASH*/', hashes.join(' '));
 }
 // Remind the owner while the legal templates still contain «placeholders».
 for (const lang of ['de', 'en']) {

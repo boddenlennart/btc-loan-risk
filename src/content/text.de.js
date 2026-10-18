@@ -25,6 +25,8 @@ export default {
   ui: {
     languageName: 'Deutsch',
     languageSwitch: 'Sprache',
+    themeToLight: 'Zum hellen Modus wechseln',
+    themeToDark: 'Zum dunklen Modus wechseln',
     headline: 'Ein unabhängiger Check für jedes Bitcoin-Kreditangebot.',
     subhead: 'Geben Sie die Bedingungen eines beliebigen Kreditgebers ein. Sehen Sie, bei welchem Kurs BTC verkauft würde, wie oft das seit 2014 passiert ist, und die Gesamtkosten im Vergleich zum Verkauf.',
     trustBrowser: 'Läuft nur in Ihrem Browser',

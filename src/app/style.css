@@ -100,6 +100,10 @@ p { margin: 8px 0; }
   .desk-nav a { padding: 0 12px; }
   .phone-nav { display: none; }
 }
+/* light/dark switch: shows the mode a tap switches to */
+.theme-btn { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-left: auto; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; flex: none; }
+.theme-btn[data-mode="dark"] .i-moon, .theme-btn[data-mode="light"] .i-sun, .theme-btn:not([data-mode]) .i-sun { display: none; }
+@media (min-width: 1024px) { .theme-btn { margin-left: 0; } }
 /* language menu: the current language, a short list, and "Your language is missing?" */
 .lang-menu { position: relative; }
 button.lang { display: inline-flex; align-items: center; gap: 6px; font: 600 14px var(--sans); color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0 12px; min-height: 44px; }
@@ -414,3 +418,7 @@ table.itable th { white-space: normal; } /* headers may wrap on phones; the numb
 table.itable td { white-space: nowrap; }
 table.itable td.heat { background: color-mix(in srgb, var(--critical) var(--heat), transparent); font-weight: 600; }
 .to-check { margin: 4px 0 8px; font-weight: 600; }
+/* narrow phones: the name stays on one line next to the light/dark switch and the language button */
+.brand span { white-space: nowrap; }
+@media (max-width: 399px) { .top-inner { gap: 8px; } button.lang > svg:first-child { display: none; } button.lang { padding: 0 10px; } }
+@media (max-width: 359px) { .brand { font-size: 16px; gap: 6px; } .brand .mark { width: 24px; height: 24px; } }
