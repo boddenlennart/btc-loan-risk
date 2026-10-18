@@ -1,6 +1,6 @@
 # Bitcoin Loan Check
 
-**An independent check for any Bitcoin loan offer** (bitcoinloancheck.com; German: Bitcoin-Kredit-Check at `/de/`). A small site of three pages that helps you judge a bitcoin-backed loan: **Check a loan** (`/`), **Insights** (`/insights/`, what happened to loans since 2014; being built) and **How it works** (`/method/`). The check estimates:
+**An independent check for any Bitcoin loan offer** (bitcoinloancheck.com; German: Bitcoin-Kredit-Check at `/de/`). A small site of three pages that helps you judge a bitcoin-backed loan: **Check a loan** (`/`), **Insights** (`/insights/`, 11 findings on what happened to loans since 2014, computed at every build on the real US-dollar history by `src/insights/compute.js`, so the weekly update refreshes them) and **How it works** (`/method/`). The check estimates:
 
 - the **chance that the loan gets liquidated** before it ends (your BTC sold by the lender), and
 - what the loan **costs compared with selling BTC** instead.
@@ -119,7 +119,7 @@ The page contains BTC price history up to a fixed date. A scheduled **GitHub Act
      - the 12 reference loans on frozen history, which must match the stored results exactly
      - the same 12 loans on the newest data, where every result must be valid
      - the test against history
-   - **the 60 browser tests of the finished pages, in Chrome's, Safari's and Firefox's engine**
+   - **the 62 browser tests of the finished pages, in Chrome's, Safari's and Firefox's engine**
    - the **drift guard**: if the new hours move the result of any reference loan by more than 5 of 100, the update stops and you get an issue instead of a pull request.
 6. It opens a **pull request** called "Weekly price data update [date]". The description says, in plain words:
    - old and new end date
@@ -277,7 +277,7 @@ Public APIs can change their rules at any time; the page then falls back to the 
 
 ## Tests and how each was verified
 
-Run with `npm test` (344 tests) and `npm run test:e2e` (60 browser tests, each in Chrome's, Safari's and Firefox's engine). Quality measurements: [ux/G-quality-report.md](ux/G-quality-report.md) (coverage, planted bugs, hostile input, browsers, speed, accessibility, security). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
+Run with `npm test` (355 tests) and `npm run test:e2e` (62 browser tests, each in Chrome's, Safari's and Firefox's engine). Quality measurements: [ux/G-quality-report.md](ux/G-quality-report.md) (coverage, planted bugs, hostile input, browsers, speed, accessibility, security). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
 
 | # | Test | How it was verified |
 |---|---|---|
@@ -367,6 +367,7 @@ src/engine/              calculations (loan, replay, Monte Carlo, GARCH, barrier
 src/content/             all page text (de, en) and the example values
 src/app/                 page layout, charts, worker, styles; shell.js + partials/: header and footer of every page
 src/pages/               the "Insights" and "How it works" page layouts
+src/insights/            the 11 insights, computed from the real history at build time
 src/live/price.js        live price fallback chain
 src/data/codec.js        compact price-history format
 src/data/fx.js           ECB exchange rates and the converted currencies

@@ -86,7 +86,8 @@ test('German: /de/method/ and /de/insights/ start in German; the language menu o
   await expect(page.locator('h1')).toHaveText('How it works');
   await visit(page, '/de/insights/');
   await expect(page.locator('h1')).toHaveText('Erkenntnisse');
-  await expect(page.locator('#groups li')).toHaveCount(5);
+  await expect(page.locator('.toc li')).toHaveCount(5);
+  await expect(page.locator('#i-survival .take')).toContainText('Start-LTV');
 });
 
 test('check page after the audit: the method section and repeats are gone, the insight line links on, feedback and "start over" sit in the footer', async ({ page }) => {
@@ -180,5 +181,36 @@ test('tile labels are never broken inside a word, only at spaces or proper hyphe
   await expect(page.locator('#tiles')).toContainText('Liquidiert bei');
   await expect.poll(broken).toEqual([]);
   await page.locator('#lang-btn').click(); await page.locator('[data-lang="en"]').click();
+  }
+});
+
+test('"Insights": all 11, each with what was measured and a table or chart; the line under the answer leads to the first group', async ({ page }) => {
+  const errors = await visit(page, '/insights/');
+  await expect(page).toHaveTitle('Insights · Bitcoin Loan Check');
+  await expect(page.locator('.toc li')).toHaveCount(5);
+  const ids = ['survival', 'falls', 'speed', 'levers', 'reserve', 'partial', 'cost', 'measure', 'buy', 'spend', 'swings'];
+  for (const id of ids) {
+    await expect(page.locator(`#i-${id} h3`)).toBeVisible();
+    await expect(page.locator(`#i-${id} table, #i-${id} .levers, #i-${id} svg`).first()).toBeVisible();
+  }
+  await expect(page.locator('.ins .take')).toHaveCount(10); // every insight except the lever list states its result in one sentence
+  await expect(page.locator('#i-survival td.heat')).toHaveCount(24);
+  await expect(page.locator('#basis')).toContainText('US dollars');
+  await expect(page.locator('#swings-chart svg')).toHaveCount(1);
+  // no "best" or advice wording in the insights (the intro says on purpose: never what is "best")
+  for (const el of await page.locator('.ins').all()) await expect(el).not.toContainText(/\bbest\b|recommend|you should/i);
+  expect(errors).toEqual([]);
+  // from the check: the line under the answer opens the insights at the first group
+  await visit(page, '/');
+  await page.locator('#fall-hook a').click();
+  await expect(page).toHaveURL(/\/insights\/#buffer$/);
+  await expect(page.locator('#buffer h2')).toBeInViewport();
+});
+
+test('"Insights" on a 375 px phone: no sideways scrolling, neither the page nor any table (both languages)', async ({ page }) => {
+  for (const path of ['/insights/', '/de/insights/']) {
+    await visit(page, path, { width: 375 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+    expect(await page.locator('.table-wrap').evaluateAll((ws) => ws.filter((w) => w.scrollWidth > w.clientWidth + 1).map((w) => w.getAttribute('aria-label')))).toEqual([]);
   }
 });

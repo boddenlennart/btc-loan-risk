@@ -246,7 +246,7 @@ export function storiesChart(el, data) {
 
 /**
  * A line over time with one marked point (the latest), e.g. 30-day price swings since 2014.
- * data: { points: [[unixTime, value], ...], fmt(value), fmtDate(unixTime), title, markLabel }
+ * data: { points: [[unixTime, value], ...], fmt(value), fmtDate(unixTime), title } (the dot is explained next to the chart)
  */
 export function lineChart(el, data) {
   const H = 240;
@@ -267,7 +267,6 @@ export function lineChart(el, data) {
   const [lt, lv] = pts[n - 1];
   svg.innerHTML = `${grid}${xt}<path d="${line}" class="line-series"/>
     <circle cx="${x(lt)}" cy="${y(lv)}" r="5" class="mark-now"/>
-    <text x="${x(lt) - 8}" y="${y(lv) - 10}" class="label-now" text-anchor="end">${esc(data.markLabel)}</text>
     <line class="cross" y1="${pad.t}" y2="${H - pad.b}" opacity="0"/>
     <rect class="hit" x="${pad.l}" y="0" width="${W - pad.l - pad.r}" height="${H}" fill="transparent"/>`;
   hover(el, svg, tip, pad, (xv) => {

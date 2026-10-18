@@ -173,16 +173,16 @@ How to review: read each row. Note the **number** of every text you do not under
 | 143 | Use your own terms → | Eigene Bedingungen eingeben → | `results.ownTerms` |
 | 144 | Change the terms | Bedingungen ändern | `results.editTerms` |
 | 145 | Borrow {amount} for {months} months against BTC worth {value} (LTV {ltv}). Sold at LTV {liq}. | {amount} für {months} Monate leihen, gegen BTC im Wert von {value} (LTV {ltv}). Verkauf bei LTV {liq}. | `results.exampleStory` |
-| 146 | Sold at | Verkauf bei | `results.tileSold` |
-| 147 | Part sold at | Teilverkauf bei | `results.tilePartSold` |
+| 146 | Liquidated at | Liquidiert bei | `results.tileSold` |
+| 147 | Partial liquidation at | Teil­liquidation bei | `results.tilePartSold` |
 | 148 | {drop} from today | {drop} gegenüber heute | `results.tileSoldSub` |
 | 149 | Margin call at | Margin Call bei | `results.tileMargin` |
 | 150 | {hours} h to fix | {hours} Std. zum Beheben | `results.tileMarginHours` |
 | 151 | a warning only | nur eine Warnung | `results.tileMarginWarning` |
 | 152 | part sold at once | sofortiger Teilverkauf | `results.tileMarginAuto` |
-| 153 | Full cost | Gesamtkosten | `results.tileCost` |
+| 153 | Full cost | Gesamt­kosten | `results.tileCost` |
 | 154 | effective {apr} a year | effektiv {apr} pro Jahr | `results.tileCostSub` |
-| 155 | Interest left | Restzinsen | `results.tileInterest` |
+| 155 | Interest left | Rest­zinsen | `results.tileInterest` |
 | 156 | until the end | bis zum Ende | `results.tileInterestSub` |
 | 157 | Beats selling if | Besser als Verkauf ab | `results.tileBreakeven` |
 | 158 | Pays off if | Lohnt sich ab | `results.tileBreakevenBuy` |
@@ -202,13 +202,13 @@ How to review: read each row. Note the **number** of every text you do not under
 | 172 | margin call, nothing sold | Margin Call, nichts verkauft | `results.legendMargin` |
 | 173 | nothing happened | nichts passiert | `results.legendNothing` |
 | 174 | Where BTC was sold, you keep about {kept} of it (middle value). | Wo BTC verkauft wurden, behalten Sie etwa {kept} davon (mittlerer Wert). | `results.kept` |
-| 175 | Because interest is added to the debt, the sale price rises to {end} by the end. | Weil Zinsen zur Schuld addiert werden, steigt der Verkaufskurs bis zum Ende auf {end}. | `results.rising` |
+| 175 | Because interest is added to the debt, the liquidation price rises to {end} by the end. | Weil Zinsen zur Schuld addiert werden, steigt der Liquidationskurs bis zum Ende auf {end}. | `results.rising` |
 | 176 | No price trend assumed · not a forecast | Ohne Kurstrend gerechnet · keine Prognose | `results.basis` |
 | 177 | Other methods: real history since 2014 {h} of 100, a volatility model {g} of 100; the simulation is the most cautious | Andere Methoden: echte Vergangenheit seit 2014 {h} von 100, ein Volatilitätsmodell {g} von 100; die Simulation ist die vorsichtigste | `results.otherMethods` |
 | 178 | Assumes you add no BTC or money after a margin call. | Angenommen: Sie schießen nach einem Margin Call weder BTC noch Geld nach. | `results.assumeNoTopUp` |
 | 179 | Assumes you add {reserve} once at the first margin call, and nothing more. | Angenommen: Sie schießen beim ersten Margin Call einmal {reserve} nach, danach nichts mehr. | `results.assumeReserve` |
-| 180 | If sold: you get back about {back} of your {btc} BTC; the rest repays the loan and the fee. | Bei einem Verkauf erhalten Sie etwa {back} Ihrer {btc} BTC zurück; der Rest tilgt Kredit und Gebühr. | `results.soldGetBack` |
-| 181 | If BTC falls to the sale price, the lender sells about {sold} of your {btc} BTC to bring the LTV back to {target}. You keep {left} BTC, and the loan continues. | Fällt BTC auf den Verkaufskurs, verkauft der Kreditgeber etwa {sold} Ihrer {btc} BTC, um den LTV wieder auf {target} zu bringen. Sie behalten {left} BTC, und der Kredit läuft weiter. | `results.soldPartial` |
+| 180 | If liquidated: you get back about {back} of your {btc} BTC; the rest repays the loan and the fee. | Bei einer Liquidation erhalten Sie etwa {back} Ihrer {btc} BTC zurück; der Rest tilgt Kredit und Gebühr. | `results.soldGetBack` |
+| 181 | If BTC falls to the liquidation price, the lender sells about {sold} of your {btc} BTC to bring the LTV back to {target}. You keep {left} BTC, and the loan continues. | Fällt BTC auf den Liquidationskurs, verkauft der Kreditgeber etwa {sold} Ihrer {btc} BTC, um den LTV wieder auf {target} zu bringen. Sie behalten {left} BTC, und der Kredit läuft weiter. | `results.soldPartial` |
 | 182 | {n} of 100 liquidated | {n} von 100 liquidiert | `results.barLine` |
 | 183 | (was {m}) | (vorher {m}) | `results.barWas` |
 | 184 | See the answer ↑ | Zur Antwort ↑ | `results.barGo` |
@@ -217,7 +217,7 @@ How to review: read each row. Note the **number** of every text you do not under
 | 187 | What this does not include | Was das nicht abbildet | `results.limitsTitle` |
 | 188 | The future can be wilder than the past. Every model can be wrong. | Die Zukunft kann wilder sein als die Vergangenheit. Jedes Modell kann falsch liegen. | `results.limits.0` |
 | 189 | The lender itself could fail, freeze withdrawals or lose your BTC. | Der Kreditgeber selbst kann pleitegehen, Auszahlungen stoppen oder Ihre BTC verlieren. | `results.limits.1` |
-| 190 | Prices can jump past the sale price, for example during an exchange outage. You may then get back less. | Kurse können über den Verkaufskurs hinweg springen, etwa bei einem Börsenausfall. Dann bekommen Sie womöglich weniger zurück. | `results.limits.2` |
+| 190 | Prices can jump past the liquidation price, for example during an exchange outage. You may then get back less. | Kurse können über den Liquidationskurs hinweg springen, etwa bei einem Börsenausfall. Dann bekommen Sie womöglich weniger zurück. | `results.limits.2` |
 | 191 | Your lender may measure the BTC price differently from this page. | Ihr Kreditgeber misst den BTC-Kurs womöglich anders als diese Seite. | `results.limits.3` |
 | 192 | Someone shared this calculation with you. Change any of the terms to see your own result. | Jemand hat diese Berechnung mit Ihnen geteilt. Ändern Sie eine der Bedingungen, um Ihr eigenes Ergebnis zu sehen. | `results.sharedNote` |
 | 193 | One change lowers this: {lever} → {p} of 100. | Eine Änderung senkt diese Zahl: {lever} → {p} von 100. | `results.bestLever` |
@@ -313,7 +313,7 @@ How to review: read each row. Note the **number** of every text you do not under
 |---|---|---|---|
 | 264 | Today | Heute | `falls.ladderToday` |
 | 265 | Margin call | Margin Call | `falls.ladderMargin` |
-| 266 | Sale | Verkauf | `falls.ladderSale` |
+| 266 | Liquidation | Liquidation | `falls.ladderSale` |
 | 267 | At {mcPrice} (margin call): you get a warning. Adding {topUp} BTC (≈ {topUpValue}) or repaying {repay} would bring the LTV back to {target}. | Bei {mcPrice} (Margin Call): Sie erhalten eine Warnung. {topUp} BTC nachschießen (≈ {topUpValue}) oder {repay} zurückzahlen würde den LTV wieder auf {target} bringen. | `falls.marginWarning` |
 | 268 | At {mcPrice} (margin call): you have {hours} hours to add {topUp} BTC (≈ {topUpValue}) or repay {repay}. Otherwise the lender sells {what}. | Bei {mcPrice} (Margin Call): Sie haben {hours} Stunden, um {topUp} BTC nachzuschießen (≈ {topUpValue}) oder {repay} zurückzuzahlen. Sonst verkauft der Kreditgeber {what}. | `falls.marginCure` |
 | 269 | At {mcPrice} (margin call): the lender sells about {sold} BTC at once to bring the LTV back to {target}. You keep {left} of your {btc} BTC, and the loan continues. | Bei {mcPrice} (Margin Call): Der Kreditgeber verkauft sofort etwa {sold} BTC, um den LTV wieder auf {target} zu bringen. Sie behalten {left} Ihrer {btc} BTC, und der Kredit läuft weiter. | `falls.marginAuto` |
@@ -399,238 +399,344 @@ How to review: read each row. Note the **number** of every text you do not under
 | 334 | Insights | Erkenntnisse | `insights.title` |
 | 335 | Insights · Bitcoin Loan Check | Erkenntnisse · Bitcoin-Kredit-Check | `insights.metaTitle` |
 | 336 | What happened to Bitcoin-backed loans since 2014: how much buffer they needed, which terms mattered most, and how fast BTC crashes went. Not a forecast, not advice. | Was mit Bitcoin-gedeckten Krediten seit 2014 geschah: wie viel Puffer sie brauchten, welche Bedingungen am meisten zählten und wie schnell BTC-Einbrüche verliefen. Keine Prognose, keine Beratung. | `insights.metaDescription` |
-| 337 | What happened to BTC-backed loans since 2014, measured on the same hourly prices as the check. Not a forecast and not advice: it shows what happened, never what is "best". | Was mit BTC-gedeckten Krediten seit 2014 geschah, gemessen an denselben stündlichen Kursen wie die Prüfung. Keine Prognose und keine Beratung: Es zeigt, was geschah, nie, was "am besten" ist. | `insights.intro` |
-| 338 | This page is being built. It will show: | Diese Seite entsteht gerade. Sie wird zeigen: | `insights.coming` |
-| 339 | How much buffer does a loan need? | Wie viel Puffer braucht ein Kredit? | `insights.groups.0` |
-| 340 | Which terms matter most? | Welche Bedingungen zählen am meisten? | `insights.groups.1` |
-| 341 | Comparing offers fairly | Angebote fair vergleichen | `insights.groups.2` |
-| 342 | By goal: buying more BTC, or spending without selling | Nach Ziel: mehr BTC kaufen oder ausgeben, ohne zu verkaufen | `insights.groups.3` |
-| 343 | Today's price swings compared with history | Die heutigen Kursschwankungen im Vergleich zur Vergangenheit | `insights.groups.4` |
-| 344 | Since 2014, BTC was higher 4 years later on {h4} of start days in this page's data. One year later it was higher on only {h1}, and the worst year ended {w1}. A loan has to survive the path, not just reach the destination. The past does not guarantee the future. | Seit 2014 stand BTC 4 Jahre später an {h4} der Starttage in den Daten dieser Seite höher. Ein Jahr später nur an {h1}, und das schlechteste Jahr endete bei {w1}. Ein Kredit muss den Weg überstehen, nicht nur das Ziel erreichen. Die Vergangenheit garantiert nicht die Zukunft. | `insights.levFacts` |
+| 337 | What happened to BTC-backed loans since 2014, measured on real hourly prices. Not a forecast and not advice: it shows what happened, never what is "best". | Was mit BTC-gedeckten Krediten seit 2014 geschah, gemessen an echten stündlichen Kursen. Keine Prognose und keine Beratung: Es zeigt, was geschah, nie, was "am besten" ist. | `insights.intro` |
+| 338 | Measured on real hourly BTC prices in US dollars from {from} to {to}, with a loan started on every day. Refreshed every week. | Gemessen an echten stündlichen BTC-Kursen in US-Dollar vom {from} bis {to}, mit einem Kredit, der an jedem Tag startet. Jede Woche aktualisiert. | `insights.basis` |
+| 339 | The reference loan, unless a table changes one term: {story} | Der Referenzkredit, wenn eine Tabelle nicht eine Bedingung ändert: {story} | `insights.reference` |
+| 340 | borrow US$10,000 for 12 months at 10% a year (1% fee), starting LTV 50%, margin call at 70% with 48 hours to fix it, liquidation at 80%. | 10.000 $ für 12 Monate zu 10 % pro Jahr (1 % Gebühr), Start-LTV 50 %, Margin Call bei 70 % mit 48 Stunden zum Beheben, Liquidation bei 80 %. | `insights.story` |
+| 341 | Start days close to each other share the same crashes. So the counts rest on fewer separate events than their size suggests. | Nahe beieinanderliegende Starttage teilen sich dieselben Einbrüche. Die Zahlen beruhen also auf weniger getrennten Ereignissen, als ihre Größe vermuten lässt. | `insights.overlap` |
+| 342 | On this page | Auf dieser Seite | `insights.toc` |
+| 343 | Check your own terms → | Eigene Bedingungen prüfen → | `insights.toCheck` |
+| 344 | How much buffer did a loan need? | Wie viel Puffer brauchte ein Kredit? | `insights.groups.buffer` |
+| 345 | Which terms mattered most? | Welche Bedingungen zählten am meisten? | `insights.groups.levers` |
+| 346 | Comparing offers fairly | Angebote fair vergleichen | `insights.groups.offers` |
+| 347 | By goal | Nach Ziel | `insights.groups.goal` |
+| 348 | Today's price swings | Die heutigen Kursschwankungen | `insights.groups.today` |
+| 349 | Liquidated loans by starting LTV and duration | Liquidierte Kredite nach Start-LTV und Laufzeit | `insights.survival.title` |
+| 350 | Of 100 start days, how many ended with the reference loan liquidated. Only the starting LTV and the duration change. | Von 100 Starttagen: wie viele mit liquidiertem Referenzkredit endeten. Nur Start-LTV und Laufzeit ändern sich. | `insights.survival.lead` |
+| 351 | At a starting LTV of {ltv} or lower, no {months}-month loan was liquidated on any start day since 2014. | Bei einem Start-LTV von {ltv} oder weniger wurde seit 2014 an keinem Starttag ein Kredit über {months} Monate liquidiert. | `insights.survival.takeSome` |
+| 352 | No starting LTV in this table survived every start day. Even at LTV 20%, {n} of 100 one-year loans were liquidated. | Kein Start-LTV in dieser Tabelle überstand jeden Starttag. Selbst bei LTV 20 % wurden {n} von 100 Kredite über ein Jahr liquidiert. | `insights.survival.takeNone` |
+| 353 | Starting LTV | Start-LTV | `insights.survival.colLtv` |
+| 354 | {n} months | {n} Monate | `insights.survival.months` |
+| 355 | Number = liquidated, of 100 start days. Darker = more often. | Zahl = liquidiert, von 100 Starttagen. Dunkler = häufiger. | `insights.survival.unit` |
+| 356 | The largest falls within 30 days to one year | Die größten Rückgänge innerhalb von 30 Tagen bis einem Jahr | `insights.falls.title` |
+| 357 | From each day's opening price to the lowest hourly price within the window. | Vom Eröffnungskurs jedes Tages bis zum tiefsten Stundenkurs innerhalb des Zeitraums. | `insights.falls.lead` |
+| 358 | Within one year, BTC fell by {q90} or more in 10 of 100 periods. The worst fall was {worst}, starting on {date}. | Innerhalb eines Jahres fiel BTC in 10 von 100 Zeiträumen um {q90} oder mehr. Der schlimmste Rückgang betrug {worst}, ab dem {date}. | `insights.falls.take` |
+| 359 | Within | Innerhalb | `insights.falls.head.0` |
+| 360 | Half of the periods | Hälfte der Zeiträume | `insights.falls.head.1` |
+| 361 | 90 of 100 | 90 von 100 | `insights.falls.head.2` |
+| 362 | 95 of 100 | 95 von 100 | `insights.falls.head.3` |
+| 363 | Worst | Schlimmster | `insights.falls.head.4` |
+| 364 | {n} days | {n} Tage | `insights.falls.days` |
+| 365 | Read: in 90 of 100 periods of this length, BTC fell at most this far at some point. | Lesart: In 90 von 100 Zeiträumen dieser Länge fiel BTC zwischendurch höchstens so weit. | `insights.falls.unit` |
+| 366 | A loan is liquidated after a fall of 1 − starting LTV ÷ liquidation LTV. Example: LTV 50% and liquidation at 80% give a fall of 37.5%. | Ein Kredit wird nach einem Rückgang von 1 − Start-LTV ÷ Liquidations-LTV liquidiert. Beispiel: LTV 50 % und Liquidation bei 80 % ergeben 37,5 %. | `insights.falls.bridge` |
+| 367 | How fast a margin call turned into a liquidation | Wie schnell aus einem Margin Call eine Liquidation wurde | `insights.speed.title` |
+| 368 | The reference loan with the margin call as a warning only: the time from the first margin call until the price reached the liquidation level. | Der Referenzkredit mit dem Margin Call nur als Warnung: die Zeit vom ersten Margin Call, bis der Kurs die Liquidationsschwelle erreichte. | `insights.speed.lead` |
+| 369 | Of 100 margin calls, {a} were followed by the liquidation price within 24 hours. | Auf {a} von 100 Margin Calls folgte der Liquidationskurs innerhalb von 24 Stunden. | `insights.speed.take` |
+| 370 | Liquidation price reached | Liquidationskurs erreicht | `insights.speed.head.0` |
+| 371 | Of 100 margin calls | Von 100 Margin Calls | `insights.speed.head.1` |
+| 372 | within 24 hours | innerhalb von 24 Stunden | `insights.speed.within` |
+| 373 | {a} to {b} hours later | {a} bis {b} Stunden später | `insights.speed.between` |
+| 374 | later in the loan | später in der Laufzeit | `insights.speed.later` |
+| 375 | not before the loan ended | nicht vor Laufzeitende | `insights.speed.never` |
+| 376 | {n} of 100 margin calls came at night or at the weekend (outside 8:00–20:00 on weekdays, Central European Time). | {n} von 100 Margin Calls kamen nachts oder am Wochenende (außerhalb 8–20 Uhr an Werktagen, mitteleuropäische Zeit). | `insights.speed.night` |
+| 377 | A deadline to add BTC only helps if you can act before the price gets there. | Eine Frist zum Nachschießen hilft nur, wenn Sie handeln können, bevor der Kurs dort ist. | `insights.speed.note` |
+| 378 | One change at a time | Eine Änderung nach der anderen | `insights.levers.title` |
+| 379 | The reference loan was liquidated on {base} of 100 start days. Here it is with one term changed. | Der Referenzkredit wurde an {base} von 100 Starttagen liquidiert. Hier mit jeweils einer geänderten Bedingung. | `insights.levers.lead` |
+| 380 | Starting LTV 40% instead of 50% | Start-LTV 40 % statt 50 % | `insights.levers.names.lowerLtv` |
+| 381 | Liquidation LTV 85% instead of 80% | Liquidations-LTV 85 % statt 80 % | `insights.levers.names.higherLiq` |
+| 382 | 72 hours to fix a margin call instead of 48 | 72 Stunden zum Beheben eines Margin Calls statt 48 | `insights.levers.names.longerCure` |
+| 383 | Margin call only a warning | Margin Call nur eine Warnung | `insights.levers.names.warningOnly` |
+| 384 | US$2,000 ready to add at a margin call | 2.000 $ bereit zum Nachschießen beim Margin Call | `insights.levers.names.reserve` |
+| 385 | 6 months instead of 12 | 6 statt 12 Monate | `insights.levers.names.shorter` |
+| 386 | The reference loan as it is | Der Referenzkredit, wie er ist | `insights.levers.base` |
+| 387 | Number = liquidated, of 100 start days. | Zahl = liquidiert, von 100 Starttagen. | `insights.levers.unit` |
+| 388 | A higher liquidation LTV and a longer deadline changed little here. After a margin call at 70%, the price had seldom recovered when the deadline ended, so the lender sold anyway. | Ein höherer Liquidations-LTV und eine längere Frist änderten hier wenig. Nach einem Margin Call bei 70 % hatte sich der Kurs bis Fristende selten erholt, also verkaufte der Kreditgeber trotzdem. | `insights.levers.note` |
+| 389 | How much extra BTC would have been enough | Wie viel zusätzliche BTC gereicht hätten | `insights.reserve.title` |
+| 390 | Extra BTC, as a share of the BTC pledged, that would have kept the LTV below the liquidation LTV (80%) for the whole year. | Zusätzliche BTC, als Anteil der hinterlegten BTC, die den LTV das ganze Jahr unter dem Liquidations-LTV (80 %) gehalten hätten. | `insights.reserve.lead` |
+| 391 | Starting LTV | Start-LTV | `insights.reserve.head.0` |
+| 392 | Half of the start days | Hälfte der Starttage | `insights.reserve.head.1` |
+| 393 | 90 of 100 | 90 von 100 | `insights.reserve.head.2` |
+| 394 | 95 of 100 | 95 von 100 | `insights.reserve.head.3` |
+| 395 | Worst | Schlimmster | `insights.reserve.head.4` |
+| 396 | At a starting LTV of 50%, {q90} more BTC would have been enough on 90 of 100 start days. The worst start day needed {max} more. | Bei einem Start-LTV von 50 % hätten an 90 von 100 Starttagen {q90} mehr BTC gereicht. Der schlimmste Starttag brauchte {max} mehr. | `insights.reserve.take` |
+| 397 | Pledged at the start, extra BTC lowers the starting LTV. Kept aside, it only helps if it can be added in time. | Zu Beginn hinterlegt, senken zusätzliche BTC den Start-LTV. Beiseitegelegt helfen sie nur, wenn sie rechtzeitig nachgeschossen werden. | `insights.reserve.note` |
+| 398 | Partial or full sale: the BTC you keep | Teil- oder Komplettverkauf: die BTC, die Ihnen bleiben | `insights.partial.title` |
+| 399 | On the {n} start days on which the reference loan was liquidated: how much of the pledged BTC was still yours at the end, after repaying the loan. | An den {n} Starttagen, an denen der Referenzkredit liquidiert wurde: wie viel der hinterlegten BTC am Ende noch Ihnen gehörte, nach Tilgung des Kredits. | `insights.partial.lead` |
+| 400 | Full sale: the lender sells everything | Komplettverkauf: Der Kreditgeber verkauft alles | `insights.partial.full` |
+| 401 | Partial sales: the lender sells enough to return to LTV 50% | Teilverkäufe: Der Kreditgeber verkauft so viel, dass der LTV wieder 50 % beträgt | `insights.partial.part` |
+| 402 | Rule | Regel | `insights.partial.head.0` |
+| 403 | BTC kept (middle value) | Verbliebene BTC (mittlerer Wert) | `insights.partial.head.1` |
+| 404 | With partial sales, more BTC was left on {n} of 100 of these start days. | Mit Teilverkäufen blieben an {n} von 100 dieser Starttage mehr BTC übrig. | `insights.partial.take` |
+| 405 | A partial sale keeps the loan going, so a further fall can lead to another sale. | Ein Teilverkauf hält den Kredit am Laufen, ein weiterer Rückgang kann also zu einem weiteren Verkauf führen. | `insights.partial.note` |
+| 406 | Cost including the risk | Kosten einschließlich des Risikos | `insights.cost.title` |
+| 407 | Interest and fees, plus the average loss of a liquidation times how often it happened. The loss: the BTC sold, valued at the end of the loan, minus the loan it repaid. | Zinsen und Gebühren, plus der durchschnittliche Verlust einer Liquidation mal ihrer Häufigkeit. Der Verlust: die verkauften BTC, bewertet am Laufzeitende, minus den Kredit, den sie tilgten. | `insights.cost.lead` |
+| 408 | Starting LTV | Start-LTV | `insights.cost.head.0` |
+| 409 | Interest and fees | Zinsen und Gebühren | `insights.cost.head.1` |
+| 410 | Liquidated, of 100 | Liquidiert, von 100 | `insights.cost.head.2` |
+| 411 | Average loss if liquidated | Durchschnittlicher Verlust bei Liquidation | `insights.cost.head.3` |
+| 412 | Cost including the risk | Kosten einschließlich Risiko | `insights.cost.head.4` |
+| 413 | Offer | Angebot | `insights.cost.offer` |
+| 414 | Interest and fees: {cost} in every row; only the starting LTV changes. | Zinsen und Gebühren: {cost} in jeder Zeile; nur der Start-LTV ändert sich. | `insights.cost.sameCost` |
+| 415 | Two offers for the same US$10,000 over 12 months | Zwei Angebote für dieselben 10.000 $ über 12 Monate | `insights.cost.offersTitle` |
+| 416 | A: 8% a year, LTV 60% | A: 8 % pro Jahr, LTV 60 % | `insights.cost.offerA` |
+| 417 | B: 12% a year, LTV 40% | B: 12 % pro Jahr, LTV 40 % | `insights.cost.offerB` |
+| 418 | Offer A has the lower interest. Including the liquidations since 2014, it cost {a} against {b} for offer B. | Angebot A hat die niedrigeren Zinsen. Einschließlich der Liquidationen seit 2014 kostete es {a}, Angebot B {b}. | `insights.cost.takeMore` |
+| 419 | Offer A has the lower interest, and including the liquidations since 2014 it also cost less: {a} against {b} for offer B. | Angebot A hat die niedrigeren Zinsen und kostete auch einschließlich der Liquidationen seit 2014 weniger: {a} gegenüber {b} für Angebot B. | `insights.cost.takeLess` |
+| 420 | An average over start days, not a price you pay. A single liquidation can cost far more. | Ein Durchschnitt über Starttage, kein Preis, den Sie zahlen. Eine einzelne Liquidation kann viel mehr kosten. | `insights.cost.note` |
+| 421 | Hourly lows or a smoother price | Stündliche Tiefstkurse oder ein glatterer Kurs | `insights.measure.title` |
+| 422 | Lenders measure the BTC price differently. Here: the lowest price of every hour (as on the check) against the hourly closing price, a smoother stand-in for an averaged price index. | Kreditgeber messen den BTC-Kurs unterschiedlich. Hier: der tiefste Kurs jeder Stunde (wie bei der Prüfung) gegenüber dem stündlichen Schlusskurs, einem glatteren Ersatz für einen gemittelten Preisindex. | `insights.measure.lead` |
+| 423 | Starting LTV | Start-LTV | `insights.measure.head.0` |
+| 424 | Hourly lows | Stündliche Tiefstkurse | `insights.measure.head.1` |
+| 425 | Hourly closes | Stündliche Schlusskurse | `insights.measure.head.2` |
+| 426 | For these loans, the two prices gave almost the same result: at most {n} of 100 start days apart. | Für diese Kredite ergaben beide Kurse fast dasselbe: höchstens {n} von 100 Starttagen Unterschied. | `insights.measure.take` |
+| 427 | The hourly low includes every short dip within the hour. A lender that averages over exchanges or minutes sees fewer of these dips. | Der stündliche Tiefstkurs enthält jeden kurzen Einbruch innerhalb der Stunde. Ein Kreditgeber, der über Börsen oder Minuten mittelt, sieht weniger dieser Einbrüche. | `insights.measure.note` |
+| 428 | Buying more BTC with the loan | Mit dem Kredit mehr BTC kaufen | `insights.buy.title` |
+| 429 | The loan buys BTC at the start and is repaid by selling BTC at the end. Of 100 start days, how many ended with more BTC than pledged. | Der Kredit kauft zu Beginn BTC und wird am Ende durch einen BTC-Verkauf getilgt. Von 100 Starttagen: wie viele mit mehr BTC endeten als hinterlegt. | `insights.buy.lead` |
+| 430 | Over 12 months, {a} of 100 start days ended with more BTC at LTV 20%, and {b} at LTV 50%. | Über 12 Monate endeten bei LTV 20 % {a} von 100 Starttagen mit mehr BTC, bei LTV 50 % {b}. | `insights.buy.take` |
+| 431 | Number = more BTC at the end, of 100 start days. Liquidations included. | Zahl = am Ende mehr BTC, von 100 Starttagen. Liquidationen eingerechnet. | `insights.buy.unit` |
+| 432 | The rise a loan needs, and how often it happened | Der nötige Anstieg und wie oft er eintrat | `insights.buy.neededTitle` |
+| 433 | Duration | Laufzeit | `insights.buy.neededHead.0` |
+| 434 | Rise needed to pay off | Nötiger Anstieg | `insights.buy.neededHead.1` |
+| 435 | BTC rose more, of 100 periods | BTC stieg stärker, von 100 Zeiträumen | `insights.buy.neededHead.2` |
+| 436 | This table leaves liquidation out; the one above includes it. | Diese Tabelle lässt Liquidationen außen vor; die obere rechnet sie ein. | `insights.buy.neededNote` |
+| 437 | Borrowing instead of selling | Leihen statt verkaufen | `insights.spend.title` |
+| 438 | You need US$10,000. Either sell BTC for it at the start, or borrow it and repay at the end by selling BTC. Of 100 start days, how often borrowing left more BTC. | Sie brauchen 10.000 $. Entweder verkaufen Sie dafür zu Beginn BTC, oder Sie leihen sie und tilgen am Ende durch einen BTC-Verkauf. Von 100 Starttagen: wie oft Leihen mehr BTC übrig ließ. | `insights.spend.lead` |
+| 439 | Starting LTV | Start-LTV | `insights.spend.head.0` |
+| 440 | No tax | Ohne Steuer | `insights.spend.head.1` |
+| 441 | Selling now taxed at 25%, later tax-free | Verkauf jetzt mit 25 % besteuert, später steuerfrei | `insights.spend.head.2` |
+| 442 | Without tax, borrowing at LTV 30% left more BTC on {n} of 100 start days. | Ohne Steuer ließ Leihen bei LTV 30 % an {n} von 100 Starttagen mehr BTC übrig. | `insights.spend.take` |
+| 443 | Tax rules differ by country and person. The 25% is an example only. | Steuerregeln unterscheiden sich je nach Land und Person. Die 25 % sind nur ein Beispiel. | `insights.spend.note` |
+| 444 | Today's price swings compared with history | Die heutigen Kursschwankungen im Vergleich zur Vergangenheit | `insights.swings.title` |
+| 445 | How much the BTC price moved in the last 30 days, in yearly terms, against every 30-day period since 2014. | Wie stark sich der BTC-Kurs in den letzten 30 Tagen bewegte, auf ein Jahr gerechnet, im Vergleich zu jedem 30-Tage-Zeitraum seit 2014. | `insights.swings.lead` |
+| 446 | In the last 30 days, the price swung by {now} in yearly terms (volatility). Since 2014, {n} of 100 periods of 30 days were calmer. | In den letzten 30 Tagen schwankte der Kurs um {now}, auf ein Jahr gerechnet (Volatilität). Seit 2014 waren {n} von 100 Zeiträumen von 30 Tagen ruhiger. | `insights.swings.take` |
+| 447 | Half of all periods swung by less than {q50}. 10 of 100 swung by less than {q10}, and 10 of 100 by more than {q90}. | Die Hälfte aller Zeiträume schwankte um weniger als {q50}. 10 von 100 schwankten um weniger als {q10}, 10 von 100 um mehr als {q90}. | `insights.swings.range` |
+| 448 | 30-day price swings since 2014, in yearly terms | 30-Tage-Kursschwankungen seit 2014, auf ein Jahr gerechnet | `insights.swings.chartTitle` |
+| 449 | Dot: the last 30 days, {now}. | Punkt: die letzten 30 Tage, {now}. | `insights.swings.now` |
+| 450 | Not a forecast: calm periods can end quickly. | Keine Prognose: Ruhige Phasen können schnell enden. | `insights.swings.note` |
 
 ## Page: How it works
 
 | # | English | Deutsch | key |
 |---|---|---|---|
-| 345 | How it works | So funktioniert es | `method.title` |
-| 346 | How it works · Bitcoin Loan Check | So funktioniert es · Bitcoin-Kredit-Check | `method.metaTitle` |
-| 347 | How Bitcoin Loan Check computes the risk of a BTC-backed loan, which data it uses, how it was tested against history, and how to verify every number yourself. | Wie der Bitcoin-Kredit-Check das Risiko eines BTC-gedeckten Kredits berechnet, welche Daten er nutzt, wie er an der Vergangenheit getestet wurde und wie Sie jede Zahl selbst prüfen. | `method.metaDescription` |
-| 348 | The page takes BTC's real price moves since 2014 and builds 10,000 possible futures from them. On each one, it applies your lender's rules hour by hour. The number at the top counts in how many of 100 futures your BTC is sold. Two other methods check it. | Die Seite nimmt die echten Kursbewegungen von BTC seit 2014 und baut daraus 10.000 mögliche Zukünfte. Auf jede wendet sie Stunde für Stunde die Regeln Ihres Kreditgebers an. Die Zahl oben zählt, in wie vielen von 100 Zukünften Ihre BTC verkauft werden. Zwei weitere Methoden prüfen sie. | `method.short` |
-| 349 | The charts and numbers on this page use the example loan: {story} | Diagramme und Zahlen auf dieser Seite nutzen den Beispielkredit: {story} | `method.example` |
-| 350 | On this page | Auf dieser Seite | `method.toc` |
-| 351 | How the numbers are made | Wie die Zahlen entstehen | `method.stepsTitle` |
-| 352 | Real prices: every hour since 2014, with its lowest price, so short crashes are not missed. | Echte Kurse: jede Stunde seit 2014, mit ihrem tiefsten Kurs, damit kurze Einbrüche nicht verloren gehen. | `method.steps.0` |
-| 353 | Possible futures: real daily price moves, cut into 30-day pieces and joined at random into 10,000 paths. | Mögliche Zukünfte: echte tägliche Kursbewegungen, in 30-Tage-Stücke geschnitten und zufällig zu 10.000 Verläufen aneinandergereiht. | `method.steps.1` |
-| 354 | The lender's rules: margin call, deadlines, partial sales and fees, applied exactly as entered, on every path. | Die Regeln des Kreditgebers: Margin Call, Fristen, Teilverkäufe und Gebühren, genau wie eingegeben, in jedem Verlauf. | `method.steps.2` |
-| 355 | Counted: in how many of 100 paths the BTC is sold before the loan ends. That is the number at the top. | Gezählt: in wie vielen von 100 Verläufen die BTC vor Laufzeitende verkauft werden. Das ist die Zahl oben. | `method.steps.3` |
-| 356 | Range of simulated prices | Spanne der simulierten Kurse | `method.fanTitle` |
-| 357 | Each month: 9 of 10 simulated prices lie in the light band, half in the dark band; the line is the middle one. The bands show prices, not outcomes: a path that dips below the sale line and recovers still ended in a sale. | Jeden Monat: 9 von 10 simulierten Kursen liegen im hellen Band, die Hälfte im dunklen; die Linie ist der mittlere. Die Bänder zeigen Kurse, keine Ergebnisse: Ein Verlauf, der unter die Verkaufslinie taucht und sich erholt, endete trotzdem mit einem Verkauf. | `method.fanNote` |
-| 358 | Liquidated by the end of each month (of 100) | Liquidiert bis zum Ende jedes Monats (von 100) | `method.byMonthTitle` |
-| 359 | Three methods side by side | Drei Methoden im Vergleich | `method.methodsTitle` |
-| 360 | Every method can be wrong in its own way. So the page computes the same loan three ways, plus a textbook formula as a rough check. | Jede Methode kann auf ihre eigene Art falsch liegen. Deshalb rechnet die Seite denselben Kredit auf drei Wegen, dazu eine Lehrbuchformel als grobe Prüfung. | `method.methodsIntro` |
-| 361 | Possible futures from past price moves: the method above. It gives the number at the top. | Mögliche Zukünfte aus früheren Kursbewegungen: die Methode oben. Sie liefert die Zahl oben auf der Seite. | `method.methods.0` |
-| 362 | Volatility model ([[garch]]): wild days make more wild days likely. It is fitted to the same prices. | Volatilitätsmodell ([[garch]]): Wilde Tage machen weitere wilde Tage wahrscheinlicher. Es ist an dieselben Kurse angepasst. | `method.methods.1` |
-| 363 | Real history: the same loan, started on every day since 2014, against the real lowest price of every hour. It includes BTC's rise since 2014. | Echte Vergangenheit: derselbe Kredit, an jedem Tag seit 2014 gestartet, gegen den echten tiefsten Kurs jeder Stunde. Sie enthält den Anstieg von BTC seit 2014. | `method.methods.2` |
-| 364 | Methods compared (liquidated, of 100) | Methoden im Vergleich (liquidiert, von 100) | `method.compareTitle` |
-| 365 | Possible futures from past price moves | Mögliche Zukünfte aus früheren Kursbewegungen | `method.compareRows.bootstrap` |
-| 366 | Volatility model (GARCH) | Volatilitätsmodell (GARCH) | `method.compareRows.garch` |
-| 367 | Real history since 2014 | Echte Vergangenheit seit 2014 | `method.compareRows.replay` |
-| 368 | Textbook formula (calm, regular moves) | Lehrbuchformel (ruhige, gleichmäßige Bewegungen) | `method.compareRows.barrier` |
-| 369 | The textbook formula assumes calm, regular price moves (volatility {sigma} a year) and ignores the margin-call rules, so it tends to show a lower number. It is a rough check only. | Die Lehrbuchformel nimmt ruhige, gleichmäßige Kursbewegungen an (Volatilität {sigma} pro Jahr) und lässt die Margin-Call-Regeln außen vor; sie zeigt deshalb eher eine niedrigere Zahl. Sie dient nur als grobe Prüfung. | `method.barrierNote` |
-| 370 | Settings used: {paths} futures, {block}-day stretches, data {from} to {to}. | Verwendete Einstellungen: {paths} Zukünfte, {block}-Tage-Abschnitte, Daten {from} bis {to}. | `method.settings` |
-| 371 | The test against history | Der Test an der Vergangenheit | `method.testTitle` |
-| 372 | From 2016 on, the method only saw the past and then predicted the lowest price of the next 90 and 365 days. Reality fell below its "worst 5%" level in 0 to 6 of 100 cases, close to or below the promised 5. The method is cautious rather than optimistic. | Ab 2016 sah die Methode nur die Vergangenheit und sagte dann den tiefsten Kurs der nächsten 90 und 365 Tage voraus. Die Wirklichkeit lag in 0 bis 6 von 100 Fällen unter ihrem "schlechtesten 5 %"-Wert, nahe an oder unter den versprochenen 5. Die Methode ist eher vorsichtig als optimistisch. | `method.test` |
-| 373 | Data and the weekly update | Daten und die wöchentliche Aktualisierung | `method.dataTitle` |
-| 374 | Price data: hourly prices from the exchanges Bitstamp (USD since 2014, EUR since 2017) and Kraken (EUR 2014–2016), as published by the exchanges. Known gap: Bitstamp was offline from 5 to 9 January 2015. | Kursdaten: stündliche Kurse der Börsen Bitstamp (USD seit 2014, EUR seit 2017) und Kraken (EUR 2014–2016), wie von den Börsen veröffentlicht. Bekannte Lücke: Bitstamp war vom 5. bis 9. Januar 2015 offline. | `method.data.0` |
-| 375 | Other currencies (CHF, GBP, CAD, AUD, CZK, PLN): the euro prices, converted hour by hour with the daily exchange rate of the European Central Bank. Compared with real exchange prices, half of all hours differ by 0.2% or less. | Weitere Währungen (CHF, GBP, CAD, AUD, CZK, PLN): die Euro-Kurse, Stunde für Stunde mit dem täglichen Wechselkurs der Europäischen Zentralbank umgerechnet. Gegenüber echten Börsenkursen weicht die Hälfte aller Stunden um höchstens 0,2 % ab. | `method.data.1` |
-| 376 | Current price: Coinbase, or if that fails Kraken, Binance or CoinGecko. The page also adds the hours since the last update from Bitstamp. | Aktueller Kurs: Coinbase, oder wenn das scheitert Kraken, Binance oder CoinGecko. Die Seite ergänzt außerdem die Stunden seit der letzten Aktualisierung von Bitstamp. | `method.data.2` |
-| 377 | Once a week, an automatic job adds the newest prices and exchange rates. It checks them first (gaps, impossible prices, sources that disagree) and stops if something looks wrong. | Einmal pro Woche ergänzt ein automatischer Ablauf die neuesten Kurse und Wechselkurse. Er prüft sie zuerst (Lücken, unmögliche Kurse, Quellen, die sich widersprechen) und hält an, wenn etwas nicht stimmt. | `method.data.3` |
-| 378 | Your lender decides which BTC price counts: one exchange, an average of several, or an average over some minutes. A single exchange can briefly drop much lower than others. This page uses the lowest price of every hour on one exchange, which is cautious, but it cannot copy your lender's method exactly. | Ihr Kreditgeber entscheidet, welcher BTC-Kurs zählt: eine Börse, ein Durchschnitt mehrerer oder ein Durchschnitt über einige Minuten. Eine einzelne Börse kann kurz viel tiefer fallen als andere. Diese Seite nutzt den tiefsten Kurs jeder Stunde an einer Börse. Das ist vorsichtig, kann die Methode Ihres Kreditgebers aber nicht genau nachbilden. | `method.measure` |
-| 379 | Why no price trend is assumed | Warum kein Kurstrend angenommen wird | `method.trendTitle` |
-| 380 | With BTC's past average growth built in, the test against history failed: the method became too optimistic. On the check page, "Does the price trend matter?" shows how much a trend would change your answer. | Mit dem früheren Durchschnittswachstum von BTC fiel der Test an der Vergangenheit durch: Die Methode wurde zu optimistisch. Auf der Prüfseite zeigt "Spielt der Kurstrend eine Rolle?", wie stark ein Trend Ihre Antwort ändern würde. | `method.trend` |
-| 381 | What the model cannot do | Was das Modell nicht kann | `method.limitsTitle` |
-| 382 | It only knows price moves that happened since 2014. A crash of a new kind is not in it. | Es kennt nur Kursbewegungen, die es seit 2014 gab. Ein Einbruch neuer Art ist nicht enthalten. | `method.limits.0` |
-| 383 | It joins 30-day pieces at random, so longer rising or falling phases are mixed up. The test against history checks that this does not make it too optimistic. | Es reiht 30-Tage-Stücke zufällig aneinander, längere Phasen mit steigenden oder fallenden Kursen werden also vermischt. Der Test an der Vergangenheit prüft, dass es dadurch nicht zu optimistisch wird. | `method.limits.1` |
-| 384 | It assumes no price trend. If BTC rises strongly, real outcomes are better; if it falls for years, they are worse. | Es nimmt keinen Kurstrend an. Steigt BTC stark, fallen echte Ergebnisse besser aus; fällt BTC über Jahre, schlechter. | `method.limits.2` |
-| 385 | Verify it yourself | Selbst prüfen | `method.verifyTitle` |
-| 386 | All code, data and tests are open: {link} | Der gesamte Code, die Daten und die Tests sind offen: {link} | `method.code` |
-| 387 | The tests recompute 12 reference loans to 9 decimal places. They also check every rule of the lender model, and break the code on purpose to see that the tests notice. | Die Tests rechnen 12 Referenzkredite auf 9 Nachkommastellen nach. Sie prüfen außerdem jede Regel des Kreditgeber-Modells und bauen absichtlich Fehler in den Code ein, um zu sehen, dass die Tests sie bemerken. | `method.verify.0` |
-| 388 | Check one number by hand: take the sale price from your answer and look up in the price data how often BTC fell that far within your loan's duration. That is roughly the "real history" number. | Eine Zahl von Hand prüfen: Nehmen Sie den Verkaufskurs aus Ihrer Antwort und schauen Sie in den Kursdaten nach, wie oft BTC innerhalb Ihrer Laufzeit so weit fiel. Das ist ungefähr die Zahl "echte Vergangenheit". | `method.verify.1` |
+| 451 | How it works | So funktioniert es | `method.title` |
+| 452 | How it works · Bitcoin Loan Check | So funktioniert es · Bitcoin-Kredit-Check | `method.metaTitle` |
+| 453 | How Bitcoin Loan Check computes the risk of a BTC-backed loan, which data it uses, how it was tested against history, and how to verify every number yourself. | Wie der Bitcoin-Kredit-Check das Risiko eines BTC-gedeckten Kredits berechnet, welche Daten er nutzt, wie er an der Vergangenheit getestet wurde und wie Sie jede Zahl selbst prüfen. | `method.metaDescription` |
+| 454 | The page takes BTC's real price moves since 2014 and builds 10,000 possible futures from them. On each one, it applies your lender's rules hour by hour. The number at the top counts in how many of 100 futures your BTC is sold. Two other methods check it. | Die Seite nimmt die echten Kursbewegungen von BTC seit 2014 und baut daraus 10.000 mögliche Zukünfte. Auf jede wendet sie Stunde für Stunde die Regeln Ihres Kreditgebers an. Die Zahl oben zählt, in wie vielen von 100 Zukünften Ihre BTC verkauft werden. Zwei weitere Methoden prüfen sie. | `method.short` |
+| 455 | The charts and numbers on this page use the example loan: {story} | Diagramme und Zahlen auf dieser Seite nutzen den Beispielkredit: {story} | `method.example` |
+| 456 | On this page | Auf dieser Seite | `method.toc` |
+| 457 | How the numbers are made | Wie die Zahlen entstehen | `method.stepsTitle` |
+| 458 | Real prices: every hour since 2014, with its lowest price, so short crashes are not missed. | Echte Kurse: jede Stunde seit 2014, mit ihrem tiefsten Kurs, damit kurze Einbrüche nicht verloren gehen. | `method.steps.0` |
+| 459 | Possible futures: real daily price moves, cut into 30-day pieces and joined at random into 10,000 paths. | Mögliche Zukünfte: echte tägliche Kursbewegungen, in 30-Tage-Stücke geschnitten und zufällig zu 10.000 Verläufen aneinandergereiht. | `method.steps.1` |
+| 460 | The lender's rules: margin call, deadlines, partial sales and fees, applied exactly as entered, on every path. | Die Regeln des Kreditgebers: Margin Call, Fristen, Teilverkäufe und Gebühren, genau wie eingegeben, in jedem Verlauf. | `method.steps.2` |
+| 461 | Counted: in how many of 100 paths the BTC is sold before the loan ends. That is the number at the top. | Gezählt: in wie vielen von 100 Verläufen die BTC vor Laufzeitende verkauft werden. Das ist die Zahl oben. | `method.steps.3` |
+| 462 | Range of simulated prices | Spanne der simulierten Kurse | `method.fanTitle` |
+| 463 | Each month: 9 of 10 simulated prices lie in the light band, half in the dark band; the line is the middle one. The bands show prices, not outcomes: a path that dips below the liquidation line and recovers still ended in a liquidation. | Jeden Monat: 9 von 10 simulierten Kursen liegen im hellen Band, die Hälfte im dunklen; die Linie ist der mittlere. Die Bänder zeigen Kurse, keine Ergebnisse: Ein Verlauf, der unter die Liquidationslinie taucht und sich erholt, endete trotzdem mit einer Liquidation. | `method.fanNote` |
+| 464 | Liquidated by the end of each month (of 100) | Liquidiert bis zum Ende jedes Monats (von 100) | `method.byMonthTitle` |
+| 465 | Three methods side by side | Drei Methoden im Vergleich | `method.methodsTitle` |
+| 466 | Every method can be wrong in its own way. So the page computes the same loan three ways, plus a textbook formula as a rough check. | Jede Methode kann auf ihre eigene Art falsch liegen. Deshalb rechnet die Seite denselben Kredit auf drei Wegen, dazu eine Lehrbuchformel als grobe Prüfung. | `method.methodsIntro` |
+| 467 | Possible futures from past price moves: the method above. It gives the number at the top. | Mögliche Zukünfte aus früheren Kursbewegungen: die Methode oben. Sie liefert die Zahl oben auf der Seite. | `method.methods.0` |
+| 468 | Volatility model ([[garch]]): wild days make more wild days likely. It is fitted to the same prices. | Volatilitätsmodell ([[garch]]): Wilde Tage machen weitere wilde Tage wahrscheinlicher. Es ist an dieselben Kurse angepasst. | `method.methods.1` |
+| 469 | Real history: the same loan, started on every day since 2014, against the real lowest price of every hour. It includes BTC's rise since 2014. | Echte Vergangenheit: derselbe Kredit, an jedem Tag seit 2014 gestartet, gegen den echten tiefsten Kurs jeder Stunde. Sie enthält den Anstieg von BTC seit 2014. | `method.methods.2` |
+| 470 | Methods compared (liquidated, of 100) | Methoden im Vergleich (liquidiert, von 100) | `method.compareTitle` |
+| 471 | Possible futures from past price moves | Mögliche Zukünfte aus früheren Kursbewegungen | `method.compareRows.bootstrap` |
+| 472 | Volatility model (GARCH) | Volatilitätsmodell (GARCH) | `method.compareRows.garch` |
+| 473 | Real history since 2014 | Echte Vergangenheit seit 2014 | `method.compareRows.replay` |
+| 474 | Textbook formula (calm, regular moves) | Lehrbuchformel (ruhige, gleichmäßige Bewegungen) | `method.compareRows.barrier` |
+| 475 | The textbook formula assumes calm, regular price moves (volatility {sigma} a year) and ignores the margin-call rules, so it tends to show a lower number. It is a rough check only. | Die Lehrbuchformel nimmt ruhige, gleichmäßige Kursbewegungen an (Volatilität {sigma} pro Jahr) und lässt die Margin-Call-Regeln außen vor; sie zeigt deshalb eher eine niedrigere Zahl. Sie dient nur als grobe Prüfung. | `method.barrierNote` |
+| 476 | Settings used: {paths} futures, {block}-day stretches, data {from} to {to}. | Verwendete Einstellungen: {paths} Zukünfte, {block}-Tage-Abschnitte, Daten {from} bis {to}. | `method.settings` |
+| 477 | The test against history | Der Test an der Vergangenheit | `method.testTitle` |
+| 478 | From 2016 on, the method only saw the past and then predicted the lowest price of the next 90 and 365 days. Reality fell below its "worst 5%" level in 0 to 6 of 100 cases, close to or below the promised 5. The method is cautious rather than optimistic. | Ab 2016 sah die Methode nur die Vergangenheit und sagte dann den tiefsten Kurs der nächsten 90 und 365 Tage voraus. Die Wirklichkeit lag in 0 bis 6 von 100 Fällen unter ihrem "schlechtesten 5 %"-Wert, nahe an oder unter den versprochenen 5. Die Methode ist eher vorsichtig als optimistisch. | `method.test` |
+| 479 | Data and the weekly update | Daten und die wöchentliche Aktualisierung | `method.dataTitle` |
+| 480 | Price data: hourly prices from the exchanges Bitstamp (USD since 2014, EUR since 2017) and Kraken (EUR 2014–2016), as published by the exchanges. Known gap: Bitstamp was offline from 5 to 9 January 2015. | Kursdaten: stündliche Kurse der Börsen Bitstamp (USD seit 2014, EUR seit 2017) und Kraken (EUR 2014–2016), wie von den Börsen veröffentlicht. Bekannte Lücke: Bitstamp war vom 5. bis 9. Januar 2015 offline. | `method.data.0` |
+| 481 | Other currencies (CHF, GBP, CAD, AUD, CZK, PLN): the euro prices, converted hour by hour with the daily exchange rate of the European Central Bank. Compared with real exchange prices, half of all hours differ by 0.2% or less. | Weitere Währungen (CHF, GBP, CAD, AUD, CZK, PLN): die Euro-Kurse, Stunde für Stunde mit dem täglichen Wechselkurs der Europäischen Zentralbank umgerechnet. Gegenüber echten Börsenkursen weicht die Hälfte aller Stunden um höchstens 0,2 % ab. | `method.data.1` |
+| 482 | Current price: Coinbase, or if that fails Kraken, Binance or CoinGecko. The page also adds the hours since the last update from Bitstamp. | Aktueller Kurs: Coinbase, oder wenn das scheitert Kraken, Binance oder CoinGecko. Die Seite ergänzt außerdem die Stunden seit der letzten Aktualisierung von Bitstamp. | `method.data.2` |
+| 483 | Once a week, an automatic job adds the newest prices and exchange rates. It checks them first (gaps, impossible prices, sources that disagree) and stops if something looks wrong. | Einmal pro Woche ergänzt ein automatischer Ablauf die neuesten Kurse und Wechselkurse. Er prüft sie zuerst (Lücken, unmögliche Kurse, Quellen, die sich widersprechen) und hält an, wenn etwas nicht stimmt. | `method.data.3` |
+| 484 | Your lender decides which BTC price counts: one exchange, an average of several, or an average over some minutes. A single exchange can briefly drop much lower than others. This page uses the lowest price of every hour on one exchange, which is cautious, but it cannot copy your lender's method exactly. | Ihr Kreditgeber entscheidet, welcher BTC-Kurs zählt: eine Börse, ein Durchschnitt mehrerer oder ein Durchschnitt über einige Minuten. Eine einzelne Börse kann kurz viel tiefer fallen als andere. Diese Seite nutzt den tiefsten Kurs jeder Stunde an einer Börse. Das ist vorsichtig, kann die Methode Ihres Kreditgebers aber nicht genau nachbilden. | `method.measure` |
+| 485 | Why no price trend is assumed | Warum kein Kurstrend angenommen wird | `method.trendTitle` |
+| 486 | With BTC's past average growth built in, the test against history failed: the method became too optimistic. On the check page, "Does the price trend matter?" shows how much a trend would change your answer. | Mit dem früheren Durchschnittswachstum von BTC fiel der Test an der Vergangenheit durch: Die Methode wurde zu optimistisch. Auf der Prüfseite zeigt "Spielt der Kurstrend eine Rolle?", wie stark ein Trend Ihre Antwort ändern würde. | `method.trend` |
+| 487 | What the model cannot do | Was das Modell nicht kann | `method.limitsTitle` |
+| 488 | It only knows price moves that happened since 2014. A crash of a new kind is not in it. | Es kennt nur Kursbewegungen, die es seit 2014 gab. Ein Einbruch neuer Art ist nicht enthalten. | `method.limits.0` |
+| 489 | It joins 30-day pieces at random, so longer rising or falling phases are mixed up. The test against history checks that this does not make it too optimistic. | Es reiht 30-Tage-Stücke zufällig aneinander, längere Phasen mit steigenden oder fallenden Kursen werden also vermischt. Der Test an der Vergangenheit prüft, dass es dadurch nicht zu optimistisch wird. | `method.limits.1` |
+| 490 | It assumes no price trend. If BTC rises strongly, real outcomes are better; if it falls for years, they are worse. | Es nimmt keinen Kurstrend an. Steigt BTC stark, fallen echte Ergebnisse besser aus; fällt BTC über Jahre, schlechter. | `method.limits.2` |
+| 491 | Verify it yourself | Selbst prüfen | `method.verifyTitle` |
+| 492 | All code, data and tests are open: {link} | Der gesamte Code, die Daten und die Tests sind offen: {link} | `method.code` |
+| 493 | The tests recompute 12 reference loans to 9 decimal places. They also check every rule of the lender model, and break the code on purpose to see that the tests notice. | Die Tests rechnen 12 Referenzkredite auf 9 Nachkommastellen nach. Sie prüfen außerdem jede Regel des Kreditgeber-Modells und bauen absichtlich Fehler in den Code ein, um zu sehen, dass die Tests sie bemerken. | `method.verify.0` |
+| 494 | Check one number by hand: take the liquidation price from your answer and look up in the price data how often BTC fell that far within your loan's duration. That is roughly the "real history" number. | Eine Zahl von Hand prüfen: Nehmen Sie den Liquidationskurs aus Ihrer Antwort und schauen Sie in den Kursdaten nach, wie oft BTC innerhalb Ihrer Laufzeit so weit fiel. Das ist ungefähr die Zahl "echte Vergangenheit". | `method.verify.1` |
 
 ## Feedback panel
 
 | # | English | Deutsch | key |
 |---|---|---|---|
-| 389 | Four short questions. Your answers go into an e-mail in your own mail app, and you decide whether to send it. Nothing is sent by this page. | Vier kurze Fragen. Ihre Antworten landen in einer E-Mail in Ihrem eigenen Mailprogramm, und Sie entscheiden, ob Sie sie senden. Diese Seite sendet nichts. | `feedback.intro` |
-| 390 | What will you mainly use the money for? | Wofür nutzen Sie das Geld vor allem? | `feedback.use` |
-| 391 | Spend it | Ausgeben | `feedback.useOptions.spend` |
-| 392 | Compare offers | Angebote vergleichen | `feedback.useOptions.compare` |
-| 393 | Buy more BTC | Mehr BTC kaufen | `feedback.useOptions.buy` |
-| 394 | Just curious | Nur neugierig | `feedback.useOptions.curious` |
-| 395 | In one sentence: what does the big number at the top mean? | In einem Satz: Was bedeutet die große Zahl oben? | `feedback.meaning` |
-| 396 | This page gives me what I need to decide. | Diese Seite gibt mir, was ich für meine Entscheidung brauche. | `feedback.useful` |
-| 397 | This page is easy to use. | Diese Seite ist einfach zu benutzen. | `feedback.easy` |
-| 398 | not at all | gar nicht | `feedback.scaleLow` |
-| 399 | fully | voll und ganz | `feedback.scaleHigh` |
-| 400 | What was confusing, or what is missing? (optional) | Was war verwirrend, oder was fehlt? (optional) | `feedback.missing` |
-| 401 | Which language would you prefer for this page? (optional) | In welcher Sprache hätten Sie diese Seite gern? (freiwillig) | `feedback.language` |
-| 402 | Your language is missing? Tell us. | Ihre Sprache fehlt? Sagen Sie es uns. | `feedback.languageMissing` |
-| 403 | Language request for Bitcoin Loan Check | Sprachwunsch für den Bitcoin-Kredit-Check | `feedback.languageSubject` |
-| 404 | Attach my loan terms (no personal data) | Meine Kreditbedingungen anhängen (keine persönlichen Daten) | `feedback.attach` |
-| 405 | Write e-mail | E-Mail schreiben | `feedback.write` |
-| 406 | Copy text | Text kopieren | `feedback.copy` |
-| 407 | Copied. Send it to {email}. | Kopiert. Senden Sie ihn an {email}. | `feedback.copied` |
-| 408 | Bitcoin Loan Check feedback | Feedback Bitcoin-Kredit-Check | `feedback.subject` |
+| 495 | Four short questions. Your answers go into an e-mail in your own mail app, and you decide whether to send it. Nothing is sent by this page. | Vier kurze Fragen. Ihre Antworten landen in einer E-Mail in Ihrem eigenen Mailprogramm, und Sie entscheiden, ob Sie sie senden. Diese Seite sendet nichts. | `feedback.intro` |
+| 496 | What will you mainly use the money for? | Wofür nutzen Sie das Geld vor allem? | `feedback.use` |
+| 497 | Spend it | Ausgeben | `feedback.useOptions.spend` |
+| 498 | Compare offers | Angebote vergleichen | `feedback.useOptions.compare` |
+| 499 | Buy more BTC | Mehr BTC kaufen | `feedback.useOptions.buy` |
+| 500 | Just curious | Nur neugierig | `feedback.useOptions.curious` |
+| 501 | In one sentence: what does the big number at the top mean? | In einem Satz: Was bedeutet die große Zahl oben? | `feedback.meaning` |
+| 502 | This page gives me what I need to decide. | Diese Seite gibt mir, was ich für meine Entscheidung brauche. | `feedback.useful` |
+| 503 | This page is easy to use. | Diese Seite ist einfach zu benutzen. | `feedback.easy` |
+| 504 | not at all | gar nicht | `feedback.scaleLow` |
+| 505 | fully | voll und ganz | `feedback.scaleHigh` |
+| 506 | What was confusing, or what is missing? (optional) | Was war verwirrend, oder was fehlt? (optional) | `feedback.missing` |
+| 507 | Which language would you prefer for this page? (optional) | In welcher Sprache hätten Sie diese Seite gern? (freiwillig) | `feedback.language` |
+| 508 | Your language is missing? Tell us. | Ihre Sprache fehlt? Sagen Sie es uns. | `feedback.languageMissing` |
+| 509 | Language request for Bitcoin Loan Check | Sprachwunsch für den Bitcoin-Kredit-Check | `feedback.languageSubject` |
+| 510 | Attach my loan terms (no personal data) | Meine Kreditbedingungen anhängen (keine persönlichen Daten) | `feedback.attach` |
+| 511 | Write e-mail | E-Mail schreiben | `feedback.write` |
+| 512 | Copy text | Text kopieren | `feedback.copy` |
+| 513 | Copied. Send it to {email}. | Kopiert. Senden Sie ihn an {email}. | `feedback.copied` |
+| 514 | Bitcoin Loan Check feedback | Feedback Bitcoin-Kredit-Check | `feedback.subject` |
 
 ## Donation box
 
 | # | English | Deutsch | key |
 |---|---|---|---|
-| 409 | This page is free and has no ads. If it helped you, you can support its upkeep with a Bitcoin donation. | Diese Seite ist kostenlos und werbefrei. Wenn sie Ihnen geholfen hat, können Sie ihren Betrieb mit einer Bitcoin-Spende unterstützen. | `donate.text` |
-| 410 | Copy address | Adresse kopieren | `donate.copy` |
-| 411 | Address copied | Adresse kopiert | `donate.copied` |
-| 412 | Donations on the Bitcoin network are public. | Spenden im Bitcoin-Netzwerk sind öffentlich einsehbar. | `donate.public` |
+| 515 | This page is free and has no ads. If it helped you, you can support its upkeep with a Bitcoin donation. | Diese Seite ist kostenlos und werbefrei. Wenn sie Ihnen geholfen hat, können Sie ihren Betrieb mit einer Bitcoin-Spende unterstützen. | `donate.text` |
+| 516 | Copy address | Adresse kopieren | `donate.copy` |
+| 517 | Address copied | Adresse kopiert | `donate.copied` |
+| 518 | Donations on the Bitcoin network are public. | Spenden im Bitcoin-Netzwerk sind öffentlich einsehbar. | `donate.public` |
 
 ## Footer
 
 | # | English | Deutsch | key |
 |---|---|---|---|
-| 413 | Independent project by {name}. No lender pays for or influences this page. | Unabhängiges Projekt von {name}. Kein Kreditgeber bezahlt oder beeinflusst diese Seite. | `footer.maker` |
-| 414 | Open source under the MIT licence. Provided "as is", without warranty of any kind: use it at your own risk. | Open Source unter der MIT-Lizenz. Bereitgestellt "wie besehen" ("as is"), ohne jede Gewährleistung: Nutzung auf eigenes Risiko. | `footer.license` |
-| 415 | This page is not financial, investment or tax advice. It is a calculator with a model of past price moves. It cannot know your situation or the future. Check every number against your lender's documents. | Diese Seite ist keine Finanz-, Anlage- oder Steuerberatung. Sie ist ein Rechner mit einem Modell früherer Kursbewegungen. Sie kennt weder Ihre Lage noch die Zukunft. Prüfen Sie jede Zahl anhand der Unterlagen Ihres Kreditgebers. | `footer.notAdvice` |
+| 519 | Independent project by {name}. No lender pays for or influences this page. | Unabhängiges Projekt von {name}. Kein Kreditgeber bezahlt oder beeinflusst diese Seite. | `footer.maker` |
+| 520 | Open source under the MIT licence. Provided "as is", without warranty of any kind: use it at your own risk. | Open Source unter der MIT-Lizenz. Bereitgestellt "wie besehen" ("as is"), ohne jede Gewährleistung: Nutzung auf eigenes Risiko. | `footer.license` |
+| 521 | This page is not financial, investment or tax advice. It is a calculator with a model of past price moves. It cannot know your situation or the future. Check every number against your lender's documents. | Diese Seite ist keine Finanz-, Anlage- oder Steuerberatung. Sie ist ein Rechner mit einem Modell früherer Kursbewegungen. Sie kennt weder Ihre Lage noch die Zukunft. Prüfen Sie jede Zahl anhand der Unterlagen Ihres Kreditgebers. | `footer.notAdvice` |
 
 ## Glossary
 
 | # | English | Deutsch | key |
 |---|---|---|---|
-| 416 | Glossary | Glossar | `glossary.title` |
-| 417 | LTV (loan-to-value) | LTV (Loan-to-Value, Beleihungsquote) | `glossary.terms.ltv.term` |
-| 418 | The loan divided by the value of the pledged BTC, in percent. Loan €10,000 and BTC worth €20,000 means an LTV of 50%. When the BTC price falls, the LTV rises. | Der Kredit geteilt durch den Wert der hinterlegten BTC, in Prozent. Kredit 10.000 € und BTC im Wert von 20.000 € ergibt einen LTV von 50 %. Fällt der BTC-Kurs, steigt der LTV. | `glossary.terms.ltv.text` |
-| 419 | Margin call | Margin Call (Nachschussaufforderung) | `glossary.terms.marginCall.term` |
-| 420 | A warning from the lender that your LTV has risen to a set level. Depending on the lender, you must add BTC or repay part of the loan within some hours, or the lender sells part of your BTC. | Eine Warnung des Kreditgebers, dass Ihr LTV eine festgelegte Stufe erreicht hat. Je nach Kreditgeber müssen Sie innerhalb einiger Stunden BTC nachschießen oder einen Teil zurückzahlen, oder der Kreditgeber verkauft einen Teil Ihrer BTC. | `glossary.terms.marginCall.text` |
-| 421 | Liquidation | Liquidation (Verwertung) | `glossary.terms.liquidation.term` |
-| 422 | The lender sells your pledged BTC to repay the loan, without asking you. It happens when the LTV reaches the liquidation level, or when a margin call is not fixed in time. | Der Kreditgeber verkauft Ihre hinterlegten BTC, um den Kredit zu tilgen, ohne Sie zu fragen. Das passiert, wenn der LTV die Liquidationsschwelle erreicht oder ein Margin Call nicht rechtzeitig behoben wird. | `glossary.terms.liquidation.text` |
-| 423 | Partial sale | Teilverkauf | `glossary.terms.partialLiquidation.term` |
-| 424 | The lender sells only part of your BTC, enough to bring the LTV back to a lower level. The loan continues, with less BTC behind it. | Der Kreditgeber verkauft nur einen Teil Ihrer BTC, gerade genug, um den LTV wieder auf eine niedrigere Stufe zu bringen. Der Kredit läuft weiter, mit weniger BTC dahinter. | `glossary.terms.partialLiquidation.text` |
-| 425 | Collateral | Sicherheit (Collateral) | `glossary.terms.collateral.term` |
-| 426 | Something you give as security for a loan. Here: your BTC. You get it back when the loan is repaid. | Etwas, das Sie als Pfand für einen Kredit geben. Hier: Ihre BTC. Sie bekommen sie zurück, wenn der Kredit getilgt ist. | `glossary.terms.collateral.text` |
-| 427 | Cure period | Nachschussfrist | `glossary.terms.curePeriod.term` |
-| 428 | The time you have after a margin call to fix it, for example by adding BTC. | Die Zeit, die Sie nach einem Margin Call haben, um ihn zu beheben, zum Beispiel durch zusätzliche BTC. | `glossary.terms.curePeriod.text` |
-| 429 | Origination fee | Abschlussgebühr | `glossary.terms.originationFee.term` |
-| 430 | A one-off fee for opening the loan. It can be taken from the money you receive. | Eine einmalige Gebühr für die Eröffnung des Kredits. Sie kann vom ausgezahlten Geld abgezogen werden. | `glossary.terms.originationFee.text` |
-| 431 | APR vs. interest rate | Effektivzins vs. Sollzins | `glossary.terms.aprVsRate.term` |
-| 432 | The interest rate is the price of borrowing before fees. The effective APR adds fees and the timing of payments, as one yearly percentage. | Der Sollzins ist der Preis des Leihens ohne Gebühren. Der Effektivzins rechnet Gebühren und Zahlungszeitpunkte mit ein, als ein jährlicher Prozentsatz. | `glossary.terms.aprVsRate.text` |
-| 433 | Compounding | Zinseszins | `glossary.terms.compounding.term` |
-| 434 | Interest that is added to the debt also earns interest. The debt grows a little faster. | Zinsen, die zur Schuld addiert werden, kosten selbst wieder Zinsen. Die Schuld wächst etwas schneller. | `glossary.terms.compounding.text` |
-| 435 | Day count | Zinstageberechnung | `glossary.terms.dayCount.term` |
-| 436 | The rule for turning a yearly rate into interest for a period: each month as one twelfth of a year, or the actual days. | Die Regel, mit der aus einem Jahreszins die Zinsen für einen Zeitraum werden: jeder Monat als ein Zwölftel des Jahres oder die tatsächlichen Tage. | `glossary.terms.dayCount.text` |
-| 437 | Drawdown | Drawdown (Kursrückgang) | `glossary.terms.drawdown.term` |
-| 438 | How far a price falls from an earlier high. From €60,000 down to €30,000 is a drawdown of 50%. | Wie stark ein Kurs von einem früheren Hoch fällt. Von 60.000 € auf 30.000 € ist ein Drawdown von 50 %. | `glossary.terms.drawdown.text` |
-| 439 | OHLC (candle) | OHLC (Kerze) | `glossary.terms.ohlc.term` |
-| 440 | Four prices for a period such as one hour: open, high, low, close. This page uses the low of every hour to check for sales. | Vier Kurse für einen Zeitraum wie eine Stunde: Eröffnung, Hoch, Tief, Schluss. Diese Seite prüft mit dem Tief jeder Stunde, ob verkauft wird. | `glossary.terms.ohlc.text` |
-| 441 | Price index | Kursindex | `glossary.terms.priceIndex.term` |
-| 442 | The price source a lender uses to value your BTC: one exchange, or an average of several. It decides when a margin call or sale happens. | Die Kursquelle, mit der ein Kreditgeber Ihre BTC bewertet: eine Börse oder ein Durchschnitt mehrerer. Sie entscheidet, wann ein Margin Call oder Verkauf passiert. | `glossary.terms.priceIndex.text` |
-| 443 | Counterparty risk | Gegenparteirisiko | `glossary.terms.counterpartyRisk.term` |
-| 444 | The risk that the other side, here the lender, does not keep its promise, for example because it goes bankrupt. | Das Risiko, dass die andere Seite, hier der Kreditgeber, ihr Versprechen nicht hält, zum Beispiel weil sie pleitegeht. | `glossary.terms.counterpartyRisk.text` |
-| 445 | Rehypothecation | Rehypothekierung (Weiterverleihen) | `glossary.terms.rehypothecation.term` |
-| 446 | The lender lends out or reuses the BTC you pledged. If the lender gets into trouble, your BTC may be gone. | Der Kreditgeber verleiht die BTC, die Sie hinterlegt haben, weiter oder nutzt sie anderweitig. Gerät der Kreditgeber in Schwierigkeiten, können Ihre BTC weg sein. | `glossary.terms.rehypothecation.text` |
-| 447 | Simulated future | Simulierte Zukunft | `glossary.terms.simulatedFuture.term` |
-| 448 | One possible path of the BTC price over your loan, built from real past price moves. Counting what happens in many of them gives a chance in "N of 100". | Ein möglicher Verlauf des BTC-Kurses während Ihres Kredits, gebaut aus echten früheren Kursbewegungen. Zählt man, was in vielen davon passiert, ergibt sich eine Häufigkeit "N von 100". | `glossary.terms.simulatedFuture.text` |
-| 449 | Block bootstrap | Block-Bootstrap | `glossary.terms.blockBootstrap.term` |
-| 450 | The method behind the simulated futures: pieces of real price history (30 days each) are picked at random and joined together. | Die Methode hinter den simulierten Zukünften: Stücke echter Kurshistorie (je 30 Tage) werden zufällig ausgewählt und aneinandergereiht. | `glossary.terms.blockBootstrap.text` |
-| 451 | GARCH model | GARCH-Modell | `glossary.terms.garch.term` |
-| 452 | A statistics model for prices in which wild days make further wild days more likely, and very large moves happen more often than in the textbook model. | Ein Statistikmodell für Kurse, in dem wilde Tage weitere wilde Tage wahrscheinlicher machen und sehr große Bewegungen häufiger vorkommen als im Lehrbuchmodell. | `glossary.terms.garch.text` |
-| 453 | Historical replay | Nachspielen der Vergangenheit | `glossary.terms.historicalReplay.term` |
-| 454 | The loan is started on every past day and checked against what the price really did afterwards. | Der Kredit wird an jedem früheren Tag gestartet und mit dem verglichen, was der Kurs danach wirklich getan hat. | `glossary.terms.historicalReplay.text` |
-| 455 | Price trend | Kurstrend | `glossary.terms.priceTrend.term` |
-| 456 | An assumed yearly price change of the middle simulated future (compounded). It shifts all simulated futures up or down; the swings stay the same. | Eine angenommene jährliche Kursänderung der mittleren simulierten Zukunft (mit Zinseszinseffekt). Sie verschiebt alle simulierten Zukünfte nach oben oder unten; die Schwankungen bleiben gleich. | `glossary.terms.priceTrend.text` |
+| 522 | Glossary | Glossar | `glossary.title` |
+| 523 | LTV (loan-to-value) | LTV (Loan-to-Value, Beleihungsquote) | `glossary.terms.ltv.term` |
+| 524 | The loan divided by the value of the pledged BTC, in percent. Loan €10,000 and BTC worth €20,000 means an LTV of 50%. When the BTC price falls, the LTV rises. | Der Kredit geteilt durch den Wert der hinterlegten BTC, in Prozent. Kredit 10.000 € und BTC im Wert von 20.000 € ergibt einen LTV von 50 %. Fällt der BTC-Kurs, steigt der LTV. | `glossary.terms.ltv.text` |
+| 525 | Margin call | Margin Call (Nachschussaufforderung) | `glossary.terms.marginCall.term` |
+| 526 | A warning from the lender that your LTV has risen to a set level. Depending on the lender, you must add BTC or repay part of the loan within some hours, or the lender sells part of your BTC. | Eine Warnung des Kreditgebers, dass Ihr LTV eine festgelegte Stufe erreicht hat. Je nach Kreditgeber müssen Sie innerhalb einiger Stunden BTC nachschießen oder einen Teil zurückzahlen, oder der Kreditgeber verkauft einen Teil Ihrer BTC. | `glossary.terms.marginCall.text` |
+| 527 | Liquidation | Liquidation (Verwertung) | `glossary.terms.liquidation.term` |
+| 528 | The lender sells your pledged BTC to repay the loan, without asking you. It happens when the LTV reaches the liquidation level, or when a margin call is not fixed in time. | Der Kreditgeber verkauft Ihre hinterlegten BTC, um den Kredit zu tilgen, ohne Sie zu fragen. Das passiert, wenn der LTV die Liquidationsschwelle erreicht oder ein Margin Call nicht rechtzeitig behoben wird. | `glossary.terms.liquidation.text` |
+| 529 | Partial sale | Teilverkauf | `glossary.terms.partialLiquidation.term` |
+| 530 | The lender sells only part of your BTC, enough to bring the LTV back to a lower level. The loan continues, with less BTC behind it. | Der Kreditgeber verkauft nur einen Teil Ihrer BTC, gerade genug, um den LTV wieder auf eine niedrigere Stufe zu bringen. Der Kredit läuft weiter, mit weniger BTC dahinter. | `glossary.terms.partialLiquidation.text` |
+| 531 | Collateral | Sicherheit (Collateral) | `glossary.terms.collateral.term` |
+| 532 | Something you give as security for a loan. Here: your BTC. You get it back when the loan is repaid. | Etwas, das Sie als Pfand für einen Kredit geben. Hier: Ihre BTC. Sie bekommen sie zurück, wenn der Kredit getilgt ist. | `glossary.terms.collateral.text` |
+| 533 | Cure period | Nachschussfrist | `glossary.terms.curePeriod.term` |
+| 534 | The time you have after a margin call to fix it, for example by adding BTC. | Die Zeit, die Sie nach einem Margin Call haben, um ihn zu beheben, zum Beispiel durch zusätzliche BTC. | `glossary.terms.curePeriod.text` |
+| 535 | Origination fee | Abschlussgebühr | `glossary.terms.originationFee.term` |
+| 536 | A one-off fee for opening the loan. It can be taken from the money you receive. | Eine einmalige Gebühr für die Eröffnung des Kredits. Sie kann vom ausgezahlten Geld abgezogen werden. | `glossary.terms.originationFee.text` |
+| 537 | APR vs. interest rate | Effektivzins vs. Sollzins | `glossary.terms.aprVsRate.term` |
+| 538 | The interest rate is the price of borrowing before fees. The effective APR adds fees and the timing of payments, as one yearly percentage. | Der Sollzins ist der Preis des Leihens ohne Gebühren. Der Effektivzins rechnet Gebühren und Zahlungszeitpunkte mit ein, als ein jährlicher Prozentsatz. | `glossary.terms.aprVsRate.text` |
+| 539 | Compounding | Zinseszins | `glossary.terms.compounding.term` |
+| 540 | Interest that is added to the debt also earns interest. The debt grows a little faster. | Zinsen, die zur Schuld addiert werden, kosten selbst wieder Zinsen. Die Schuld wächst etwas schneller. | `glossary.terms.compounding.text` |
+| 541 | Day count | Zinstageberechnung | `glossary.terms.dayCount.term` |
+| 542 | The rule for turning a yearly rate into interest for a period: each month as one twelfth of a year, or the actual days. | Die Regel, mit der aus einem Jahreszins die Zinsen für einen Zeitraum werden: jeder Monat als ein Zwölftel des Jahres oder die tatsächlichen Tage. | `glossary.terms.dayCount.text` |
+| 543 | Drawdown | Drawdown (Kursrückgang) | `glossary.terms.drawdown.term` |
+| 544 | How far a price falls from an earlier high. From €60,000 down to €30,000 is a drawdown of 50%. | Wie stark ein Kurs von einem früheren Hoch fällt. Von 60.000 € auf 30.000 € ist ein Drawdown von 50 %. | `glossary.terms.drawdown.text` |
+| 545 | OHLC (candle) | OHLC (Kerze) | `glossary.terms.ohlc.term` |
+| 546 | Four prices for a period such as one hour: open, high, low, close. This page uses the low of every hour to check for sales. | Vier Kurse für einen Zeitraum wie eine Stunde: Eröffnung, Hoch, Tief, Schluss. Diese Seite prüft mit dem Tief jeder Stunde, ob verkauft wird. | `glossary.terms.ohlc.text` |
+| 547 | Price index | Kursindex | `glossary.terms.priceIndex.term` |
+| 548 | The price source a lender uses to value your BTC: one exchange, or an average of several. It decides when a margin call or sale happens. | Die Kursquelle, mit der ein Kreditgeber Ihre BTC bewertet: eine Börse oder ein Durchschnitt mehrerer. Sie entscheidet, wann ein Margin Call oder Verkauf passiert. | `glossary.terms.priceIndex.text` |
+| 549 | Counterparty risk | Gegenparteirisiko | `glossary.terms.counterpartyRisk.term` |
+| 550 | The risk that the other side, here the lender, does not keep its promise, for example because it goes bankrupt. | Das Risiko, dass die andere Seite, hier der Kreditgeber, ihr Versprechen nicht hält, zum Beispiel weil sie pleitegeht. | `glossary.terms.counterpartyRisk.text` |
+| 551 | Rehypothecation | Rehypothekierung (Weiterverleihen) | `glossary.terms.rehypothecation.term` |
+| 552 | The lender lends out or reuses the BTC you pledged. If the lender gets into trouble, your BTC may be gone. | Der Kreditgeber verleiht die BTC, die Sie hinterlegt haben, weiter oder nutzt sie anderweitig. Gerät der Kreditgeber in Schwierigkeiten, können Ihre BTC weg sein. | `glossary.terms.rehypothecation.text` |
+| 553 | Simulated future | Simulierte Zukunft | `glossary.terms.simulatedFuture.term` |
+| 554 | One possible path of the BTC price over your loan, built from real past price moves. Counting what happens in many of them gives a chance in "N of 100". | Ein möglicher Verlauf des BTC-Kurses während Ihres Kredits, gebaut aus echten früheren Kursbewegungen. Zählt man, was in vielen davon passiert, ergibt sich eine Häufigkeit "N von 100". | `glossary.terms.simulatedFuture.text` |
+| 555 | Block bootstrap | Block-Bootstrap | `glossary.terms.blockBootstrap.term` |
+| 556 | The method behind the simulated futures: pieces of real price history (30 days each) are picked at random and joined together. | Die Methode hinter den simulierten Zukünften: Stücke echter Kurshistorie (je 30 Tage) werden zufällig ausgewählt und aneinandergereiht. | `glossary.terms.blockBootstrap.text` |
+| 557 | GARCH model | GARCH-Modell | `glossary.terms.garch.term` |
+| 558 | A statistics model for prices in which wild days make further wild days more likely, and very large moves happen more often than in the textbook model. | Ein Statistikmodell für Kurse, in dem wilde Tage weitere wilde Tage wahrscheinlicher machen und sehr große Bewegungen häufiger vorkommen als im Lehrbuchmodell. | `glossary.terms.garch.text` |
+| 559 | Historical replay | Nachspielen der Vergangenheit | `glossary.terms.historicalReplay.term` |
+| 560 | The loan is started on every past day and checked against what the price really did afterwards. | Der Kredit wird an jedem früheren Tag gestartet und mit dem verglichen, was der Kurs danach wirklich getan hat. | `glossary.terms.historicalReplay.text` |
+| 561 | Price trend | Kurstrend | `glossary.terms.priceTrend.term` |
+| 562 | An assumed yearly price change of the middle simulated future (compounded). It shifts all simulated futures up or down; the swings stay the same. | Eine angenommene jährliche Kursänderung der mittleren simulierten Zukunft (mit Zinseszinseffekt). Sie verschiebt alle simulierten Zukünfte nach oben oder unten; die Schwankungen bleiben gleich. | `glossary.terms.priceTrend.text` |
 
 ## Error messages
 
 | # | English | Deutsch | key |
 |---|---|---|---|
-| 457 | The loan amount must be a number above zero. | Der Kreditbetrag muss eine Zahl über null sein. | `errors.LOAN_AMOUNT_INVALID.problem` |
-| 458 | Enter the amount from your offer, for example 10000. | Geben Sie den Betrag aus Ihrem Angebot ein, zum Beispiel 10000. | `errors.LOAN_AMOUNT_INVALID.fix` |
-| 459 | The BTC price must be a number above zero. | Der BTC-Kurs muss eine Zahl über null sein. | `errors.PRICE_INVALID.problem` |
-| 460 | Load the current price or type today's price. | Laden Sie den aktuellen Kurs oder geben Sie den heutigen Kurs ein. | `errors.PRICE_INVALID.fix` |
-| 461 | The starting LTV must be between 0% and 100%. | Der Start-LTV muss zwischen 0 % und 100 % liegen. | `errors.LTV_OUT_OF_RANGE.problem` |
-| 462 | Enter the LTV from your offer, for example 50. | Geben Sie den LTV aus Ihrem Angebot ein, zum Beispiel 50. | `errors.LTV_OUT_OF_RANGE.fix` |
-| 463 | The liquidation LTV is not higher than the starting LTV. The loan would be liquidated at once. | Der Liquidations-LTV ist nicht höher als der Start-LTV. Der Kredit würde sofort liquidiert. | `errors.LIQ_LTV_NOT_ABOVE_INITIAL.problem` |
-| 464 | Check both numbers. The liquidation LTV must be higher, for example 50% at the start and 80% for liquidation. | Prüfen Sie beide Zahlen. Der Liquidations-LTV muss höher sein, zum Beispiel 50 % zu Beginn und 80 % für die Liquidation. | `errors.LIQ_LTV_NOT_ABOVE_INITIAL.fix` |
-| 465 | The liquidation LTV must be a number up to 100%. | Der Liquidations-LTV muss eine Zahl bis 100 % sein. | `errors.LIQ_LTV_TOO_HIGH.problem` |
-| 466 | Enter the liquidation LTV from your offer, for example 80. | Geben Sie den Liquidations-LTV aus Ihrem Angebot ein, zum Beispiel 80. | `errors.LIQ_LTV_TOO_HIGH.fix` |
-| 467 | The margin-call LTV must lie between the starting LTV and the liquidation LTV. | Der Margin-Call-LTV muss zwischen Start-LTV und Liquidations-LTV liegen. | `errors.MARGIN_LTV_OUT_OF_RANGE.problem` |
-| 468 | Check the number, or leave it empty if your offer has no margin call. | Prüfen Sie die Zahl oder lassen Sie das Feld leer, wenn Ihr Angebot keinen Margin Call hat. | `errors.MARGIN_LTV_OUT_OF_RANGE.fix` |
-| 469 | The duration must be a whole number of months, at least 1. | Die Laufzeit muss eine ganze Zahl von Monaten sein, mindestens 1. | `errors.DURATION_INVALID.problem` |
-| 470 | Enter the months, for example 12 for one year. | Geben Sie die Monate ein, zum Beispiel 12 für ein Jahr. | `errors.DURATION_INVALID.fix` |
-| 471 | An interest rate cannot be negative here. | Ein Zinssatz kann hier nicht negativ sein. | `errors.NEGATIVE_RATE.problem` |
-| 472 | Enter the rate as a positive number, for example 10, or 0. | Geben Sie den Zins als positive Zahl ein, zum Beispiel 10, oder 0. | `errors.NEGATIVE_RATE.fix` |
-| 473 | The rate changes are not in order, do not start at month 0, or go past the end of the loan. | Die Zinsänderungen sind nicht in der richtigen Reihenfolge, beginnen nicht bei Monat 0 oder reichen über das Laufzeitende hinaus. | `errors.RATE_PATH_INVALID.problem` |
-| 474 | Start with month 0, then add later months in increasing order, all before the end. | Beginnen Sie mit Monat 0 und fügen Sie spätere Monate aufsteigend hinzu, alle vor dem Ende. | `errors.RATE_PATH_INVALID.fix` |
-| 475 | A fee cannot be negative, and a percentage fee must be below 100%. | Eine Gebühr kann nicht negativ sein, und eine Gebühr in Prozent muss unter 100 % liegen. | `errors.NEGATIVE_FEE.problem` |
-| 476 | Enter the fee from your offer, or 0. | Geben Sie die Gebühr aus Ihrem Angebot ein, oder 0. | `errors.NEGATIVE_FEE.fix` |
-| 477 | The origination fee is as large as the loan or larger. | Die Abschlussgebühr ist so groß wie der Kredit oder größer. | `errors.FEE_EXCEEDS_LOAN.problem` |
-| 478 | Check whether the fee is a percentage or a fixed amount. | Prüfen Sie, ob die Gebühr ein Prozentsatz oder ein fester Betrag ist. | `errors.FEE_EXCEEDS_LOAN.fix` |
-| 479 | The time to top up cannot be negative. | Die Zeit zum Nachschießen kann nicht negativ sein. | `errors.CURE_NEGATIVE.problem` |
-| 480 | Enter the hours from your offer. | Geben Sie die Stunden aus Ihrem Angebot ein. | `errors.CURE_NEGATIVE.fix` |
-| 481 | A tax rate must be between 0% and below 100%. | Ein Steuersatz muss zwischen 0 % und unter 100 % liegen. | `errors.TAX_RATE_INVALID.problem` |
-| 482 | Enter a percentage such as 25, or 0. | Geben Sie einen Prozentsatz wie 25 ein, oder 0. | `errors.TAX_RATE_INVALID.fix` |
-| 483 | The amount kept ready cannot be negative. | Der bereitgehaltene Betrag kann nicht negativ sein. | `errors.RESERVE_NEGATIVE.problem` |
-| 484 | Enter an amount, or 0. | Geben Sie einen Betrag ein, oder 0. | `errors.RESERVE_NEGATIVE.fix` |
-| 485 | The LTV the lender brings you back to must be above 0% and below the margin-call LTV. | Der LTV, auf den der Kreditgeber Sie zurückbringt, muss über 0 % und unter dem Margin-Call-LTV liegen. | `errors.CURE_TARGET_INVALID.problem` |
-| 486 | Leave it empty to use your starting LTV, or enter the number from your offer. | Lassen Sie das Feld leer, um Ihren Start-LTV zu verwenden, oder geben Sie die Zahl aus Ihrem Angebot ein. | `errors.CURE_TARGET_INVALID.fix` |
-| 487 | The amount of BTC pledged must be a number above zero. | Die Menge der hinterlegten BTC muss eine Zahl über null sein. | `errors.COLLATERAL_INVALID.problem` |
-| 488 | Enter the BTC amount, for example 0.25. | Geben Sie die BTC-Menge ein, zum Beispiel 0,25. | `errors.COLLATERAL_INVALID.fix` |
-| 489 | With these numbers, your LTV today is already at or above the liquidation LTV. | Mit diesen Zahlen liegt Ihr LTV heute schon beim Liquidations-LTV oder darüber. | `errors.EXISTING_LOAN_AT_LIQUIDATION.problem` |
-| 490 | Check the amount owed, the BTC pledged and the BTC price. If they are right, contact your lender now. | Prüfen Sie den geschuldeten Betrag, die hinterlegten BTC und den BTC-Kurs. Stimmen sie, wenden Sie sich jetzt an Ihren Kreditgeber. | `errors.EXISTING_LOAN_AT_LIQUIDATION.fix` |
+| 563 | The loan amount must be a number above zero. | Der Kreditbetrag muss eine Zahl über null sein. | `errors.LOAN_AMOUNT_INVALID.problem` |
+| 564 | Enter the amount from your offer, for example 10000. | Geben Sie den Betrag aus Ihrem Angebot ein, zum Beispiel 10000. | `errors.LOAN_AMOUNT_INVALID.fix` |
+| 565 | The BTC price must be a number above zero. | Der BTC-Kurs muss eine Zahl über null sein. | `errors.PRICE_INVALID.problem` |
+| 566 | Load the current price or type today's price. | Laden Sie den aktuellen Kurs oder geben Sie den heutigen Kurs ein. | `errors.PRICE_INVALID.fix` |
+| 567 | The starting LTV must be between 0% and 100%. | Der Start-LTV muss zwischen 0 % und 100 % liegen. | `errors.LTV_OUT_OF_RANGE.problem` |
+| 568 | Enter the LTV from your offer, for example 50. | Geben Sie den LTV aus Ihrem Angebot ein, zum Beispiel 50. | `errors.LTV_OUT_OF_RANGE.fix` |
+| 569 | The liquidation LTV is not higher than the starting LTV. The loan would be liquidated at once. | Der Liquidations-LTV ist nicht höher als der Start-LTV. Der Kredit würde sofort liquidiert. | `errors.LIQ_LTV_NOT_ABOVE_INITIAL.problem` |
+| 570 | Check both numbers. The liquidation LTV must be higher, for example 50% at the start and 80% for liquidation. | Prüfen Sie beide Zahlen. Der Liquidations-LTV muss höher sein, zum Beispiel 50 % zu Beginn und 80 % für die Liquidation. | `errors.LIQ_LTV_NOT_ABOVE_INITIAL.fix` |
+| 571 | The liquidation LTV must be a number up to 100%. | Der Liquidations-LTV muss eine Zahl bis 100 % sein. | `errors.LIQ_LTV_TOO_HIGH.problem` |
+| 572 | Enter the liquidation LTV from your offer, for example 80. | Geben Sie den Liquidations-LTV aus Ihrem Angebot ein, zum Beispiel 80. | `errors.LIQ_LTV_TOO_HIGH.fix` |
+| 573 | The margin-call LTV must lie between the starting LTV and the liquidation LTV. | Der Margin-Call-LTV muss zwischen Start-LTV und Liquidations-LTV liegen. | `errors.MARGIN_LTV_OUT_OF_RANGE.problem` |
+| 574 | Check the number, or leave it empty if your offer has no margin call. | Prüfen Sie die Zahl oder lassen Sie das Feld leer, wenn Ihr Angebot keinen Margin Call hat. | `errors.MARGIN_LTV_OUT_OF_RANGE.fix` |
+| 575 | The duration must be a whole number of months, at least 1. | Die Laufzeit muss eine ganze Zahl von Monaten sein, mindestens 1. | `errors.DURATION_INVALID.problem` |
+| 576 | Enter the months, for example 12 for one year. | Geben Sie die Monate ein, zum Beispiel 12 für ein Jahr. | `errors.DURATION_INVALID.fix` |
+| 577 | An interest rate cannot be negative here. | Ein Zinssatz kann hier nicht negativ sein. | `errors.NEGATIVE_RATE.problem` |
+| 578 | Enter the rate as a positive number, for example 10, or 0. | Geben Sie den Zins als positive Zahl ein, zum Beispiel 10, oder 0. | `errors.NEGATIVE_RATE.fix` |
+| 579 | The rate changes are not in order, do not start at month 0, or go past the end of the loan. | Die Zinsänderungen sind nicht in der richtigen Reihenfolge, beginnen nicht bei Monat 0 oder reichen über das Laufzeitende hinaus. | `errors.RATE_PATH_INVALID.problem` |
+| 580 | Start with month 0, then add later months in increasing order, all before the end. | Beginnen Sie mit Monat 0 und fügen Sie spätere Monate aufsteigend hinzu, alle vor dem Ende. | `errors.RATE_PATH_INVALID.fix` |
+| 581 | A fee cannot be negative, and a percentage fee must be below 100%. | Eine Gebühr kann nicht negativ sein, und eine Gebühr in Prozent muss unter 100 % liegen. | `errors.NEGATIVE_FEE.problem` |
+| 582 | Enter the fee from your offer, or 0. | Geben Sie die Gebühr aus Ihrem Angebot ein, oder 0. | `errors.NEGATIVE_FEE.fix` |
+| 583 | The origination fee is as large as the loan or larger. | Die Abschlussgebühr ist so groß wie der Kredit oder größer. | `errors.FEE_EXCEEDS_LOAN.problem` |
+| 584 | Check whether the fee is a percentage or a fixed amount. | Prüfen Sie, ob die Gebühr ein Prozentsatz oder ein fester Betrag ist. | `errors.FEE_EXCEEDS_LOAN.fix` |
+| 585 | The time to top up cannot be negative. | Die Zeit zum Nachschießen kann nicht negativ sein. | `errors.CURE_NEGATIVE.problem` |
+| 586 | Enter the hours from your offer. | Geben Sie die Stunden aus Ihrem Angebot ein. | `errors.CURE_NEGATIVE.fix` |
+| 587 | A tax rate must be between 0% and below 100%. | Ein Steuersatz muss zwischen 0 % und unter 100 % liegen. | `errors.TAX_RATE_INVALID.problem` |
+| 588 | Enter a percentage such as 25, or 0. | Geben Sie einen Prozentsatz wie 25 ein, oder 0. | `errors.TAX_RATE_INVALID.fix` |
+| 589 | The amount kept ready cannot be negative. | Der bereitgehaltene Betrag kann nicht negativ sein. | `errors.RESERVE_NEGATIVE.problem` |
+| 590 | Enter an amount, or 0. | Geben Sie einen Betrag ein, oder 0. | `errors.RESERVE_NEGATIVE.fix` |
+| 591 | The LTV the lender brings you back to must be above 0% and below the margin-call LTV. | Der LTV, auf den der Kreditgeber Sie zurückbringt, muss über 0 % und unter dem Margin-Call-LTV liegen. | `errors.CURE_TARGET_INVALID.problem` |
+| 592 | Leave it empty to use your starting LTV, or enter the number from your offer. | Lassen Sie das Feld leer, um Ihren Start-LTV zu verwenden, oder geben Sie die Zahl aus Ihrem Angebot ein. | `errors.CURE_TARGET_INVALID.fix` |
+| 593 | The amount of BTC pledged must be a number above zero. | Die Menge der hinterlegten BTC muss eine Zahl über null sein. | `errors.COLLATERAL_INVALID.problem` |
+| 594 | Enter the BTC amount, for example 0.25. | Geben Sie die BTC-Menge ein, zum Beispiel 0,25. | `errors.COLLATERAL_INVALID.fix` |
+| 595 | With these numbers, your LTV today is already at or above the liquidation LTV. | Mit diesen Zahlen liegt Ihr LTV heute schon beim Liquidations-LTV oder darüber. | `errors.EXISTING_LOAN_AT_LIQUIDATION.problem` |
+| 596 | Check the amount owed, the BTC pledged and the BTC price. If they are right, contact your lender now. | Prüfen Sie den geschuldeten Betrag, die hinterlegten BTC und den BTC-Kurs. Stimmen sie, wenden Sie sich jetzt an Ihren Kreditgeber. | `errors.EXISTING_LOAN_AT_LIQUIDATION.fix` |
 
 ## Impressum and privacy notice (templates; review by a lawyer)
 
 | # | English | Deutsch | key |
 |---|---|---|---|
-| 491 | Template: the parts in «angle quotes» must be filled in, and the text should be checked by a lawyer before publishing. | Vorlage: Die Teile in «Winkelanführungszeichen» müssen ausgefüllt werden, und der Text sollte vor der Veröffentlichung anwaltlich geprüft werden. | `legal.templateNote` |
-| 492 | Legal notice (Impressum) | Impressum | `legal.impressumTitle` |
-| 493 | Information under § 5 DDG (German Digital Services Act), if it applies to this page: | Angaben gemäß § 5 DDG (Digitale-Dienste-Gesetz), soweit für diese Seite anwendbar: | `legal.impressum.0` |
-| 494 | bitcoinloancheck — Lennart Bodden | bitcoinloancheck — Lennart Bodden | `legal.impressum.1` |
-| 495 | c/o Online-Impressum 11950, Europaring 90, 53757 Sankt Augustin, Germany | c/o Online-Impressum 11950, Europaring 90, 53757 Sankt Augustin, Deutschland | `legal.impressum.2` |
-| 496 | E-mail: {email} | E-Mail: {email} | `legal.impressum.3` |
-| 497 | Responsible for the content under § 18 (2) MStV: Lennart Bodden, address as above | Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV: Lennart Bodden, Anschrift wie oben | `legal.impressum.4` |
-| 498 | Supervisory authority: Landesanstalt für Medien Nordrhein-Westfalen (media authority of North Rhine-Westphalia) | Zuständige Aufsichtsbehörde: Landesanstalt für Medien Nordrhein-Westfalen | `legal.impressum.5` |
-| 499 | This page is a free, private calculator. It does not offer loans, does not arrange loans, and has no business relationship with any lender. | Diese Seite ist ein kostenloser, privater Rechner. Sie bietet keine Kredite an, vermittelt keine Kredite und steht in keiner Geschäftsbeziehung zu einem Kreditgeber. | `legal.impressum.6` |
-| 500 | Privacy notice | Datenschutzerklärung | `legal.privacyTitle` |
-| 501 | 1. Who is responsible | 1. Verantwortlicher | `legal.privacy.0.h` |
-| 502 | Responsible for data processing on this page: «First and last name», «Street and house number», «Postcode and town», «Country», {email}. | Verantwortlich für die Datenverarbeitung auf dieser Seite: «Vor- und Nachname», «Straße und Hausnummer», «PLZ und Ort», «Land», {email}. | `legal.privacy.0.p.0` |
-| 503 | 2. Hosting by GitHub Pages | 2. Hosting durch GitHub Pages | `legal.privacy.1.h` |
-| 504 | This page is delivered by GitHub Pages, a service of GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA. When you open the page, GitHub processes technical data that every web server needs: your IP address, date and time, the requested address, and your browser type. GitHub may store this data in log files. | Diese Seite wird über GitHub Pages ausgeliefert, einen Dienst der GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA. Beim Aufruf der Seite verarbeitet GitHub technische Daten, die jeder Webserver benötigt: Ihre IP-Adresse, Datum und Uhrzeit, die aufgerufene Adresse und Ihren Browsertyp. GitHub kann diese Daten in Logdateien speichern. | `legal.privacy.1.p.0` |
-| 505 | Legal basis: Art. 6 (1) (f) GDPR. Our legitimate interest is delivering the page securely and reliably. GitHub is located in the USA. «Check and name the legal basis for the transfer to the USA, for example the EU-US Data Privacy Framework.» GitHub privacy statement: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement | Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse ist die sichere und zuverlässige Auslieferung der Seite. GitHub hat seinen Sitz in den USA. «Rechtsgrundlage der Übermittlung in die USA prüfen und nennen, zum Beispiel das EU-US Data Privacy Framework.» Datenschutzerklärung von GitHub: https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement | `legal.privacy.1.p.1` |
-| 506 | 3. Current BTC price (automatic requests when the page opens) | 3. Aktueller BTC-Kurs (automatische Abfragen beim Öffnen) | `legal.privacy.2.h` |
-| 507 | To show the current BTC price, your browser contacts public price services directly when the page opens: first api.coinbase.com (Coinbase); only if that does not answer, then api.kraken.com (Kraken), api.binance.com (Binance) and api.coingecko.com (CoinGecko), one after the other. In addition, your browser loads the most recent hourly prices from www.bitstamp.net (Bitstamp). Loading the current price again or changing the currency repeats the price request. | Um den aktuellen BTC-Kurs zu zeigen, kontaktiert Ihr Browser beim Öffnen der Seite direkt öffentliche Kursdienste: zuerst api.coinbase.com (Coinbase); nur wenn dieser nicht antwortet, nacheinander api.kraken.com (Kraken), api.binance.com (Binance) und api.coingecko.com (CoinGecko). Zusätzlich lädt Ihr Browser die neuesten Stundenkurse von www.bitstamp.net (Bitstamp). Ein erneutes Laden des Kurses oder ein Wechsel der Währung wiederholt die Kursabfrage. | `legal.privacy.2.p.0` |
-| 508 | These services receive your IP address, the time and your browser type, as with any visit to a website. The requests contain no cookies, no referrer and nothing that you entered in the form. We do not receive any of this data. «Add the full company name and address of each service, and the legal basis for any transfer outside the EU.» | Diese Dienste erhalten dabei Ihre IP-Adresse, die Uhrzeit und Ihren Browsertyp, wie bei jedem Besuch einer Webseite. Die Abfragen enthalten keine Cookies, keinen Referrer und nichts von dem, was Sie im Formular eingeben. Wir erhalten keine dieser Daten. «Vollständigen Firmennamen und Anschrift jedes Dienstes ergänzen, sowie die Rechtsgrundlage für Übermittlungen außerhalb der EU.» | `legal.privacy.2.p.1` |
-| 509 | Legal basis: Art. 6 (1) (f) GDPR. Our legitimate interest is showing an up-to-date price, without which the results would be outdated. | Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse ist die Anzeige eines aktuellen Kurses, ohne den die Ergebnisse veraltet wären. | `legal.privacy.2.p.2` |
-| 510 | 4. Your inputs, local storage and shared links | 4. Ihre Eingaben, lokale Speicherung und geteilte Links | `legal.privacy.3.h` |
-| 511 | All calculations take place in your browser. Your inputs are not sent to us or to anyone else. | Alle Berechnungen finden in Ihrem Browser statt. Ihre Eingaben werden weder an uns noch an Dritte übermittelt. | `legal.privacy.3.p.0` |
-| 512 | So that your inputs and your language choice are still there on your next visit, the page stores them in the local storage of your browser (keys "btc-loan-risk:form" and "btc-loan-risk:lang"). This data stays on your device. You can delete it at any time with the button "Start over and forget my inputs" or in your browser settings. | Damit Ihre Eingaben und Ihre Sprachwahl beim nächsten Besuch noch vorhanden sind, speichert die Seite sie im lokalen Speicher Ihres Browsers (Schlüssel "btc-loan-risk:form" und "btc-loan-risk:lang"). Diese Daten bleiben auf Ihrem Gerät. Sie können sie jederzeit mit der Schaltfläche "Neu beginnen und meine Eingaben löschen" oder in den Einstellungen Ihres Browsers entfernen. | `legal.privacy.3.p.1` |
-| 513 | If you use "Copy link to this calculation", your inputs are written into the link after the "#" sign. Browsers do not send this part to any server, including GitHub. Whoever you give the link to can see your inputs. | Wenn Sie "Link zu dieser Berechnung kopieren" nutzen, werden Ihre Eingaben in den Link nach dem "#"-Zeichen geschrieben. Diesen Teil senden Browser an keinen Server, auch nicht an GitHub. Wer den Link von Ihnen erhält, kann Ihre Eingaben sehen. | `legal.privacy.3.p.2` |
-| 514 | Legal basis: § 25 (2) No. 2 TDDDG, because the storage is strictly necessary for the function you use. «Check this assessment.» | Rechtsgrundlage: § 25 Abs. 2 Nr. 2 TDDDG, da die Speicherung für die von Ihnen genutzte Funktion unbedingt erforderlich ist. «Diese Einschätzung prüfen.» | `legal.privacy.3.p.3` |
-| 515 | 5. Feedback by e-mail | 5. Feedback per E-Mail | `legal.privacy.4.h` |
-| 516 | The section "Help improve this page" prepares an e-mail in your own mail app. Nothing is sent unless you send it yourself. If you send it, we receive your e-mail address and your message, and use them only to read and answer your feedback and to improve the page. We delete them when they are no longer needed for that. | Der Bereich "Helfen Sie, diese Seite zu verbessern" bereitet eine E-Mail in Ihrem eigenen Mailprogramm vor. Es wird nichts gesendet, wenn Sie nicht selbst senden. Senden Sie die E-Mail, erhalten wir Ihre E-Mail-Adresse und Ihre Nachricht und nutzen sie nur, um Ihr Feedback zu lesen, zu beantworten und die Seite zu verbessern. Wir löschen sie, sobald sie dafür nicht mehr benötigt werden. | `legal.privacy.4.p.0` |
-| 517 | Legal basis: Art. 6 (1) (f) GDPR. Our legitimate interest is improving the page and answering you. «Check this assessment and add how long you keep feedback e-mails.» | Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse ist die Verbesserung der Seite und die Beantwortung Ihrer Nachricht. «Diese Einschätzung prüfen und ergänzen, wie lange Feedback-E-Mails aufbewahrt werden.» | `legal.privacy.4.p.1` |
-| 518 | 6. No cookies, no analytics | 6. Keine Cookies, keine Analyse | `legal.privacy.5.h` |
-| 519 | This page sets no cookies and uses no analytics, tracking or advertising services. It loads no fonts, scripts or styles from other servers. | Diese Seite setzt keine Cookies und nutzt keine Analyse-, Tracking- oder Werbedienste. Sie lädt keine Schriften, Skripte oder Stile von anderen Servern. | `legal.privacy.5.p.0` |
-| 520 | 7. Your rights | 7. Ihre Rechte | `legal.privacy.6.h` |
-| 521 | You have the right to access, correction, deletion and restriction of processing of your personal data, the right to data portability, and the right to object to processing based on Art. 6 (1) (f) GDPR. Contact: {email}. | Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer personenbezogenen Daten, das Recht auf Datenübertragbarkeit sowie das Recht, einer Verarbeitung auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO zu widersprechen. Kontakt: {email}. | `legal.privacy.6.p.0` |
-| 522 | You also have the right to lodge a complaint with a data protection supervisory authority, for example «name of the authority responsible for you». | Sie haben außerdem das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren, zum Beispiel bei «Name der für Sie zuständigen Behörde». | `legal.privacy.6.p.1` |
-| 523 | 8. Version | 8. Stand | `legal.privacy.7.h` |
-| 524 | Version of this privacy notice: «Date». | Stand dieser Datenschutzerklärung: «Datum». | `legal.privacy.7.p.0` |
-| 525 | Legal notice · Privacy notice | Impressum · Datenschutzerklärung | `legal.links` |
+| 597 | Template: the parts in «angle quotes» must be filled in, and the text should be checked by a lawyer before publishing. | Vorlage: Die Teile in «Winkelanführungszeichen» müssen ausgefüllt werden, und der Text sollte vor der Veröffentlichung anwaltlich geprüft werden. | `legal.templateNote` |
+| 598 | Legal notice (Impressum) | Impressum | `legal.impressumTitle` |
+| 599 | Information under § 5 DDG (German Digital Services Act), if it applies to this page: | Angaben gemäß § 5 DDG (Digitale-Dienste-Gesetz), soweit für diese Seite anwendbar: | `legal.impressum.0` |
+| 600 | bitcoinloancheck — Lennart Bodden | bitcoinloancheck — Lennart Bodden | `legal.impressum.1` |
+| 601 | c/o Online-Impressum 11950, Europaring 90, 53757 Sankt Augustin, Germany | c/o Online-Impressum 11950, Europaring 90, 53757 Sankt Augustin, Deutschland | `legal.impressum.2` |
+| 602 | E-mail: {email} | E-Mail: {email} | `legal.impressum.3` |
+| 603 | Responsible for the content under § 18 (2) MStV: Lennart Bodden, address as above | Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV: Lennart Bodden, Anschrift wie oben | `legal.impressum.4` |
+| 604 | Supervisory authority: Landesanstalt für Medien Nordrhein-Westfalen (media authority of North Rhine-Westphalia) | Zuständige Aufsichtsbehörde: Landesanstalt für Medien Nordrhein-Westfalen | `legal.impressum.5` |
+| 605 | This page is a free, private calculator. It does not offer loans, does not arrange loans, and has no business relationship with any lender. | Diese Seite ist ein kostenloser, privater Rechner. Sie bietet keine Kredite an, vermittelt keine Kredite und steht in keiner Geschäftsbeziehung zu einem Kreditgeber. | `legal.impressum.6` |
+| 606 | Privacy notice | Datenschutzerklärung | `legal.privacyTitle` |
+| 607 | 1. Who is responsible | 1. Verantwortlicher | `legal.privacy.0.h` |
+| 608 | Responsible for data processing on this page: «First and last name», «Street and house number», «Postcode and town», «Country», {email}. | Verantwortlich für die Datenverarbeitung auf dieser Seite: «Vor- und Nachname», «Straße und Hausnummer», «PLZ und Ort», «Land», {email}. | `legal.privacy.0.p.0` |
+| 609 | 2. Hosting by GitHub Pages | 2. Hosting durch GitHub Pages | `legal.privacy.1.h` |
+| 610 | This page is delivered by GitHub Pages, a service of GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA. When you open the page, GitHub processes technical data that every web server needs: your IP address, date and time, the requested address, and your browser type. GitHub may store this data in log files. | Diese Seite wird über GitHub Pages ausgeliefert, einen Dienst der GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA. Beim Aufruf der Seite verarbeitet GitHub technische Daten, die jeder Webserver benötigt: Ihre IP-Adresse, Datum und Uhrzeit, die aufgerufene Adresse und Ihren Browsertyp. GitHub kann diese Daten in Logdateien speichern. | `legal.privacy.1.p.0` |
+| 611 | Legal basis: Art. 6 (1) (f) GDPR. Our legitimate interest is delivering the page securely and reliably. GitHub is located in the USA. «Check and name the legal basis for the transfer to the USA, for example the EU-US Data Privacy Framework.» GitHub privacy statement: https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement | Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse ist die sichere und zuverlässige Auslieferung der Seite. GitHub hat seinen Sitz in den USA. «Rechtsgrundlage der Übermittlung in die USA prüfen und nennen, zum Beispiel das EU-US Data Privacy Framework.» Datenschutzerklärung von GitHub: https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement | `legal.privacy.1.p.1` |
+| 612 | 3. Current BTC price (automatic requests when the page opens) | 3. Aktueller BTC-Kurs (automatische Abfragen beim Öffnen) | `legal.privacy.2.h` |
+| 613 | To show the current BTC price, your browser contacts public price services directly when the page opens: first api.coinbase.com (Coinbase); only if that does not answer, then api.kraken.com (Kraken), api.binance.com (Binance) and api.coingecko.com (CoinGecko), one after the other. In addition, your browser loads the most recent hourly prices from www.bitstamp.net (Bitstamp). Loading the current price again or changing the currency repeats the price request. | Um den aktuellen BTC-Kurs zu zeigen, kontaktiert Ihr Browser beim Öffnen der Seite direkt öffentliche Kursdienste: zuerst api.coinbase.com (Coinbase); nur wenn dieser nicht antwortet, nacheinander api.kraken.com (Kraken), api.binance.com (Binance) und api.coingecko.com (CoinGecko). Zusätzlich lädt Ihr Browser die neuesten Stundenkurse von www.bitstamp.net (Bitstamp). Ein erneutes Laden des Kurses oder ein Wechsel der Währung wiederholt die Kursabfrage. | `legal.privacy.2.p.0` |
+| 614 | These services receive your IP address, the time and your browser type, as with any visit to a website. The requests contain no cookies, no referrer and nothing that you entered in the form. We do not receive any of this data. «Add the full company name and address of each service, and the legal basis for any transfer outside the EU.» | Diese Dienste erhalten dabei Ihre IP-Adresse, die Uhrzeit und Ihren Browsertyp, wie bei jedem Besuch einer Webseite. Die Abfragen enthalten keine Cookies, keinen Referrer und nichts von dem, was Sie im Formular eingeben. Wir erhalten keine dieser Daten. «Vollständigen Firmennamen und Anschrift jedes Dienstes ergänzen, sowie die Rechtsgrundlage für Übermittlungen außerhalb der EU.» | `legal.privacy.2.p.1` |
+| 615 | Legal basis: Art. 6 (1) (f) GDPR. Our legitimate interest is showing an up-to-date price, without which the results would be outdated. | Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse ist die Anzeige eines aktuellen Kurses, ohne den die Ergebnisse veraltet wären. | `legal.privacy.2.p.2` |
+| 616 | 4. Your inputs, local storage and shared links | 4. Ihre Eingaben, lokale Speicherung und geteilte Links | `legal.privacy.3.h` |
+| 617 | All calculations take place in your browser. Your inputs are not sent to us or to anyone else. | Alle Berechnungen finden in Ihrem Browser statt. Ihre Eingaben werden weder an uns noch an Dritte übermittelt. | `legal.privacy.3.p.0` |
+| 618 | So that your inputs and your language choice are still there on your next visit, the page stores them in the local storage of your browser (keys "btc-loan-risk:form" and "btc-loan-risk:lang"). This data stays on your device. You can delete it at any time with the button "Start over and forget my inputs" or in your browser settings. | Damit Ihre Eingaben und Ihre Sprachwahl beim nächsten Besuch noch vorhanden sind, speichert die Seite sie im lokalen Speicher Ihres Browsers (Schlüssel "btc-loan-risk:form" und "btc-loan-risk:lang"). Diese Daten bleiben auf Ihrem Gerät. Sie können sie jederzeit mit der Schaltfläche "Neu beginnen und meine Eingaben löschen" oder in den Einstellungen Ihres Browsers entfernen. | `legal.privacy.3.p.1` |
+| 619 | If you use "Copy link to this calculation", your inputs are written into the link after the "#" sign. Browsers do not send this part to any server, including GitHub. Whoever you give the link to can see your inputs. | Wenn Sie "Link zu dieser Berechnung kopieren" nutzen, werden Ihre Eingaben in den Link nach dem "#"-Zeichen geschrieben. Diesen Teil senden Browser an keinen Server, auch nicht an GitHub. Wer den Link von Ihnen erhält, kann Ihre Eingaben sehen. | `legal.privacy.3.p.2` |
+| 620 | Legal basis: § 25 (2) No. 2 TDDDG, because the storage is strictly necessary for the function you use. «Check this assessment.» | Rechtsgrundlage: § 25 Abs. 2 Nr. 2 TDDDG, da die Speicherung für die von Ihnen genutzte Funktion unbedingt erforderlich ist. «Diese Einschätzung prüfen.» | `legal.privacy.3.p.3` |
+| 621 | 5. Feedback by e-mail | 5. Feedback per E-Mail | `legal.privacy.4.h` |
+| 622 | The section "Help improve this page" prepares an e-mail in your own mail app. Nothing is sent unless you send it yourself. If you send it, we receive your e-mail address and your message, and use them only to read and answer your feedback and to improve the page. We delete them when they are no longer needed for that. | Der Bereich "Helfen Sie, diese Seite zu verbessern" bereitet eine E-Mail in Ihrem eigenen Mailprogramm vor. Es wird nichts gesendet, wenn Sie nicht selbst senden. Senden Sie die E-Mail, erhalten wir Ihre E-Mail-Adresse und Ihre Nachricht und nutzen sie nur, um Ihr Feedback zu lesen, zu beantworten und die Seite zu verbessern. Wir löschen sie, sobald sie dafür nicht mehr benötigt werden. | `legal.privacy.4.p.0` |
+| 623 | Legal basis: Art. 6 (1) (f) GDPR. Our legitimate interest is improving the page and answering you. «Check this assessment and add how long you keep feedback e-mails.» | Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse ist die Verbesserung der Seite und die Beantwortung Ihrer Nachricht. «Diese Einschätzung prüfen und ergänzen, wie lange Feedback-E-Mails aufbewahrt werden.» | `legal.privacy.4.p.1` |
+| 624 | 6. No cookies, no analytics | 6. Keine Cookies, keine Analyse | `legal.privacy.5.h` |
+| 625 | This page sets no cookies and uses no analytics, tracking or advertising services. It loads no fonts, scripts or styles from other servers. | Diese Seite setzt keine Cookies und nutzt keine Analyse-, Tracking- oder Werbedienste. Sie lädt keine Schriften, Skripte oder Stile von anderen Servern. | `legal.privacy.5.p.0` |
+| 626 | 7. Your rights | 7. Ihre Rechte | `legal.privacy.6.h` |
+| 627 | You have the right to access, correction, deletion and restriction of processing of your personal data, the right to data portability, and the right to object to processing based on Art. 6 (1) (f) GDPR. Contact: {email}. | Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer personenbezogenen Daten, das Recht auf Datenübertragbarkeit sowie das Recht, einer Verarbeitung auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO zu widersprechen. Kontakt: {email}. | `legal.privacy.6.p.0` |
+| 628 | You also have the right to lodge a complaint with a data protection supervisory authority, for example «name of the authority responsible for you». | Sie haben außerdem das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren, zum Beispiel bei «Name der für Sie zuständigen Behörde». | `legal.privacy.6.p.1` |
+| 629 | 8. Version | 8. Stand | `legal.privacy.7.h` |
+| 630 | Version of this privacy notice: «Date». | Stand dieser Datenschutzerklärung: «Datum». | `legal.privacy.7.p.0` |
+| 631 | Legal notice · Privacy notice | Impressum · Datenschutzerklärung | `legal.links` |
 
 ## Page title and search description
 
 | # | English | Deutsch | key |
 |---|---|---|---|
-| 526 | Bitcoin Loan Check | Bitcoin-Kredit-Check | `meta.name` |
-| 527 | Bitcoin Loan Check: liquidation risk of any BTC loan | Bitcoin-Kredit-Check: Liquidationsrisiko jedes BTC-Kredits | `meta.title` |
-| 528 | Bitcoin Loan Check: an independent check for any Bitcoin loan offer | Bitcoin-Kredit-Check: ein unabhängiger Check für jedes Bitcoin-Kreditangebot | `meta.ogTitle` |
-| 529 | See how likely a Bitcoin-backed loan is to be liquidated, at which price BTC is sold, and what it costs. Free, open source, runs in your browser. | Wie wahrscheinlich wird ein Bitcoin-besicherter Kredit liquidiert, bei welchem Kurs wird BTC verkauft, was kostet er? Kostenlos, Open Source, im Browser. | `meta.description` |
-| 530 | <b>Liquidation chance</b>, <b>sale price</b> and <b>full cost</b>, tested on real BTC prices since 2014. Runs in your browser. | <b>Liquidationsrisiko</b>, <b>Verkaufskurs</b> und <b>Gesamtkosten</b>, geprüft an echten BTC-Kursen seit 2014. Läuft in Ihrem Browser. | `meta.ogFacts` |
-| 531 | Free · Open source | Kostenlos · Open Source | `meta.ogTrust` |
+| 632 | Bitcoin Loan Check | Bitcoin-Kredit-Check | `meta.name` |
+| 633 | Bitcoin Loan Check: liquidation risk of any BTC loan | Bitcoin-Kredit-Check: Liquidationsrisiko jedes BTC-Kredits | `meta.title` |
+| 634 | Bitcoin Loan Check: an independent check for any Bitcoin loan offer | Bitcoin-Kredit-Check: ein unabhängiger Check für jedes Bitcoin-Kreditangebot | `meta.ogTitle` |
+| 635 | See how likely a Bitcoin-backed loan is to be liquidated, at which price BTC is sold, and what it costs. Free, open source, runs in your browser. | Wie wahrscheinlich wird ein Bitcoin-besicherter Kredit liquidiert, bei welchem Kurs wird BTC verkauft, was kostet er? Kostenlos, Open Source, im Browser. | `meta.description` |
+| 636 | <b>Liquidation chance</b>, <b>liquidation price</b> and <b>full cost</b>, tested on real BTC prices since 2014. Runs in your browser. | <b>Liquidationsrisiko</b>, <b>Liquidationskurs</b> und <b>Gesamtkosten</b>, geprüft an echten BTC-Kursen seit 2014. Läuft in Ihrem Browser. | `meta.ogFacts` |
+| 637 | Free · Open source | Kostenlos · Open Source | `meta.ogTrust` |

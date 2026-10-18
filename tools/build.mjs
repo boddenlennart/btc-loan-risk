@@ -16,6 +16,7 @@ import { setData as jobSetData, run as jobRun } from '../src/app/riskjob.js';
 import { EXAMPLE_FORM } from '../src/content/examples.js';
 import { toTerms, exampleKey } from '../src/app/terms.js';
 import { parseEcbCsv, checkFx, convertHourly, lastRate, FX_CURRENCIES } from '../src/data/fx.js';
+import { computeInsights } from '../src/insights/compute.js';
 import en from '../src/content/text.en.js';
 import de from '../src/content/text.de.js';
 
@@ -97,11 +98,15 @@ const methodMeta = ex && {
     },
   },
 };
+// "Insights": what happened to loans since 2014, on the real US-dollar history (src/insights/compute.js).
+// Recomputed at every build, so the weekly data update refreshes it.
+const insights = currencies.includes('USD') ? computeInsights(decodeHourly(gunzipSync(readFileSync(file('USD'))))) : null;
+if (!insights) console.warn('WARNING: no USD history: the insights page is empty');
 const PAGES = [
   { dir: '', src: 'src/app/index.html', extra: forget, parts: {
     '/*META*/': JSON.stringify(pageMeta), '/*DATA_USD*/': b64('USD'), '/*DATA_EUR*/': b64('EUR'), '/*DATA_FX*/': fxB64,
     '/*WORKER*/': safe(await bundle('src/app/worker.js')), '/*APP*/': safe(await bundle('src/app/main.js')) } },
-  { dir: 'insights/', src: 'src/pages/insights.html', extra: '', group: 'insights', parts: { '/*META*/': JSON.stringify({ built: pageMeta.built }), '/*APP*/': safe(await bundle('src/app/insights-page.js')) } },
+  { dir: 'insights/', src: 'src/pages/insights.html', extra: '', group: 'insights', parts: { '/*META*/': safe(JSON.stringify({ built: pageMeta.built, insights })), '/*APP*/': safe(await bundle('src/app/insights-page.js')) } },
   { dir: 'method/', src: 'src/pages/method.html', extra: '', group: 'method', parts: { '/*META*/': safe(JSON.stringify(methodMeta)), '/*APP*/': safe(await bundle('src/app/method-page.js')) } },
 ];
 function assemble(page) {
