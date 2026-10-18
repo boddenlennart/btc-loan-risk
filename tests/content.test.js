@@ -31,10 +31,10 @@ const INPUTS = {
 };
 // Every result, and where it is explained.
 const OUTPUTS = {
-  headline: 'results.headlineHelp', dots: 'results.legendLiquidated', saleLine: 'falls.measure', limits: 'results.limits',
+  headline: 'results.headlineHelp', dots: 'results.legendLiquidated', saleLine: 'method.measure', limits: 'results.limits',
   slider: 'results.sliderNote', levers: 'results.otherOptions', trend: 'history.trendIntro', leverageTrend: 'cost.levTrendUnit', ladder: 'falls.marginCure',
-  futures: 'falls.futuresHelp', cost: 'glossary.terms.aprVsRate', breakeven: 'cost.sellIntro', leverage: 'cost.levFacts',
-  replay: 'glossary.terms.historicalReplay', stories: 'history.storiesLine', method: 'method.text', fan: 'method.fanNote',
+  futures: 'falls.futuresHelp', cost: 'glossary.terms.aprVsRate', breakeven: 'cost.sellIntro', leverage: 'cost.levIntro',
+  replay: 'glossary.terms.historicalReplay', stories: 'history.storiesLine', method: 'method.steps', fan: 'method.fanNote',
   compare: 'method.barrierNote', feedback: 'feedback.intro', donate: 'donate.public',
 };
 const GLOSSARY = ['ltv', 'marginCall', 'liquidation', 'partialLiquidation', 'collateral', 'curePeriod', 'originationFee', 'aprVsRate',
@@ -94,7 +94,7 @@ for (const lang of ['en', 'de']) {
       const t = await load(lang);
       for (const k of ['impressumTitle', 'privacyTitle', 'templateNote']) expect(t.legal[k], `legal.${k}`).toEqual(expect.any(String));
       expect(t.legal.impressum.length).toBeGreaterThan(2);
-      const text = JSON.stringify(t.legal.privacy) + t.footer.privacy;
+      const text = JSON.stringify(t.legal.privacy);
       for (const host of ['api.coinbase.com', 'api.kraken.com', 'api.binance.com', 'api.coingecko.com', 'www.bitstamp.net', 'GitHub']) expect(text, host).toContain(host);
       expect(JSON.stringify(t.legal.privacy)).toMatch(/E-Mail|e-mail/); // section on feedback e-mails
     });

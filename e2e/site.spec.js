@@ -1,0 +1,128 @@
+// The three pages together: navigation, the "How it works" and "Insights" pages, languages, and
+// the check page trimmed after the content audit (ux/H-content-audit.md).
+import { test, expect } from '@playwright/test';
+
+async function visit(page, path, { lang = 'en', width } = {}) {
+  const errors = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  page.on('pageerror', (e) => errors.push(String(e)));
+  await page.route(/^https:\/\//, (route) => {
+    const u = route.request().url();
+    if (u.includes('api.coinbase.com')) return route.fulfill({ json: { data: { amount: '60000' } } });
+    if (u.includes('www.bitstamp.net')) return route.fulfill({ json: { data: { ohlc: [] } } });
+    return route.abort();
+  });
+  if (width) await page.setViewportSize({ width, height: 812 });
+  await page.addInitScript(() => document.addEventListener('securitypolicyviolation', (e) => console.error(`CSP refused: ${e.violatedDirective} ${e.blockedURI || ''}`)));
+  await page.addInitScript((l) => { try { if (!sessionStorage.getItem('set')) { localStorage.clear(); localStorage.setItem('btc-loan-risk:lang', l); sessionStorage.setItem('set', '1'); } } catch {} }, lang);
+  await page.goto(path);
+  await expect(page.locator('body')).toHaveAttribute('data-ready', '1');
+  return errors;
+}
+
+test('navigation: three pages, the current one marked; in the top bar on desktop, a second row on phones that scrolls away', async ({ page }) => {
+  await visit(page, '/');
+  const desk = page.locator('.desk-nav');
+  await expect(desk).toBeVisible();
+  await expect(page.locator('.phone-nav')).toBeHidden();
+  await expect(desk.locator('a')).toHaveText(['Check a loan', 'Insights', 'How it works']);
+  await expect(desk.locator('a[aria-current="page"]')).toHaveText('Check a loan');
+  await desk.getByText('How it works').click();
+  await expect(page).toHaveURL(/\/method\/$/);
+  await expect(page.locator('.desk-nav a[aria-current="page"]')).toHaveText('How it works');
+  await page.locator('.desk-nav').getByText('Insights').click();
+  await expect(page).toHaveURL(/\/insights\/$/);
+  await page.locator('.brand').click();
+  await expect(page).toHaveURL(/127\.0\.0\.1:\d+\/$/);
+
+  await page.setViewportSize({ width: 375, height: 812 });
+  const row = page.locator('.phone-nav');
+  await expect(row).toBeVisible();
+  await expect(page.locator('.desk-nav')).toBeHidden();
+  for (const a of await row.locator('a').all()) expect((await a.boundingBox()).height).toBeGreaterThanOrEqual(44);
+  await page.mouse.wheel(0, 600);
+  await expect.poll(() => row.evaluate((el) => el.getBoundingClientRect().bottom)).toBeLessThan(0); // scrolled away
+  await expect.poll(() => page.locator('.top').evaluate((el) => el.getBoundingClientRect().top)).toBe(0); // the name bar stays
+});
+
+test('"How it works": all parts, the example loan\'s charts and method table, no errors or security refusals', async ({ page }) => {
+  const errors = await visit(page, '/method/');
+  await expect(page).toHaveTitle('How it works · Bitcoin Loan Check');
+  await expect(page.locator('.toc li')).toHaveCount(7);
+  for (const id of ['steps', 'methods', 'test', 'data', 'trend', 'limits', 'verify']) await expect(page.locator(`#${id} h2`)).toBeVisible();
+  await expect(page.locator('#steps-list li')).toHaveCount(4);
+  await expect(page.locator('#example-note')).toContainText('Borrow €10,000 for 12 months');
+  await expect(page.locator('#fan-chart path.band-outer')).toHaveCount(1);
+  await expect(page.locator('#months-chart svg')).toHaveCount(1);
+  await expect(page.locator('#compare tr')).toHaveCount(4);
+  await expect(page.locator('#trend-facts')).toContainText('Since 2014, BTC grew by about');
+  await expect(page.locator('#data')).toContainText('European Central Bank');
+  await expect(page.locator('#data')).toContainText('Your lender decides which BTC price counts');
+  await expect(page.locator('#verify a')).toHaveAttribute('href', 'https://github.com/boddenlennart/btc-loan-risk');
+  await page.locator('#methods a.gloss').first().click(); // a glossary word opens the glossary in the footer
+  await expect(page.locator('#glossary')).toHaveAttribute('open', '');
+  expect(errors).toEqual([]);
+});
+
+test('the method table on "How it works" equals the example answer on the check page', async ({ page }) => {
+  await visit(page, '/method/');
+  const sim = await page.locator('#compare tr').first().locator('td').textContent();
+  const hist = await page.locator('#compare tr').nth(2).locator('td').textContent();
+  await visit(page, '/');
+  await expect(page.locator('#headline-text em')).toHaveText(sim);
+  await expect(page.locator('#methods-line')).toContainText(`real history since 2014 ${hist} of 100`);
+});
+
+test('German: /de/method/ and /de/insights/ start in German; the language menu on a page loads that page in the other language', async ({ page }) => {
+  await visit(page, '/de/method/');
+  await expect(page.locator('h1')).toHaveText('So funktioniert es');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'de');
+  await expect(page.locator('.desk-nav a[aria-current="page"]')).toHaveText('So funktioniert es');
+  await expect(page.locator('.desk-nav a').first()).toHaveAttribute('href', '/de/');
+  await page.locator('#lang-btn').click();
+  await page.locator('[data-lang="en"]').click();
+  await expect(page).toHaveURL(/\/method\/$/);
+  expect(new URL(page.url()).pathname).toBe('/method/');
+  await expect(page.locator('h1')).toHaveText('How it works');
+  await visit(page, '/de/insights/');
+  await expect(page.locator('h1')).toHaveText('Erkenntnisse');
+  await expect(page.locator('#groups li')).toHaveCount(5);
+});
+
+test('check page after the audit: the method section and repeats are gone, the insight line links on, feedback and "start over" sit in the footer', async ({ page }) => {
+  const errors = await visit(page, '/');
+  await expect(page.locator('#method')).toHaveCount(0);
+  await expect(page.locator('#fall-hook')).toContainText(/At its fastest since 2014, BTC fell this far \(−\d+%\) within \d+ (hours?|days)\./);
+  await expect(page.locator('#fall-hook a')).toHaveAttribute('href', '/insights/#buffer');
+  await expect(page.locator('#method-link')).toHaveAttribute('href', '/method/');
+  // said once on the page, not three times: the lender itself can fail (plus the list of what is not included)
+  expect(await page.locator('main').evaluate((m) => (m.textContent.match(/lender itself can fail/g) || []).length)).toBe(1);
+  await expect(page.locator('main')).not.toContainText('Price history in this page');
+  await expect(page.locator('main')).not.toContainText('Your lender\'s own figures always win');
+  // "What happens when BTC falls": the ladder and the steps, without repeating the sale sentence of the answer
+  await page.locator('#sec-falls > summary').click();
+  await expect(page.locator('#sec-falls .ladder')).toBeVisible();
+  await expect(page.locator('#falls-text')).toContainText('(liquidation): the lender sells');
+  await expect(page.locator('#sale-line')).toBeHidden();
+  await expect(page.locator('footer #sec-feedback')).toHaveCount(1);
+  await expect(page.locator('footer #forget-btn')).toHaveCount(1);
+  expect(errors).toEqual([]);
+});
+
+// Accessibility (axe-core) on every page, light and dark, with the footer's folded parts open.
+// The checker is injected into the page, so this test alone switches off the security rule.
+test.describe('accessibility', () => {
+  test.use({ bypassCSP: true });
+  for (const path of ['/', '/insights/', '/method/', '/de/method/']) {
+    for (const scheme of ['light', 'dark']) {
+      test(`axe finds no issues on ${path} (${scheme})`, async ({ page }) => {
+        await page.emulateMedia({ colorScheme: scheme });
+        await visit(page, path);
+        await page.evaluate(() => { for (const d of document.querySelectorAll('footer details')) d.open = true; });
+        await page.addScriptTag({ path: 'node_modules/axe-core/axe.min.js' });
+        const r = await page.evaluate(() => window.axe.run(document, { resultTypes: ['violations'] }));
+        expect(r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(', ')}`)).toEqual([]);
+      });
+    }
+  }
+});

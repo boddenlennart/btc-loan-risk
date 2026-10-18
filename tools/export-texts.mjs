@@ -6,9 +6,9 @@ import en from '../src/content/text.en.js';
 import de from '../src/content/text.de.js';
 
 const GROUPS = [
-  ['ui', 'Page frame and short messages'], ['form', 'Input form'], ['where', '"Where to find these numbers"'],
+  ['nav', 'Navigation between the three pages'], ['ui', 'Page frame and short messages'], ['form', 'Input form'], ['where', '"Where to find these numbers"'],
   ['results', 'Answer, "Make it safer"'], ['compare', 'Comparing offers and refinancing'], ['share', 'Share summary'], ['sections', 'Section titles'], ['falls', 'Section: what happens when BTC falls'],
-  ['cost', 'Section: costs, borrow or sell, leverage'], ['history', 'Section: what history says'], ['method', 'Section: how these numbers are made'],
+  ['cost', 'Section: costs, borrow or sell, leverage'], ['history', 'Section: what history says'], ['insights', 'Page: Insights'], ['method', 'Page: How it works'],
   ['feedback', 'Feedback panel'], ['donate', 'Donation box'], ['footer', 'Footer'], ['glossary', 'Glossary'], ['errors', 'Error messages'],
   ['legal', 'Impressum and privacy notice (templates; review by a lawyer)'], ['meta', 'Page title and search description'],
 ];

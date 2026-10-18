@@ -1,16 +1,19 @@
 // Hosting & privacy: the built page loads nothing from other servers, and the
 // only outside addresses it may contact are the BTC price services named in
-// the privacy notice. Checks the built file docs/index.html.
+// the privacy notice. Checks the six built pages (three pages, two languages).
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 
-const page = new URL('../docs/index.html', import.meta.url);
+// the check contacts the price services; "Insights" and "How it works" contact nothing
+const PAGES = { 'index.html': 'prices', 'de/index.html': 'prices', 'insights/index.html': 'none', 'de/insights/index.html': 'none', 'method/index.html': 'none', 'de/method/index.html': 'none' };
 const ALLOWED_HOSTS = ['api.coinbase.com', 'api.kraken.com', 'api.binance.com', 'api.coingecko.com', 'www.bitstamp.net'];
 // Plain text links and the site's own address in the preview tags (read by link previews, not loaded by the page):
 const TEXT_LINKS = ['docs.github.com', 'github.com', 'bitcoinloancheck.com'];
 
-describe.skipIf(!existsSync(page))('built page: self-hosted, no external resources', () => {
+for (const [name, connects] of Object.entries(PAGES)) {
+const page = new URL(`../docs/${name}`, import.meta.url);
+describe.skipIf(!existsSync(page))(`built page ${name}: self-hosted, no external resources`, () => {
   const html = existsSync(page) ? readFileSync(page, 'utf8') : '';
   it('no external scripts, styles, fonts, images or frames', () => {
     expect(html).not.toMatch(/<script[^>]+src=/i);
@@ -41,13 +44,14 @@ describe.skipIf(!existsSync(page))('built page: self-hosted, no external resourc
     expect(scriptSrc).toContain(`'sha256-${createHash('sha256').update(runnable[0]).digest('base64')}'`);
     expect(html).not.toMatch(/<[^>]+\son[a-z]+=["']/i); // no onclick=, onsubmit= ... attributes
   });
-  it('the Content Security Policy only allows the named price services', () => {
+  it('the Content Security Policy only allows the named price services (the check) or nothing (the other pages)', () => {
     const csp = html.match(/Content-Security-Policy" content="([^"]+)"/)[1];
     expect(csp).toContain("default-src 'none'");
     const connect = csp.match(/connect-src ([^;]+)/)[1].split(/\s+/).map((u) => u.replace('https://', ''));
-    expect(connect.sort()).toEqual([...ALLOWED_HOSTS].sort());
+    expect(connect.sort()).toEqual(connects === 'prices' ? [...ALLOWED_HOSTS].sort() : ["'none'"]);
   });
 });
+}
 
 describe('source code: no outside addresses beyond the allowed ones', () => {
   it('src/ only mentions allowed hosts', () => {

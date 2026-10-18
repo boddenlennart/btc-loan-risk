@@ -24,6 +24,7 @@ const M = [
   ['src/data/fx.js', 'while (j + 1 < days.length && days[j + 1] <= d) j++;', 'while (j + 1 < days.length && days[j + 1] <= d + 1) j++;', 'exchange rate of the next day used one day early'],
   ['src/app/riskjob.js', 'logDriftPerDay: Math.log(1 + trend) / 365,', 'logDriftPerDay: Math.log(1 + trend) / 36.5,', 'price trend ten times too strong'],
   ['src/app/terms.js', 'const extra = ch.change === \'more\' ? numOr(ch.extra, 0) : 0;', 'const extra = ch.change === \'more\' ? -numOr(ch.extra, 0) : 0;', 'cash-out refinancing lowers the debt'],
+  ['src/engine/history.js', 'if (h < tl && low[j] <= k * close[q[h]]) return true;', 'if (h < tl && close[j] <= k * close[q[h]]) return true;', 'fastest fall uses hourly closes instead of lows'],
   ['src/engine/validate.js', 'initialLtv', 'initialLtvX', 'validation reads a field that does not exist (first use)'],
 ];
 

@@ -140,6 +140,9 @@ test('payment plan: stays open when the terms change, and shows the new plan (in
   await expect(page.locator('#cost-body details')).toHaveAttribute('open', '');
   await expect(page.locator('#cost-body tbody tr').first().locator('td').nth(4)).toHaveText('€0.00'); // nothing paid in month 1
   await expect(page.locator('#cost-body tbody tr').first().locator('td').nth(5)).toHaveText('€10,083.33'); // the debt grows
+  // so the sale price rises too: said once, in "What happens when BTC falls"
+  await page.locator('#sec-falls > summary').click();
+  await expect(page.locator('#sale-line')).toContainText(/the sale price rises to €[\d,]+ by the end/);
 });
 
 test('impossible terms show a plain-language error and no result', async ({ page }) => {
@@ -188,9 +191,7 @@ test('history section: real history first, a sentence linking it to the answer, 
   await expect(page.locator('#trend-body .lv')).toHaveCount(5);
   await expect(page.locator('#trend-body .lv.base b')).toHaveText(String(n)); // "the answer above" really is the answer above
   await expect(page.locator('#trend-body')).toContainText(/even at \+100% a year, \d+ of 100 futures still end in liquidation/);
-  // the method justification moved to "How these numbers are made"
-  await page.locator('#method > summary').click();
-  await expect(page.locator('#trend-facts')).toContainText('Why the page assumes no trend');
+  // the method justification is on the "How it works" page (e2e/site.spec.js)
   await page.getByRole('button', { name: 'Buy more BTC' }).click();
   await waitDone(page);
   await page.locator('#sec-cost > summary').click();
@@ -206,10 +207,9 @@ test('margin-call rule "sells part at once": the answer mentions partial sales',
 
 test('all sections open with their charts; donation QR, Impressum and privacy notice present', async ({ page }) => {
   const { errors } = await open(page); await waitDone(page);
-  for (const id of ['sec-falls', 'sec-cost', 'sec-history', 'method', 'sec-feedback']) await page.locator(`#${id} > summary`).click();
+  for (const id of ['sec-falls', 'sec-cost', 'sec-history', 'sec-feedback']) await page.locator(`#${id} > summary`).click();
   await expect(page.locator('#futures-chart path.path-kept, #futures-chart path.path-sold')).toHaveCount(20);
   await expect(page.locator('#stories-chart path.story')).toHaveCount(4);
-  await expect(page.locator('#fan-chart path.band-outer')).toHaveCount(1);
   await expect(page.locator('footer .qr svg')).toHaveCount(1);
   await expect(page.locator('#impressum-body')).toContainText('§ 5 DDG');
   await expect(page.locator('#privacy-body')).toContainText('GitHub Pages');
@@ -336,7 +336,6 @@ test('Swiss francs: the answer is computed from the euro history converted with 
   await expect(page.locator('#tiles')).toContainText('CHF');
   const chf = await headlineNumber(page);
   expect(Math.abs(chf - eur)).toBeLessThanOrEqual(3);
-  await expect(page.locator('footer')).toContainText('European Central Bank');
   // no new outside addresses: the rates are inside the page
   for (const h of hosts) expect(ALLOWED, h).toContain(h);
 });

@@ -6,23 +6,11 @@
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src /*SCRIPT_HASH*/ blob:; worker-src blob:; style-src 'unsafe-inline'; font-src data:; img-src data: 'self'; connect-src https://api.coinbase.com https://api.kraken.com https://api.binance.com https://api.coingecko.com https://www.bitstamp.net; base-uri 'none'; form-action 'none'">
 /*HEAD*/
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f6f5f1'/%3E%3Ccircle cx='16' cy='9' r='5' fill='%231f4e79'/%3E%3Cpath d='M16 15.5v6' stroke='%231f4e79' stroke-width='2.2' stroke-dasharray='2 2'/%3E%3Cpath d='M4 26h24' stroke='%2315140f' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
+/*ICON*/
 <style>/*STYLE*/</style>
 </head>
 <body>
-<header class="top">
-  <div class="wrap top-inner">
-    <a class="brand" href="#top"><svg class="mark" width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="8.5" r="5" fill="var(--accent)"/><path d="M16 15v7" stroke="var(--accent)" stroke-width="2" stroke-dasharray="2 2.2"/><path d="M3 25.5h26" stroke="var(--text)" stroke-width="2.4" stroke-linecap="round"/><path d="M12 22.5l4 3 4-3" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-t="meta.name"></span></a>
-    <nav class="lang-menu">
-      <button type="button" id="lang-btn" class="lang" aria-haspopup="true" aria-expanded="false" aria-controls="lang-list"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M1.5 8h13M8 1.5c2 2 2.6 4 2.6 6.5S10 12.5 8 14.5M8 1.5C6 3.5 5.4 5.5 5.4 8S6 12.5 8 14.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg><span id="lang-code"></span><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-      <div class="lang-list" id="lang-list" hidden>
-        <button type="button" data-lang="en" lang="en">English</button>
-        <button type="button" data-lang="de" lang="de">Deutsch</button>
-        <a id="lang-missing"></a>
-      </div>
-    </nav>
-  </div>
-</header>
+/*HEADER*/
 <main class="wrap layout" id="top">
   <div class="intro">
     <h1 class="pos" data-t="ui.headline"></h1>
@@ -53,9 +41,10 @@
     <div class="tiles" id="tiles"></div>
     <p class="sold-line" id="sold-line"></p>
     <p class="sub" id="kept-line"></p>
+    <p class="hook" id="fall-hook" hidden></p>
     <p class="actions"><button type="button" class="secondary" data-compare-start id="compare-btn"></button><button type="button" class="secondary" data-share id="share-btn"></button></p>
     <p class="hint" id="link-copied" data-t="ui.linkCopied" hidden></p>
-    <p class="meta"><span id="methods-line"></span><a href="#method" data-t="results.howToCheck"></a></p>
+    <p class="meta"><span id="methods-line"></span><a id="method-link" data-t="results.howToCheck"></a></p>
     <p class="meta"><span id="basis-line"></span> · <span id="data-period"></span></p>
     <p class="meta" data-t="results.counterpartyLine"></p>
   </section>
@@ -78,7 +67,6 @@
       <span class="cl-text"><span class="cl-title" id="questions-title"></span><span class="cl-preview" data-t="falls.questionsPreview"></span></span>
     </summary>
     <ul class="questions" id="questions"></ul>
-    <p class="hint" data-t="falls.counterparty"></p>
   </details>
 
   <details class="section" id="sec-falls">
@@ -92,8 +80,6 @@
     <div id="futures-chart"></div>
     <p class="hint" id="futures-note" data-t="falls.futuresMarginNote" hidden></p>
     <p><button type="button" class="link" data-other-paths id="other-paths"></button></p>
-    <p class="hint" data-t="falls.measure"></p>
-    <p class="notice" data-t="falls.lenderWins"></p>
   </details>
 
   <details class="section" id="sec-cost">
@@ -111,55 +97,12 @@
     <details class="sub-details" id="trend-details"><summary data-t="history.trendTitle"></summary><div id="trend-body"></div></details>
   </details>
 
-  <details class="section" id="method">
-    <summary><h3 data-t="sections.method"></h3></summary>
-    <ul class="method" id="method-text"></ul>
-    <h4 data-t="method.trendTitle"></h4>
-    <div id="trend-facts"></div>
-    <h4 id="compare-h" data-t="method.compareTitle"></h4>
-    <div class="table-wrap" id="compare" tabindex="0" role="region" aria-labelledby="compare-h"></div>
-    <h4 data-t="method.fanTitle"></h4>
-    <p class="hint" data-t="method.fanNote"></p>
-    <div id="fan-chart"></div>
-    <h4 data-t="method.byMonthTitle"></h4>
-    <div id="months-chart"></div>
-  </details>
-
   <details class="section" id="sec-limits">
     <summary><h3 data-t="results.limitsTitle"></h3></summary>
     <ul id="limits"></ul>
   </details>
 
-  <details class="section" id="sec-feedback">
-    <summary><h3 data-t="sections.feedback"></h3></summary>
-    <div id="feedback-body"></div>
-  </details>
-
-  <div class="data-foot">
-    <p class="sub" id="data-range"></p>
-    <p class="buttons"><button type="button" id="forget-btn" class="secondary" data-t="ui.forgetInputs"></button></p>
-    <p id="forgotten" class="sub" role="status" data-t="ui.forgotten" hidden></p>
-  </div>
-
-  <footer>
-    <p class="maker" id="maker"></p>
-    <p data-t="footer.notAdvice"></p>
-    <p class="hint"><span data-t="footer.license"></span> <a href="https://github.com/boddenlennart/btc-loan-risk/blob/main/LICENSE" rel="noopener">LICENSE</a></p>
-    <div class="donate">
-      <div class="qr">/*QR*/</div>
-      <div>
-        <p data-t="donate.text"></p>
-        <p class="addr" id="donate-address"></p>
-        <p><button type="button" class="secondary" data-copy-address data-t="donate.copy"></button></p>
-        <p class="hint" data-t="donate.public"></p>
-      </div>
-    </div>
-    <details id="glossary"><summary data-t="glossary.title"></summary><dl id="glossary-list"></dl></details>
-    <details id="impressum"><summary data-t="legal.impressumTitle"></summary><p class="notice template-note" data-t="legal.templateNote" hidden></p><div id="impressum-body"></div></details>
-    <details id="privacy-notice"><summary data-t="legal.privacyTitle"></summary><p class="notice template-note" data-t="legal.templateNote" hidden></p><div id="privacy-body"></div></details>
-    <p class="hint" data-t="footer.privacy"></p>
-    <p class="hint" data-t="footer.sources"></p>
-  </footer>
+  /*FOOTER*/
 </main>
 <div class="answer-bar" id="answer-bar" hidden aria-live="polite"><span id="answer-bar-text"></span><button type="button" class="bar-go" id="answer-bar-btn" data-to-answer></button></div>
 <script type="application/json" id="meta">/*META*/</script>

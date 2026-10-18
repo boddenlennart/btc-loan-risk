@@ -6,21 +6,32 @@ import de from '../content/text.de.js';
 const TEXTS = { en, de };
 let lang = 'en';
 
-// The site has an English address (/) and a German one (/de/), so links and search results
-// carry the language. Other paths (a test copy elsewhere) keep their address.
-const SITE_PATH = /^(.*?\/)(de\/)?(index\.html)?$/;
+// The site has three pages, each with an English address (/, /insights/, /method/) and a German
+// one (/de/, /de/insights/, /de/method/), so links and search results carry the language.
+// Other paths (a test copy elsewhere) keep their address.
+export const PAGES = ['', 'insights/', 'method/'];
+const SITE_PATH = /^(.*?\/)(de\/)?((?:insights|method)\/)?(index\.html)?$/;
+const parsePath = () => (typeof location === 'undefined' ? null : location.pathname.match(SITE_PATH));
+/** The address of one of the three pages (`page`: '', 'insights/' or 'method/') in a language. */
+export function pageHref(page, l = lang) {
+  const m = parsePath();
+  // a copy opened from the disk (file://) has no server to add "index.html" to folder addresses
+  const file = typeof location !== 'undefined' && location.protocol === 'file:' ? 'index.html' : '';
+  return `${m ? m[1] : '/'}${l === 'de' ? 'de/' : ''}${page}${file}`;
+}
+/** Which of the three pages this is ('', 'insights/' or 'method/'). */
+export function currentPage() { const m = parsePath(); return (m && m[3]) || ''; }
 function syncPath() {
   if (typeof location === 'undefined' || typeof history === 'undefined') return; // not in a browser (tests)
-  const m = location.pathname.match(SITE_PATH);
-  if (!m) return;
-  const path = `${m[1]}${lang === 'de' ? 'de/' : ''}`;
+  if (!parsePath()) return;
+  const path = pageHref(currentPage());
   if (path !== location.pathname) history.replaceState(null, '', `${path}${location.search}${location.hash}`);
 }
 
 export function initLang() {
   let saved = null;
   try { saved = localStorage.getItem('btc-loan-risk:lang'); } catch { /* storage may be blocked */ }
-  const fromPath = /\/de\/(index\.html)?$/.test(location.pathname) ? 'de' : null;
+  const fromPath = /\/de\/((insights|method)\/)?(index\.html)?$/.test(location.pathname) ? 'de' : null;
   lang = fromPath || (saved === 'de' || saved === 'en' ? saved : (navigator.language || '').toLowerCase().startsWith('de') ? 'de' : 'en');
   document.documentElement.lang = lang;
   syncPath();

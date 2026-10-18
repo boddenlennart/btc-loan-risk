@@ -62,11 +62,13 @@ describe.skipIf(!existsSync(file('robots.txt')))('search engines and missing add
     expect(r).toMatch(/^User-agent: \*\nAllow: \//);
     expect(r).toContain('Sitemap: https://bitcoinloancheck.com/sitemap.xml');
   });
-  it('the sitemap lists both language pages, each with its alternate', () => {
+  it('the sitemap lists the three pages in both languages, each with its alternate', () => {
     const x = readFileSync(file('sitemap.xml'), 'utf8');
-    expect(x).toContain('<loc>https://bitcoinloancheck.com/</loc>');
-    expect(x).toContain('<loc>https://bitcoinloancheck.com/de/</loc>');
-    expect((x.match(/hreflang="de"/g) || []).length).toBe(2);
+    for (const dir of ['', 'insights/', 'method/']) {
+      expect(x).toContain(`<loc>https://bitcoinloancheck.com/${dir}</loc>`);
+      expect(x).toContain(`<loc>https://bitcoinloancheck.com/de/${dir}</loc>`);
+    }
+    expect((x.match(/hreflang="de"/g) || []).length).toBe(6);
   });
   it('a real "not found" page exists (so unknown addresses get 404, not the whole page), not listed by search engines', () => {
     const h = readFileSync(file('404.html'), 'utf8');

@@ -1,6 +1,6 @@
 # Bitcoin Loan Check
 
-**An independent check for any Bitcoin loan offer** (bitcoinloancheck.com; German: Bitcoin-Kredit-Check at `/de/`). A single web page that helps you judge a bitcoin-backed loan. It estimates:
+**An independent check for any Bitcoin loan offer** (bitcoinloancheck.com; German: Bitcoin-Kredit-Check at `/de/`). A small site of three pages that helps you judge a bitcoin-backed loan: **Check a loan** (`/`), **Insights** (`/insights/`, what happened to loans since 2014; being built) and **How it works** (`/method/`). The check estimates:
 
 - the **chance that the loan gets liquidated** before it ends (your BTC sold by the lender), and
 - what the loan **costs compared with selling BTC** instead.
@@ -13,7 +13,7 @@ Everything runs in your browser. There is no server, no tracking and no cookies.
 
 ## Open the page on your computer
 
-The finished page is one file per language: [`docs/index.html`](docs/index.html) (English) and [`docs/de/index.html`](docs/de/index.html) (German).
+Each finished page is one file per language: [`docs/index.html`](docs/index.html) (the check, English), [`docs/de/index.html`](docs/de/index.html) (German), and the same under `docs/insights/` and `docs/method/`. Header, footer and styles are shared (`src/app/partials/`, `src/app/shell.js`, `src/app/style.css`).
 
 1. Download or clone this repository.
 2. Double-click `docs/index.html`. It opens in your browser and works offline (with the stored price history). The language button switches to German.
@@ -39,7 +39,7 @@ One-time setup (the Cloudflare screens may be worded slightly differently):
 
 ## Hosting and privacy
 
-- **Everything is self-hosted inside `docs/index.html`**: styles, scripts, the price history, the exchange rates, the icon and the font. The serif font (Source Serif 4, [SIL Open Font License](licenses/OFL-source-serif-4.txt)) is embedded in the page; body text uses the device's own system font. No CDN, no Google Fonts, no analytics. A Content Security Policy in the page blocks any other outside request and lets only the page's own script run (identified by its SHA-256 fingerprint, computed at every build); `tests/hosting.test.js` checks the built file, and a browser test confirms that a smuggled-in script is refused.
+- **Everything is self-hosted inside the page files**: styles, scripts, the price history, the exchange rates, the icon and the font. The serif font (Source Serif 4, [SIL Open Font License](licenses/OFL-source-serif-4.txt)) is embedded in the page; body text uses the device's own system font. No CDN, no Google Fonts, no analytics. A Content Security Policy in the page blocks any other outside request and lets only the page's own script run (identified by its SHA-256 fingerprint, computed at every build); `tests/hosting.test.js` checks all six built files ("Insights" and "How it works" may contact no outside address at all), and a browser test confirms that a smuggled-in script is refused.
 - **The only outside requests** are made by the visitor's browser when the page opens (chosen: automatic on load):
   - current price: `api.coinbase.com`; only if that fails, `api.kraken.com`, `api.binance.com`, `api.coingecko.com`, one after the other
   - recent hourly prices: `www.bitstamp.net`
@@ -89,12 +89,12 @@ python3 tools/fetch_history.py eur           # download EUR price history (slow:
 node tools/build-data.mjs                    # compress the history into data/
 node tools/update-fx.mjs                     # refresh the ECB exchange rates in data/fx-ecb.csv
 node tools/check-fx.mjs                      # compare the converted prices with real exchange prices
-node tools/build.mjs                         # write docs/index.html and docs/de/index.html
+node tools/build.mjs                         # write the three pages in both languages (docs/…/index.html)
 node tools/build-og.mjs                      # link-preview images and icons (only when name, headline or logo change)
 npm test                                     # run all automated tests
 npm run test:e2e                             # test the finished page in Chrome's, Safari's and Firefox's engine (first: npx playwright install chromium webkit firefox)
 node tools/coverage-e2e.mjs                  # which page code the browser tests run
-node tools/mutation-check.mjs                # plant 18 bugs one by one; the tests must catch each (~10 min)
+node tools/mutation-check.mjs                # plant 19 bugs one by one; the tests must catch each (~10 min)
 ```
 
 **All page text** (German and English) is in [`src/content/text.de.js`](src/content/text.de.js) and [`src/content/text.en.js`](src/content/text.en.js). You can edit wording there without touching any calculation. The example values in the form are in [`src/content/examples.js`](src/content/examples.js).
@@ -119,7 +119,7 @@ The page contains BTC price history up to a fixed date. A scheduled **GitHub Act
      - the 12 reference loans on frozen history, which must match the stored results exactly
      - the same 12 loans on the newest data, where every result must be valid
      - the test against history
-   - **the 38 browser tests of the finished page, in Chrome's, Safari's and Firefox's engine**
+   - **the 56 browser tests of the finished pages, in Chrome's, Safari's and Firefox's engine**
    - the **drift guard**: if the new hours move the result of any reference loan by more than 5 of 100, the update stops and you get an issue instead of a pull request.
 6. It opens a **pull request** called "Weekly price data update [date]". The description says, in plain words:
    - old and new end date
@@ -277,7 +277,7 @@ Public APIs can change their rules at any time; the page then falls back to the 
 
 ## Tests and how each was verified
 
-Run with `npm test` (316 tests) and `npm run test:e2e` (38 browser tests, each in Chrome's, Safari's and Firefox's engine). Quality measurements: [ux/G-quality-report.md](ux/G-quality-report.md) (coverage, planted bugs, hostile input, browsers, speed, accessibility, security). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
+Run with `npm test` (344 tests) and `npm run test:e2e` (56 browser tests, each in Chrome's, Safari's and Firefox's engine). Quality measurements: [ux/G-quality-report.md](ux/G-quality-report.md) (coverage, planted bugs, hostile input, browsers, speed, accessibility, security). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
 
 | # | Test | How it was verified |
 |---|---|---|
@@ -295,7 +295,7 @@ Run with `npm test` (316 tests) and `npm run test:e2e` (38 browser tests, each i
 | Regression | Golden master (`tests/regression.test.js`) | 12 reference loans that together use every main function: all repayment types, fees, variable rate, every margin-call rule, partial sales, reserve, existing loan, buy-more-BTC both ways, five price trends, taxes. On the frozen history (up to 1 Oct 2026, which new data never changes), every result must equal `tests/fixtures/regression-golden.json` to 9 decimal places: payment plans, trigger prices, APR, simulation, GARCH, replay, stories, levers, slider, result in BTC, history facts. **Checked by deliberately breaking the code three times:** a fee off by 1%, 31-day instead of 30-day price stretches, interest 0.01% too high. Each was caught and named. Regenerate with `node tools/update-golden.mjs` only when a change is intended, and say why in the commit. |
 | Regression | Newest data (`tests/current-data.test.js`) | The same 12 loans on the full current history: no missing or invalid numbers, chances between 0 and 1, monthly chance never falling, price bands in order, 100 sample paths (five sets of 20), history stories present, lower LTV never clearly riskier, slider in order, buy-more-BTC shares add up, a stronger price trend never clearly riskier. |
 | Regression | Finished page in a browser (`e2e/page.spec.js`, Playwright + Chromium) | 23 scenarios:<br>• the page loads without errors, and its answer equals the engine run directly on the same data<br>• the example answer is there the moment the page opens, and the live calculation confirms it<br>• only the named price services are contacted<br>• a lower LTV gives a lower answer; the slider works<br>• impossible terms show the error<br>• German works; the German address /de/ starts in German and the language button switches the address<br>• "a loan I already have", "buy more BTC", the five price trends and "sells part at once" all work<br>• Swiss francs: computed from the converted euro history, close to the euro answer, no new outside addresses<br>• all charts, the QR code, the Impressum and the privacy notice render<br>• the shared link restores the inputs, says it was shared and opens on the answer (phone)<br>• "Make it safer" shows exactly the headline number for your own terms; the best option sits under the answer<br>• compare offers: each column equals that offer's own answer, no winner marked, the shared link brings the comparison back<br>• refinancing: current loan vs. a cash-out offer over the same months; too much extra cash is explained at once<br>• Share copies a summary with the visitor's numbers and the link<br>• the feedback text is correct<br>• first phone screen (375 × 812) holds name, headline, trust line and the answer; the number is in ink, not red<br>• no sideways scrolling at 375 px<br>• offline, the stored price is used with a warning |
-| UX | Design rules (`tests/design.test.js`) | Every text colour reaches at least 4.5:1 on page, panel and tile backgrounds, white on buttons 4.5:1, field borders and data marks 3:1, in light and dark mode; only the sizes of the type scale are used; the main number uses the text colour; "nothing happened" is a ring. Accessibility audit (axe-core, `tools/build-audit.mjs`) after the redesign: 0 issues in light and dark. |
+| UX | Design rules (`tests/design.test.js`) | Every text colour reaches at least 4.5:1 on page, panel and tile backgrounds, white on buttons 4.5:1, field borders and data marks 3:1, in light and dark mode; only the sizes of the type scale are used; the main number uses the text colour; "nothing happened" is a ring. Accessibility (axe-core): a browser test checks every page in light and dark mode, 0 issues (`e2e/site.spec.js`). |
 | UX | Share preview (`tests/share-preview.test.js`) | Both language pages carry language, title, description, canonical and language links, and the preview tags for messengers and X; preview images are 1200 × 630 and under 300 KB; texts fit the platforms' length limits; no tracking parameters. |
 | UX | Instant example (`tests/terms.test.js`) | The key that decides whether the example answer computed by the build can be shown does not depend on the BTC price or start date, and changes with every term that changes the answer. |
 | UX | Comparing offers and refinancing (`tests/compare.test.js`, `tests/app.test.js`) | Refinancing terms derived from the current loan (same amount, borrow more, take back BTC) and switching costs; on the real history: two identical offers give identical numbers, an offer differing only in fees differs only in cost, each table value equals that offer's own result, and refinancing with the same amount and terms equals the current loan over the same months; the share link carries the comparison and ignores broken ones. Accessibility audit with a comparison open: 0 issues. |
@@ -320,7 +320,7 @@ Run with `npm test` (316 tests) and `npm run test:e2e` (38 browser tests, each i
 | C3 "?" buttons visible by default | ≤ 6 | 23 | **3** (6 in total) |
 | C4 Answer, dots and slider on the first phone screen | yes | no | **yes** |
 | D3 Readability | short sentences | 11 words average | ≤ 14 average, none over 30 (test) |
-| D4 Accessibility (axe-core, WCAG 2.2 AA), light + dark, 320 px to desktop | 0 serious/critical | – | **0** (`node tools/build-audit.mjs`, then run axe in `ux/audit/`) |
+| D4 Accessibility (axe-core, WCAG 2.2 AA), light + dark, 320 px to desktop | 0 serious/critical | – | **0** (browser test in `e2e/site.spec.js`, every page) |
 | D5 Phone layout at 320 px | no sideways scrolling, 44 px targets | – | **passes** (links inside running text excepted, as WCAG allows) |
 | D6 First answer on a phone | ≤ 5 s | – | **1–2 s** on the owner's phone (2026-10-16, private test copy) |
 
@@ -361,11 +361,12 @@ Limits: below "worst 5%" at most 10%, below "worst 10%" at most 20%, below media
 ## Project structure
 
 ```
-docs/index.html          the finished page, English (built); docs/de/index.html: German
+docs/index.html          the check, English (built); docs/de/: German; docs/insights/, docs/method/: the other two pages
 docs/og-*.png, favicon…  link-preview images and icons (tools/build-og.mjs)
 src/engine/              calculations (loan, replay, Monte Carlo, GARCH, barrier, validation)
 src/content/             all page text (de, en) and the example values
-src/app/                 page layout, charts, worker, styles
+src/app/                 page layout, charts, worker, styles; shell.js + partials/: header and footer of every page
+src/pages/               the "Insights" and "How it works" page layouts
 src/live/price.js        live price fallback chain
 src/data/codec.js        compact price-history format
 src/data/fx.js           ECB exchange rates and the converted currencies
@@ -374,7 +375,7 @@ licenses/                licence of the embedded font (SIL Open Font License)
 data/                    compressed price history, meta.json, fx-ecb.csv (data/raw/ is not committed)
 reference/               independent Python reference + spreadsheet
 tests/                   automated tests and their fixtures (incl. regression golden file)
-e2e/                     browser tests of the finished page
+e2e/                     browser tests of the finished pages (page.spec.js: the check; site.spec.js: navigation, other pages, accessibility)
 tools/                   download, weekly data update, data build, page build, audit copy, local preview server
 .github/workflows/       the weekly data-update workflow
 ux/                      UX redesign and review: decisions, profiles, critique, design spec, share preview, test plan, sketches, screenshots

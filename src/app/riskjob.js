@@ -5,7 +5,7 @@
 import { gunzipSync } from 'fflate';
 import { decodeHourly } from '../data/codec.js';
 import { convertHourly } from '../data/fx.js';
-import { dailyFromHourly, dailyReturns } from '../engine/history.js';
+import { dailyFromHourly, dailyReturns, fastestFall, largestFall } from '../engine/history.js';
 import { fitGarchT } from '../engine/garch.js';
 import { runMonteCarlo } from '../engine/montecarlo.js';
 import { gbmBarrierHitProbability } from '../engine/barrier.js';
@@ -192,6 +192,10 @@ async function run(id, terms, settings, garch, post = postMessage) {
   result.replay = replayAll(s.hourly, terms); await tick();
   result.stories = STORIES.map((iso) => story(s, terms, iso)).filter(Boolean);
   const lp = liquidationPrices(terms);
+  // under the answer: how fast BTC fell as far as this loan's sale price at its fastest since 2014
+  const drop = 1 - lp.atStart / terms.btcPrice;
+  if (s.worst === undefined) s.worst = largestFall(s.hourly);
+  result.fastestFall = drop > 0 && drop < 1 ? { drop, hours: fastestFall(s.hourly, drop), worst: s.worst } : null;
   result.barrier = {
     sigma: s.sigma,
     p: gbmBarrierHitProbability({ s0: terms.btcPrice, barrier: lp.atStart, mu: s.sigma ** 2 / 2, sigma: s.sigma, years: loanDays(terms) / 365 }),

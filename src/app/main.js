@@ -1,9 +1,9 @@
 // The page: builds the form, reads it into loan terms, shows the answer first and
 // asks the worker for the risk results. No wording lives here: every visible word
 // comes from src/content/text.*.js via t().
-import { initLang, setLang, getLang, t, texts, rich, esc } from './i18n.js';
+import { initLang, t, texts, rich, esc, pageHref } from './i18n.js';
 import { money, money0, pct, num, btc, date, dateTime, isoDate } from './format.js';
-import { fanChart, barChart, futuresChart, storiesChart } from './charts.js';
+import { futuresChart, storiesChart } from './charts.js';
 import { EXAMPLE_FORM } from '../content/examples.js';
 import { SITE } from '../content/site.js';
 import { validateTerms } from '../engine/validate.js';
@@ -16,7 +16,7 @@ import { getSpotPrice } from '../live/price.js';
 import { setData as jobSetData, run as jobRun } from './riskjob.js';
 import { encodeState, decodeLink } from './share.js';
 import { toTerms, numOr, today, exampleKey, switchCosts } from './terms.js';
-import { feedbackText, mailtoLink } from './feedback.js';
+import { initShell, renderShell } from './shell.js';
 import { dataAge } from '../data/candles.js';
 import { gunzipSync, strFromU8 } from 'fflate';
 
@@ -34,7 +34,6 @@ const openedFromLink = !!linkData; let scrolledToAnswer = false;
 let compare = null;
 let state = loadState();
 let priceInfo = null; // { source, time, stale } | { source: 'manual' }
-const feedback = { use: '', meaning: '', useful: 0, easy: 0, missing: '', language: '', attach: false };
 let lastTerms = null; let lastSettings = null; let lastRisk = null; let timer = null; let started = false;
 // the terms and settings the current risk results were calculated for (charts must use these, not newer inputs)
 let riskTerms = null; let riskSettings = null; const pending = {};
@@ -254,7 +253,6 @@ function change(mutate, { rerenderForm = false } = {}) {
 function onInput(e) {
   const k = e.target.dataset.k;
   if (!k) {
-    if (e.target.dataset.fb) feedback[e.target.dataset.fb] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     if (e.target.matches('[data-offer-name]') && compare) { compare.names[compare.active] = e.target.value.slice(0, 40); saveState(); renderCompare(); renderAnswerTop(lastTerms); }
     return;
   }
@@ -270,7 +268,7 @@ function onClick(e) {
   if (e.target.closest('#terms-toggle')) { const closing = termsOpen; setTermsOpen(!termsOpen); if (closing && isPhone()) toAnswer(); return; }
   if (e.target.closest('[data-to-answer]')) { toAnswer(); return; }
   if (e.target.closest('[data-slider-undo]')) { undoSlider(); return; }
-  const ctl = e.target.closest('button[aria-controls]');
+  const ctl = e.target.closest('button[aria-controls]:not(#lang-btn)'); // the language menu: src/app/shell.js
   if (ctl) {
     const box = document.getElementById(ctl.getAttribute('aria-controls'));
     const open = ctl.getAttribute('aria-expanded') !== 'true';
@@ -319,19 +317,6 @@ function onClick(e) {
     endCompare();
   } else if (tgt.closest('[data-offer]')) {
     setActive(Number(tgt.closest('[data-offer]').dataset.offer));
-  } else if (tgt.matches('[data-fb-send], [data-fb-copy]')) {
-    const body = feedbackText({
-      ...feedback, use: feedback.use ? texts().feedback.useOptions[feedback.use] : '', terms: feedback.attach ? { ...lastTerms } : null,
-      version: new Date(META.built * 1000).toISOString().slice(0, 10), lang: getLang(), device: matchMedia('(max-width: 600px)').matches ? 'phone' : 'desktop',
-    });
-    if (tgt.matches('[data-fb-send]')) location.href = mailtoLink(SITE.feedbackEmail, texts().feedback.subject, body);
-    else navigator.clipboard?.writeText(body).then(() => { $('#fb-copied').hidden = false; });
-  } else if (tgt.matches('[data-copy-address]')) {
-    navigator.clipboard?.writeText(SITE.donationAddress).then(() => { tgt.textContent = t('donate.copied'); });
-  } else if (tgt.closest('a.gloss')) {
-    $('#glossary').open = true;
-  } else if (tgt.closest('a[href="#method"]')) {
-    $('#method').open = true;
   }
 }
 
@@ -341,7 +326,6 @@ function onToggle(e) {
   if (d.dataset.remember) { if (d.open) openDetails.add(d.dataset.remember); else openDetails.delete(d.dataset.remember); }
   if (d.id === 'sec-falls' && d.open) renderFutures();
   if (d.id === 'sec-history' && d.open) renderStories();
-  if (d.id === 'method' && d.open) renderExpertCharts();
 }
 
 // ------------------------------------------------------------------ live price & recent candles
@@ -503,16 +487,11 @@ const salePrices = (tm) => ({ lp: liquidationPrices(tm), mp: marginCallPrices(tm
 
 function renderLoan() {
   const tm = lastTerms; const cur = tm.currency;
-  const { lp, mp, rules } = salePrices(tm);
-  const drop = dropToLiquidation(tm);
-  const v = { drop: pct(drop, 0), price: money0(lp.atStart, cur), mcPrice: mp ? money0(mp.atStart, cur) : '', mcDrop: mp ? pct(1 - mp.atStart / tm.btcPrice, 0) : '', hours: tm.curePeriodHours };
-  let sale;
-  if (rules.behaviour === 'autoPartial') sale = t(rules.liquidationSale === 'partial' ? 'results.saleLineAutoPartialLiq' : 'results.saleLineAuto', v);
-  else if (rules.liquidationSale === 'partial') sale = t('results.saleLinePartialLiq', v);
-  else if (rules.afterCure) sale = t('results.saleLineCure', v);
-  else sale = t('results.saleLine', v);
-  const rising = tm.repayment === 'bullet' && lp.atMaturity > lp.atStart * 1.005 ? ` ${t('results.rising', { end: money0(lp.atMaturity, cur) })}` : '';
-  $('#sale-line').textContent = sale + rising;
+  const { lp } = salePrices(tm);
+  // the sale price and what happens around it are in the answer and the step-by-step text; here only
+  // what they cannot show: a sale price that rises because interest is added to the debt
+  const rising = tm.repayment === 'bullet' && lp.atMaturity > lp.atStart * 1.005 ? t('results.rising', { end: money0(lp.atMaturity, cur) }) : '';
+  $('#sale-line').textContent = rising; $('#sale-line').hidden = !rising;
   renderAnswerTop(tm);
   renderTiles(tm);
   renderTermsChips(tm);
@@ -804,11 +783,21 @@ function renderRisk() {
   if (tm.purpose === 'buy') renderLeverage();
   $('#history-text').innerHTML = historyText();
   $('#falls-month').textContent = fallsMonthText();
-  renderTrendFacts();
+  renderFallHook(r, tm);
   if ($('#sec-falls').open) renderFutures();
   if ($('#sec-history').open) renderStories();
-  if ($('#method').open) renderExpertCharts();
-  $('#data-range').textContent = `${t('ui.dataUntil', { from: date(META.prices[cur].from), to: date(META.prices[cur].to) })}${appended[cur] && appended[cur].length ? ` ${t('ui.dataAppended', { to: dateTime(appended[cur].at(-1).time) })}` : ''}`;
+}
+
+// One line under the answer that links the visitor's sale price with what happened since 2014:
+// how fast BTC fell this far at its fastest (the "how often" is already the real-history number).
+function renderFallHook(r, tm) {
+  const el = $('#fall-hook'); const f = r.fastestFall;
+  if (!f) { el.hidden = true; return; }
+  const H = texts().results;
+  const time = f.hours === null ? '' : f.hours === 1 ? H.hookHour : f.hours < 48 ? t('results.hookHours', { n: f.hours }) : t('results.hookDays', { n: Math.round(f.hours / 24) });
+  const line = f.hours === null ? t('results.hookNever', { drop: `−${pct(f.drop, 0)}`, worst: `−${pct(f.worst, 0)}` }) : t('results.hookFastest', { drop: `−${pct(f.drop, 0)}`, time });
+  el.innerHTML = `${esc(line)} <a href="${pageHref('insights/')}#buffer">${esc(H.hookLink)} →</a>`;
+  el.hidden = false;
 }
 
 // The visitor's own number is shown exactly as in the headline (which rounds so the dots add up to 100).
@@ -903,15 +892,6 @@ function renderTrend() {
   el.innerHTML = `<p class="hint">${rich(H.trendIntro)}</p><div class="levers">${trendRows(r, (x) => x.p, H.trendUnit)}</div>
     <p>${esc(t('history.trendConclusion', { top: shown(top.p), topTrend: signedPct(top.trend) }))}</p>`;
 }
-// Why no trend is assumed: method justification, shown in "How these numbers are made"
-function renderTrendFacts() {
-  const r = lastRisk; const el = $('#trend-facts'); if (!el || !r || !r.facts) return;
-  const f = r.facts; const by = f.fourYearByStart; const a = by[0]; const z = by[by.length - 1];
-  el.innerHTML = `<p class="hint">${esc(t('history.trendUncertainty', { estimate: signedPct(f.trendRange.estimate), low: signedPct(f.trendRange.low), high: signedPct(f.trendRange.high) }))}</p>
-    <p class="hint">${esc(t('history.trendPast', { worst: signedPct(f.fourYear.worst), median: signedPct(f.fourYear.median), best: signedPct(f.fourYear.best), firstFrom: a.from, firstTo: a.to, firstRate: signedPct(a.perYear), lastFrom: z.from, lastTo: z.to, lastRate: signedPct(z.perYear) }))}</p>
-    <p class="hint">${esc(t('history.trendSwings', { deep: f.deepYears, years: f.years }))}</p>`;
-}
-
 function renderLeverage() {
   const r = lastRisk; const tm = riskTerms || lastTerms; const C = texts().cost; const el = $('#leverage');
   if (!el) return;
@@ -936,7 +916,6 @@ function renderLeverage() {
   }
   html += `<p>${esc(t('cost.levBreakeven', { rise: pct(s.totalPayback / s.amountReceived - 1, 1) }))}</p>`;
   if (tm.repayWith === 'cash') html += `<p>${esc(t('cost.levCash', { payback: money0(s.totalPayback, cur) }))}</p>`;
-  if (r && r.facts) html += `<p class="hint">${esc(t('cost.levFacts', { h4: pct(r.facts.higherAfter4y, 0), h1: pct(r.facts.higherAfter1y, 0), w1: pct(r.facts.worst1y, 0) }))}</p>`;
   el.innerHTML = html;
 }
 
@@ -996,76 +975,29 @@ function renderStories() {
     return `<li><i style="background:${STORY_COLORS[j]}"></i>${esc(text)}</li>`;
   }).join('');
 }
-function renderExpertCharts() {
-  const r = lastRisk; if (!r) return;
-  const tm = riskTerms; const M = texts().method; const { lp } = salePrices(tm);
-  const cm = chartCommon();
-  const liqByMonth = [0, ...r.main.fanByMonth.map((f) => f.day)].map((d) => lp.byDay[d]);
-  fanChart($('#fan-chart'), { s0: tm.btcPrice, fan: r.main.fanByMonth, liq: liqByMonth, fmt: cm.fmt, monthLabel: cm.monthLabel, labels: { title: M.fanTitle, median: '50%', liq: texts().falls.ladderSale } });
-  barChart($('#months-chart'), { values: r.main.cumulativeByMonth.map((x) => x * 100), fmtPct: (v) => `${Math.round(v)}`, monthLabel: (m) => t('ui.monthN', { n: m }), title: M.byMonthTitle });
-  const rows = M.compareRows;
-  const both = (x) => of100(x.pLiquidation + (x.pPartial || 0));
-  $('#compare').innerHTML = `<table><tbody>
-    <tr><th scope="row">${esc(rows.bootstrap)}</th><td>${both(r.main)}</td></tr>
-    <tr><th scope="row">${esc(rows.garch)}</th><td>${both(r.garchMc)}</td></tr>
-    <tr><th scope="row">${esc(rows.replay)}</th><td>${of100(r.replay.liquidatedShare + (r.replay.partialShare || 0))}</td></tr>
-    <tr><th scope="row">${esc(rows.barrier)}</th><td>${of100(r.barrier.p)}</td></tr></tbody></table>
-    <p class="hint">${esc(t('method.barrierNote', { sigma: pct(r.barrier.sigma, 0) }))}</p>
-    <p class="hint">${esc(t('method.settings', { paths: num(riskSettings.nPaths, 0), block: riskSettings.blockDays, from: date(r.history.from), to: date(r.history.to) }))}</p>`;
-}
-
 // ------------------------------------------------------------------ static parts
 function renderStatic() {
   const tx = texts();
   document.title = tx.meta.title;
+  renderShell();
   $('#code-link').href = SITE.codeUrl;
+  $('#method-link').href = pageHref('method/');
   $('#basis-line').textContent = t('results.basis');
   const cur0 = state.currency;
   if (META.prices[cur0]) $('#data-period').textContent = t('ui.dataThrough', { from: date(META.prices[cur0].from), to: date(META.prices[cur0].to), updated: date(META.dataUpdated || META.prices[cur0].to) });
-  $('#maker').textContent = t('footer.maker', { name: SITE.maker });
   $('#share-btn').textContent = tx.ui.share;
-  $('#lang-missing').textContent = tx.feedback.languageMissing;
-  $('#lang-missing').href = mailtoLink(SITE.feedbackEmail, tx.feedback.languageSubject, `${tx.feedback.language}\n\n`);
   $('#terms-toggle').textContent = t(termsOpen ? 'form.closeTerms' : 'form.editTerms');
   $('meta[name="description"]').setAttribute('content', tx.meta.description);
-  for (const el of document.querySelectorAll('[data-t]')) el.innerHTML = rich(t(el.dataset.t));
-  $('#lang-code').textContent = getLang().toUpperCase();
-  $('#lang-btn').setAttribute('aria-label', `${getLang().toUpperCase()}, ${tx.ui.languageSwitch}: ${tx.ui.languageName}`); // starts with the visible text
-  for (const b of document.querySelectorAll('[data-lang]')) b.setAttribute('aria-current', String(b.dataset.lang === getLang()));
   $('#limits').innerHTML = tx.results.limits.map((x) => `<li>${esc(x)}</li>`).join('');
   for (const b of document.querySelectorAll('#answer button.q, #sec-falls button.q')) b.setAttribute('aria-label', tx.ui.more);
   $('#headline-help').innerHTML = rich(tx.results.headlineHelp);
   $('#futures-help').innerHTML = rich(tx.falls.futuresHelp);
   $('#questions').innerHTML = tx.falls.questions.map((x) => `<li>${esc(x)}</li>`).join('');
   $('#questions-title').textContent = t('falls.questionsTitle', { n: tx.falls.questions.length });
-  const [codeBefore, codeAfter] = tx.method.code.split('{link}');
-  $('#method-text').innerHTML = tx.method.text.map((x) => `<li>${rich(x)}</li>`).join('') + `<li>${esc(codeBefore)}<a href="${SITE.codeUrl}" rel="noopener">${esc(SITE.codeUrl.replace('https://', ''))}</a>${esc(codeAfter || '')}</li>`;
-  $('#glossary-list').innerHTML = Object.entries(tx.glossary.terms).map(([id, g]) => `<dt id="g-${id}">${esc(g.term)}</dt><dd>${rich(g.text)}</dd>`).join('');
-  const em = (s) => esc(s).replace('{email}', `<a href="mailto:${SITE.feedbackEmail}">${SITE.feedbackEmail}</a>`);
-  $('#impressum-body').innerHTML = tx.legal.impressum.map((x) => `<p>${em(x)}</p>`).join('');
-  $('#privacy-body').innerHTML = tx.legal.privacy.map((sec) => `<h4>${esc(sec.h)}</h4>${sec.p.map((x) => `<p>${em(x)}</p>`).join('')}`).join('');
-  for (const n of document.querySelectorAll('.template-note')) n.hidden = !JSON.stringify(tx.legal).includes('«');
   // the embedded history is maintained by the weekly update; warn if it has not run for 45 days
   const oldest = Math.min(...Object.values(META.prices).map((m) => m.to));
   $('#data-old').hidden = !dataAge(oldest).stale;
   $('#data-old').textContent = t('ui.dataOld', { date: date(oldest) });
-  $('#donate-address').textContent = SITE.donationAddress;
-  renderFeedbackForm();
-}
-
-function renderFeedbackForm() {
-  const Fb = texts().feedback;
-  const scale = (key) => `<div class="chips scale" role="group" aria-label="${esc(Fb[key])}"><span class="sub">${esc(Fb.scaleLow)}</span>${[1, 2, 3, 4, 5, 6, 7].map((n) => `<label class="chip"><input type="radio" name="fb-${key}" value="${n}" data-fb="${key}"${Number(feedback[key]) === n ? ' checked' : ''}><span>${n}</span></label>`).join('')}<span class="sub">${esc(Fb.scaleHigh)}</span></div>`;
-  $('#feedback-body').innerHTML = `<p class="hint">${esc(Fb.intro)}</p>
-    <fieldset><legend>${esc(Fb.use)}</legend><div class="chips">${Object.entries(Fb.useOptions).map(([k, l]) => `<label class="chip"><input type="radio" name="fb-use" value="${k}" data-fb="use"${feedback.use === k ? ' checked' : ''}><span>${esc(l)}</span></label>`).join('')}</div></fieldset>
-    <label class="block">${esc(Fb.meaning)}<textarea rows="2" data-fb="meaning">${esc(feedback.meaning)}</textarea></label>
-    <fieldset><legend>${esc(Fb.useful)}</legend>${scale('useful')}</fieldset>
-    <fieldset><legend>${esc(Fb.easy)}</legend>${scale('easy')}</fieldset>
-    <label class="block">${esc(Fb.missing)}<textarea rows="2" data-fb="missing">${esc(feedback.missing)}</textarea></label>
-    <label class="block">${esc(Fb.language)}<input type="text" data-fb="language" value="${esc(feedback.language)}"></label>
-    <label class="check"><input type="checkbox" data-fb="attach"${feedback.attach ? ' checked' : ''}> ${esc(Fb.attach)}</label>
-    <p class="buttons"><button type="button" class="primary" data-fb-send>${esc(Fb.write)}</button><button type="button" class="secondary" data-fb-copy>${esc(Fb.copy)}</button></p>
-    <p class="hint" id="fb-copied" hidden>${esc(t('feedback.copied', { email: SITE.feedbackEmail }))}</p>`;
 }
 
 function showEmbeddedExample() {
@@ -1085,18 +1017,11 @@ function renderAll() {
 
 // ------------------------------------------------------------------ start
 initLang();
+initShell({ getTerms: () => lastTerms, built: META.built, onLang: () => renderAll() });
 document.addEventListener('input', onInput);
 $('#form').addEventListener('submit', (e) => e.preventDefault()); // Enter in a field must not reload the page
 document.addEventListener('click', onClick);
 document.addEventListener('toggle', onToggle, true);
-// language menu: opened by the generic show/hide for aria-controls buttons; closes on choice, Escape or a click elsewhere
-const closeLangMenu = () => { $('#lang-list').hidden = true; $('#lang-btn').setAttribute('aria-expanded', 'false'); };
-document.addEventListener('click', (e) => {
-  const choice = e.target.closest('[data-lang]');
-  if (choice) { closeLangMenu(); if (choice.dataset.lang !== getLang()) { setLang(choice.dataset.lang); renderAll(); } $('#lang-btn').focus(); return; }
-  if (!e.target.closest('.lang-menu')) closeLangMenu();
-});
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('#lang-list').hidden) { closeLangMenu(); $('#lang-btn').focus(); } });
 // "Start over and forget my inputs": deletes everything stored in this browser, ends a comparison,
 // and shows the example again (with the live price, not a price typed in before)
 $('#forget-btn').addEventListener('click', () => {

@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Three-page site mock-up</title>
+<style>
+/* Mock-up only (ux/H-content-audit.md). Colours and type as on the page. */
+:root { --paper:#f6f5f1; --surface:#fff; --tile:#efede6; --rule:#e2dfd6; --field:#8a877e; --ink:#15140f; --ink2:#46443e; --muted:#65635c; --brand:#1f4e79; --liq:#b42318; --mc:#a16207;
+  --serif:"Source Serif 4",Charter,"Iowan Old Style",Georgia,serif; --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+* { box-sizing:border-box; }
+body { margin:0; background:#d9d7d0; font:16px/1.5 var(--sans); color:var(--ink); }
+.board { max-width:1300px; margin:0 auto; padding:24px 16px 64px; }
+.board > h1 { font:600 28px/1.2 var(--serif); margin:0 0 4px; }
+.lead { margin:0 0 24px; max-width:820px; color:#3a3934; }
+.cap { font:600 13px/1.3 var(--sans); text-transform:uppercase; letter-spacing:.06em; color:#3a3934; margin:0 0 8px; }
+.row { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; margin-bottom:40px; }
+.note { font-size:13px; color:#3a3934; max-width:375px; margin:8px 0 0; }
+.mark { width:22px; height:22px; flex:none; }
+
+/* phone */
+.phone { width:375px; background:var(--paper); border-radius:28px; overflow:hidden; box-shadow:0 10px 30px #0002; position:relative; }
+.fold { position:absolute; left:0; right:0; top:812px; border-top:2px dashed #c0392b; z-index:9; }
+.fold span { position:absolute; right:8px; top:-22px; font:600 11px var(--sans); color:#c0392b; background:#fffc; padding:1px 6px; border-radius:4px; }
+.bar { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; background:var(--paper); border-bottom:1px solid var(--rule); }
+.brand { display:flex; align-items:center; gap:8px; font:600 17px/1 var(--serif); }
+.lang { font:600 13px var(--sans); border:1px solid var(--rule); border-radius:6px; padding:6px 10px; background:var(--surface); display:flex; gap:6px; align-items:center; }
+.nav2 { display:flex; border-bottom:1px solid var(--rule); background:var(--paper); }
+.nav2 a { flex:1; text-align:center; padding:11px 4px 9px; font:600 14px var(--sans); color:var(--ink2); text-decoration:none; border-bottom:3px solid transparent; }
+.nav2 a.on { color:var(--ink); border-bottom-color:var(--brand); }
+.pad { padding:16px; }
+.pos { font:600 26px/1.2 var(--serif); margin:4px 0 8px; }
+.sub { font-size:14px; color:var(--ink2); margin:0 0 8px; }
+.trust { font-size:13px; color:var(--muted); margin:0 0 14px; }
+.trust a { color:var(--brand); }
+.answer { background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:16px; }
+.label { font:600 12px/1.3 var(--sans); text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+.hero { display:flex; align-items:baseline; gap:8px; margin-top:8px; }
+.hero b { font:600 56px/1 var(--serif); } .hero span { font:600 20px var(--serif); color:var(--ink2); }
+.dots { display:grid; grid-template-columns:repeat(20,1fr); gap:4px; margin:10px 0 6px; }
+.dots i { aspect-ratio:1; border-radius:50%; display:block; } .d1 { background:var(--liq); } .d2 { background:var(--mc); } .d0 { box-shadow:inset 0 0 0 1.5px var(--field); }
+.small { font-size:13px; color:var(--muted); margin:6px 0 0; }
+.small a, .hook a { color:var(--brand); }
+.best { margin:10px 0 0; padding:10px 12px; background:var(--tile); border-radius:6px; font-size:14px; }
+.tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+.tile { background:var(--tile); border-radius:6px; padding:8px; } .tile .v { font:600 16px/1.2 var(--serif); margin-top:3px; } .tile .s { font-size:12px; color:var(--ink2); }
+.hook { margin:10px 0 0; padding:8px 12px; border-left:3px solid var(--brand); background:#f2f5f9; font-size:14px; }
+.new { outline:2px dashed #2e7d32; outline-offset:3px; position:relative; }
+.new::after { content:"new"; position:absolute; right:-6px; top:-10px; background:#2e7d32; color:#fff; font:600 10px var(--sans); padding:1px 5px; border-radius:4px; }
+.moved { color:#8a877e; text-decoration:line-through; }
+.section { border-top:1px solid var(--rule); padding:13px 0; font:600 18px/1.3 var(--serif); display:flex; justify-content:space-between; }
+.section small { font:400 12px var(--sans); color:var(--muted); display:block; margin-top:2px; }
+.section .chev { color:var(--brand); }
+.checklist { background:var(--tile); border-radius:12px; padding:12px 14px; margin:14px 0 10px; font:600 15px/1.3 var(--serif); }
+.checklist small { display:block; font:400 13px var(--sans); color:var(--ink2); margin-top:2px; }
+.foot { border-top:1px solid var(--rule); margin-top:14px; padding-top:12px; font-size:13px; color:var(--ink2); }
+.foot a { color:var(--brand); }
+.btn { display:inline-block; font:600 14px var(--sans); border:1px solid var(--brand); color:var(--brand); border-radius:6px; padding:9px 12px; background:var(--surface); }
+
+/* desktop */
+.desk { width:1200px; max-width:100%; background:var(--paper); border-radius:10px; overflow:hidden; box-shadow:0 10px 30px #0002; }
+.dbar { display:flex; align-items:center; gap:28px; padding:0 32px; border-bottom:1px solid var(--rule); min-height:60px; }
+.dbar nav { display:flex; gap:4px; margin-left:12px; }
+.dbar nav a { padding:19px 12px 16px; font:600 15px var(--sans); color:var(--ink2); text-decoration:none; border-bottom:3px solid transparent; }
+.dbar nav a.on { color:var(--ink); border-bottom-color:var(--brand); }
+.dbar .lang { margin-left:auto; }
+.dbody { display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:36px; padding:24px 32px 32px; }
+.panel { background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:14px; font-size:14px; color:var(--ink2); }
+.panel .f { border:1px solid var(--field); border-radius:6px; padding:8px 10px; margin:4px 0 10px; color:var(--ink); }
+
+/* site map */
+.map { display:grid; grid-template-columns:repeat(3,minmax(260px,1fr)); gap:18px; width:100%; }
+.pagecard { background:var(--paper); border-radius:12px; padding:16px; }
+.pagecard h3 { font:600 18px var(--serif); margin:0 0 2px; }
+.pagecard .url { font:600 12px ui-monospace,Menlo,monospace; color:var(--brand); }
+.pagecard ol { padding-left:1.2em; margin:10px 0 0; font-size:14px; }
+.pagecard li { margin:4px 0; }
+.pagecard p { font-size:13px; color:#3a3934; margin:8px 0 0; }
+</style>
+</head>
+<body>
+<div class="board">
+  <h1>Three pages: the check, insights, how it works</h1>
+  <p class="lead">Mock-up of the landing page (the check) with the new navigation, after the content audit (ux/H-content-audit.md). Green dashed = new. Struck-through grey = moved to another page. Numbers are the real example; the insight hook number is illustrative.</p>
+
+  <div class="row">
+    <div>
+      <p class="cap">Phone · the check (landing page)</p>
+      <div class="phone">
+        <div class="fold"><span>end of first screen</span></div>
+        <div class="bar"><span class="brand"><svg class="mark" viewBox="0 0 32 32"><circle cx="16" cy="8.5" r="5" fill="#1f4e79"/><path d="M16 15v7" stroke="#1f4e79" stroke-width="2" stroke-dasharray="2 2.2"/><path d="M3 25.5h26" stroke="#15140f" stroke-width="2.4" stroke-linecap="round"/><path d="M12 22.5l4 3 4-3" fill="none" stroke="#1f4e79" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Bitcoin Loan Check</span><span class="lang">🌐 EN ▾</span></div>
+        <div class="nav2 new"><a class="on">Check a loan</a><a>Insights</a><a>How it works</a></div>
+        <div class="pad">
+          <div class="pos">An independent check for any Bitcoin loan offer.</div>
+          <p class="sub">Enter the terms from any lender. See the price at which BTC would be sold, how often that happened since 2014, and the full cost compared with selling.</p>
+          <p class="trust">Runs only in your browser · No tracking · <a>Open source ↗</a></p>
+          <div class="answer">
+            <div style="display:flex;justify-content:space-between"><span class="label">Example</span><a style="color:var(--brand);font-weight:600;font-size:14px">Use your own terms →</a></div>
+            <p class="sub" style="margin-top:4px">Borrow €10,000 for 12 months against BTC worth €20,000 (LTV 50%). Sold at LTV 80%.</p>
+            <div class="hero"><b>60</b><span>of 100</span></div>
+            <div style="margin-top:4px">simulated futures end with this loan liquidated within 12 months.</div>
+            <div class="dots" data-dots="60,7,33"></div>
+            <p class="small" style="margin:0">Assumes you add no BTC or money after a margin call.</p>
+            <p class="best">One change lowers this: Starting LTV 30% → 22 of 100.</p>
+            <div class="tiles"><div class="tile"><div class="label">Sold at</div><div class="v">€45,228</div><div class="s">−38% from today</div></div><div class="tile"><div class="label">Full cost</div><div class="v">€1,100</div><div class="s">effective 11.6% a year</div></div><div class="tile"><div class="label">Beats selling if</div><div class="v">BTC +11%</div><div class="s">by the end</div></div></div>
+            <p class="small">If sold: you get back about 0.0436 of your 0.2724 BTC; the rest repays the loan and the fee.</p>
+            <p class="hook new">BTC fell 38% or more within a year in 41 of 100 one-year periods since 2014. <a>How much buffer loans needed →</a></p>
+            <p style="margin:12px 0 0"><span class="btn">+ Compare an offer</span> <span class="btn">Share</span></p>
+            <p class="small">Other methods: real history 42 of 100, a volatility model 52 of 100 · <a>How it works →</a></p>
+            <p class="small">No price trend assumed · not a forecast · price data 1 Jan 2014 to 17 Oct 2026</p>
+            <p class="small">The lender itself can fail or lose your BTC. That risk is not in this number.</p>
+          </div>
+          <div class="section" style="margin-top:12px">Your terms<span class="chev" style="font:600 14px var(--sans)">Change</span></div>
+          <div class="section">Make it safer<span class="chev">▾</span></div>
+          <div class="checklist">☑ Before you sign: 8 questions to ask your lender<small>What happens after a margin call, which price counts, who holds your BTC …</small></div>
+          <div class="section"><span>What happens when BTC falls<small>price ladder · margin call and sale step by step · 20 possible futures</small></span><span class="chev">▸</span></div>
+          <div class="section"><span>What it costs · Borrow or sell?<small>cost · payment plan · borrow or sell, with tax</small></span><span class="chev">▸</span></div>
+          <div class="section"><span>Your loan in every crash since 2014<small>real history · 4 real start dates · trend table</small></span><span class="chev">▸</span></div>
+          <div class="section"><span>What this does not include</span><span class="chev">▸</span></div>
+          <div class="section moved"><span>How these numbers are made <small>→ moved to "How it works"</small></span></div>
+          <div class="section moved"><span>Help improve this page <small>→ link in the footer of every page</small></span></div>
+          <div class="foot">
+            <p style="margin:0 0 8px"><b style="color:var(--ink)">Independent project by Lennart Bodden.</b> No lender pays for or influences this page.</p>
+            <p style="margin:0 0 8px">Not financial, investment or tax advice. Check every number against your lender's documents.</p>
+            <p style="margin:0 0 8px"><a>Insights</a> · <a>How it works</a> · <a>Help improve this page</a> · <a>Glossary</a> · <a>Impressum</a> · <a>Privacy</a></p>
+            <p style="margin:0 0 8px"><a>Start over and forget my inputs</a></p>
+            <p style="margin:0">Support this page with BTC · MIT licence, "as is"</p>
+          </div>
+        </div>
+      </div>
+      <p class="note">The navigation is a second row under the name. It scrolls away; the name bar stays. The check itself is unchanged in its first screen.</p>
+    </div>
+
+    <div style="flex:1;min-width:320px">
+      <p class="cap">What changes on the check page</p>
+      <div class="pagecard" style="background:#fff">
+        <ol style="margin:0">
+          <li><b>Navigation</b>: Check a loan · Insights · How it works.</li>
+          <li><b>One hook</b> to the insights at the sale price, so the general data is one tap away exactly where it helps.</li>
+          <li>"How it works →" in the small print goes to the method page.</li>
+          <li><b>Moved away:</b> "How these numbers are made" (to /method); general BTC history facts (to /insights and /method); "Help improve" (footer link).</li>
+          <li><b>Repeats removed</b> (8 found): lender failure said 3×, data period 5×, sale price 5×, "your lender measures differently" 2×, "lender's figures win" 2×, privacy summary 2×, method results 3×, history facts 2×.</li>
+          <li><b>Footer</b> slimmer: links instead of long paragraphs; "Start over" moves there.</li>
+        </ol>
+        <p>Effect: the check page loses one section, three general paragraphs and five repeats. Nothing is lost: it moves to the page where people look for it.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="cap">Desktop · the check with the navigation in the top bar</p>
+  <div class="desk" style="margin-bottom:40px">
+    <div class="dbar">
+      <span class="brand" style="font-size:19px"><svg class="mark" style="width:26px;height:26px" viewBox="0 0 32 32"><circle cx="16" cy="8.5" r="5" fill="#1f4e79"/><path d="M16 15v7" stroke="#1f4e79" stroke-width="2" stroke-dasharray="2 2.2"/><path d="M3 25.5h26" stroke="#15140f" stroke-width="2.4" stroke-linecap="round"/><path d="M12 22.5l4 3 4-3" fill="none" stroke="#1f4e79" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Bitcoin Loan Check</span>
+      <nav class="new"><a class="on">Check a loan</a><a>Insights</a><a>How it works</a></nav>
+      <span class="lang">🌐 EN ▾</span>
+    </div>
+    <div class="dbody">
+      <div>
+        <div class="pos" style="font-size:32px">An independent check for any Bitcoin loan offer.</div>
+        <p class="sub" style="font-size:16px">Enter the terms from any lender. See the price at which BTC would be sold, how often that happened since 2014, and the full cost compared with selling.</p>
+        <p class="trust">Runs only in your browser · No tracking · <a>Open source ↗</a></p>
+        <div class="answer" style="padding:22px">
+          <span class="label">Example · €10,000 for 12 months against BTC worth €20,000</span>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
+            <div><div class="hero"><b style="font-size:72px">60</b><span>of 100</span></div><div>simulated futures end with this loan liquidated within 12 months.</div><p class="best">One change lowers this: Starting LTV 30% → 22 of 100.</p></div>
+            <div><div class="dots" data-dots="60,7,33"></div><p class="small" style="margin:0">Assumes you add no BTC or money after a margin call.</p></div>
+          </div>
+          <div class="tiles" style="grid-template-columns:repeat(4,1fr)"><div class="tile"><div class="label">Sold at</div><div class="v">€45,228</div><div class="s">−38% from today</div></div><div class="tile"><div class="label">Margin call at</div><div class="v">€51,690</div><div class="s">48 h to fix</div></div><div class="tile"><div class="label">Full cost</div><div class="v">€1,100</div><div class="s">effective 11.6% a year</div></div><div class="tile"><div class="label">Beats selling if</div><div class="v">BTC +11%</div><div class="s">by the end</div></div></div>
+          <p class="hook new">BTC fell 38% or more within a year in 41 of 100 one-year periods since 2014. <a>How much buffer loans needed →</a></p>
+        </div>
+        <div class="section" style="margin-top:12px">Make it safer<span class="chev">▾</span></div>
+        <div class="checklist">☑ Before you sign: 8 questions to ask your lender<small>What happens after a margin call, which price counts, who holds your BTC …</small></div>
+        <div class="section">What happens when BTC falls<span class="chev">▸</span></div>
+        <div class="section">What it costs · Borrow or sell?<span class="chev">▸</span></div>
+        <div class="section">Your loan in every crash since 2014<span class="chev">▸</span></div>
+        <div class="section">What this does not include<span class="chev">▸</span></div>
+      </div>
+      <div class="panel"><div class="label">Your terms</div><div style="margin-top:10px">Loan amount</div><div class="f">10,000 €</div><div>Starting LTV</div><div class="f">50 %</div><div>Liquidation LTV</div><div class="f">80 %</div><div>Duration</div><div class="f">12 months</div><div>Interest rate</div><div class="f">10 % a year</div><div style="color:var(--brand);font-weight:600">▸ More terms</div></div>
+    </div>
+  </div>
+
+  <p class="cap">Site map · what each page answers</p>
+  <div class="row">
+    <div class="map">
+      <div class="pagecard"><h3>Check a loan</h3><div class="url">/ · /de/</div>
+        <ol><li>The answer for your terms</li><li>Your terms, compare offers, refinancing</li><li>Make it safer</li><li>Before you sign: 8 questions</li><li>What happens when BTC falls</li><li>What it costs · borrow or sell / is the leverage worth it</li><li>Your loan in every crash since 2014</li><li>What this does not include</li></ol>
+        <p>Answers: "what about <b>my</b> loan?"</p></div>
+      <div class="pagecard"><h3>Insights</h3><div class="url">/insights/ · /de/insights/</div>
+        <ol><li><b>How much buffer does a loan need?</b> Survival map (starting LTV × duration) · worst falls by time window · how fast crashes go</li><li><b>Which levers matter most?</b> Lever ranking · reserve sizing · partial vs. full sale</li><li><b>Comparing offers fairly</b> Expected cost including the risk · hourly lows vs. a lender's price index</li><li><b>By goal</b> Buying more BTC · spending without selling</li><li><b>Today's market swings</b> compared with history</li></ol>
+        <p>Answers: "what happened to loans since 2014?" Static report, refreshed weekly. Not a forecast, not advice: what happened, never what is "best".</p></div>
+      <div class="pagecard"><h3>How it works</h3><div class="url">/method/ · /de/method/</div>
+        <ol><li>The short answer</li><li>Four illustrated steps: hourly prices → 30-day pieces → 10,000 futures → the lender's rules → counted</li><li>Three methods side by side</li><li>The test against history (chart)</li><li>Data and the weekly update</li><li>Why no price trend is assumed</li><li>What the model cannot do</li><li>Verify it yourself: code, tests, reference results</li></ol>
+        <p>Answers: "why should I trust these numbers?"</p></div>
+    </div>
+  </div>
+</div>
+<script>
+for (const el of document.querySelectorAll('[data-dots]')) {
+  const [a, b, c] = el.dataset.dots.split(',').map(Number);
+  el.innerHTML = [...Array(a).fill('d1'), ...Array(b).fill('d2'), ...Array(c).fill('d0')].map((k) => `<i class="${k}"></i>`).join('');
+}
+</script>
+</body>
+</html>

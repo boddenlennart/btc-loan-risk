@@ -1,6 +1,6 @@
 # Quality report: tests, robustness, consistency, non-functional requirements
 
-Measured on 17 Oct 2026, updated 18 Oct 2026 (branch `ux-redesign`). How to repeat each measurement is given in brackets.
+Measured on 17 Oct 2026, updated 18 Oct 2026 for the three-page site (branch `ux-redesign`). How to repeat each measurement is given in brackets.
 
 ## 1. Is the functionality covered by tests?
 
@@ -15,7 +15,7 @@ Not run by any test: rare fallback branches inside library code (compression), a
 
 ## 2. Breaking things on purpose
 
-**Planted bugs** (`node tools/mutation-check.mjs`): 18 realistic slips in the calculation code, one at a time. Examples:
+**Planted bugs** (`node tools/mutation-check.mjs`): 19 realistic slips in the calculation code, one at a time. Examples:
 - interest divided by 11 instead of 12
 - the trigger price at an LTV 1 point too high
 - the simulation checks the day's open instead of its low
@@ -23,7 +23,7 @@ Not run by any test: rare fallback branches inside library code (compression), a
 - a cash-out refinancing lowers the debt
 - the exchange rate used one day early
 
-**Result: all 18 caught.** One planted change in the first run turned out to compute exactly the same numbers ("equivalent"); it was replaced by a real look-ahead bug, which three tests catch.
+**Result: all 19 caught** (18 Oct 2026, including the new "fastest fall" calculation). One planted change in the first run turned out to compute exactly the same numbers ("equivalent"); it was replaced by a real look-ahead bug, which three tests catch.
 
 **Hostile input and broken environments** (browser tests): all pass after fixing the defects they found.
 - a share link with HTML/script in offer names is shown as text; nothing is injected or executed
@@ -47,10 +47,10 @@ Not run by any test: rare fallback branches inside library code (compression), a
 
 | Requirement | Result |
 |---|---|
-| **Browsers** | all 38 browser tests pass in Chrome's, Safari's (WebKit, used by every iPhone browser) and Firefox's engine: 110 runs, 4 skipped because reading the clipboard works only in Chrome's test mode. The GitHub workflows now install all three. |
+| **Browsers** | all 56 browser tests (the check, the navigation, the two other pages) pass in Chrome's, Safari's (WebKit, used by every iPhone browser) and Firefox's engine: 164 runs, 4 skipped because reading the clipboard works only in Chrome's test mode. The GitHub workflows now install all three. |
 | **Speed** | example answer visible after 0.06 s (desktop) to 0.24 s (4× slower phone simulation); new number about 1 s after a change; everything recalculated in 2.5–3.2 s. Download 1.70 MB compressed (mostly the price history). The phone simulation slows only the page, not the background calculation, so the owner's own phone measurement (1–2 s for the answer) is the more reliable figure. |
-| **Accessibility** | axe-core: 0 issues in light and dark mode, with comparison, language menu, undo line and all sections open. **Defects found and fixed:** an unlabelled table corner, and a button whose spoken name did not contain its visible text. Every text colour is at least 4.5:1 (checked automatically); tap targets 44 px; keyboard: slider and menu work by keyboard. |
-| **Security** | no outside scripts, styles, fonts or images; the Content Security Policy allows only the named price services, and **only the page's own script may run**: it is identified by its SHA-256 fingerprint, computed at every build (added 18 Oct 2026; there is no general permission for inline scripts or inline handlers). In all three browsers, a script smuggled into the page is refused. Security headers: no embedding in other sites, no MIME sniffing, no referrer, no device features. All 40 places that insert HTML escape outside text (reviewed; tested with a hostile link). No dynamic code execution. |
+| **Accessibility** | axe-core: 0 issues in light and dark mode, with comparison, language menu, undo line and all sections open. Since the three-page site, a browser test runs axe on every page (light and dark, footer opened) at every test run; it found one defect, fixed: the privacy notice's headings skipped a level on the new pages. **Defects found and fixed:** an unlabelled table corner, and a button whose spoken name did not contain its visible text. Every text colour is at least 4.5:1 (checked automatically); tap targets 44 px; keyboard: slider and menu work by keyboard. |
+| **Security** | no outside scripts, styles, fonts or images; the Content Security Policy allows only the named price services ("Insights" and "How it works" may contact no outside address at all), and **only the page's own script may run**: it is identified by its SHA-256 fingerprint, computed at every build (added 18 Oct 2026; there is no general permission for inline scripts or inline handlers). In all three browsers, a script smuggled into the page is refused. Security headers: no embedding in other sites, no MIME sniffing, no referrer, no device features. All 40 places that insert HTML escape outside text (reviewed; tested with a hostile link). No dynamic code execution. |
 | **Privacy** | no tracking, no cookies; inputs stay in the browser (local storage, "Forget my inputs"); share links keep inputs after "#" (never sent to a server) and leave out the price and private details. |
 | **Robustness** | see section 2. |
 | **Search engines** | title, description, canonical and language links per language, preview tags. **Defect found and fixed:** the hosting answered every unknown address, including `robots.txt`, with the full page and "200 OK". Now there are a `robots.txt`, a `sitemap.xml` with both languages, and a real "not found" page. |
