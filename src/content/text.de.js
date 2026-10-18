@@ -234,9 +234,8 @@ export default {
     showOthers: '20 andere Zukünfte zeigen ({n} von {sets})',
     measure: 'Ihr Kreditgeber entscheidet, welcher BTC-Kurs zählt: eine Börse, ein Durchschnitt mehrerer oder ein Durchschnitt über einige Minuten. Eine einzelne Börse kann kurz viel tiefer fallen als andere. Diese Seite nutzt den tiefsten Kurs jeder Stunde an einer Börse; das ist vorsichtig gerechnet, kann die Methode Ihres Kreditgebers aber nicht genau nachbilden.',
     lenderWins: 'Die Zahlen Ihres Kreditgebers gehen dieser Seite immer vor.',
-    questionsTitle: 'Vor der Unterschrift: Fragen an Ihren Kreditgeber',
-    questionsCopy: 'Fragen kopieren',
-    questionsCopied: 'Kopiert. Sie können sie in eine Nachricht an Ihren Kreditgeber einfügen.',
+    questionsTitle: 'Vor der Unterschrift: {n} Fragen an Ihren Kreditgeber',
+    questionsPreview: 'Was nach einem Margin Call passiert, welcher Kurs zählt, wer Ihre BTC verwahrt …',
     questions: [
       'Bei welchem LTV verkaufen Sie meine BTC?',
       'Was genau passiert nach einem Margin Call? Nur eine Warnung oder ein Verkauf nach einer Anzahl Stunden? Alles oder nur ein Teil?',

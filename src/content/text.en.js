@@ -239,9 +239,8 @@ export default {
     showOthers: 'Show 20 other futures ({n} of {sets})',
     measure: 'Your lender decides which BTC price counts: one exchange, an average of several, or an average over some minutes. A single exchange can briefly drop much lower than others. This page uses the lowest price of every hour on one exchange, which is cautious, but it cannot copy your lender\'s method exactly.',
     lenderWins: 'Your lender\'s own figures always win over this page.',
-    questionsTitle: 'Before you sign: questions to ask your lender',
-    questionsCopy: 'Copy the questions',
-    questionsCopied: 'Copied. You can paste them into a message to your lender.',
+    questionsTitle: 'Before you sign: {n} questions to ask your lender',
+    questionsPreview: 'What happens after a margin call, which price counts, who holds your BTC …',
     questions: [
       'At which LTV do you sell my BTC?',
       'What exactly happens after a margin call? Only a warning, or a sale after a number of hours? Everything or only part?',

@@ -591,17 +591,20 @@ test('"Show 20 other futures" goes through five different sets and says which on
   await expect(btn).toHaveText('Show 20 other futures (2 of 5)'); // back to the first set
 });
 
-test('questions to ask the lender: their own visible block, not folded, and they can be copied', async ({ page, context, browserName }) => {
+test('questions to ask the lender: a folded checklist tile after "Make it safer"; the closed line says what is inside', async ({ page }) => {
   await open(page); await waitDone(page);
   const block = page.locator('#questions-block');
-  await expect(block).toBeVisible(); // visible without opening any section
-  await expect(block.locator('h2')).toHaveText('Before you sign: questions to ask your lender');
+  await expect(block).toBeVisible();
+  await expect(block).not.toHaveAttribute('open', ''); // folded by default
+  await expect(block.locator('summary')).toContainText('Before you sign: 8 questions to ask your lender');
+  await expect(block.locator('summary')).toContainText('What happens after a margin call');
+  await expect(block.locator('li').first()).toBeHidden();
+  await block.locator('summary').click();
   await expect(block.locator('li')).toHaveCount(8);
-  test.skip(browserName !== 'chromium', 'reading the clipboard is only possible in Chromium\'s test mode');
-  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-  await page.locator('[data-copy-questions]').click();
-  const text = await page.evaluate(() => navigator.clipboard.readText());
-  expect(text).toMatch(/^Before you sign: questions to ask your lender\n\n- At which LTV do you sell my BTC\?/);
+  await expect(block.locator('li').first()).toBeVisible();
+  // it sits right after "Make it safer", above the folded sections
+  const order = await page.evaluate(() => ['#safer', '#questions-block', '#sec-falls'].map((s) => document.querySelector(s).getBoundingClientRect().top));
+  expect(order[0]).toBeLessThan(order[1]); expect(order[1]).toBeLessThan(order[2]);
 });
 
 test('switching between starting LTV and BTC pledged converts the current values both ways', async ({ page }) => {

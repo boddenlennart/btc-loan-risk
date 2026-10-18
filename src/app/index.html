@@ -72,13 +72,14 @@
     <p class="undo-line" id="slider-undo" hidden><span id="slider-undo-text"></span> <button type="button" class="link strong" data-slider-undo id="slider-undo-btn"></button></p>
   </section>
 
-  <section class="block" id="questions-block" aria-labelledby="questions-h">
-    <h2 id="questions-h" class="sec-title" data-t="falls.questionsTitle"></h2>
+  <details class="checklist" id="questions-block">
+    <summary>
+      <svg class="cl-icon" width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect x="2" y="2" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6.5 11.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="cl-text"><span class="cl-title" id="questions-title"></span><span class="cl-preview" data-t="falls.questionsPreview"></span></span>
+    </summary>
     <ul class="questions" id="questions"></ul>
     <p class="hint" data-t="falls.counterparty"></p>
-    <p class="actions"><button type="button" class="secondary" data-copy-questions data-t="falls.questionsCopy"></button></p>
-    <p class="hint" id="questions-copied" data-t="falls.questionsCopied" hidden></p>
-  </section>
+  </details>
 
   <details class="section" id="sec-falls">
     <summary><h3 data-t="sections.falls"></h3></summary>

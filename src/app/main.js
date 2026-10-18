@@ -307,9 +307,6 @@ function onClick(e) {
     pathSet += 1; renderFutures();
   } else if (tgt.closest('[data-open-terms]')) {
     setTermsOpen(true, { focus: true });
-  } else if (tgt.closest('[data-copy-questions]')) {
-    const tx = texts().falls;
-    navigator.clipboard?.writeText(`${tx.questionsTitle}\n\n${tx.questions.map((q) => `- ${q}`).join('\n')}\n`).then(() => { $('#questions-copied').hidden = false; });
   } else if (tgt.closest('[data-share]')) {
     share();
   } else if (tgt.closest('[data-compare-start]')) {
@@ -1036,6 +1033,7 @@ function renderStatic() {
   $('#headline-help').innerHTML = rich(tx.results.headlineHelp);
   $('#futures-help').innerHTML = rich(tx.falls.futuresHelp);
   $('#questions').innerHTML = tx.falls.questions.map((x) => `<li>${esc(x)}</li>`).join('');
+  $('#questions-title').textContent = t('falls.questionsTitle', { n: tx.falls.questions.length });
   const [codeBefore, codeAfter] = tx.method.code.split('{link}');
   $('#method-text').innerHTML = tx.method.text.map((x) => `<li>${rich(x)}</li>`).join('') + `<li>${esc(codeBefore)}<a href="${SITE.codeUrl}" rel="noopener">${esc(SITE.codeUrl.replace('https://', ''))}</a>${esc(codeAfter || '')}</li>`;
   $('#glossary-list').innerHTML = Object.entries(tx.glossary.terms).map(([id, g]) => `<dt id="g-${id}">${esc(g.term)}</dt><dd>${rich(g.text)}</dd>`).join('');
