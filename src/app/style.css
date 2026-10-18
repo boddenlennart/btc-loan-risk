@@ -300,13 +300,15 @@ details.section > summary h3 { display: inline; }
 details.section[open] { padding-bottom: 14px; }
 details.limits > summary { cursor: pointer; color: var(--accent-ink); font-size: 14px; padding: 6px 0; }
 #limits { padding-left: 1.2em; font-size: 16px; }
-.ladder { position: relative; height: 74px; margin: 10px 4px 6px; }
-.ladder .ln { position: absolute; left: 0; right: 0; top: 24px; height: 4px; border-radius: 2px; background: var(--grid); }
-.ladder .pt { position: absolute; top: -16px; transform: translateX(-50%); text-align: center; font-size: 12px; line-height: 1.25; white-space: nowrap; }
-.ladder .pt i { display: block; width: 14px; height: 14px; border-radius: 50%; margin: 18px auto 4px; border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--border); }
-.ladder .pt-today i { background: var(--series-1); }
-.ladder .pt-margin i { background: var(--warning); }
-.ladder .pt-sale i { background: var(--critical); }
+.ladder { position: relative; --line: 8px; height: 72px; margin: 10px 4px 6px; }
+.ladder.two-rows { --line: 56px; height: 120px; }
+.ladder .ln { position: absolute; left: 0; right: 0; top: var(--line); height: 4px; border-radius: 2px; background: var(--grid); }
+.ladder .dot { position: absolute; top: calc(var(--line) - 5px); width: 14px; height: 14px; transform: translateX(-50%); border-radius: 50%; border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--border); }
+.ladder .lab { position: absolute; top: calc(var(--line) + 14px); text-align: center; font-size: 12px; line-height: 1.25; white-space: nowrap; }
+.ladder .lab.up { top: auto; bottom: calc(100% - var(--line) + 10px); }
+.ladder .dot-today { background: var(--series-1); }
+.ladder .dot-margin { background: var(--warning); }
+.ladder .dot-sale { background: var(--critical); }
 .story-legend { list-style: none; padding: 0; font-size: 14px; }
 .story-legend li { margin: 4px 0; }
 .story-legend i { display: inline-block; width: 12px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }

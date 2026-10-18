@@ -324,7 +324,7 @@ function onToggle(e) {
   const d = e.target;
   if (!(d instanceof HTMLDetailsElement)) return;
   if (d.dataset.remember) { if (d.open) openDetails.add(d.dataset.remember); else openDetails.delete(d.dataset.remember); }
-  if (d.id === 'sec-falls' && d.open) renderFutures();
+  if (d.id === 'sec-falls' && d.open) { layoutLadder(); renderFutures(); }
   if (d.id === 'sec-history' && d.open) renderStories();
 }
 
@@ -694,7 +694,8 @@ function renderFallsText() {
   const ladder = [[Fa.ladderToday, tm.btcPrice, 'today'], ...(mp ? [[Fa.ladderMargin, mp.atStart, 'margin']] : []), [Fa.ladderSale, lp.atStart, 'sale']];
   const span = Math.max(0.3, 1 - lp.atStart / tm.btcPrice) * 1.15;
   const pos = (p) => 90 - ((1 - p / tm.btcPrice) / span) * 80;
-  let html = `<div class="ladder" role="img" aria-label="${esc(ladder.map(([l, p]) => `${l} ${money0(p, cur)}`).join(', '))}"><div class="ln"></div>${ladder.map(([l, p, k]) => `<div class="pt pt-${k}" style="left:${pos(p)}%"><i></i>${esc(l)}<br><b>${esc(money0(p, cur))}</b>${k === 'today' ? '' : `<br>−${esc(pct(1 - p / tm.btcPrice, 0))}`}</div>`).join('')}</div>`;
+  // dots on the line; the labels are placed by layoutLadder() so they never overlap
+  let html = `<div class="ladder" role="img" aria-label="${esc(ladder.map(([l, p]) => `${l} ${money0(p, cur)}`).join(', '))}"><div class="ln"></div>${ladder.map(([, p, k]) => `<i class="dot dot-${k}" style="left:${pos(p)}%"></i>`).join('')}${ladder.map(([l, p, k]) => `<div class="lab lab-${k}" data-at="${pos(p)}">${esc(l)}<br><b>${esc(money0(p, cur))}</b>${k === 'today' ? '' : `<br>−${esc(pct(1 - p / tm.btcPrice, 0))}`}</div>`).join('')}</div>`;
   if (mp) {
     const top = topUpToCure(tm, { price: mp.atStart, debt: tm.loanAmount, targetLtv: target });
     const vals = { mcPrice: money0(mp.atStart, cur), topUp: num(top.btc, 4), topUpValue: money0(top.value, cur), repay: money0(top.repayInstead, cur), target: pct(target, 0), hours: tm.curePeriodHours };
@@ -708,7 +709,30 @@ function renderFallsText() {
     html += `<p>${esc(t('falls.liquidationAll', { price: money0(lp.atStart, cur), sold: num(lq.btcSold, 4), returned: num(lq.btcReturned, 4), returnedValue: money0(lq.valueReturned, cur) }))}</p>`;
   }
   $('#falls-text').innerHTML = html;
+  layoutLadder();
 }
+
+// Price ladder labels: each sits centred under its dot, kept inside the box. When two would touch,
+// the later one moves above the line (if there is room there), otherwise it is pushed aside.
+// Measured, so it works for any prices, languages and widths; redone when the section opens or the width changes.
+function layoutLadder() {
+  const el = $('#falls-text .ladder'); if (!el || !el.clientWidth) return;
+  const W = el.clientWidth; const gap = 8; const right = [-Infinity, -Infinity]; // right edge of the last label per row (0 below, 1 above)
+  const labs = [...el.querySelectorAll('.lab')].sort((a, b) => a.dataset.at - b.dataset.at);
+  for (const lab of labs) {
+    const w = lab.offsetWidth;
+    let left = Math.min(Math.max((lab.dataset.at / 100) * W - w / 2, 0), W - w);
+    let row = 0;
+    if (left < right[0] + gap) {
+      if (left >= right[1] + gap) row = 1;
+      else left = Math.min(right[0] + gap, W - w);
+    }
+    lab.style.left = `${left}px`; lab.classList.toggle('up', row === 1);
+    right[row] = left + w;
+  }
+  el.classList.toggle('two-rows', labs.some((l) => l.classList.contains('up')));
+}
+window.addEventListener('resize', layoutLadder);
 
 function renderCost() {
   const tm = lastTerms; const cur = tm.currency; const C = texts().cost;

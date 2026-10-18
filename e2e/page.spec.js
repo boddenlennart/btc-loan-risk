@@ -142,7 +142,7 @@ test('payment plan: stays open when the terms change, and shows the new plan (in
   await expect(page.locator('#cost-body tbody tr').first().locator('td').nth(5)).toHaveText('€10,083.33'); // the debt grows
   // so the sale price rises too: said once, in "What happens when BTC falls"
   await page.locator('#sec-falls > summary').click();
-  await expect(page.locator('#sale-line')).toContainText(/the sale price rises to €[\d,]+ by the end/);
+  await expect(page.locator('#sale-line')).toContainText(/the liquidation price rises to €[\d,]+ by the end/);
 });
 
 test('impossible terms show a plain-language error and no result', async ({ page }) => {
@@ -296,7 +296,7 @@ test('"Make it safer" shows exactly the headline number for your own terms, and 
   await expect(page.locator('#assume-line')).toHaveText('Assumes you add no BTC or money after a margin call.');
   await expect(page.locator('#methods-line')).toContainText(/Other methods: real history since 2014 \d+ of 100, a volatility model \d+ of 100/);
   // what a sale leaves: not "everything lost"
-  await expect(page.locator('#sold-line')).toContainText(/If sold: you get back about 0\.\d{4} of your 0\.\d{4} BTC/);
+  await expect(page.locator('#sold-line')).toContainText(/If liquidated: you get back about 0\.\d{4} of your 0\.\d{4} BTC/);
   await expect(page.locator('#tiles')).toContainText('Beats selling if');
   await expect(page.locator('#tiles')).toContainText('effective 11.6% a year');
 });
@@ -538,7 +538,7 @@ test('comparison: a third offer, removing one, ending it; a refinancing offer ke
   // kept on its own, the refinancing becomes a new loan entered by BTC: 10,000 + 1,000 against 0.4 BTC
   await expect(page.locator('#f-loanAmount')).toHaveValue('11000');
   await expect(page.locator('#f-collateralBtc')).toHaveValue('0.4');
-  await expect(page.locator('#tiles')).toContainText('Sold at');
+  await expect(page.locator('#tiles')).toContainText('Liquidated at');
 });
 
 test('chart tooltips: moving over a chart shows the values at that point', async ({ page }) => {

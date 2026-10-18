@@ -126,3 +126,32 @@ test.describe('accessibility', () => {
     }
   }
 });
+
+test('price ladder: the labels never overlap, also when margin call and liquidation are close (phone and desktop, both languages)', async ({ page }) => {
+  await visit(page, '/');
+  const overlaps = () => page.locator('#falls-text .ladder').evaluate((el) => {
+    const boxes = [...el.querySelectorAll('.lab')].map((l) => l.getBoundingClientRect());
+    const box = el.getBoundingClientRect(); const bad = [];
+    boxes.forEach((a, i) => boxes.slice(i + 1).forEach((b) => { if (a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom) bad.push('overlap'); }));
+    for (const a of boxes) if (a.left < box.left - 1 || a.right > box.right + 1 || a.top < box.top - 1 || a.bottom > box.bottom + 1) bad.push('outside');
+    return bad;
+  });
+  await page.locator('#sec-falls > summary').click();
+  for (const ltv of ['50', '30', '62']) { // far apart, close (as in the owner's screenshot), very close to the margin call
+    await page.locator('#f-initialLtv').fill(ltv);
+    for (const width of [375, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect.poll(overlaps, `LTV ${ltv}, ${width}px`).toEqual([]);
+    }
+  }
+  // close together (LTV 30): one label moves above the line; far apart on a wide screen (LTV 50): one row
+  // (the terms are typed at desktop width: on phones they are folded away)
+  await page.locator('#f-initialLtv').fill('30'); await page.setViewportSize({ width: 375, height: 900 });
+  await expect(page.locator('#falls-text .ladder.two-rows')).toHaveCount(1);
+  await page.setViewportSize({ width: 1280, height: 900 }); await page.locator('#f-initialLtv').fill('50');
+  await expect(page.locator('#falls-text .ladder.two-rows')).toHaveCount(0);
+  await page.locator('#lang-btn').click(); await page.locator('[data-lang="de"]').click();
+  await page.setViewportSize({ width: 375, height: 900 });
+  await expect(page.locator('#falls-text .lab-sale')).toContainText('Liquidation');
+  await expect.poll(overlaps).toEqual([]);
+});
