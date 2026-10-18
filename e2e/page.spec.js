@@ -174,6 +174,7 @@ test('"buy more BTC": the result counted in BTC appears', async ({ page }) => {
   await waitDone(page);
   await page.locator('#sec-cost > summary').click();
   await expect(page.locator('#leverage')).toContainText(/In \d+ of 100 futures you end with more BTC/);
+  await expect(page.locator('#lev-sizes')).toContainText(/middle value of each group, in BTC compared with not borrowing: more BTC \+0\.\d{4} BTC, less but not sold −0\.\d{4} BTC, liquidated −0\.\d{4} BTC/);
 });
 
 test('history section: real history first, a sentence linking it to the answer, the trend table folded; trends also for the BTC result', async ({ page }) => {

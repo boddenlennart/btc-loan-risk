@@ -267,6 +267,7 @@ export default {
     taxNote: 'Enter your own tax rates (0 if none). Rules differ by country and holding period; ask a tax adviser. A liquidation is a sale too and may be taxed.',
     levIntro: 'With {received} you buy {bought} BTC today.',
     levHeadline: 'In {more} of 100 futures you end with more BTC than without the loan. In {less} of 100 with less ({liq} of them liquidated).',
+    levSizes: 'How much, as the middle value of each group, in BTC compared with not borrowing: more BTC {more}, less but not sold {less}, liquidated {liq}.',
     levLegendMore: 'more BTC',
     levLegendLess: 'less, not sold',
     levLegendLiq: 'liquidated',

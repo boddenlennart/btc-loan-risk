@@ -924,6 +924,10 @@ function renderLeverage() {
     const sentence = t('cost.levHeadline', { more, less: lessKept + liq, liq });
     html += `<p class="big-line">${esc(sentence)}</p>${dotsHtml([[more, 'd-good'], [lessKept, 'd-none'], [liq, 'd-liq']], sentence)}
       ${legendHtml([[more, 'd-good', C.levLegendMore], [lessKept, 'd-none', C.levLegendLess], [liq, 'd-liq', C.levLegendLiq]])}`;
+    if (L.middleDiff) {
+      const sz = (x) => (x === null ? '–' : `${x > 0 ? '+' : x < 0 ? '−' : ''}${num(Math.abs(x), 4)} BTC`);
+      html += `<p class="sub" id="lev-sizes">${esc(t('cost.levSizes', { more: sz(L.middleDiff.more), less: sz(L.middleDiff.lessKept), liq: sz(L.middleDiff.liquidated) }))}</p>`;
+    }
     if (r.trends && r.trends[0].more !== null) html += `<h4>${esc(C.levTrendTitle)}</h4><div class="levers">${trendRows(r, (x) => x.more, C.levTrendUnit)}</div>`;
   }
   if (lenderRules(tm).liquidationSale === 'all') {

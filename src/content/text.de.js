@@ -262,6 +262,7 @@ export default {
     taxNote: 'Geben Sie Ihre eigenen Steuersätze ein (0, wenn keine). Die Regeln hängen von Land und Haltedauer ab; fragen Sie eine Steuerberatung. Auch eine Liquidation ist ein Verkauf und kann besteuert werden.',
     levIntro: 'Mit {received} kaufen Sie heute {bought} BTC.',
     levHeadline: 'In {more} von 100 Zukünften haben Sie am Ende mehr BTC als ohne Kredit. In {less} von 100 weniger ({liq} davon liquidiert).',
+    levSizes: 'Wie viel, als mittlerer Wert jeder Gruppe, in BTC gegenüber ohne Kredit: mehr BTC {more}, weniger, nicht verkauft {less}, liquidiert {liq}.',
     levLegendMore: 'mehr BTC',
     levLegendLess: 'weniger, nicht verkauft',
     levLegendLiq: 'liquidiert',

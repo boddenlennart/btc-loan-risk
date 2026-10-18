@@ -68,6 +68,14 @@ describe('result counted in BTC (borrow to buy more BTC)', () => {
     const r = run({ 10: 55 }, { marginCallConsequence: 'warningOnly', liquidationFee: { value: 0.04, basis: 'debt' } }, { leverage: { bought: 0.3, payback: 50, repay: 'sell' } });
     expect(r.leverage.endBtc.q50).toBeCloseTo(0.468, 12);
   });
+  it('how much: the middle value of each group, compared with keeping 1 BTC (by hand: −0.2, +0.3, −0.532)', () => {
+    const less = run({}, { marginCallConsequence: 'warningOnly' }, { leverage: { bought: 0.3, payback: 50, repay: 'sell' } }).leverage.middleDiff;
+    expect(less.lessKept).toBeCloseTo(0.8 - 1, 12);
+    expect([less.more, less.liquidated]).toEqual([null, null]); // empty groups have no middle value
+    expect(run({}, {}, { leverage: { bought: 0.3, payback: 50, repay: 'cash' } }).leverage.middleDiff.more).toBeCloseTo(0.3, 12);
+    const liq = run({ 10: 55 }, { marginCallConsequence: 'warningOnly', liquidationFee: { value: 0.04, basis: 'debt' } }, { leverage: { bought: 0.3, payback: 50, repay: 'sell' } }).leverage.middleDiff;
+    expect(liq.liquidated).toBeCloseTo(0.468 - 1, 12);
+  });
 });
 
 describe('how much BTC you keep after forced sales', () => {

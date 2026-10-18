@@ -143,6 +143,7 @@ export function runMonteCarlo(opts) {
   const samples = [];
   const lev = opts.leverage || null;
   const endBtc = lev ? new Float64Array(nPaths) : null;
+  const endLiq = lev ? new Uint8Array(nPaths) : null; // 1 = this future ended in a liquidation
   const keptAfterSale = []; // share of the pledged BTC still yours at the end, for paths with any forced sale
   let liquidated = 0; let partial = 0; let marginCalls = 0;
   let levMore = 0; let levLessKept = 0;
@@ -184,7 +185,7 @@ export function runMonteCarlo(opts) {
       const endPrice = Math.exp(logS);
       const repaySell = !st.liquidation && lev.repay === 'sell' ? (lev.payback * st.scale) / endPrice : 0;
       const held = (st.liquidation ? st.liquidation.btcReturned : st.c) + lev.bought - repaySell;
-      endBtc[p] = held;
+      endBtc[p] = held; endLiq[p] = st.liquidation ? 1 : 0;
       if (!st.liquidation) { if (held > loan.collateralBtc) levMore++; else levLessKept++; }
     }
   }
@@ -209,9 +210,17 @@ export function runMonteCarlo(opts) {
   if (nSample) out.samplePaths = samples;
   if (lev) {
     const srt = endBtc.slice().sort();
+    // how big each outcome is: the middle value of each group, in BTC compared with not borrowing
+    const groups = { more: [], lessKept: [], liquidated: [] };
+    for (let p = 0; p < nPaths; p++) {
+      const diff = endBtc[p] - loan.collateralBtc;
+      groups[endLiq[p] ? 'liquidated' : diff > 0 ? 'more' : 'lessKept'].push(diff);
+    }
+    const middle = (a) => (a.length ? quantile(Float64Array.from(a).sort(), 0.5) : null);
     out.leverage = {
       more: levMore / nPaths, lessKept: levLessKept / nPaths, liquidated: liquidated / nPaths,
       endBtc: { q05: quantile(srt, 0.05), q50: quantile(srt, 0.5), q95: quantile(srt, 0.95) },
+      middleDiff: { more: middle(groups.more), lessKept: middle(groups.lessKept), liquidated: middle(groups.liquidated) },
     };
   }
   return out;
