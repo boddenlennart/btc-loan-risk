@@ -41,31 +41,16 @@ One-time setup (the Cloudflare screens may be worded slightly differently):
 
 - **Everything is self-hosted inside the page files**: styles, scripts, the price history, the exchange rates, the icon and the font. The serif font (Source Serif 4, [SIL Open Font License](licenses/OFL-source-serif-4.txt)) is embedded in the page; body text uses the device's own system font. No CDN, no Google Fonts, no analytics. A Content Security Policy in the page blocks any other outside request and lets only the page's own script run (identified by its SHA-256 fingerprint, computed at every build); `tests/hosting.test.js` checks all six built files ("Insights" and "How it works" may contact no outside address at all), and a browser test confirms that a smuggled-in script is refused.
 - **The only outside requests** are made by the visitor's browser when the page opens (chosen: automatic on load):
-  - current price: `api.coinbase.com`; only if that fails, `api.kraken.com`, `api.binance.com`, `api.coingecko.com`, one after the other
-  - recent hourly prices: `www.bitstamp.net`
-  
-  They carry no cookies, no referrer and nothing the visitor typed. The page names these services in its privacy section and in the privacy notice.
-- The page stores the visitor's inputs and language in the browser's **local storage** (`btc-loan-risk:form`, `btc-loan-risk:lang`). The button "Start over and forget my inputs" deletes them, ends any comparison and shows the example again.
+  - current price and recent hourly prices: `www.bitstamp.net` (Bitstamp, EU); only if Bitstamp does not answer, the current price from `api.coinbase.com` (Coinbase, certified under the EU-US Data Privacy Framework). Other currencies use the euro price × the latest ECB rate. Fewer services means fewer recipients of the visitor's IP address (data minimisation, decided 18 Oct 2026).
 
-### What you need to fill in before publishing
+  They carry no cookies, no referrer and nothing the visitor typed. The privacy notice names both services.
+- **Browser storage, privacy by default:** the visitor's inputs are kept in this tab's **session storage** (`btc-loan-risk:form`; a reload keeps them, closing the tab deletes them). Only if the visitor ticks "Remember my inputs in this browser for my next visit" are they kept in **local storage** (`btc-loan-risk:remember`, `btc-loan-risk:form`). A chosen language or light/dark mode is kept in local storage (`btc-loan-risk:lang`, `btc-loan-risk:theme`). "Start over and forget my inputs" deletes all of it, ends any comparison and shows the example again.
 
-The Impressum and the privacy notice are **templates**. They are in `src/content/text.de.js` and `src/content/text.en.js`, under `legal:`. Every part in «angle quotes» must be replaced, in both files. Until then, the page shows a "Template" note above both sections, and `node tools/build.mjs` prints how many placeholders are left.
+### Impressum and privacy notice
 
-| Placeholder | What to enter |
-|---|---|
-| «Vor- und Nachname» / «First and last name» | Your full name (or the name of whoever publishes the page) |
-| «Straße und Hausnummer», «PLZ und Ort», «Land» | A postal address where you can be reached (a P.O. box is generally not enough) |
-| «E-Mail-Adresse» | An e-mail address you read |
-| «… Anschrift wie oben» (§ 18 MStV) | Name and address of the person responsible for the content, usually you |
-| «Rechtsgrundlage der Übermittlung in die USA …» | The legal basis for GitHub's data transfer to the USA, for example the EU-US Data Privacy Framework, if GitHub is certified at that time |
-| «Vollständigen Firmennamen und Anschrift jedes Dienstes …» | Company name and address of Coinbase, Kraken, Binance, CoinGecko and Bitstamp (from each service's own privacy policy or legal notice), and the legal basis for transfers outside the EU |
-| «Diese Einschätzung prüfen.» | Confirm (or correct) that the local storage falls under § 25 (2) No. 2 TDDDG |
-| «Name der für Sie zuständigen Behörde» | The data protection authority of your federal state (for example "Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen") |
-| «Datum» | The date of this version |
+Both are complete (18 Oct 2026, written by best practice, without a lawyer, at the owner's choice) in `src/content/text.de.js` and `src/content/text.en.js` under `legal:`. The German version is the original. Update them whenever the page starts contacting another service, stores something new in the browser, or the contact details change; a test checks that no «placeholder» is left and that the privacy notice names every outside service.
 
-Delete the sentence in «…» brackets once you have dealt with it. Then run `node tools/build.mjs` again.
-
-**Whether you need an Impressum at all** depends on whether the page counts as a business-like service (§ 5 DDG) or contains journalistic-editorial content (§ 18 MStV). The template assumes you show one. These templates are a starting point, not legal advice. Have them checked by a lawyer before you publish.
+Known open points, accepted by the owner: the Impressum gives e-mail as the only fast contact (case law asks for a second quick way, such as a phone number or a contact form, at least on request); the address is a c/o service address.
 
 ### Connect your own domain (bitcoinloancheck.com)
 
@@ -119,7 +104,7 @@ The page contains BTC price history up to a fixed date. A scheduled **GitHub Act
      - the 12 reference loans on frozen history, which must match the stored results exactly
      - the same 12 loans on the newest data, where every result must be valid
      - the test against history
-   - **the 64 browser tests of the finished pages, in Chrome's, Safari's and Firefox's engine**
+   - **the 67 browser tests of the finished pages, in Chrome's, Safari's and Firefox's engine**
    - the **drift guard**: if the new hours move the result of any reference loan by more than 5 of 100, the update stops and you get an issue instead of a pull request.
 6. It opens a **pull request** called "Weekly price data update [date]". The description says, in plain words:
    - old and new end date
@@ -246,7 +231,7 @@ Model risk (the future can be wilder than the past), lender failure, custody and
 | BTC/EUR hourly candles, 2014–2016 | Kraken public API (`/0/public/Trades`, pair XBTEUR), every single trade grouped into hourly candles by `tools/fetch_history.py` | Kraken was the larger EUR market then |
 | BTC/EUR hourly candles, 2017 to build date | Bitstamp public API (`/api/v2/ohlc/btceur`) | |
 | Recent hours after the build date | Bitstamp public API, fetched by the page on load | optional; the page works without it |
-| Current price | Coinbase → Kraken → Binance → CoinGecko (first that answers within 4 s) | Binance has no BTC/USD market; BTC/USDT is used for USD there. Works on the published page and locally; **not** in a private claude.ai test copy, whose host blocks outside requests (the page then uses the stored price and says so) |
+| Current price | Bitstamp (close of the latest minute) → Coinbase (first that answers within 4 s); CHF, GBP, CAD, AUD, CZK, PLN: euro price × latest ECB rate | Bitstamp's ticker address does not allow requests from web pages; its minute candles do. Works on the published page and locally; **not** in a private claude.ai test copy, whose host blocks outside requests (the page then uses the stored price and says so) |
 | Fallback price | Last close stored in the page | shown with a "not current" warning |
 | CHF, GBP, CAD, AUD, CZK, PLN | hourly BTC/EUR × the [European Central Bank's](https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/) daily reference rate (`src/data/fx.js`, rates in `data/fx-ecb.csv`); weekends use the last published rate | Checked against real exchange prices on 17 Oct 2026 (`tools/check-fx.mjs`): Kraken CHF/GBP/CAD/AUD, last 30 days: typical difference 0.07–0.13%, 95% of hours within 0.23–0.54%; Bitstamp GBP, 2021–2024: 0.10–0.16%, within 0.38–0.84%. Effect on the answer: the example loan gives 60.0–60.3 of 100 in every currency (EUR 60.0). The weekly update repeats the check (limits 0.5% typical, 2% in 95 of 100 hours). Known real move: 15 Jan 2015, the Swiss National Bank ended its minimum franc rate. |
 
@@ -261,15 +246,12 @@ Prices are stored in cents in a compact compressed format (`src/data/codec.js`, 
 
 The exchanges' terms for re-publishing their price data were not reviewed in detail; the project owner accepted this risk.
 
-**Live-price check (CORS).** On 2026-10-15 every source was tested twice: with `curl -H "Origin: …"` (all send an `access-control-allow-origin` header) and with `fetch()` from the page in a real browser (Chromium):
+**Live-price check (CORS).** Checked with `curl -H "Origin: …"` (18 Oct 2026: Bitstamp candles send `access-control-allow-origin: *`; Bitstamp's ticker sends none, so it is not used) and earlier with `fetch()` from the page in a real browser (15 Oct 2026):
 
 | Source | Result in browser |
 |---|---|
+| Bitstamp candles (hourly and minute) | OK, ~80 ms |
 | Coinbase (BTC-EUR, BTC-USD) | OK, ~170 ms |
-| Kraken (XBTEUR) | OK, ~100 ms |
-| Binance (BTCEUR, BTCUSDT) | OK, ~260 ms |
-| CoinGecko | OK, ~180 ms |
-| Bitstamp hourly candles | OK, ~80 ms |
 
 Public APIs can change their rules at any time; the page then falls back to the next source and finally to the stored price.
 
@@ -277,7 +259,7 @@ Public APIs can change their rules at any time; the page then falls back to the 
 
 ## Tests and how each was verified
 
-Run with `npm test` (355 tests) and `npm run test:e2e` (64 browser tests, each in Chrome's, Safari's and Firefox's engine). Quality measurements: [ux/G-quality-report.md](ux/G-quality-report.md) (coverage, planted bugs, hostile input, browsers, speed, accessibility, security). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
+Run with `npm test` (355 tests) and `npm run test:e2e` (67 browser tests, each in Chrome's, Safari's and Firefox's engine). Quality measurements: [ux/G-quality-report.md](ux/G-quality-report.md) (coverage, planted bugs, hostile input, browsers, speed, accessibility, security). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
 
 | # | Test | How it was verified |
 |---|---|---|

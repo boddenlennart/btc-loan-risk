@@ -124,8 +124,12 @@ function leverList(t) {
     add('reserve', { reserveAmount: reserve }, reserve);
     if (t.marginCallConsequence !== 'warningOnly') add('warningOnly', { marginCallConsequence: 'warningOnly' }, null);
   }
-  if (t.liquidationLtv < 0.95) add('higherLiq', { liquidationLtv: 0.95 }, 0.95);
-  if (t.liquidationLtv < 0.95 && t.marginCallLtv && t.marginCallConsequence !== 'warningOnly') add('higherLiqWarning', { liquidationLtv: 0.95, marginCallConsequence: 'warningOnly' }, 0.95);
+  // a higher liquidation LTV: 10 points more, at most 90% (higher values are rarely offered)
+  const liq = Math.min(0.9, Math.round((t.liquidationLtv + 0.1) * 100) / 100);
+  if (liq > t.liquidationLtv + 0.004) {
+    add('higherLiq', { liquidationLtv: liq }, liq);
+    if (t.marginCallLtv && t.marginCallConsequence !== 'warningOnly') add('higherLiqWarning', { liquidationLtv: liq, marginCallConsequence: 'warningOnly' }, liq);
+  }
   if (t.repayment === 'bullet') add('monthlyInterest', { repayment: 'interestOnly', compounding: 'none' }, null);
   return out;
 }

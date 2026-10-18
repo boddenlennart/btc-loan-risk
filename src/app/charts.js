@@ -2,8 +2,27 @@
 // Every chart gets a hover tooltip; colors come from CSS variables in style.css.
 import { esc } from './i18n.js';
 
-const W = 640;
+// Each chart is drawn at its real width (300–640 px), so its text is really 12 px on a phone too (a fixed
+// 640-wide drawing shrunk to a phone made it 6–7 px). Narrow charts show fewer axis labels. W is the width of
+// the chart being drawn; hover reads the width from the chart itself. Charts are redrawn when the width changes.
+let W = 640;
+const narrow = () => W < 480;
 const NS = 'http://www.w3.org/2000/svg';
+const drawn = new Set();
+const widthFor = (el) => Math.round(Math.max(300, Math.min(640, el.clientWidth || 640)));
+function remember(el, redraw) { el._redraw = redraw; drawn.add(el); }
+if (typeof window !== 'undefined') {
+  let timer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      for (const el of drawn) {
+        if (!el.isConnected) { drawn.delete(el); continue; }
+        if (el.clientWidth && widthFor(el) !== el._w) el._redraw();
+      }
+    }, 150);
+  });
+}
 
 function niceTicks(min, max, count = 4) {
   const span = max - min || 1;
@@ -18,6 +37,7 @@ function niceTicks(min, max, count = 4) {
 function frame(el, height, label) {
   el.innerHTML = '';
   el.classList.add('chart');
+  W = widthFor(el); el._w = W;
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', `0 0 ${W} ${height}`);
   svg.setAttribute('role', 'img');
@@ -33,7 +53,7 @@ function showTip(el, tip, svg, xView, html) {
   tip.innerHTML = html;
   tip.hidden = false;
   const r = svg.getBoundingClientRect();
-  const px = (xView / W) * r.width;
+  const px = (xView / svg.viewBox.baseVal.width) * r.width;
   const left = Math.min(Math.max(px - tip.offsetWidth / 2, 0), r.width - tip.offsetWidth);
   tip.style.left = `${left}px`;
 }
@@ -43,8 +63,9 @@ function hover(el, svg, tip, pad, onX) {
   const area = svg;
   const move = (ev) => {
     const r = svg.getBoundingClientRect();
-    const x = ((ev.clientX - r.left) / r.width) * W;
-    const res = onX(Math.max(pad.l, Math.min(W - pad.r, x)));
+    const w = svg.viewBox.baseVal.width; W = w; // the hover code below reads W: this chart's width
+    const x = ((ev.clientX - r.left) / r.width) * w;
+    const res = onX(Math.max(pad.l, Math.min(w - pad.r, x)));
     if (res) showTip(el, tip, svg, res.x, res.html);
   };
   area.addEventListener('pointermove', move);
@@ -57,6 +78,7 @@ function hover(el, svg, tip, pad, onX) {
  * data: { s0, fan: [{ month, q05, q25, q50, q75, q95 }], liq: [price at month 0..n], fmt(price), monthLabel(m), labels: { median, liq } }
  */
 export function fanChart(el, data) {
+  remember(el, () => fanChart(el, data));
   const H = 300;
   const pad = { l: 64, r: 16, t: 14, b: 30 };
   const { svg, tip } = frame(el, H, data.labels.title);
@@ -70,7 +92,7 @@ export function fanChart(el, data) {
   const band = (a, b) => `M${pts.map((p) => `${x(p.month)},${y(p[a])}`).join('L')}L${pts.slice().reverse().map((p) => `${x(p.month)},${y(p[b])}`).join('L')}Z`;
   const grid = ticks.map((v) => `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y(v)}" y2="${y(v)}" class="grid"/><text x="${pad.l - 6}" y="${y(v) + 4}" class="axis" text-anchor="end">${esc(data.fmt(v))}</text>`).join('');
   const anchor = (m) => (m === 0 ? 'start' : m === n ? 'end' : 'middle');
-  const xt = niceTicks(0, n, Math.min(6, n)).filter((m) => Number.isInteger(m)).map((m) => `<text x="${x(m)}" y="${H - 8}" class="axis" text-anchor="${anchor(m)}">${esc(data.monthLabel(m))}</text>`).join('');
+  const xt = (narrow() ? [...new Set([0, Math.round(n / 2), n])] : niceTicks(0, n, Math.min(6, n))).filter((m) => Number.isInteger(m)).map((m) => `<text x="${x(m)}" y="${H - 8}" class="axis" text-anchor="${anchor(m)}">${esc(data.monthLabel(m))}</text>`).join('');
   const liqPath = `M${data.liq.map((v, m) => `${x(m)},${y(v)}`).join('L')}`;
   const med = `M${pts.map((p) => `${x(p.month)},${y(p.q50)}`).join('L')}`;
   const last = data.liq[data.liq.length - 1];
@@ -89,13 +111,14 @@ export function fanChart(el, data) {
     c.setAttribute('x1', x(m)); c.setAttribute('x2', x(m)); c.setAttribute('opacity', 1);
     return {
       x: x(m),
-      html: `<b>${esc(data.monthLabel(m))}</b><br>95%: ${esc(data.fmt(p.q95))}<br>75%: ${esc(data.fmt(p.q75))}<br>${esc(data.labels.median)}: ${esc(data.fmt(p.q50))}<br>25%: ${esc(data.fmt(p.q25))}<br>5%: ${esc(data.fmt(p.q05))}<br><span class="t-critical">${esc(data.labels.liq)}: ${esc(data.fmt(data.liq[m]))}</span>`,
+      html: `<b>${esc(data.monthLabel(m))}</b>${['q95', 'q75', 'q50', 'q25', 'q05'].map((q) => `<br>${esc(data.labels[q])}: ${esc(data.fmt(p[q]))}`).join('')}<br><span class="t-critical">${esc(data.labels.liq)}: ${esc(data.fmt(data.liq[m]))}</span>`,
     };
   });
 }
 
 /** Bars: cumulative chance of liquidation at the end of each month. data: { values: [...], fmtPct, monthLabel, title } */
 export function barChart(el, data) {
+  remember(el, () => barChart(el, data));
   const H = 220;
   const pad = { l: 48, r: 12, t: 14, b: 30 };
   const { svg, tip } = frame(el, H, data.title);
@@ -112,8 +135,9 @@ export function barChart(el, data) {
     const rx = Math.min(4, (bw - gap) / 2, h);
     return `<path class="bar" d="M${pad.l + i * bw + gap / 2},${y(0)}V${y(0) - h + rx}q0,-${rx} ${rx},-${rx}H${pad.l + (i + 1) * bw - gap / 2 - rx}q${rx},0 ${rx},${rx}V${y(0)}Z"/>`;
   }).join('');
-  const step = Math.ceil(n / 8);
-  const xt = data.values.map((_, i) => ((i + 1) % step === 0 || i === n - 1 ? `<text x="${pad.l + (i + 0.5) * bw}" y="${H - 8}" class="axis" text-anchor="middle">${esc(data.monthLabel(i + 1))}</text>` : '')).join('');
+  const step = Math.ceil(n / (narrow() ? 3 : 8));
+  // the last label ends at the right edge, so it is never cut off
+  const xt = data.values.map((_, i) => ((i + 1) % step === 0 || i === n - 1 ? `<text x="${i === n - 1 ? W - pad.r : pad.l + (i + 0.5) * bw}" y="${H - 8}" class="axis" text-anchor="${i === n - 1 ? 'end' : 'middle'}">${esc(data.monthLabel(i + 1))}</text>` : '')).join('');
   svg.innerHTML = `${grid}${bars}${xt}<rect class="hit" x="${pad.l}" y="0" width="${W - pad.l - pad.r}" height="${H}" fill="transparent"/>`;
   hover(el, svg, tip, pad, (xv) => {
     const i = Math.min(n - 1, Math.floor((xv - pad.l) / bw));
@@ -125,6 +149,7 @@ export function barChart(el, data) {
 
 /** Strip of all past start dates: red = liquidated, grey = survived. data: { time, liquidated, liquidationTime, fmtDate, labels } */
 export function replayStrip(el, data) {
+  remember(el, () => replayStrip(el, data));
   const H = 90;
   const pad = { l: 8, r: 8, t: 8, b: 30 };
   const { svg, tip } = frame(el, H, data.labels.title);
@@ -141,7 +166,7 @@ export function replayStrip(el, data) {
     i = j;
   }
   const y0 = new Date(t0 * 1000).getUTCFullYear(); const y1 = new Date(t1 * 1000).getUTCFullYear();
-  const every = Math.ceil((y1 - y0 + 1) / 7);
+  const every = Math.ceil((y1 - y0 + 1) / (narrow() ? 4 : 7));
   let xt = '';
   for (let yr = y0 + 1; yr <= y1; yr++) {
     if ((yr - y0) % every) continue;
@@ -167,7 +192,7 @@ function priceAxes(svg, { H, pad, days, maxY, fmt, monthLabel }) {
   const top = Math.max(maxY, ticks[ticks.length - 1]);
   const y = (v) => pad.t + (1 - Math.min(v, top) / top) * (H - pad.t - pad.b);
   const months = Math.round(days / 30.44);
-  const step = Math.max(1, Math.ceil(months / 6));
+  const step = Math.max(1, Math.ceil(months / (narrow() ? 3 : 6)));
   let g = ticks.map((v) => `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y(v)}" y2="${y(v)}" class="grid"/><text x="${pad.l - 6}" y="${y(v) + 4}" class="axis" text-anchor="end">${esc(fmt(v))}</text>`).join('');
   for (let m = 0; m <= months; m += step) {
     const d = Math.min(days, Math.round(m * 30.44));
@@ -189,6 +214,7 @@ function triggerLines({ x, y }, data) {
  * data: { paths: [{ weekly, event }], days, liq: [start, end], mc: [start, end] | null, fmt, monthLabel, labels: { title, margin, sale, tip } }
  */
 export function futuresChart(el, data) {
+  remember(el, () => futuresChart(el, data));
   const H = 300;
   const pad = { l: 64, r: 16, t: 14, b: 30 };
   const { svg, tip } = frame(el, H, data.labels.title);
@@ -218,6 +244,7 @@ export function futuresChart(el, data) {
  * data: { stories: [{ weekly (relative), sale }], s0, days, liq, mc, colors, fmt, monthLabel, labels }
  */
 export function storiesChart(el, data) {
+  remember(el, () => storiesChart(el, data));
   const H = 300;
   const pad = { l: 64, r: 16, t: 14, b: 30 };
   const { svg, tip } = frame(el, H, data.labels.title);
@@ -249,6 +276,7 @@ export function storiesChart(el, data) {
  * data: { points: [[unixTime, value], ...], fmt(value), fmtDate(unixTime), title } (the dot is explained next to the chart)
  */
 export function lineChart(el, data) {
+  remember(el, () => lineChart(el, data));
   const H = 240;
   const pad = { l: 48, r: 16, t: 14, b: 30 };
   const { svg, tip } = frame(el, H, data.title);
@@ -261,7 +289,7 @@ export function lineChart(el, data) {
   const y = (v) => pad.t + (1 - v / top) * (H - pad.t - pad.b);
   const grid = ticks.map((v) => `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y(v)}" y2="${y(v)}" class="grid"/><text x="${pad.l - 6}" y="${y(v) + 4}" class="axis" text-anchor="end">${esc(data.fmt(v))}</text>`).join('');
   const y0 = new Date(t0 * 1000).getUTCFullYear(); const y1 = new Date(t1 * 1000).getUTCFullYear();
-  const years = []; for (let yr = y0 + 1; yr <= y1; yr += y1 - y0 > 8 ? 2 : 1) years.push(yr);
+  const years = []; for (let yr = y0 + 1; yr <= y1; yr += narrow() ? 3 : y1 - y0 > 8 ? 2 : 1) years.push(yr);
   const xt = years.map((yr) => `<text x="${x(Date.UTC(yr, 0, 1) / 1000)}" y="${H - 8}" class="axis" text-anchor="middle">${yr}</text>`).join('');
   const line = `M${pts.map(([t, v]) => `${x(t).toFixed(1)},${y(v).toFixed(1)}`).join('L')}`;
   const [lt, lv] = pts[n - 1];

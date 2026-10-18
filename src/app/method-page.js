@@ -11,7 +11,7 @@ import { liquidationPrices } from '../engine/loan.js';
 const META = JSON.parse(document.getElementById('meta').textContent);
 const $ = (sel) => document.querySelector(sel);
 const of100 = (p) => Math.round(p * 100);
-const signedPct = (x, d = 0) => `${x > 0 ? '+' : ''}${pct(x, d)}`;
+const signedPct = (x, d = 0) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${pct(Math.abs(x), d)}`; // a real minus sign, as everywhere else
 const list = (items) => items.map((x) => `<li>${rich(x)}</li>`).join('');
 
 function render() {
@@ -25,7 +25,7 @@ function render() {
   const lp = liquidationPrices(tm);
   const liqByMonth = [0, ...r.fanByMonth.map((f) => f.day)].map((d) => lp.byDay[d]);
   const monthLabel = (m) => (m === 0 ? t('ui.today') : t('ui.monthN', { n: m }));
-  fanChart($('#fan-chart'), { s0: tm.btcPrice, fan: r.fanByMonth, liq: liqByMonth, fmt: (v) => money0(v, cur), monthLabel, labels: { title: M.fanTitle, median: '50%', liq: tx.falls.ladderSale } });
+  fanChart($('#fan-chart'), { s0: tm.btcPrice, fan: r.fanByMonth, liq: liqByMonth, fmt: (v) => money0(v, cur), monthLabel, labels: { title: M.fanTitle, ...M.fanTip, liq: tx.falls.ladderSale } });
   barChart($('#months-chart'), { values: r.cumulativeByMonth.map((x) => x * 100), fmtPct: (v) => `${Math.round(v)}`, monthLabel: (m) => t('ui.monthN', { n: m }), title: M.byMonthTitle });
   $('#methods-list').innerHTML = list(M.methods);
   const rows = M.compareRows;

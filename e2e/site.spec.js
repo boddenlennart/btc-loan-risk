@@ -49,7 +49,7 @@ test('"How it works": all parts, the example loan\'s charts and method table, no
   const errors = await visit(page, '/method/');
   await expect(page).toHaveTitle('How it works · Bitcoin Loan Check');
   await expect(page.locator('.toc li')).toHaveCount(7);
-  for (const id of ['steps', 'methods', 'test', 'data', 'trend', 'limits', 'verify']) await expect(page.locator(`#${id} h2`)).toBeVisible();
+  for (const id of ['steps', 'methods', 'test', 'data', 'trend', 'model-limits', 'verify']) await expect(page.locator(`#${id} h2`)).toBeVisible();
   await expect(page.locator('#steps-list li')).toHaveCount(4);
   await expect(page.locator('#example-note')).toContainText('Borrow €10,000 for 12 months');
   await expect(page.locator('#fan-chart path.band-outer')).toHaveCount(1);
@@ -248,5 +248,31 @@ test('top bar on narrow phones (320 and 375 px): the name stays on one line, not
     expect(brand.x + brand.width).toBeLessThanOrEqual(theme.x);
     expect(theme.x + theme.width).toBeLessThanOrEqual(lang.x);
     expect(lang.x + lang.width).toBeLessThanOrEqual(width);
+  }
+});
+
+test('charts on a 375 px phone: axis text really 12 px, labels do not overlap, tooltips still work', async ({ page }) => {
+  await visit(page, '/method/', { width: 375 });
+  for (const id of ['#fan-chart', '#months-chart']) {
+    const info = await page.locator(`${id} svg`).evaluate((svg) => {
+      const texts = [...svg.querySelectorAll('text.axis')].map((t) => t.getBoundingClientRect());
+      const bottom = texts.filter((b) => Math.abs(b.bottom - Math.max(...texts.map((x) => x.bottom))) < 2).sort((a, b) => a.left - b.left);
+      return { size: parseFloat(getComputedStyle(svg.querySelector('text.axis')).fontSize) * (svg.getBoundingClientRect().width / svg.viewBox.baseVal.width), overlaps: bottom.some((b, i) => i > 0 && b.left < bottom[i - 1].right + 2), inside: texts.every((b) => b.right <= svg.getBoundingClientRect().right + 1 && b.left >= svg.getBoundingClientRect().left - 1) };
+    });
+    expect(info.size, id).toBeGreaterThanOrEqual(11.5);
+    expect(info.overlaps, id).toBe(false);
+    expect(info.inside, `${id}: a label is cut off`).toBe(true);
+  }
+  const svg = page.locator('#fan-chart svg'); await svg.scrollIntoViewIfNeeded();
+  const box = await svg.boundingBox();
+  await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.5);
+  await expect(page.locator('#fan-chart .tip')).toBeVisible();
+});
+
+test('reading pages: every section starts at the same left edge as the page title', async ({ page }) => {
+  for (const path of ['/method/', '/insights/']) {
+    await visit(page, path);
+    const left = await page.locator('h1').evaluate((h) => Math.round(h.getBoundingClientRect().left));
+    for (const h of await page.locator('main .part h2').all()) expect(await h.evaluate((x) => Math.round(x.getBoundingClientRect().left)), `${path} ${await h.textContent()}`).toBe(left);
   }
 });

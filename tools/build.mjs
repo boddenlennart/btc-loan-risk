@@ -171,7 +171,7 @@ ${PAGES.flatMap((p) => [`<url><loc>${BASE}${p.dir}</loc>${alt(p.dir)}</url>`, `<
 `);
 writeFileSync(new URL(`${OUT}/404.html`, root), `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Not found · ${attr(en.meta.name)}</title>
 <style>body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f6f5f1;color:#15140f;display:grid;place-items:center;min-height:100vh;padding:16px}a{color:#1f4e79}@media(prefers-color-scheme:dark){body{background:#121210;color:#f2f0ea}a{color:#9cc0e8}}</style></head>
-<body><main><h1 style="font-size:24px">This page does not exist.</h1><p><a href="/">${attr(en.meta.name)}</a> · <a href="/de/" lang="de">${attr(de.meta.name)} (Deutsch)</a></p></main></body></html>
+<body><main><h1 style="font-size:24px">This page does not exist.</h1><p><a href="/">${attr(en.meta.name)}</a> · <a href="/de/" lang="de">${attr(de.meta.name)} (Deutsch)</a></p><p style="font-size:14px"><a href="/#impressum">Impressum (legal notice)</a> · <a href="/#privacy-notice">Privacy notice</a> · <a href="/de/#privacy-notice" lang="de">Datenschutzerklärung</a></p></main></body></html>
 `);
 for (const page of PAGES) {
   const html = assemble(page);

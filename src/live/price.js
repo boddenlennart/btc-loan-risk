@@ -1,22 +1,20 @@
-// Fetches today's BTC price from a chain of public sources, falling back to the
-// last known price embedded in the page. Requests are plain public price URLs:
-// nothing about the visitor or their loan is ever sent.
+// Fetches today's BTC price (EUR or USD), falling back to the last known price embedded in the page.
+// Requests are plain public price URLs: nothing about the visitor or their loan is ever sent.
+// Data minimisation: the page already loads recent hours from Bitstamp (EU), so Bitstamp also gives
+// the current price (the close of the latest minute); only if it fails, Coinbase (certified under the
+// EU-US Data Privacy Framework) is asked. Other currencies: the euro price × the ECB rate (src/app/main.js).
 
-export const SOURCES = ['coinbase', 'kraken', 'binance', 'coingecko'];
+export const SOURCES = ['bitstamp', 'coinbase'];
 
 const URLS = {
+  // Bitstamp's ticker address does not allow requests from web pages; its candle address does
+  bitstamp: (c) => `https://www.bitstamp.net/api/v2/ohlc/btc${c.toLowerCase()}/?step=60&limit=1`,
   coinbase: (c) => `https://api.coinbase.com/v2/prices/BTC-${c}/spot`,
-  kraken: (c) => `https://api.kraken.com/0/public/Ticker?pair=XBT${c}`,
-  // Binance has no BTC/USD market; BTC/USDT (a dollar stablecoin) is used as the USD price.
-  binance: (c) => `https://api.binance.com/api/v3/ticker/price?symbol=BTC${c === 'USD' ? 'USDT' : c}`,
-  coingecko: (c) => `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=${c.toLowerCase()}`,
 };
 
 const PARSE = {
+  bitstamp: (j) => j.data.ohlc[j.data.ohlc.length - 1].close,
   coinbase: (j) => j.data.amount,
-  kraken: (j) => Object.values(j.result)[0].c[0],
-  binance: (j) => j.price,
-  coingecko: (j, c) => j.bitcoin[c.toLowerCase()],
 };
 
 async function fetchWithTimeout(fetchImpl, url, timeoutMs) {

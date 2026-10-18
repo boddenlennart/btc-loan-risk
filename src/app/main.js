@@ -22,9 +22,16 @@ import { gunzipSync, strFromU8 } from 'fflate';
 
 const META = JSON.parse(document.getElementById('meta').textContent);
 const STORE_KEY = 'btc-loan-risk:form';
+// Inputs are kept for this browser tab (sessionStorage: a reload keeps them, closing the tab deletes them).
+// Only if the visitor ticks "Remember my inputs" are they kept for the next visit (localStorage).
+// Privacy by default (§ 25 TDDDG): nothing is kept beyond the visit unless the visitor asks for it.
+const REMEMBER_KEY = 'btc-loan-risk:remember';
+let remember = false;
+try { remember = localStorage.getItem(REMEMBER_KEY) === '1'; } catch { /* storage blocked */ }
+const store = () => (remember ? localStorage : sessionStorage);
 const $ = (sel, root = document) => root.querySelector(sel);
 const STORY_COLORS = ['var(--story-1)', 'var(--story-2)', 'var(--story-3)', 'var(--story-4)'];
-const SOURCE_NAMES = { coinbase: 'Coinbase', kraken: 'Kraken', binance: 'Binance', coingecko: 'CoinGecko', embedded: '' };
+const SOURCE_NAMES = { bitstamp: 'Bitstamp', coinbase: 'Coinbase', embedded: '' };
 
 // ------------------------------------------------------------------ state
 const linkData = decodeLink(location.hash);
@@ -104,7 +111,7 @@ function toAnswer() { $('#answer').scrollIntoView({ block: 'start', behavior: 's
 function loadState() {
   const fromLink = linkData && linkData.form;
   let saved = null;
-  try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch { /* storage blocked */ }
+  try { saved = JSON.parse(store().getItem(STORE_KEY) || 'null'); } catch { /* storage blocked */ }
   // saved inputs are checked like a shared link: anything broken is ignored, never fatal
   if (!saved || typeof saved !== 'object' || (saved.state && typeof saved.state !== 'object')) saved = null;
   const c = linkData ? linkData.compare : saved && saved.compare;
@@ -120,7 +127,14 @@ function loadState() {
 }
 function saveState() {
   if (compare) compare.offers[compare.active] = state;
-  try { localStorage.setItem(STORE_KEY, JSON.stringify({ state, compare })); } catch { /* ignore */ }
+  try { store().setItem(STORE_KEY, JSON.stringify({ state, compare })); } catch { /* ignore */ }
+}
+function setRemember(on) {
+  remember = on;
+  try {
+    if (on) { localStorage.setItem(REMEMBER_KEY, '1'); sessionStorage.removeItem(STORE_KEY); } else { localStorage.removeItem(REMEMBER_KEY); localStorage.removeItem(STORE_KEY); }
+  } catch { /* storage blocked: for this visit only */ }
+  saveState();
 }
 
 // ------------------------------------------------------------------ small HTML helpers
@@ -232,7 +246,9 @@ function renderForm() {
     <div class="field" data-field="btcPrice" id="price-edit" hidden><span class="with-unit"><input type="number" step="any" inputmode="decimal" data-k="btcPrice" aria-label="BTC ${esc(cur)}" value="${esc(state.btcPrice ?? '')}"><span class="unit">${esc(cur)}</span></span><p class="err" role="alert" hidden></p></div>
     <details class="more" data-remember="more"><summary>${esc(refi ? Cm.moreTerms : existing ? fm.moreTermsExisting : fm.moreTerms)} <span class="sum" id="more-sum"></span></summary>${more}</details>
     ${switching}
-    <details class="more" data-remember="expert"><summary>${esc(fm.expert)}</summary>${expert}</details>`;
+    <details class="more" data-remember="expert"><summary>${esc(fm.expert)}</summary>${expert}</details>
+    <label class="check remember"><input type="checkbox" data-remember-inputs${remember ? ' checked' : ''}> ${esc(fm.remember)}</label>
+    <p class="hint">${esc(fm.rememberHint)}</p>`;
   for (const d of document.querySelectorAll('#form details[data-remember]')) if (openDetails.has(d.dataset.remember)) d.open = true;
   renderPriceLine();
 }
@@ -259,7 +275,7 @@ function renderPriceLine() {
   if (!priceInfo || p === null) line = esc(fm.priceLoading);
   else if (priceInfo.source === 'manual') line = esc(t('form.priceManual', { price: money0(p, cur) }));
   else if (priceInfo.stale) line = esc(t('form.priceStale', { price: money0(p, cur), time: dateTime(priceInfo.time) }));
-  else line = esc(t('form.priceLine', { price: money0(p, cur), source: SOURCE_NAMES[priceInfo.source] ?? priceInfo.source, time: dateTime(priceInfo.time) }));
+  else line = esc(t('form.priceLine', { price: money0(p, cur), source: `${SOURCE_NAMES[priceInfo.source] ?? priceInfo.source}${priceInfo.viaEur ? ' (EUR × ECB)' : ''}`, time: dateTime(priceInfo.time) }));
   el.innerHTML = `${line} · <button type="button" class="link" data-edit-price>${esc(fm.priceChange)}</button> · <button type="button" class="link" data-reload-price>${esc(fm.priceReload)}</button>`;
   el.classList.toggle('stale', !!(priceInfo && priceInfo.stale));
   $('#stale-banner').hidden = !(priceInfo && priceInfo.stale);
@@ -281,6 +297,7 @@ function change(mutate, { rerenderForm = false } = {}) {
 
 function onInput(e) {
   const k = e.target.dataset.k;
+  if (e.target.matches('[data-remember-inputs]')) { setRemember(e.target.checked); return; }
   if (!k) {
     if (e.target.matches('[data-offer-name]') && compare) { compare.names[compare.active] = e.target.value.slice(0, 40); saveState(); renderCompare(); renderAnswerTop(lastTerms); }
     return;
@@ -363,7 +380,12 @@ async function loadPrice(force = false) {
   priceInfo = null; renderPriceLine();
   const embedded = Object.fromEntries(Object.entries(META.prices).map(([c, m]) => [c, { price: m.lastClose, time: m.to }]));
   const cur = state.currency;
-  const r = await getSpotPrice(cur, { embedded });
+  // CHF, GBP, CAD, AUD, CZK, PLN: today's euro price × the latest ECB rate, like their price history
+  const fx = fxFor(cur); let r;
+  if (fx) {
+    const e = await getSpotPrice('EUR', { embedded });
+    r = e.stale ? { ...embedded[cur], source: 'embedded', stale: true } : { ...e, price: Math.round(e.price * fx.rates[cur].at(-1) * 100) / 100, viaEur: true };
+  } else r = await getSpotPrice(cur, { embedded });
   if (cur !== state.currency) return;
   priceInfo = r;
   state = { ...state, btcPrice: r.price, priceManual: false };
@@ -511,7 +533,7 @@ function update() {
 
 // ------------------------------------------------------------------ results: parts that need no simulation
 const of100 = (p) => Math.round(p * 100);
-const signedPct = (x, d = 0) => `${x > 0 ? '+' : ''}${pct(x, d)}`;
+const signedPct = (x, d = 0) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${pct(Math.abs(x), d)}`; // a real minus sign, as everywhere else
 const salePrices = (tm) => ({ lp: liquidationPrices(tm), mp: marginCallPrices(tm), rules: lenderRules(tm) });
 
 function renderLoan() {
@@ -1080,7 +1102,8 @@ document.addEventListener('toggle', onToggle, true);
 // "Start over and forget my inputs": deletes everything stored in this browser, ends a comparison,
 // and shows the example again (with the live price, not a price typed in before)
 $('#forget-btn').addEventListener('click', () => {
-  try { localStorage.removeItem(STORE_KEY); localStorage.removeItem('btc-loan-risk:lang'); } catch { /* ignore */ }
+  try { for (const st of [localStorage, sessionStorage]) st.removeItem(STORE_KEY); localStorage.removeItem('btc-loan-risk:lang'); } catch { /* ignore */ }
+  remember = false; try { localStorage.removeItem(REMEMBER_KEY); } catch { /* ignore */ }
   setTheme(null); // back to the device's light or dark setting
   const typedPrice = state.priceManual;
   compare = null; undoState = null; lastRisk = null; barNow = null; barWas = null;

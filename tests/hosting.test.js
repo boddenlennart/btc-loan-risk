@@ -7,9 +7,9 @@ import { createHash } from 'node:crypto';
 
 // the check contacts the price services; "Insights" and "How it works" contact nothing
 const PAGES = { 'index.html': 'prices', 'de/index.html': 'prices', 'insights/index.html': 'none', 'de/insights/index.html': 'none', 'method/index.html': 'none', 'de/method/index.html': 'none' };
-const ALLOWED_HOSTS = ['api.coinbase.com', 'api.kraken.com', 'api.binance.com', 'api.coingecko.com', 'www.bitstamp.net'];
+const ALLOWED_HOSTS = ['www.bitstamp.net', 'api.coinbase.com'];
 // Plain text links and the site's own address in the preview tags (read by link previews, not loaded by the page):
-const TEXT_LINKS = ['docs.github.com', 'github.com', 'bitcoinloancheck.com'];
+const TEXT_LINKS = ['docs.github.com', 'github.com', 'bitcoinloancheck.com', 'www.cloudflare.com'];
 
 for (const [name, connects] of Object.entries(PAGES)) {
 const page = new URL(`../docs/${name}`, import.meta.url);

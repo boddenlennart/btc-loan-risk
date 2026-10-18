@@ -59,9 +59,14 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 
 /** Escaped HTML with [[term]] turned into glossary links. */
 export function rich(s) {
-  return esc(s).replace(/\[\[(\w+)\]\]/g, (_, id) => {
+  return esc(s).replace(/\[\[(\w+)\]\]/g, (_, id, offset, src) => {
     const g = TEXTS[lang].glossary.terms[id];
-    return g ? `<a href="#g-${id}" class="gloss">${esc(g.term)}</a>` : id;
+    if (!g) return id;
+    // inside an English sentence a glossary word is lower-case ("the price trend"); abbreviations (LTV, GARCH)
+    // and German nouns keep their capital letter
+    const start = offset === 0 || /[.!?:]\s*$/.test(src.slice(0, offset));
+    const term = lang === 'en' && !start && !/^[A-Z]{2}/.test(g.term) ? g.term[0].toLowerCase() + g.term.slice(1) : g.term;
+    return `<a href="#g-${id}" class="gloss">${esc(term)}</a>`;
   });
 }
 export { esc };

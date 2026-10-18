@@ -90,7 +90,7 @@ export function leverRanking(hourly) {
   const base = replayAll(hourly, reference()).liquidatedShare;
   const levers = [
     ['lowerLtv', { initialLtv: 0.4 }],
-    ['higherLiq', { liquidationLtv: 0.85 }],
+    ['higherLiq', { liquidationLtv: 0.9 }], // +10 points, as in "Make it safer" on the check
     ['longerCure', { curePeriodHours: 72 }],
     ['warningOnly', { marginCallConsequence: 'warningOnly' }],
     ['reserve', { reserveAmount: 2000 }],

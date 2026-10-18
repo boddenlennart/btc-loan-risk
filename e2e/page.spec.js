@@ -19,7 +19,7 @@ if (process.env.E2E_COVERAGE) {
   });
 }
 
-const ALLOWED = ['127.0.0.1', 'api.coinbase.com', 'api.kraken.com', 'api.binance.com', 'api.coingecko.com', 'www.bitstamp.net'];
+const ALLOWED = ['127.0.0.1', 'www.bitstamp.net', 'api.coinbase.com'];
 const PRICE = 60000;
 
 async function open(page, { lang = 'en', hash = '', offline = false, width } = {}) {
@@ -177,7 +177,7 @@ test('"buy more BTC": the result counted in BTC appears', async ({ page }) => {
   await waitDone(page);
   await page.locator('#sec-cost > summary').click();
   await expect(page.locator('#leverage')).toContainText(/In \d+ of 100 futures you end with more BTC/);
-  await expect(page.locator('#lev-sizes')).toContainText(/middle value of each group, in BTC compared with not borrowing: more BTC \+0\.\d{4} BTC, less but not sold −0\.\d{4} BTC, liquidated −0\.\d{4} BTC/);
+  await expect(page.locator('#lev-sizes')).toContainText(/middle value of each group, in BTC compared with not borrowing: more BTC \+0\.\d{4} BTC, less but not liquidated −0\.\d{4} BTC, liquidated −0\.\d{4} BTC/);
 });
 
 test('history section: real history first, a sentence linking it to the answer, the trend table folded; trends also for the BTC result', async ({ page }) => {
@@ -202,7 +202,7 @@ test('margin-call rule "sells part at once": the answer mentions partial sales',
   await open(page); await waitDone(page);
   await page.locator('details.more summary').first().click();
   await page.locator('#f-marginCallConsequence').selectOption('autoPartial');
-  await expect(page.locator('#headline-text')).toContainText('sells part of it');
+  await expect(page.locator('#headline-text')).toContainText('part of the BTC is liquidated');
 });
 
 test('all sections open with their charts; donation QR, Impressum and privacy notice present', async ({ page }) => {
@@ -212,7 +212,7 @@ test('all sections open with their charts; donation QR, Impressum and privacy no
   await expect(page.locator('#stories-chart path.story')).toHaveCount(4);
   await expect(page.locator('footer .qr svg')).toHaveCount(1);
   await expect(page.locator('#impressum-body')).toContainText('§ 5 DDG');
-  await expect(page.locator('#privacy-body')).toContainText('GitHub Pages');
+  await expect(page.locator('#privacy-body')).toContainText('Cloudflare Pages');
   expect(errors).toEqual([]);
 });
 
@@ -331,7 +331,7 @@ test('Swiss francs: the answer is computed from the euro history converted with 
   const { hosts } = await open(page); await waitDone(page);
   const eur = await headlineNumber(page);
   await page.locator('select.cur').selectOption('CHF');
-  await expect(page.locator('#price-line')).toContainText('CHF 60,000');
+  await expect(page.locator('#price-line')).toContainText(/CHF\s[\d,]+ .*Coinbase \(EUR × ECB\)/); // the euro price × the ECB rate, like the history
   await waitDone(page);
   await expect(page.locator('#tiles')).toContainText('CHF');
   const chf = await headlineNumber(page);
@@ -471,7 +471,7 @@ test('a share link with nonsense values opens the page with an explanation, not 
 });
 
 test('corrupted saved inputs: the page starts from the example instead of breaking', async ({ page }) => {
-  await page.addInitScript(() => { try { localStorage.setItem('btc-loan-risk:form', '{"state": "nonsense", "compare": {"kind": 7}}'); localStorage.setItem('btc-loan-risk:lang', 'en'); } catch {} });
+  await page.addInitScript(() => { try { localStorage.setItem('btc-loan-risk:remember', '1'); localStorage.setItem('btc-loan-risk:form', '{"state": "nonsense", "compare": {"kind": 7}}'); localStorage.setItem('btc-loan-risk:lang', 'en'); } catch {} });
   const errors = []; page.on('pageerror', (e) => errors.push(String(e)));
   await page.route(/^https:\/\//, (route) => (route.request().url().includes('api.coinbase.com') ? route.fulfill({ json: { data: { amount: String(PRICE) } } }) : route.abort()));
   await page.goto('/');
@@ -625,13 +625,13 @@ test('"Start over and forget my inputs": deletes what the browser stored, ends a
   await page.locator('#f-initialLtv').fill('35');
   await page.locator('#compare-btn').click();
   await waitDone(page);
-  expect(await page.evaluate(() => localStorage.getItem('btc-loan-risk:form'))).not.toBeNull();
+  expect(await page.evaluate(() => sessionStorage.getItem('btc-loan-risk:form'))).not.toBeNull();
   await page.locator('#forget-btn').click();
   await expect(page.locator('#forgotten')).toBeVisible();
   await expect(page.locator('#cmp')).toBeHidden();
   await expect(page.locator('#ans-label')).toHaveText('Example');
   await expect(page.locator('#f-initialLtv')).toHaveValue('50');
-  expect(await page.evaluate(() => [localStorage.getItem('btc-loan-risk:form'), localStorage.getItem('btc-loan-risk:lang')])).toEqual([null, null]);
+  expect(await page.evaluate(() => [localStorage.getItem('btc-loan-risk:form'), sessionStorage.getItem('btc-loan-risk:form'), localStorage.getItem('btc-loan-risk:lang'), localStorage.getItem('btc-loan-risk:remember')])).toEqual([null, null, null, null]);
   await expect(page.locator('#reset-btn')).toHaveCount(0); // one button, not two
 });
 
@@ -672,4 +672,25 @@ test('phone: while the answer is recalculated, the field being typed in stays wh
   const tops = await page.evaluate(() => { clearInterval(window.sampler); return window.tops; });
   expect(tops.length).toBeGreaterThan(10);
   expect(Math.max(...tops) - Math.min(...tops), `positions: ${[...new Set(tops.map(Math.round))].join(', ')}`).toBeLessThanOrEqual(2);
+});
+
+test('inputs stay for this tab only, unless "Remember my inputs" is ticked (privacy by default)', async ({ page, context }) => {
+  await open(page); await waitDone(page);
+  await page.locator('#f-initialLtv').fill('35');
+  await page.reload(); // same tab: kept
+  await expect(page.locator('#f-initialLtv')).toHaveValue('35');
+  expect(await page.evaluate(() => localStorage.getItem('btc-loan-risk:form'))).toBeNull(); // nothing kept beyond the visit
+  const other = await context.newPage(); // a new tab = a later visit
+  await other.route(/^https:\/\//, (r) => r.abort());
+  await other.goto('/');
+  await expect(other.locator('#f-initialLtv')).toHaveValue('50');
+  await other.close();
+  await page.locator('[data-remember-inputs]').check();
+  const later = await context.newPage();
+  await later.route(/^https:\/\//, (r) => r.abort());
+  await later.goto('/');
+  await expect(later.locator('#f-initialLtv')).toHaveValue('35');
+  await expect(later.locator('[data-remember-inputs]')).toBeChecked();
+  await later.locator('[data-remember-inputs]').uncheck(); // untick: deleted from the browser at once
+  expect(await later.evaluate(() => [localStorage.getItem('btc-loan-risk:form'), localStorage.getItem('btc-loan-risk:remember')])).toEqual([null, null]);
 });

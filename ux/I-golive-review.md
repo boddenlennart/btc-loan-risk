@@ -68,6 +68,16 @@ Status: 18 Oct 2026, branch `ux-redesign` (commit e11873d). Checked as a first-t
 - A measuring script (host statistics and feedback only)
 - Accounts, a server or saved calculations online
 
+## Status (18 Oct 2026, evening)
+
+Done by me: M1 (liquidation wording, English and German), M2 (Impressum and privacy notice complete, by best practice, no lawyer at the owner's choice), S1 (charts drawn at their real width, 12 px text on phones), S2 (higher liquidation LTV: +10 points, at most 90%, also on Insights), S3 (minus signs, lower-case glossary words in English sentences, Impressum and privacy links on the "not found" page, plain labels in the price-band tooltip).
+
+Also done, found while writing the privacy notice (data minimisation and privacy by default):
+- The current price now comes from Bitstamp (EU), which the page already contacted; Coinbase (EU-US Data Privacy Framework) only if Bitstamp fails. Kraken, Binance and CoinGecko are no longer contacted from visitors' browsers.
+- Inputs are kept for the browser tab only; they are remembered for the next visit only if the visitor ticks "Remember my inputs".
+
+Open, for the owner: M3 is replaced by best practice (owner's decision); M4, M5, M6, S4, S5: see ux/J-launch-steps.md. Remaining legal risk accepted by the owner: only e-mail as the fast contact in the Impressum; c/o address.
+
 ## Suggested order
 
 1. M1, S1, S2, S3 (me, one round, then you review on the preview).

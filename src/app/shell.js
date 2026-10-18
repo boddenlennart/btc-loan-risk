@@ -114,4 +114,7 @@ export function initShell(o = {}) {
     }
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('#lang-list').hidden) { closeLangMenu(); $('#lang-btn').focus(); } });
+  // /#impressum or /#privacy-notice (links from the "not found" page) open that part of the footer
+  const legal = ['#impressum', '#privacy-notice'].includes(location.hash) && document.querySelector(location.hash);
+  if (legal) { legal.open = true; setTimeout(() => legal.scrollIntoView(), 0); }
 }
