@@ -1068,6 +1068,7 @@ function renderAll() {
 // ------------------------------------------------------------------ start
 initLang();
 document.addEventListener('input', onInput);
+$('#form').addEventListener('submit', (e) => e.preventDefault()); // Enter in a field must not reload the page
 document.addEventListener('click', onClick);
 document.addEventListener('toggle', onToggle, true);
 // language menu: opened by the generic show/hide for aria-controls buttons; closes on choice, Escape or a click elsewhere

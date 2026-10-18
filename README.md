@@ -39,7 +39,7 @@ One-time setup (the Cloudflare screens may be worded slightly differently):
 
 ## Hosting and privacy
 
-- **Everything is self-hosted inside `docs/index.html`**: styles, scripts, the price history, the exchange rates, the icon and the font. The serif font (Source Serif 4, [SIL Open Font License](licenses/OFL-source-serif-4.txt)) is embedded in the page; body text uses the device's own system font. No CDN, no Google Fonts, no analytics. A Content Security Policy in the page blocks any other outside request, and `tests/hosting.test.js` checks the built file.
+- **Everything is self-hosted inside `docs/index.html`**: styles, scripts, the price history, the exchange rates, the icon and the font. The serif font (Source Serif 4, [SIL Open Font License](licenses/OFL-source-serif-4.txt)) is embedded in the page; body text uses the device's own system font. No CDN, no Google Fonts, no analytics. A Content Security Policy in the page blocks any other outside request and lets only the page's own script run (identified by its SHA-256 fingerprint, computed at every build); `tests/hosting.test.js` checks the built file, and a browser test confirms that a smuggled-in script is refused.
 - **The only outside requests** are made by the visitor's browser when the page opens (chosen: automatic on load):
   - current price: `api.coinbase.com`; only if that fails, `api.kraken.com`, `api.binance.com`, `api.coingecko.com`, one after the other
   - recent hourly prices: `www.bitstamp.net`
@@ -119,7 +119,7 @@ The page contains BTC price history up to a fixed date. A scheduled **GitHub Act
      - the 12 reference loans on frozen history, which must match the stored results exactly
      - the same 12 loans on the newest data, where every result must be valid
      - the test against history
-   - **the 37 browser tests of the finished page, in Chrome's, Safari's and Firefox's engine**
+   - **the 38 browser tests of the finished page, in Chrome's, Safari's and Firefox's engine**
    - the **drift guard**: if the new hours move the result of any reference loan by more than 5 of 100, the update stops and you get an issue instead of a pull request.
 6. It opens a **pull request** called "Weekly price data update [date]". The description says, in plain words:
    - old and new end date
@@ -277,7 +277,7 @@ Public APIs can change their rules at any time; the page then falls back to the 
 
 ## Tests and how each was verified
 
-Run with `npm test` (316 tests) and `npm run test:e2e` (37 browser tests, each in Chrome's, Safari's and Firefox's engine). Quality measurements: [ux/G-quality-report.md](ux/G-quality-report.md) (coverage, planted bugs, hostile input, browsers, speed, accessibility, security). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
+Run with `npm test` (316 tests) and `npm run test:e2e` (38 browser tests, each in Chrome's, Safari's and Firefox's engine). Quality measurements: [ux/G-quality-report.md](ux/G-quality-report.md) (coverage, planted bugs, hostile input, browsers, speed, accessibility, security). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
 
 | # | Test | How it was verified |
 |---|---|---|

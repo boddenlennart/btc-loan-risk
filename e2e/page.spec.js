@@ -35,6 +35,8 @@ async function open(page, { lang = 'en', hash = '', offline = false, width } = {
     return route.abort();
   });
   if (width) await page.setViewportSize({ width, height: 812 });
+  // any refusal by the page's security rule counts as an error in the tests
+  await page.addInitScript(() => document.addEventListener('securitypolicyviolation', (e) => console.error(`CSP refused: ${e.violatedDirective} ${e.blockedURI || ''}`)));
   await page.addInitScript((l) => { try { if (!sessionStorage.getItem('set')) { localStorage.clear(); localStorage.setItem('btc-loan-risk:lang', l); sessionStorage.setItem('set', '1'); } } catch {} }, lang);
   await page.goto(`/${hash}`);
   await expect(page.locator('#headline-text')).toContainText(/\d+ (of|von) 100/);
@@ -548,4 +550,18 @@ test('chart tooltips: moving over a chart shows the values at that point', async
   await page.mouse.move(box.x + box.width * 0.6, box.y + box.height * 0.5);
   await expect(page.locator('#futures-chart .tip')).toBeVisible();
   await expect(page.locator('#futures-chart .tip')).toContainText(/month \d+/);
+});
+
+test('security rule: a script smuggled into the page is refused; normal use causes no refusals', async ({ page }) => {
+  const { errors } = await open(page); await waitDone(page);
+  await page.locator('#own-terms-link').click();
+  await page.locator('#f-initialLtv').fill('40');
+  await waitDone(page);
+  expect(errors).toEqual([]); // normal use: no refusals, no errors in any browser
+  // inject script the way an attack would (the test can insert it, the browser must not run it)
+  await page.evaluate(() => { const sc = document.createElement('script'); sc.textContent = 'window.__ran = 1'; document.body.append(sc); });
+  await page.evaluate(() => { const d = document.createElement('div'); d.innerHTML = '<img src=x onerror="window.__ran2 = 1">'; document.body.append(d); });
+  await page.waitForTimeout(300);
+  expect(await page.evaluate(() => [window.__ran, window.__ran2])).toEqual([undefined, undefined]);
+  expect(errors.length).toBeGreaterThan(0); // the browser reported the refusals
 });

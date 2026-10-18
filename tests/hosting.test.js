@@ -3,6 +3,7 @@
 // the privacy notice. Checks the built file docs/index.html.
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 
 const page = new URL('../docs/index.html', import.meta.url);
 const ALLOWED_HOSTS = ['api.coinbase.com', 'api.kraken.com', 'api.binance.com', 'api.coingecko.com', 'www.bitstamp.net'];
@@ -29,6 +30,16 @@ describe.skipIf(!existsSync(page))('built page: self-hosted, no external resourc
       if (h === 'www.w3.org') continue;
       expect([...ALLOWED_HOSTS, ...TEXT_LINKS], h).toContain(h);
     }
+  });
+  it('only the page\'s own script may run: its fingerprint, no general permission for inline scripts or inline handlers', () => {
+    const csp = html.match(/Content-Security-Policy" content="([^"]+)"/)[1];
+    const scriptSrc = csp.match(/script-src ([^;]+)/)[1];
+    expect(scriptSrc).not.toContain("'unsafe-inline'");
+    expect(scriptSrc).not.toContain("'unsafe-eval'");
+    const runnable = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+    expect(runnable).toHaveLength(1); // every other script block is data (JSON or plain text)
+    expect(scriptSrc).toContain(`'sha256-${createHash('sha256').update(runnable[0]).digest('base64')}'`);
+    expect(html).not.toMatch(/<[^>]+\son[a-z]+=["']/i); // no onclick=, onsubmit= ... attributes
   });
   it('the Content Security Policy only allows the named price services', () => {
     const csp = html.match(/Content-Security-Policy" content="([^"]+)"/)[1];

@@ -3,6 +3,7 @@
 // Inlines the styles, the app code, the worker code and the compressed price history.
 // Usage: node tools/build.mjs
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { build } from 'esbuild';
 import QRCode from 'qrcode';
 import { SITE } from '../src/content/site.js';
@@ -91,6 +92,10 @@ const parts = {
   '/*QR*/': qr,
 };
 for (const [k, v] of Object.entries(parts)) html = html.replace(k, () => v);
+// Content Security Policy: only the page's own script may run, identified by its fingerprint
+// (SHA-256). Any other inline script, even an injected one, is refused by the browser.
+const appScript = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+html = html.replace('/*SCRIPT_HASH*/', `'sha256-${createHash('sha256').update(appScript).digest('base64')}'`);
 // Remind the owner while the legal templates still contain «placeholders».
 for (const lang of ['de', 'en']) {
   const n = (read(`src/content/text.${lang}.js`).match(/«[^»]*»/g) || []).length;
