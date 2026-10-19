@@ -743,3 +743,27 @@ test('ending a comparison: the visitor chooses which offer stays; nothing is dro
   await expect(page.locator('#f-collateralBtc')).toHaveValue('0.4');
   await expect(page.getByRole('button', { name: 'A loan I already have' })).toHaveAttribute('aria-pressed', 'true');
 });
+
+test('typing into a field that changes the form (margin call empty → 70): the cursor stays, nothing jumps (desktop and phone)', async ({ page }) => {
+  for (const width of [1280, 375]) {
+    await page.setViewportSize({ width, height: 800 });
+    await open(page); await waitDone(page);
+    if (width < 1024) await page.locator('#own-terms-link').click();
+    await page.locator('details.more[data-remember="more"] > summary').click();
+    await expect(page.locator('details.more[data-remember="more"]')).toHaveAttribute('open', '');
+    await page.waitForTimeout(100); // as a person: the section is open before typing starts
+    const f = page.locator('#f-marginCallLtv');
+    await f.fill(''); // the margin-call options disappear: the form is rebuilt
+    // mid-screen (at the very bottom, under the answer bar, browsers scroll a field into view while typing, as they should)
+    await f.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+    const pos = () => page.evaluate(() => ({ panel: document.querySelector('#terms').scrollTop, page: window.scrollY, field: Math.round(document.querySelector('#f-marginCallLtv').getBoundingClientRect().top) }));
+    const before = await pos();
+    await f.focus();
+    await page.keyboard.type('70'); // after the "7" the margin-call options appear: rebuilt again
+    await expect(f).toHaveValue('70');
+    await expect(f).toBeFocused();
+    const after = await pos();
+    expect(Math.abs(after.field - before.field), `${width}px: the field moved on screen`).toBeLessThanOrEqual(2);
+    await expect(page.locator('#f-marginCallConsequence')).toBeVisible(); // the new options are there
+  }
+});

@@ -104,7 +104,11 @@ function keepInPlace(fn) {
   fn();
   if (!a || !a.el.isConnected) return;
   const d = a.el.getBoundingClientRect().top - a.top;
-  if (Math.abs(d) >= 1) window.scrollBy(0, d);
+  if (Math.abs(d) < 1) return;
+  // on a computer the terms panel scrolls on its own: correct the panel there, otherwise the page
+  const panel = a.el.closest('#terms');
+  if (panel && panel.scrollHeight > panel.clientHeight && getComputedStyle(panel).overflowY !== 'visible') panel.scrollTop += d;
+  else window.scrollBy(0, d);
 }
 function toAnswer() { $('#answer').scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 
@@ -171,7 +175,34 @@ function isExample() {
 
 const openDetails = new Set();
 
-function renderForm() {
+// Rebuilding the form replaces every field. Keep what the visitor is doing: the field (or button) with the
+// cursor, the caret position and where the terms panel and the page are scrolled to. Otherwise typing "70"
+// into an empty margin-call field lost the cursor after the "7" (the field appears new) and the panel jumped.
+function keepFocus(rebuild) {
+  const act = document.activeElement; const panel = $('#terms');
+  const inForm = act && act !== document.body && act.closest && act.closest('#form');
+  const find = !inForm ? null : act.id ? `#${CSS.escape(act.id)}`
+    : act.dataset.set ? `[data-set="${act.dataset.set}"][data-val="${CSS.escape(act.dataset.val)}"]` : act.dataset.k ? `[data-k="${CSS.escape(act.dataset.k)}"]` : null;
+  let caret = null; try { caret = inForm && typeof act.selectionStart === 'number' ? [act.selectionStart, act.selectionEnd] : null; } catch { /* number fields have no caret position */ }
+  const panelTop = panel ? panel.scrollTop : 0; const pageY = window.scrollY;
+  const fieldTop = inForm ? act.getBoundingClientRect().top : null;
+  rebuild();
+  if (panel) panel.scrollTop = panelTop;
+  if (Math.abs(window.scrollY - pageY) >= 1) window.scrollTo(0, pageY);
+  const el = find && $(find);
+  if (el) {
+    el.focus({ preventScroll: true });
+    if (caret && el.setSelectionRange) try { el.setSelectionRange(...caret); } catch { /* ignore */ }
+    if (el.type === 'number' && el.value) { const v = el.value; el.value = ''; el.value = v; } // caret to the end
+    // the same field at the same place on screen, also if something above it changed height
+    const d = el.getBoundingClientRect().top - fieldTop;
+    if (Math.abs(d) >= 1) { if (panel && panel.scrollHeight > panel.clientHeight && getComputedStyle(panel).overflowY !== 'visible') panel.scrollTop += d; else window.scrollBy(0, d); }
+  }
+}
+
+function renderForm() { keepFocus(buildForm); }
+
+function buildForm() {
   const f = F(); const fm = texts().form; const existing = state.mode === 'existing';
   const cur = state.currency;
   const currencySel = `<select class="cur" data-k="currency" aria-label="${esc(f.currency.label)}">${Object.keys(META.prices).map((c) => `<option${c === cur ? ' selected' : ''}>${c}</option>`).join('')}</select>`;
@@ -525,8 +556,7 @@ function update() {
   if (!v.ok) { document.body.classList.add('invalid'); updateAnswerBar(); return; }
   document.body.classList.remove('invalid');
   lastTerms = terms; lastSettings = settings;
-  moreSummary(terms);
-  keepInPlace(renderLoan);
+  keepInPlace(() => { moreSummary(terms); renderLoan(); }); // the summary line above the fields can wrap differently
   clearTimeout(timer);
   // the terms changed: results still arriving from the previous calculation are out of date and ignored
   // (otherwise, during the short wait before the new calculation, the old offer's number could show up)
