@@ -150,11 +150,11 @@ function setRemember(on) {
 const F = () => texts().form.fields;
 const helpBtn = (id, label) => `<button type="button" class="q" aria-expanded="false" aria-controls="help-${id}" aria-label="${esc(t('ui.more'))}: ${esc(label)}">?</button>`;
 const helpBox = (id, text) => `<div class="help" id="help-${id}" hidden>${rich(text)}</div>`;
-function numField(key, label, unit, { help, hint, step = 'any', id = key } = {}) {
+function numField(key, label, unit, { help, hint, step = 'any', id = key, after = '' } = {}) {
   return `<div class="field" data-field="${id}">
     <div class="label-row"><label for="f-${id}">${esc(label)}</label>${help ? helpBtn(id, label) : ''}</div>
     ${help ? helpBox(id, help) : ''}
-    <div class="with-unit"><input id="f-${id}" data-k="${key}" type="number" inputmode="decimal" step="${step}" value="${esc(getPath(state, key) ?? '')}">${unit ? `<span class="unit">${esc(unit)}</span>` : ''}</div>
+    <div class="with-unit"><input id="f-${id}" data-k="${key}" type="number" inputmode="decimal" step="${step}" value="${esc(getPath(state, key) ?? '')}">${unit ? `<span class="unit">${esc(unit)}</span>` : ''}${after}</div>
     ${hint ? `<p class="hint">${esc(hint)}</p>` : ''}
     <p class="err" role="alert" hidden></p></div>`;
 }
@@ -217,7 +217,7 @@ function buildForm() {
   } else if (state.ltvInput === 'btc') {
     ltvBlock = numField('collateralBtc', f.collateralBtc.label, 'BTC', { id: 'collateralBtc' }) + `<p class="hint"><span id="ltv-today"></span> · <button type="button" class="link" data-set="ltvInput" data-val="ltv">${esc(fm.orEnterLtv)}</button></p>`;
   } else {
-    ltvBlock = numField('initialLtv', f.initialLtv.label, '%', { help: fm.help.initialLtv }) + `<p class="hint"><button type="button" class="link" data-set="ltvInput" data-val="btc">${esc(fm.orEnterBtc)}</button></p>`;
+    ltvBlock = numField('initialLtv', f.initialLtv.label, '%', { help: fm.help.initialLtv }) + `<p class="hint"><button type="button" class="link" data-set="ltvInput" data-val="btc">${esc(fm.orEnterBtc)}</button></p><p class="hint" id="ltv-interest-hint">${esc(f.initialLtv.interestHint)}</p>`;
   }
   const rate = state.rateType === 'variable'
     ? `<div class="field" data-field="ratePath"><span class="label">${esc(f.rateAnnual.label)}</span>${state.ratePath.map((r, i) => `<div class="pair rate-row">
@@ -268,7 +268,7 @@ function buildForm() {
     top = `${compare ? '' : seg('mode', [['new', fm.modeNew], ['existing', fm.modeExisting]], '', { id: 'mode' })}
     <p class="hint"><button type="button" class="link" aria-expanded="false" aria-controls="where">${esc(t('ui.whereLink'))}</button></p>
     <div id="where" class="where" hidden>${whereHtml()}</div>
-    <div class="amount-row">${numField('loanAmount', existing ? f.loanAmount.labelExisting : f.loanAmount.label, '', { hint: existing ? f.loanAmount.hintExisting : '' })}${currencySel}</div>
+    ${numField('loanAmount', existing ? f.loanAmount.labelExisting : f.loanAmount.label, '', { hint: existing ? f.loanAmount.hintExisting : '', after: currencySel })}
     ${ltvBlock}`;
   }
   const switching = refi ? `<details class="more" data-remember="switch"><summary>${esc(Cm.switching)} <span class="sum">· ${esc(t('compare.switchingSum', { sum: money0(switchCosts(state), cur) }))}</span></summary>
@@ -329,7 +329,7 @@ function setPath(obj, path, value) {
 function change(mutate, { rerenderForm = false } = {}) {
   state = structuredClone(state); mutate(state); saveState();
   if (!sliderChanging) { $('#slider-undo').hidden = true; undoState = null; }
-  $('#shared-note').hidden = true; // the inputs are now the visitor's own
+  $('#shared-note').hidden = true; $('#link-note').hidden = true; // the inputs are now the visitor's own
   $('#ended-note').hidden = true;
   if (rerenderForm) renderForm();
   update();
@@ -392,7 +392,7 @@ function onClick(e) {
   } else if (tgt.closest('[data-open-risk]')) { // the tile line opens "What it costs" at its explanation
     e.preventDefault();
     $('#sec-cost').open = true;
-    requestAnimationFrame(() => $('#risk-cost').scrollIntoView({ block: 'start' }));
+    requestAnimationFrame(() => { $('#risk-cost').scrollIntoView({ block: 'start' }); const h = $('#risk-cost h4'); if (h) h.focus({ preventScroll: true }); }); // the focus follows (keyboard, screen readers)
   } else if (tgt.closest('[data-open-terms]')) {
     setTermsOpen(true, { focus: true });
   } else if (tgt.closest('[data-share]')) {
@@ -473,16 +473,22 @@ async function ensureRecent(cur) {
 
 // ------------------------------------------------------------------ worker
 // '#no-worker' in the address forces the fallback (to test browsers that block workers)
-let worker = null; let useInline = location.hash === '#no-worker'; let runId = 0; let busy = false;
+let workers = []; let useInline = location.hash === '#no-worker'; let runId = 0; let busy = false;
+// With enough cores, three workers compute the answer, "Make it safer" and the slider/trends at the same time
+// (identical results: every part uses the same fixed futures). Otherwise one worker computes everything.
+const PARTS = (navigator.hardwareConcurrency || 2) >= 4 ? ['main', 'levers', 'extras'] : ['all'];
 const sentData = new Set(); const garchCache = { ...(META.garch || {}) }; // fitted at build time
 function makeWorker() {
-  sentData.clear();
+  sentData.clear(); workers = [];
   if (useInline) return;
   try {
-    worker = new Worker(URL.createObjectURL(new Blob([document.getElementById('worker-src').textContent], { type: 'text/javascript' })));
-    worker.onmessage = (e) => onWorkerMessage(e.data);
-    worker.onerror = () => { useInline = true; worker = null; update(); };
-  } catch { useInline = true; worker = null; }
+    for (const part of PARTS) {
+      const w = new Worker(URL.createObjectURL(new Blob([document.getElementById('worker-src').textContent], { type: 'text/javascript' })));
+      w.onmessage = (e) => onWorkerMessage({ ...e.data, part });
+      w.onerror = () => { useInline = true; for (const x of workers) x.terminate(); workers = []; update(); };
+      workers.push(w);
+    }
+  } catch { useInline = true; workers = []; }
 }
 // rates for the currencies computed from the euro history (CHF, GBP, CAD, AUD, CZK, PLN)
 let fxTable = null;
@@ -495,20 +501,32 @@ function sendData(cur) {
   if (sentData.has(cur)) return;
   const fx = fxFor(cur);
   const base64 = document.getElementById(`data-${fx ? 'EUR' : cur}`).textContent.trim();
-  if (useInline) jobSetData(cur, base64, appended[cur], fx); else worker.postMessage({ type: 'data', currency: cur, base64, appended: appended[cur], fx });
+  if (useInline) jobSetData(cur, base64, appended[cur], fx); else for (const w of workers) w.postMessage({ type: 'data', currency: cur, base64, appended: appended[cur], fx });
   sentData.add(cur);
 }
 // runs that only confirm the embedded example answer update quietly, once, at the end
 const quietRuns = new Set();
+// the parts of one run as they arrive: { [part]: { done, total, result } }
+let partsOf = {};
 function onWorkerMessage(m) {
   if (m.id !== runId) return;
   if (quietRuns.has(m.id) && m.type !== 'result' && m.type !== 'error') return;
+  const part = m.part || 'all';
   if (m.type === 'progress') {
-    $('#progress').hidden = false; $('#progress').textContent = t('ui.computing', { pct: Math.min(99, Math.round((m.done / m.total) * 100)) });
+    partsOf[part] = { ...partsOf[part], done: m.done, total: m.total };
+    const all = Object.values(partsOf); const done = all.reduce((x, p) => x + (p.done || 0), 0); const total = all.reduce((x, p) => x + (p.total || 0), 0);
+    $('#progress').hidden = false; $('#progress').textContent = t('ui.computing', { pct: Math.min(99, Math.round((done / Math.max(1, total)) * 100)) });
   } else if (m.type === 'partial' || m.type === 'result') {
-    garchCache[m.result.currency] = m.result.garch;
-    lastRisk = m.result; [riskTerms, riskSettings] = pending[m.id];
-    if (m.type === 'result') { busy = false; $('#progress').hidden = true; document.body.dataset.ready = '1'; }
+    if (m.type === 'result') partsOf[part] = { ...partsOf[part], result: m.result };
+    // the answer (part 'main' or 'all') carries everything else; the other parts add their lists when they arrive
+    const mainRes = m.type === 'partial' ? m.result : (partsOf.all || partsOf.main || {}).result;
+    if (!mainRes) return;
+    const lv = partsOf.levers && partsOf.levers.result; const ex = partsOf.extras && partsOf.extras.result;
+    const merged = { ...mainRes, ...(lv ? { levers: lv.levers, leverBase: lv.leverBase } : {}), ...(ex ? { slider: ex.slider, trends: ex.trends } : {}) };
+    garchCache[merged.currency] = merged.garch;
+    lastRisk = merged; [riskTerms, riskSettings] = pending[m.id];
+    const finished = PARTS.every((p) => partsOf[p] && partsOf[p].result) || (useInline && m.type === 'result');
+    if (finished) { busy = false; $('#progress').hidden = true; document.body.dataset.ready = '1'; }
     keepInPlace(renderRisk);
     // a shared link opens on the answer the sender saw, not on the form
     if (openedFromLink && !scrolledToAnswer) { scrolledToAnswer = true; $('#shared-note').hidden = false; renderAnswerTop(riskTerms); $('#answer').scrollIntoView({ block: 'start' }); }
@@ -517,9 +535,9 @@ function onWorkerMessage(m) {
   }
 }
 function requestRisk(terms, settings) {
-  runId++; document.body.dataset.ready = '0';
-  if (busy && !useInline) { worker.terminate(); makeWorker(); }
-  if (!worker && !useInline) makeWorker();
+  runId++; document.body.dataset.ready = '0'; partsOf = {};
+  if (busy && !useInline) { for (const w of workers) w.terminate(); makeWorker(); }
+  if (!workers.length && !useInline) makeWorker();
   sendData(terms.currency);
   busy = true;
   pending[runId] = [terms, settings];
@@ -527,7 +545,7 @@ function requestRisk(terms, settings) {
   if (useInline) {
     const id = runId;
     jobRun(id, terms, settings, garch, onWorkerMessage).then((result) => onWorkerMessage({ type: 'result', id, result })).catch((err) => onWorkerMessage({ type: 'error', id, message: String(err.message || err) }));
-  } else worker.postMessage({ type: 'run', id: runId, terms, settings, garch });
+  } else PARTS.forEach((part, i) => workers[i].postMessage({ type: 'run', id: runId, terms, settings: { ...settings, part }, garch }));
 }
 
 // ------------------------------------------------------------------ update
@@ -713,6 +731,8 @@ function endCompare(keep = compare.active) {
 const toForm = (f, base) => { const { refi, ...rest } = f; const tm = toTerms(f, { base }).terms; return { ...rest, mode: 'new', ltvInput: 'btc', loanAmount: tm.loanAmount, collateralBtc: String(tm.collateralInput) }; };
 
 // The four numbers of each offer as the headline shows them (rounded so the dots add up to 100)
+// "Liquidated" on this page: a forced sale, full or partial (the big number, the table, the options, the methods)
+const pSale = (m) => m.pLiquidation + m.pPartial;
 function heroSplit(m) {
   const pMarginOnly = m.pMarginCall === null ? 0 : Math.max(0, m.pMarginCall - m.pLiquidation - m.pPartial);
   return splitTo100([m.pLiquidation, m.pPartial, pMarginOnly, 1 - m.pLiquidation - m.pPartial - pMarginOnly]);
@@ -755,7 +775,7 @@ function renderCompare() {
   const big = (v) => `<span class="big">${v}</span>`;
   const cell = (v, sub = '') => `<td>${v}${sub ? `<small>${esc(sub)}</small>` : ''}</td>`;
   const dash = '–'; const wait = '…';
-  const nLiq = idx.map((i) => { const m = mainOf(i); return T[i] && m ? heroSplit(m)[0] : null; });
+  const nLiq = idx.map((i) => { const m = mainOf(i); if (!T[i] || !m) return null; const h = heroSplit(m); return h[0] + h[1]; });
   const head = `<tr><td></td>${idx.map((i) => `<th scope="col"><button type="button" class="col${i === compare.active ? ' active' : ''}" data-offer="${i}" aria-pressed="${i === compare.active}">${esc(offerName(i))}</button></th>`).join('')}</tr>`;
   const row = (label, sub, cells, cls = '') => `<tr${cls ? ` class="${cls}"` : ''}><th scope="row">${esc(label)}${sub ? `<small>${esc(sub)}</small>` : ''}</th>${cells.join('')}</tr>`;
   // cost including the risk: full cost (or interest left) plus the cost of the risk of that offer's own simulation
@@ -834,7 +854,8 @@ function tileRiskLine(tm, s) {
   let value = lastTileRisk || '…';
   if (r && r.main && r.main.riskCost && riskTerms === tm) {
     const x = riskTotal(tm, s, r.main.riskCost.value); const total = money0(round10(x.total), tm.currency);
-    value = tm.mode === 'existing' ? t('results.tileRiskExisting', { total }) : t('results.tileRiskValue', { total, rate: aprText(x.rate) });
+    value = tm.mode === 'existing' ? t('results.tileRiskExisting', { total }) : t('results.tileRiskValue', { total, rate: aprText(x.rate) })
+      .replace(/· (.+)$/, (_, r) => `· ${r.replace(/ /g, '\u00A0')}`); // "22.7% a year" stays on one line
     lastTileRisk = value;
   }
   return `<a class="s tile-risk" href="#risk-cost" data-open-risk>${esc(R.tileRiskLabel)}<br>${esc(value)}</a>`;
@@ -845,7 +866,7 @@ function renderTiles(tm) {
   const R = texts().results; const cur = tm.currency;
   const { lp, mp, rules } = salePrices(tm);
   const s = loanSummary(costTerms(tm));
-  const tile = (label, value, sub, cls = '', extra = '') => `<div class="tile${cls}"><div class="label">${esc(label)}</div><div class="v">${esc(value)}</div><div class="s">${esc(sub)}</div>${extra}</div>`;
+  const tile = (label, value, sub, cls = '', extra = '') => `<div class="tile${cls}" role="listitem"><div class="label">${esc(label)}</div><div class="v">${esc(value)}</div><div class="s">${esc(sub)}</div>${extra}</div>`;
   let html = tile(rules.liquidationSale === 'partial' ? R.tilePartSold : R.tileSold, money0(lp.atStart, cur), t('results.tileSoldSub', { drop: `−${pct(dropToLiquidation(tm), 0)}` }));
   const marginTile = mp ? tile(R.tileMargin, money0(mp.atStart, cur), rules.behaviour === 'autoPartial' ? R.tileMarginAuto : rules.afterCure ? t('results.tileMarginHours', { hours: tm.curePeriodHours }) : R.tileMarginWarning, ' desk-only') : '';
   const pastMargin = pastMarginCall(tm);
@@ -1001,9 +1022,9 @@ function renderRiskCost() {
   const s = loanSummary(costTerms(tm)); const rc = r.main.riskCost;
   const { total, rate } = riskTotal(tm, s, rc.value);
   const line = tm.mode === 'existing'
-    ? t('cost.riskLineExisting', { total: money0(round10(total), cur), months: tm.durationMonths, interest: money0(s.totalInterest, cur) })
+    ? t('cost.riskLineExisting', { total: money0(round10(total), cur), months: tm.durationMonths, interest: money(s.totalInterest, cur) }) // as in the line above it (€999.96, not €1,000)
     : t('cost.riskLine', { total: money0(round10(total), cur), rate: aprText(rate), apr: aprText(s.effectiveApr) });
-  el.innerHTML = `<h4>${esc(C.riskTitle)}</h4><p class="big-line">${esc(line)}</p>
+  el.innerHTML = `<h4 tabindex="-1">${esc(C.riskTitle)}</h4><p class="big-line">${esc(line)}</p>
     <p>${esc(t('cost.riskPart', { risk: money0(round10(rc.value), cur) }))}</p>
     <p class="hint">${esc(t('cost.riskNotFee', { none: Math.round(rc.noSale * 100) }))} ${esc(C.riskCompare)}</p>
     <p class="hint"><a href="${pageHref('method/')}#risk-cost">${esc(C.riskLink)}</a></p>`;
@@ -1033,13 +1054,15 @@ function renderRisk() {
   const R = texts().results; const cur = tm.currency; const months = tm.durationMonths;
   const m = r.main;
   const [nLiq, nPart, nMargin, nNone] = heroSplit(m);
-  const rest = m.pPartial >= 0.005 ? t('results.heroPartial', { m: nPart, months })
+  // with partial sales, the big number counts every forced sale (a big 0 next to 68 partial sales misled: UAT finding 1)
+  const nAny = nLiq + nPart;
+  const rest = nPart > 0 ? t(tm.mode === 'existing' ? 'results.heroAnyExisting' : 'results.heroAny', { full: nLiq, months })
     : t(tm.mode === 'existing' ? 'results.heroLiqExisting' : 'results.heroLiq', { months });
-  const headline = `${nLiq} ${R.heroOf} ${rest}`;
-  $('#headline-text').innerHTML = `<em class="hero-n">${nLiq}</em> <span class="of">${esc(R.heroOf)}</span> <span class="sentence">${esc(rest)}</span>`;
-  if (barNow !== null && barNow !== nLiq) barWas = barNow;
-  barNow = nLiq;
-  headlineShown = { p: m.pLiquidation, n: nLiq };
+  const headline = `${nAny} ${R.heroOf} ${rest}`;
+  $('#headline-text').innerHTML = `<em class="hero-n">${nAny}</em> <span class="of">${esc(R.heroOf)}</span> <span class="sentence">${esc(rest)}</span>`;
+  if (barNow !== null && barNow !== nAny) barWas = barNow;
+  barNow = nAny;
+  headlineShown = { p: pSale(m), n: nAny };
   // until the options are computed, the line keeps its last text (dimmed) instead of disappearing and coming back
   if (r.levers) $('#best-lever').textContent = bestLeverText(r);
   $('#best-lever').classList.toggle('pending', !r.levers);
@@ -1053,7 +1076,7 @@ function renderRisk() {
   const rules = lenderRules(tm);
   $('#assume-line').textContent = !rules.afterCure ? '' : tm.reserveAmount > 0 ? t('results.assumeReserve', { reserve: money0(tm.reserveAmount, cur) }) : texts().results.assumeNoTopUp;
   // "the simulation is the most cautious" only where it is true for this loan
-  const h = of100(r.replay.liquidatedShare); const g = of100(r.garchMc.pLiquidation); const n = shown(m.pLiquidation);
+  const h = of100(r.replay.liquidatedShare + r.replay.partialShare); const g = of100(pSale(r.garchMc)); const n = shown(pSale(m));
   const hasHistory = r.replay.starts > 0; // none for a loan longer than the real prices allow
   $('#methods-line').textContent = `${hasHistory ? t('results.otherMethods', { h, g }) : t('results.otherMethodNoHistory', { g })}${n >= g && (!hasHistory || n >= h) ? R.mostCautious : ''} · `;
   // the whole period the results are based on, and when the stored data was last updated
@@ -1089,7 +1112,7 @@ const leverLabel = (l, tm) => t(`results.levers.${tm.mode === 'existing' && ['lo
 // Under the answer: the one change from "Make it safer" that lowers the number most
 function bestLeverText(r) {
   const best = r.levers && r.levers[0];
-  if (!best || shown(best.p) >= shown(r.main.pLiquidation)) return '';
+  if (!best || shown(best.p) >= shown(pSale(r.main))) return '';
   return t('results.bestLever', { lever: leverLabel(best, riskTerms), p: shown(best.p) });
 }
 
@@ -1212,11 +1235,11 @@ function renderLeverage() {
 function historyText() {
   const r = lastRisk; const rp = r.replay;
   const partial = rp.partialShare >= 0.005 ? t('history.replayPartial', { m: of100(rp.partialShare) }) : '';
-  const h = of100(rp.liquidatedShare); const n = shown(r.main.pLiquidation);
+  const h = of100(rp.liquidatedShare); const n = shown(pSale(r.main)); const hAny = of100(rp.liquidatedShare + rp.partialShare);
   if (!rp.starts) return `<p>${esc(texts().history.replayNone)}</p>`;
   let html = `<p class="big-line">${esc(t('history.replay', { n: h, partial }))}</p>`;
   if (rp.starts < 4 * 365) html += `<p>${esc(t('history.replayFew', { last: date(rp.lastStart) }))}</p>`; // fewer than 4 years of start days
-  if (h !== n) html += `<p>${esc(t(h < n ? 'history.bridgeLower' : 'history.bridgeOther', { n }))}</p>`;
+  if (hAny !== n) html += `<p>${esc(t(hAny < n ? 'history.bridgeLower' : 'history.bridgeOther', { n }))}</p>`;
   return html;
 }
 // When the simulated liquidations happen: shown in "What happens when BTC falls"
@@ -1281,7 +1304,9 @@ function renderStatic() {
   $('#terms-toggle').textContent = t(termsOpen ? 'form.closeTerms' : 'form.editTerms');
   $('meta[name="description"]').setAttribute('content', tx.meta.description);
   $('#limits').innerHTML = tx.results.limits.map((x) => `<li>${esc(x)}</li>`).join('');
-  for (const b of document.querySelectorAll('#answer button.q, #sec-falls button.q')) b.setAttribute('aria-label', tx.ui.more);
+  // each "?" says what it explains ("More" alone told a screen reader nothing: UAT finding 8)
+  $('#answer button.q').setAttribute('aria-label', tx.ui.moreNumber);
+  $('#sec-falls button.q').setAttribute('aria-label', `${tx.ui.more}: ${tx.falls.futuresTitle}`);
   $('#headline-help').innerHTML = rich(tx.results.headlineHelp);
   $('#futures-help').innerHTML = rich(tx.falls.futuresHelp);
   $('#questions').innerHTML = tx.falls.questions.map((x) => `<li>${esc(x)}</li>`).join('');
@@ -1332,6 +1357,9 @@ $('#forget-btn').addEventListener('click', () => {
 if (state.priceManual && numOr(state.btcPrice, null) !== null) priceInfo = { source: 'manual' };
 renderAll();
 showEmbeddedExample();
+// a share link that could not be read (or only in part): say so instead of silently showing something else (UAT finding 9)
+if (/^#s=/.test(location.hash) && (!linkData || linkData.incomplete)) { $('#link-note').textContent = t(linkData ? 'results.linkPartly' : 'results.linkBroken'); $('#link-note').hidden = false; }
+$('#top').classList.remove('boot'); // drawn: show it (until now invisible, so nothing jumps on slow phones: UAT finding 3)
 // is the answer's number on screen? (decides whether the answer bar is needed)
 if (window.visualViewport) window.visualViewport.addEventListener('resize', updateAnswerBar);
 document.addEventListener('focusin', updateAnswerBar); document.addEventListener('focusout', () => setTimeout(updateAnswerBar, 0));

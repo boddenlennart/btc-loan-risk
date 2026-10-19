@@ -223,6 +223,86 @@ test('tile labels are never broken inside a word, only at spaces or proper hyphe
   }
 });
 
+test('tiles on phones: every word and number stays whole and inside its tile, in both languages and four currencies (UAT finding 4)', async ({ page }) => {
+  test.setTimeout(240_000);
+  await visit(page, '/', { width: 375 });
+  // every letter of every text in the tiles: inside the tile, and a word only continues on a new line after a space or soft hyphen
+  const problems = () => page.locator('#tiles .tile').evaluateAll((tiles) => tiles.flatMap((tile) => {
+    const box = tile.getBoundingClientRect(); const out = [];
+    const walker = document.createTreeWalker(tile, NodeFilter.SHOW_TEXT); let t;
+    while ((t = walker.nextNode())) {
+      const r = document.createRange(); let prevTop = null; let skip = 1;
+      for (let i = 0; i < t.length; i++) {
+        const ch = t.data[i];
+        if (/[\s]/.test(ch) && ch !== ' ') { skip = 1; continue; }
+        if (ch === '­') { skip = 2; continue; }
+        r.setStart(t, i); r.setEnd(t, i + 1); const b = r.getBoundingClientRect();
+        if (b.width === 0) continue;
+        if (b.right > box.right + 0.5 || b.left < box.left - 0.5) { out.push(`clipped: "${t.data}"`); break; }
+        const top = Math.round(b.top);
+        if (skip > 0) skip--; else if (top > prevTop) { out.push(`split: "${t.data}"`); break; }
+        prevTop = top;
+      }
+    }
+    return out;
+  }));
+  const done = async () => { await expect(page.locator('#progress')).toBeHidden({ timeout: 60_000 }); await page.waitForTimeout(300); };
+  await page.locator('#own-terms-link').click();
+  for (const w of [320, 375]) {
+    await page.setViewportSize({ width: w, height: 812 });
+    for (const lang of ['en', 'de']) {
+      if (lang === 'de') { await page.locator('#lang-btn').click(); await page.locator('[data-lang="de"]').click(); await expect(page.locator('#tiles')).toContainText('Liquidiert bei'); }
+      for (const cur of ['EUR', 'USD', 'CHF', 'CZK']) {
+        await page.locator('#form [data-k="currency"]').selectOption(cur); await done();
+        expect(await problems(), `${w} px, ${lang}, ${cur}`).toEqual([]);
+      }
+      // the longest label: a partial sale at the liquidation LTV
+      await page.evaluate(() => document.querySelectorAll('#form details').forEach((d) => { d.open = true; }));
+      await page.locator('#form [data-set="liquidationSale"][data-val="partial"]').click(); await done();
+      expect(await problems(), `${w} px, ${lang}, partial sale`).toEqual([]);
+      await page.locator('#form [data-set="liquidationSale"][data-val="all"]').click();
+      await page.locator('#form [data-k="currency"]').selectOption('EUR');
+      if (lang === 'de') { await page.locator('#lang-btn').click(); await page.locator('[data-lang="en"]').click(); await expect(page.locator('#tiles')).toContainText('Liquidated at'); }
+    }
+  }
+});
+
+test('no page scrolls sideways at 320 px, with every folded part open (= 400% zoom; UAT finding 11)', async ({ page }) => {
+  for (const path of ['/', '/insights/', '/method/', '/de/', '/de/method/']) {
+    await visit(page, path, { width: 320 });
+    await page.evaluate(() => document.querySelectorAll('details').forEach((d) => { d.open = true; }));
+    await page.waitForTimeout(400);
+    const r = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, w: window.innerWidth,
+      out: [...document.querySelectorAll('main *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 1 && !e.closest('.table-wrap')).slice(0, 3).map((e) => `${e.tagName} "${e.textContent.slice(0, 40)}"`) }));
+    expect(r.out, path).toEqual([]);
+    expect(r.sw, path).toBeLessThanOrEqual(r.w);
+  }
+});
+
+test('chart axes: every price label lies inside its chart, in four currencies and both languages (UAT finding 5)', async ({ page }) => {
+  test.setTimeout(180_000);
+  const clipped = () => page.evaluate(() => [...document.querySelectorAll('.chart svg')].flatMap((svg) => {
+    const box = svg.getBoundingClientRect(); if (!box.width) return [];
+    return [...svg.querySelectorAll('text.axis')].filter((t) => { const b = t.getBoundingClientRect(); return b.width && (b.left < box.left - 0.5 || b.right > box.right + 0.5); }).map((t) => t.textContent);
+  }));
+  for (const width of [375, 1280]) {
+    await visit(page, '/', { width });
+    if (width < 1024) await page.locator('#own-terms-link').click();
+    for (const id of ['sec-falls', 'sec-history']) await page.locator(`#${id} > summary`).click();
+    for (const lang of ['en', 'de']) {
+      if (lang === 'de') { await page.locator('#lang-btn').click(); await page.locator('[data-lang="de"]').click(); }
+      for (const cur of ['EUR', 'USD', 'CHF', 'CZK']) {
+        await page.locator('#form [data-k="currency"]').selectOption(cur);
+        await expect(page.locator('#progress')).toBeHidden({ timeout: 60_000 }); await page.waitForTimeout(400);
+        expect(await clipped(), `${width} px, ${lang}, ${cur}`).toEqual([]);
+      }
+      await page.locator('#form [data-k="currency"]').selectOption('EUR');
+      if (lang === 'de') { await page.locator('#lang-btn').click(); await page.locator('[data-lang="en"]').click(); }
+    }
+    for (const path of ['/method/', '/de/method/']) { await visit(page, path, { width }); expect(await clipped(), `${width} px ${path}`).toEqual([]); }
+  }
+});
+
 test('"Insights": all 11, each with what was measured and a table or chart; the line under the answer leads to the first group', async ({ page }) => {
   const errors = await visit(page, '/insights/');
   await expect(page).toHaveTitle('Insights · Bitcoin Loan Check');

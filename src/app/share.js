@@ -17,7 +17,8 @@ export function encodeState(state, compare = null) {
   return `#s=${toB64url(JSON.stringify(o))}`;
 }
 
-/** Returns { form, compare } from the link, or null if the hash is missing or broken. Unknown keys are ignored. */
+/** Returns { form, compare, incomplete } from the link, or null if the hash is missing or broken. Unknown keys are
+ *  ignored; incomplete = the link held a comparison that could not be read. */
 export function decodeLink(hash) {
   const m = /^#s=([A-Za-z0-9_-]+)$/.exec(hash || '');
   if (!m) return null;
@@ -29,7 +30,7 @@ export function decodeLink(hash) {
     const ok = c && ['offers', 'refi'].includes(c.kind) && Array.isArray(c.offers) && c.offers.length >= 2 && c.offers.length <= 3
       && Number.isInteger(c.active) && c.active >= 0 && c.active < c.offers.length;
     const compare = ok ? { kind: c.kind, active: c.active, names: (c.names || []).map((n) => String(n).slice(0, 40)), offers: c.offers.map(pickForm) } : null;
-    return { form, compare };
+    return { form, compare, incomplete: !!c && !ok };
   } catch {
     return null;
   }

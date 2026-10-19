@@ -52,6 +52,7 @@ Five problems were found and fixed; seven smaller effects were measured and are 
 
 - `tests/montecarlo-reference.test.js` with `tests/fixtures/montecarlo-reference.json` (from `reference/reference_montecarlo.py`): any change in the simulation or the lender rules that is not made in both implementations fails.
 - `tests/math-audit.test.js`: answers known in advance, independent random streams, precision, no built-in trend.
+- `tests/math-audit.test.js` (count-only runs) and `tests/parts.test.js`: the faster count-only runs and the three parallel parts give exactly the numbers of one full run (added 19 Oct 2026, UAT finding 7).
 - `tests/risk-cost.test.js`: the cost of the risk against answers known in advance, the textbook option formula and the paper's premiums; the Python version checks it in every reference case.
 - The test against history checks the page's actual settings (weighted, no trend).
 

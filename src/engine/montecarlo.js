@@ -126,7 +126,8 @@ function makeStepper(model, params, rng) {
  *    cureDays (sell everything if a margin call is not fixed in time) as before.
  * The low during day d (from d-1 to d) is compared with the debt of day d-1.
  *
- * Returns { pLiquidation, pPartial, pMarginCall, cumulativeByMonth, fanByMonth,
+ * Returns { pLiquidation, pPartial, pMarginCall, cumulativeByMonth (share with a first forced sale, full or
+ *           partial, by the end of each month), fanByMonth,
  *           keptAfterSale?, minRatios?, samplePaths?, leverage?, riskCost? }
  *  - riskCost (opts.riskCost true): the cost of the liquidation risk, an option price
  *    (ux/M-risk-cost-spec.md). For every sale, the BTC that repaid debt loses the rise
@@ -172,7 +173,10 @@ export function runMonteCarlo(opts) {
   const firstMonthForDay = new Int32Array(days + 1);
   { let m = 0; for (let d = 1; d <= days; d++) { while (monthEnds[m] < d) m++; firstMonthForDay[d] = m; } }
 
-  const fan = new Float64Array(nm * nPaths);
+  // countOnly: only the counts are needed ("Make it safer", slider, trends): a future stops at its liquidation and
+  // no price fan is kept. The counts are exactly those of a full run (UAT finding 7: speed on slow phones).
+  const countOnly = !!opts.countOnly && !opts.riskCost && !opts.leverage && !opts.samplePaths && !opts.collectMinRatios;
+  const fan = countOnly ? null : new Float64Array(nm * nPaths);
   const hitsByMonth = new Float64Array(nm);
   const minRatios = collectMinRatios ? new Float64Array(nPaths) : null;
   const nSample = Math.min(opts.samplePaths || 0, nPaths);
@@ -194,7 +198,7 @@ export function runMonteCarlo(opts) {
     let logS = Math.log(s0);
     let minLog = logS;
     const weekly = p < nSample ? [s0] : null;
-    let event = null;
+    let event = null; let anySale = false;
     for (let d = 1; d <= days; d++) {
       const [ret, lowRel] = step();
       const lowLog = logS + lowRel;
@@ -203,12 +207,14 @@ export function runMonteCarlo(opts) {
       if (!st.liquidation) {
         const nPartial = st.partialSales.length;
         stepLoan(st, rules, { time: d, low: Math.exp(lowLog), close: Math.exp(logS), debt: debtByDay[d - 1], cure });
+        const sold = st.liquidation || st.partialSales.length > nPartial;
+        if (sold && !anySale) { anySale = true; hitsByMonth[firstMonthForDay[d]]++; } // the first forced sale of any kind
         if (st.liquidation) {
-          hitsByMonth[firstMonthForDay[d]]++;
           if (weekly && !event) event = { day: d, kind: st.liquidation.reason };
         } else if (weekly && !event && st.partialSales.length > nPartial) event = { day: d, kind: 'partial' };
       }
       const mi = monthIndexOfDay[d];
+      if (countOnly) { if (st.liquidation) break; continue; }
       if (mi >= 0) fan[mi * nPaths + p] = Math.exp(logS);
       if (weekly && (d % 7 === 0 || d === days)) weekly.push(Math.exp(logS));
     }
@@ -239,7 +245,7 @@ export function runMonteCarlo(opts) {
   let acc = 0;
   for (let m = 0; m < nm; m++) { acc += hitsByMonth[m]; cumulativeByMonth.push(acc / nPaths); }
   const fanByMonth = [];
-  for (let m = 0; m < nm; m++) {
+  for (let m = 0; m < nm && fan; m++) {
     const srt = fan.subarray(m * nPaths, (m + 1) * nPaths).slice().sort();
     fanByMonth.push({ month: m + 1, day: monthEnds[m], q05: quantile(srt, 0.05), q25: quantile(srt, 0.25), q50: quantile(srt, 0.5), q75: quantile(srt, 0.75), q95: quantile(srt, 0.95) });
   }

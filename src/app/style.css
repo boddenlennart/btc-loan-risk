@@ -169,14 +169,21 @@ button.link.strong { font-weight: 600; text-decoration: none; }
 body.bar-on { padding-bottom: 72px; }
 @media (min-width: 1024px) { .answer-bar { display: none !important; } body.bar-on { padding-bottom: 0; } }
 .assume { font-size: 14px; color: var(--text-2); margin: 8px 0 0; }
-.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); /* 3 per row on phones, 2 on the narrowest */ gap: 8px; margin: 12px 0 0; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 8px; margin: 12px 0 0; }
+@media (max-width: 479px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } } /* phones: two per row, wide enough for every number and word (UAT finding 4) */
 .tile { background: var(--surface-2); border-radius: 6px; padding: 10px; min-width: 0; }
-.tile .v { font: 600 17px/1.2 var(--serif); margin-top: 4px; overflow-wrap: anywhere; }
+.tile .v { font: 600 17px/1.2 var(--serif); margin-top: 4px; } /* a number never breaks; "CZK 1,042,414" may break at its space */
 .tile .s { color: var(--text-2); font-size: 13px; line-height: 1.35; margin-top: 2px; }
+/* the check page stays invisible until its first answer is drawn, so a slow phone does not show the empty
+   frame first and then push everything down; after 3 s it shows in any case (if the script failed) */
+.page a { overflow-wrap: anywhere; } /* How it works, Insights: a long link (a file path, an address) breaks instead of widening the page (UAT finding 11) */
+main.boot { visibility: hidden; animation: boot-show 0s linear 3s forwards; }
+@keyframes boot-show { to { visibility: visible; } }
 .risk-cost { scroll-margin-top: 76px; }
+.risk-cost h4:focus { outline: none; } /* focused only as the target of the tile's link */
 #cmp { scroll-margin-top: 72px; } /* "Compare an offer" scrolls here, below the sticky top bar */
 #cmp:focus { outline: none; } /* focused only as the scroll target, not by the keyboard */ /* the tile's link lands here, below the sticky top bar */
-.tile a.tile-risk { display: block; margin-top: 6px; color: var(--text-2); text-decoration: underline dotted; text-underline-offset: 3px; }
+.tile a.tile-risk { display: block; margin-top: 6px; overflow-wrap: break-word; color: var(--text-2); text-decoration: underline dotted; text-underline-offset: 3px; }
 .tile a.tile-risk:hover { color: var(--text); }
 .tile .label { overflow-wrap: anywhere; }
 .sale-line { font-size: 14px; color: var(--text-2); margin: 12px 0 0; }
@@ -234,9 +241,7 @@ input, select, textarea { font: inherit; color: var(--text); background: var(--s
 textarea { resize: vertical; }
 .with-unit { display: flex; align-items: center; gap: 6px; }
 .with-unit .unit { color: var(--muted); white-space: nowrap; }
-.amount-row { display: flex; gap: 8px; align-items: flex-end; }
-.amount-row .field { flex: 1; margin-bottom: 12px; }
-.amount-row select.cur { width: auto; margin-bottom: 12px; }
+.with-unit select.cur { width: auto; flex: none; } /* the currency sits in the amount's row, beside the input, also when a hint follows */
 .seg { display: flex; flex-wrap: wrap; border: 1px solid var(--field); border-radius: 6px; overflow: hidden; }
 .seg button { flex: 1 1 auto; background: var(--surface); color: var(--text-2); border: none; border-right: 1px solid var(--field); padding: 9px 10px; min-height: 44px; font-weight: 600; font-size: 14px; }
 .seg button:last-child { border-right: none; }
@@ -428,7 +433,7 @@ table.itable td.heat { background: color-mix(in srgb, var(--critical) var(--heat
 /* narrow phones: the name stays on one line next to the light/dark switch and the language button */
 .brand span { white-space: nowrap; }
 @media (max-width: 399px) { .top-inner { gap: 8px; } button.lang > svg:first-child { display: none; } button.lang { padding: 0 10px; } }
-@media (max-width: 359px) { .brand { font-size: 16px; gap: 6px; } .brand .mark { width: 24px; height: 24px; } }
+@media (max-width: 359px) { .brand { font-size: 16px; gap: 6px; } .brand .mark { width: 24px; height: 24px; } .top-inner { gap: 6px; } button.lang { padding: 0 8px; } } /* "Bitcoin-Kredit-Check" fits at 320 px */
 .chart .piece-a { fill: none; stroke: var(--series-1); stroke-width: 2.5; }
 .chart .piece-b { fill: none; stroke: var(--story-3); stroke-width: 2.5; }
 /* "How it works": the three layers (everyone, details, experts) and the maths */

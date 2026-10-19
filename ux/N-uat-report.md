@@ -1,6 +1,6 @@
 # Final acceptance test (UAT) before the release candidate
 
-Status: 19 Oct 2026, branch `ux-redesign` at 8ff9046. Nothing has been changed; this is the report. Fixes follow after the owner's approval.
+Status: 19 Oct 2026, branch `ux-redesign` at 8ff9046 when tested. **Fixed on 19 Oct (owner's approval):** findings 1–5, 7–12 and the hint of finding 6, each with a test that would have caught it (see "Fixes" at the end). The rule "no liquidation during the term" (finding 6) follows after the launch (`ux/J-launch-steps.md`).
 
 ## Why this test was different
 
@@ -175,3 +175,20 @@ Each fix gets a test that would have caught it, so that this kind of flaw cannot
 - no split or clipped word in a tile, in both languages and four currencies
 - the layout-shift score on opening at 6× slowdown
 - the headline with partial sales
+
+## Fixes (19 Oct 2026)
+
+| # | Fix | Test that would have caught it |
+|---|---|---|
+| 1 | "Liquidated" = any forced sale, full or partial, everywhere (big number, dots, comparison, "Make it safer", slider, trends, other methods); the sentence says how many were full | e2e "partial sales count as liquidated" (the big number equals the red and orange dots; the same in "Make it safer" and the table) |
+| 2 | The real years start at today's price; the scale fits the lines | every chart point of all 12 reference loans must be a finite number, and each real year must start at 1 (`tests/helpers/regression.js`) |
+| 3 | The check page stays invisible until its first answer is drawn (with a 3-second fallback) | e2e: layout shift on opening at 6× slowdown below 0.1 (was 0.77; fails without the fix) |
+| 4 | Two tiles per row on phones; numbers never break; the rate stays together; German soft hyphen | e2e: every letter in every tile stays inside it and no word is split, at 320 and 375 px, EN/DE, EUR/USD/CHF/CZK and the partial-sale label (fails on the old layout) |
+| 5 | Chart margins fit the widest price label | e2e: every axis label inside its chart, 375 and 1280 px, EN/DE, four currencies, How it works (fails without the fix) |
+| 6 | Hint under "Starting LTV" for lenders who count the interest in the LTV | e2e checks the hint |
+| 7 | "Make it safer", slider, trends and the volatility model count only (a future stops at its liquidation, no price fan); three parallel workers on devices with 4+ cores | unit: count-only runs equal full runs on random loans; the three parts together equal one run for six loan types. Computer: 12 months 3.6 → 1.9 s, 36 months 8.3 → 3.4 s (all sections) |
+| 8 | Tiles are a list; each "?" names what it explains; the tile's link moves the focus to its heading | e2e "screen readers" |
+| 9 | A note when a share link (or its comparison) cannot be read | e2e: broken link, link with four offers, a good link (no note) |
+| 10 | "Time to top up" / "Frist zum Nachschießen" and "cost including the liquidation risk" everywhere | unit: the old names do not appear in either language (glossary may name "cure period" once) |
+| 11 | Long links on How it works and Insights break; the top bar fits "Bitcoin-Kredit-Check" at 320 px | e2e: no page scrolls sideways at 320 px with everything open (found the top bar as well) |
+| 12 | Same precision for an existing loan's interest; currency beside the amount; "Show the next 20 futures (set 2 of 5)" | e2e "small details" |

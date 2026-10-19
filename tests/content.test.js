@@ -182,3 +182,18 @@ describe('glossary links', () => {
     }
   });
 });
+
+// One name per concept (UAT finding 10): the time after a margin call and the cost with the risk were named
+// in several ways. The glossary may name the contract word once, in parentheses.
+describe('one name per concept', () => {
+  const OLD = {
+    en: [/\bdeadlines?\b/i, /\bh to fix\b/, /hours to fix\b/, /cost including the risk\b/i],
+    de: [/Zeit zum Nachschießen/, /zum Beheben/, /Kosten inkl(usive|\.) Risiko\b/],
+  };
+  for (const lang of ['en', 'de']) {
+    it(`${lang}: the old names are gone`, async () => {
+      const found = allStrings(await load(lang)).filter(([p, s]) => !p.startsWith('glossary.') && OLD[lang].some((re) => re.test(s))).map(([p]) => p);
+      expect(found).toEqual([]);
+    });
+  }
+});

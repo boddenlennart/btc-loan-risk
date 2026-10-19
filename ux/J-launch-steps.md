@@ -14,7 +14,9 @@ Everything here is done by you, in GitHub Desktop, on github.com and in the Clou
    - Open "How it works": the sample future, the volatility chart and the tables are readable; "Show the formulas" opens the maths.
 2. **Mail and donation (5 min).** Send yourself a test via "Help improve this page" → "Write e-mail" to boddenlennart@proton.me and check it arrives. Open your Bitcoin wallet's receive screen and confirm the address on the page (bc1qvj6c…pj8ld) is one of yours.
 3. **Read the new texts (about 1–2 hours).** ux/review/texts-review.md lists every text, numbered, English and German side by side. About 250 are new since your review on 16 Oct (groups "Page: Insights", "Page: How it works", the legal texts, comparison). Note the number of anything unclear or wrong and send me the list.
-4. **A short test with 3–5 people (S4, optional but advised).** Use round 1 of ux/E-test-plan.md: 15 minutes each, mainly "In your own words, what does the big number mean?".
+4. **A short test with 3–5 people (S4, optional but advised).** Use `ux/uat/user-test-script.md` (tasks and a 5-question comprehension quiz, 20 minutes each).
+5. **iPhone with VoiceOver (30 min).** Follow `ux/uat/iphone-voiceover-checklist.md`. Note in particular how long a 36-month loan takes until "Calculating…" disappears.
+6. **Outside reviewers (optional).** Send `ux/uat/reviewer-brief.md` to your friend at the lender and, if possible, to a UX reviewer.
 
 ## 1. GitHub: settings the weekly update needs
 
@@ -71,3 +73,4 @@ Check: the page's small print says "last updated" with today's date.
 - Keep `ux-redesign` for a week, then delete the branch on github.com (the preview address stops working).
 - Feedback arrives at boddenlennart@proton.me; delete feedback mails after twelve months at the latest (the privacy notice promises this).
 - If the page ever starts using another service or storing something new: update the privacy notice first (README, "Impressum and privacy notice").
+- **First update (planned):** a loan type "no liquidation during the term" (sale only after a missed payment), as some lenders offer it. The page will say that the price risk then sits with the lender (UAT report, finding 6).

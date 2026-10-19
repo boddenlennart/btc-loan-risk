@@ -90,3 +90,18 @@ describe('no built-in trend, also with recent days weighted more', () => {
     expect(Math.abs(r.fanByMonth.at(-1).q50 / 100 - 1)).toBeLessThan(0.02);
   });
 });
+
+describe('count-only runs ("Make it safer", slider, trends) give exactly the counts of a full run', () => {
+  it('random loans on random price moves: liquidated, partly liquidated, margin calls and the months agree exactly', () => {
+    const rng = makeRng(11); const returns = []; const lowRel = [];
+    for (let i = 0; i < 2000; i++) { const x = rng.normal() * 0.04; returns.push(x); lowRel.push(Math.min(0, x) - Math.abs(rng.normal()) * 0.015); }
+    for (let k = 0; k < 12; k++) {
+      const ltv = 0.3 + 0.03 * k; const sale = k % 2 ? 'partial' : 'all';
+      const consequence = ['warningOnly', 'liquidateAfterCure', 'partialAfterCure', 'autoPartial'][k % 4];
+      const loan = loanOf(new Float64Array(366).fill(ltv * 100 * 100), 100, { initialLtv: ltv, liquidationLtv: 0.8, marginCallLtv: (ltv + 0.8) / 2, marginCallConsequence: consequence, liquidationSale: sale, liquidationFee: { value: 0.05, basis: 'debt' } });
+      const opts = { model: 'bootstrap', params: { returns, lowRel, blockDays: 30 }, s0: 100, days: 365, nPaths: 3000, seed: 5 + k, logDriftPerDay: 0, loan, cureDays: 2 };
+      const full = runMonteCarlo(opts); const fast = runMonteCarlo({ ...opts, countOnly: true });
+      expect([fast.pLiquidation, fast.pPartial, fast.pMarginCall, fast.cumulativeByMonth]).toEqual([full.pLiquidation, full.pPartial, full.pMarginCall, full.cumulativeByMonth]);
+    }
+  });
+});

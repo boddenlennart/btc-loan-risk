@@ -102,13 +102,13 @@ function setData(currency, base64, appended, fx) {
 const monthEndsFor = (t) => Array.from({ length: t.durationMonths }, (_, m) => daysBetween(t.startDate, addMonths(t.startDate, m + 1)));
 
 /** One simulation of the loan `t`. */
-function simulate(t, s, settings, { model = 'bootstrap', nPaths = settings.nPaths, trend = 0, samplePaths = 0, leverage = false, riskCost = false, seed = 20240101 } = {}) {
+function simulate(t, s, settings, { model = 'bootstrap', nPaths = settings.nPaths, trend = 0, samplePaths = 0, leverage = false, riskCost = false, countOnly = false, seed = 20240101 } = {}) {
   const sum = loanSummary(t);
   // leverage: true = the whole loan buys BTC; an object = given as is (a refinancing's extra cash, see run())
   const lev = !leverage ? null : typeof leverage === 'object' ? leverage : { bought: sum.amountReceived / t.btcPrice, payback: sum.totalPayback, repay: t.repayWith === 'cash' ? 'cash' : 'sell' };
   return runMonteCarlo({
     model, params: model === 'bootstrap' ? { returns: s.returns, lowRel: s.lowRel, weights: s.weights, blockDays: settings.blockDays } : s.garch,
-    s0: t.btcPrice, days: loanDays(t), nPaths, seed, monthEnds: monthEndsFor(t), samplePaths, riskCost,
+    s0: t.btcPrice, days: loanDays(t), nPaths, seed, monthEnds: monthEndsFor(t), samplePaths, riskCost, countOnly,
     logDriftPerDay: Math.log(1 + trend) / 365,
     loan: { debtByDay: debtByDay(t), collateralBtc: collateralBtc(t), rules: lenderRules(t) },
     cureDays: Math.max(1, Math.ceil((t.curePeriodHours ?? 0) / 24)),
@@ -152,6 +152,9 @@ function leverList(t) {
 /** Yearly trends of the middle simulated path compared in "Does the price trend matter?". */
 const TRENDS = [-0.3, 0, 0.2, 0.5, 1.0];
 
+/** Share of futures with a forced sale, full or partial: what the page calls "liquidated" (ux/N-uat-report.md, finding 1). */
+const pSale = (m) => m.pLiquidation + m.pPartial;
+
 /** Real start dates for "What really happened" and the stress test (only those inside the data). */
 const STORIES = ['2017-12-17', '2021-11-10', '2020-02-13', '2023-01-01'];
 
@@ -163,7 +166,8 @@ function story(s, t, iso) {
   if (i0 + days >= s.daily.time.length) return null;
   const r = replayOne(s.hourly, { ...t, startDate: iso }, t0);
   const weekly = [];
-  for (let d = 0; d <= days; d += 7) weekly.push(Math.min(...s.daily.low.slice(i0 + Math.max(1, d - 6), i0 + d + 1)) / s.daily.open[i0]);
+  // each week's lowest price relative to the start; the first point is the start itself (an empty week has no minimum)
+  for (let d = 0; d <= days; d += 7) weekly.push(d === 0 ? 1 : Math.min(...s.daily.low.slice(i0 + Math.max(1, d - 6), i0 + d + 1)) / s.daily.open[i0]);
   const sale = r.liquidation ? { day: Math.round((r.liquidation.time - t0) / 86400), reason: r.liquidation.reason }
     : r.partialSales.length ? { day: Math.round((r.partialSales[0].time - t0) / 86400), reason: 'partial' } : null;
   return { start: iso, sale, partialSales: r.partialSales.length, weekly, endRel: s.daily.close[i0 + days] / s.daily.open[i0], btcLeft: r.collateralAtEnd / r.collateralBtc };
@@ -184,12 +188,17 @@ async function run(id, terms, settings, garch, post = postMessage) {
   }
   // other offers in a comparison (settings.compareTerms: one entry per offer, null for this one)
   const others = settings.compareTerms || [];
-  const total = 4 + others.filter(Boolean).length + levers.length + ltvGrid.length + TRENDS.length;
+  // settings.part: 'all' (one worker), or one of three parts that run in parallel workers on phones and computers
+  // with several cores (UAT finding 7): 'main' (the answer), 'levers' ("Make it safer"), 'extras' (slider, trends).
+  // Every part uses the same fixed futures, so the results are identical to one run of 'all'.
+  const part = settings.part || 'all';
+  const nMain = 4 + others.filter(Boolean).length; const nLevers = levers.length + 1; const nExtras = ltvGrid.length + TRENDS.length;
+  const total = part === 'main' ? nMain : part === 'levers' ? nLevers : part === 'extras' ? nExtras : nMain + levers.length + ltvGrid.length + TRENDS.length;
   let done = 0;
   // after each step: report progress and give the page a moment to repaint
   const tick = async () => { post({ type: 'progress', id, done: ++done, total }); await new Promise((r) => setTimeout(r, 0)); };
   post({ type: 'progress', id, done, total });
-  if (!s.garch) s.garch = fitGarchT(s.returns);
+  if (!s.garch && (part === 'all' || part === 'main')) s.garch = fitGarchT(s.returns);
 
   const buy = terms.purpose === 'buy';
   const result = { currency: terms.currency, garch: s.garch, facts: s.facts, history: { from: s.hourly.time[0], to: s.hourly.time[s.hourly.time.length - 1] } };
@@ -200,6 +209,32 @@ async function run(id, terms, settings, garch, post = postMessage) {
     const bt = settings.leverageBase; const sb = loanSummary(bt); const sn = loanSummary(terms); const repay = terms.repayWith === 'cash' ? 'cash' : 'sell';
     const base = simulate(bt, s, settings, { leverage: { bought: 0, payback: sb.totalPayback, repay, keepPaths: true } });
     lev = { bought: (sn.amountReceived - sb.amountReceived) / terms.btcPrice, payback: sn.totalPayback, repay, base: base.leverage.endBtcPerPath };
+  }
+  if (part === 'levers') { // "Make it safer": the options, and the answer's count to compare them with
+    const base = simulate(terms, s, settings, { countOnly: true }); await tick();
+    result.levers = [];
+    for (const l of levers) { result.levers.push({ id: l.id, value: l.value, p: pSale(simulate(l.terms, s, settings, { countOnly: true })) }); await tick(); }
+    result.levers.sort((a, b) => a.p - b.p);
+    result.leverBase = pSale(base);
+    return result;
+  }
+  if (part === 'extras') { // the slider and the trends; the answer itself (no trend, own LTV) comes from the same futures
+    const levTrends = buy && !settings.leverageBase;
+    const base = simulate(terms, s, settings, { leverage: levTrends, countOnly: !levTrends });
+    result.trends = [];
+    for (const trend of TRENDS) {
+      const sim = trend === 0 ? base : simulate(terms, s, settings, { trend, leverage: levTrends, countOnly: true });
+      result.trends.push({ trend, p: pSale(sim), more: levTrends && sim.leverage ? sim.leverage.more : null });
+      await tick();
+    }
+    result.slider = [];
+    for (const ltv of ltvGrid) {
+      const t = { ...terms, initialLtv: ltv, ...(terms.marginCallLtv && terms.marginCallLtv <= ltv ? { marginCallLtv: null } : {}) };
+      const own = Math.abs(ltv - terms.initialLtv) < 1e-9;
+      result.slider.push({ ltv, p: pSale(own ? base : simulate(t, s, settings, { countOnly: true })), btc: collateralBtc(t) });
+      await tick();
+    }
+    return result;
   }
   result.main = simulate(terms, s, settings, { samplePaths: 100, leverage: lev, riskCost: true }); // 5 × 20 for "show 20 other futures"
   await tick();
@@ -215,7 +250,7 @@ async function run(id, terms, settings, garch, post = postMessage) {
       await tick();
     }
   }
-  result.garchMc = simulate(terms, s, settings, { model: 'garch' }); await tick();
+  result.garchMc = simulate(terms, s, settings, { model: 'garch', countOnly: true }); await tick();
   { const { perStart, ...replay } = replayAll(s.hourly, terms); result.replay = { ...replay, lastStart: perStart.time.at(-1) ?? null }; } await tick(); // the per-start-day lists are not shown on the page
   result.stories = STORIES.map((iso) => story(s, terms, iso)).filter(Boolean);
   const lp = liquidationPrices(terms);
@@ -228,32 +263,33 @@ async function run(id, terms, settings, garch, post = postMessage) {
     p: gbmBarrierHitProbability({ s0: terms.btcPrice, barrier: lp.atStart, mu: s.sigma ** 2 / 2, sigma: s.sigma, years: loanDays(terms) / 365 }),
   };
   await tick();
+  if (part === 'main') return { ...result, levers: null, slider: null, trends: null };
   post({ type: 'partial', id, result: { ...result, levers: null, slider: null, trends: null } }); // the answer first
 
   // "Make it safer" uses the same random paths as the answer, so "your terms as they are" is exactly
   // the headline number and every option differs only by the one change it makes
   result.levers = [];
   for (const l of levers) {
-    result.levers.push({ id: l.id, value: l.value, p: simulate(l.terms, s, settings).pLiquidation });
+    result.levers.push({ id: l.id, value: l.value, p: pSale(simulate(l.terms, s, settings, { countOnly: true })) });
     await tick();
   }
   result.levers.sort((a, b) => a.p - b.p);
-  result.leverBase = result.main.pLiquidation;
+  result.leverBase = pSale(result.main);
   post({ type: 'partial', id, result: { ...result, slider: null } }); // the best option under the answer, before the rest
   // "Does the price trend matter?": the same loan at fixed yearly trends of the middle path.
   // Same random paths as the main answer, only shifted, so "no trend" is exactly the answer above.
   result.trends = [];
   for (const trend of TRENDS) {
-    const sim = trend === 0 ? result.main : simulate(terms, s, settings, { trend, leverage: buy && !settings.leverageBase }); // no trend rows for a refinancing's extra cash
+    const sim = trend === 0 ? result.main : simulate(terms, s, settings, { trend, leverage: buy && !settings.leverageBase, countOnly: true }); // no trend rows for a refinancing's extra cash
     // liquidated only, like the answer at the top (partial sales are shown separately there)
-    result.trends.push({ trend, p: sim.pLiquidation, more: sim.leverage && !settings.leverageBase ? sim.leverage.more : null });
+    result.trends.push({ trend, p: pSale(sim), more: sim.leverage && !settings.leverageBase ? sim.leverage.more : null });
     await tick();
   }
   result.slider = [];
   for (const ltv of ltvGrid) {
     const t = { ...terms, initialLtv: ltv, ...(terms.marginCallLtv && terms.marginCallLtv <= ltv ? { marginCallLtv: null } : {}) };
     const own = Math.abs(ltv - terms.initialLtv) < 1e-9;
-    result.slider.push({ ltv, p: own ? result.main.pLiquidation : simulate(t, s, settings).pLiquidation, btc: collateralBtc(t) });
+    result.slider.push({ ltv, p: pSale(own ? result.main : simulate(t, s, settings, { countOnly: true })), btc: collateralBtc(t) });
     await tick();
   }
   return result;

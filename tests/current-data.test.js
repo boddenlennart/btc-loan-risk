@@ -30,7 +30,7 @@ describe.skipIf(!hasData('USD') || !hasData('EUR'))('reference loans on the newe
       if (k.pMarginCall !== null) expect(k.pMarginCall).toBeLessThanOrEqual(1);
       // liquidation chance only grows month by month and ends at the total
       for (let i = 1; i < k.cumulativeByMonth.length; i++) expect(k.cumulativeByMonth[i]).toBeGreaterThanOrEqual(k.cumulativeByMonth[i - 1]);
-      expect(k.cumulativeByMonth.at(-1)).toBeCloseTo(k.pLiquidation, 9);
+      expect(k.cumulativeByMonth.at(-1)).toBeCloseTo(k.pLiquidation + k.pPartial, 9); // the first forced sale, full or partial (UAT finding 1)
       expect(k.cumulativeByMonth).toHaveLength(loanTerms(ref).durationMonths);
       const f = k.fanLastMonth; expect(f.q05 <= f.q25 && f.q25 <= f.q50 && f.q50 <= f.q75 && f.q75 <= f.q95).toBe(true);
       expect(k.samplePaths.count).toBe(100); // five sets of 20 for "show 20 other futures"
@@ -39,9 +39,10 @@ describe.skipIf(!hasData('USD') || !hasData('EUR'))('reference loans on the newe
       // a lower starting LTV never helps less than 3 points of random noise allow
       for (const l of k.levers.filter((x) => x.id === 'lowerLtv')) expect(l.p).toBeLessThanOrEqual(k.leverBase + 0.03);
       // "Make it safer" uses the answer's own paths: "your terms" and the slider at the visitor's LTV equal the headline exactly
-      expect(k.leverBase).toBe(k.pLiquidation);
+      // ("liquidated" = a forced sale, full or partial: UAT finding 1)
+      expect(k.leverBase).toBe(k.pLiquidation + k.pPartial);
       const own = k.slider.find((x) => Math.abs(x.ltv - loanTerms(ref).initialLtv) < 1e-9);
-      if (own) expect(own.p).toBe(k.pLiquidation);
+      if (own) expect(own.p).toBe(k.pLiquidation + k.pPartial);
       // the slider: higher LTV, never clearly lower risk
       for (let i = 1; i < k.slider.length; i++) expect(k.slider[i].p).toBeGreaterThanOrEqual(k.slider[i - 1].p - 0.03);
       if (loanTerms(ref).purpose === 'buy') {

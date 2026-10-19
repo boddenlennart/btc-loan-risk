@@ -86,6 +86,7 @@ export function fanChart(el, data) {
   const n = pts.length - 1;
   const maxY = Math.max(...pts.map((p) => p.q95), ...data.liq) * 1.05;
   const ticks = niceTicks(0, maxY);
+  fitLeft(pad, ticks.map(data.fmt));
   const top = ticks[ticks.length - 1] > maxY ? ticks[ticks.length - 1] : maxY;
   const x = (m) => pad.l + (m / n) * (W - pad.l - pad.r);
   const y = (v) => pad.t + (1 - v / top) * (H - pad.t - pad.b);
@@ -186,9 +187,21 @@ export function replayStrip(el, data) {
 }
 
 // shared axes for the price charts below: y = price, x = days of the loan
+// The left margin fits the widest price label ("US$200,000", "CZK 5,000,000", "200.000 €"), so no label is cut off
+// at the edge (UAT finding 5). Measured with the axis font; never narrower than the chart's own margin.
+let measureCtx = null;
+function fitLeft(pad, labels) {
+  if (!measureCtx) measureCtx = document.createElement('canvas').getContext('2d');
+  if (!measureCtx) return;
+  measureCtx.font = `12px ${getComputedStyle(document.body).fontFamily}`;
+  const widest = Math.max(...labels.map((s) => measureCtx.measureText(s).width));
+  pad.l = Math.max(pad.l, Math.ceil(widest) + 12);
+}
+
 function priceAxes(svg, { H, pad, days, maxY, fmt, monthLabel }) {
-  const x = (d) => pad.l + (d / days) * (W - pad.l - pad.r);
   const ticks = niceTicks(0, maxY);
+  fitLeft(pad, ticks.map(fmt));
+  const x = (d) => pad.l + (d / days) * (W - pad.l - pad.r);
   const top = Math.max(maxY, ticks[ticks.length - 1]);
   const y = (v) => pad.t + (1 - Math.min(v, top) / top) * (H - pad.t - pad.b);
   const months = Math.round(days / 30.44);

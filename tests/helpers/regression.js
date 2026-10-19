@@ -79,6 +79,11 @@ export async function resultsFor(ref, job, garch) {
     breakeven: breakevenReturn(t, { taxRateNow: t.taxRateNow, taxRateAtMaturity: t.taxRateAtMaturity }),
   };
   const res = await job.run(0, t, loanSettings(ref), garch, () => {});
+  // every point a chart draws is a finite number, and the real years start at today's price
+  // (a chart once started every line at infinity: ux/N-uat-report.md, finding 2)
+  const points = [...res.stories.flatMap((x) => x.weekly), ...(res.main.samplePaths || []).flatMap((x) => x.weekly), ...res.main.fanByMonth.flatMap((f) => [f.q05, f.q25, f.q50, f.q75, f.q95])];
+  if (points.some((x) => !Number.isFinite(x))) throw new Error(`${ref.id}: a chart point is not a finite number`);
+  if (res.stories.some((x) => x.weekly[0] !== 1)) throw new Error(`${ref.id}: a real year does not start at today's price`);
   const m = res.main;
   const risk = {
     pLiquidation: m.pLiquidation, pPartial: m.pPartial, pMarginCall: m.pMarginCall, cumulativeByMonth: m.cumulativeByMonth,

@@ -198,11 +198,26 @@ test('history section: real history first, a sentence linking it to the answer, 
   await expect(page.locator('#leverage .lv')).toHaveCount(5);
 });
 
-test('margin-call rule "sells part at once": the answer mentions partial sales', async ({ page }) => {
+test('partial sales count as liquidated: the big number counts every forced sale and says how many were full (UAT finding 1)', async ({ page }) => {
+  test.setTimeout(240_000); // several 36-month calculations
   await open(page); await waitDone(page);
   await page.locator('details.more summary').first().click();
-  await page.locator('#f-marginCallConsequence').selectOption('autoPartial');
-  await expect(page.locator('#headline-text')).toContainText('part of the BTC is liquidated');
+  await page.locator('#f-marginCallConsequence').selectOption('warningOnly');
+  await page.evaluate(() => document.querySelectorAll('#form details').forEach((d) => { d.open = true; })); // the form was rebuilt by the change
+  await page.locator('#form [data-set="liquidationSale"][data-val="partial"]').click();
+  await page.locator('[data-set="durationMonths"][data-val="36"]').click();
+  await waitDone(page);
+  await expect(page.locator('#headline-text')).toContainText(/liquidated in full or in part within 36 months; \d+ of them in full\./);
+  // the big number = the red and the orange dots, never a big 0 next to many partial sales
+  const big = Number(await page.locator('#headline-text em').textContent());
+  const dots = await page.locator('#dots .dots i.d-liq').count() + await page.locator('#dots .dots i.d-part').count();
+  expect(big).toBe(dots);
+  expect(big).toBeGreaterThan(30);
+  await expect(page.locator('#methods-line')).not.toContainText('real history since 2014 0 of 100');
+  // the same number in a comparison and in "Make it safer" (your terms as they are)
+  await expect(page.locator('#safer .lv.base b')).toHaveText(String(big));
+  await page.locator('#compare-btn').click(); await waitDone(page);
+  await expect(page.locator('#cmp tbody tr').first().locator('td').nth(0)).toContainText(String(big));
 });
 
 test('all sections open with their charts; donation QR, Impressum and privacy notice present', async ({ page }) => {
@@ -648,7 +663,7 @@ test('cost including the risk: in "What it costs", in the comparison of offers a
   const { errors } = await open(page); await waitDone(page);
   // the "Full cost" tile shows the same with the liquidation risk; a tap opens the explanation
   const tileLine = page.locator('#tiles a.tile-risk');
-  await expect(tileLine).toHaveText(/^with the liquidation risk:\s*about €[\d,]+ · [\d.]+% a year$/);
+  await expect(tileLine).toHaveText(/^with the liquidation risk:\s*about €[\d,]+ · [\d.]+%\sa\syear$/);
   const tileTotal = (await tileLine.textContent()).match(/about (€[\d,]+)/)[1];
   await tileLine.click();
   await expect(page.locator('#sec-cost')).toHaveAttribute('open', '');
@@ -665,7 +680,7 @@ test('cost including the risk: in "What it costs", in the comparison of offers a
   await page.locator('#compare-btn').click();
   await page.locator('#f-rateAnnual').fill('6');
   await waitDone(page);
-  const row = page.locator('#cmp tbody tr').filter({ hasText: 'Cost including the risk' });
+  const row = page.locator('#cmp tbody tr').filter({ hasText: 'Cost incl. liquidation risk' });
   await expect(row.locator('td')).toHaveCount(2);
   await expect(row.locator('td').nth(0)).toContainText(/€[\d,]+about [\d.]+% a year/);
   await expect(row.locator('td').nth(1)).toContainText(/€[\d,]+about [\d.]+% a year/);
@@ -677,11 +692,11 @@ test('cost including the risk: in "What it costs", in the comparison of offers a
   await page.getByRole('button', { name: 'A loan I already have' }).click();
   await page.locator('#f-loanAmount').fill('10000');
   await waitDone(page);
-  await expect(block).toContainText(/Including the liquidation risk: about €[\d,]+ for the 12 months left, instead of €1,000 interest\./);
+  await expect(block).toContainText(/Including the liquidation risk: about €[\d,]+ for the 12 months left, instead of €999\.96 interest\./);
   await expect(tileLine).toHaveText(/^with the liquidation risk:\s*about €[\d,]+$/); // no yearly rate for a loan already running
   await page.locator('#compare-btn').click();
   await waitDone(page);
-  await expect(page.locator('#cmp tbody tr').filter({ hasText: 'Cost including the risk' }).locator('td')).toHaveCount(2);
+  await expect(page.locator('#cmp tbody tr').filter({ hasText: 'Cost incl. liquidation risk' }).locator('td')).toHaveCount(2);
   expect(errors).toEqual([]);
 });
 
@@ -736,7 +751,7 @@ test('"Compare an offer" scrolls up to the table once; while the new offer is ca
     await expect(page.locator('#cmp')).toBeFocused();
     const settled = await page.evaluate(() => performance.now());
     await waitDone(page);
-    await expect(page.locator('#cmp tbody tr').filter({ hasText: 'Cost including the risk' }).locator('td').nth(1)).toContainText('€');
+    await expect(page.locator('#cmp tbody tr').filter({ hasText: 'Cost incl. liquidation risk' }).locator('td').nth(1)).toContainText('€');
     const rec = await page.evaluate(() => { clearInterval(window.sampler); return window.rec; });
     const after = rec.filter(([t]) => t > settled).map((r) => r[1]);
     expect(after.length).toBeGreaterThan(3);
@@ -746,7 +761,58 @@ test('"Compare an offer" scrolls up to the table once; while the new offer is ca
   }
 });
 
-test('German: Kosten inklusive Risiko', async ({ page }) => {
+test('opening on a slow phone: nothing jumps while the page is drawn (layout shift below 0.1, UAT finding 3)', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'slowing the processor needs Chromium');
+  await page.setViewportSize({ width: 375, height: 812 });
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 6 });
+  await page.addInitScript(() => { window.__cls = 0; new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; }).observe({ type: 'layout-shift', buffered: true }); });
+  await open(page); await waitDone(page);
+  await expect(page.locator('main')).toBeVisible();
+  expect(await page.evaluate(() => window.__cls)).toBeLessThan(0.1);
+});
+
+test('a share link that cannot be read says so instead of silently showing the example (UAT finding 9)', async ({ page }) => {
+  await open(page, { hash: '#s=%%%broken' }); await waitDone(page);
+  await expect(page.locator('#link-note')).toHaveText('This link could not be read, so the example is shown. Ask for a new link, or enter the terms yourself.');
+  await page.locator('#own-terms-link').click(); await page.locator('#f-loanAmount').fill('12000');
+  await expect(page.locator('#link-note')).toBeHidden(); // the visitor's own terms now
+  const fourOffers = '#s=' + Buffer.from(JSON.stringify({ v: 1, loanAmount: '20000', compare: { kind: 'offers', active: 0, names: [], offers: [{}, {}, {}, {}] } })).toString('base64url');
+  await page.goto('about:blank'); await open(page, { hash: fourOffers }); await waitDone(page);
+  await expect(page.locator('#link-note')).toHaveText('The comparison in this link could not be read, so only one offer is shown.');
+  await expect(page.locator('#f-loanAmount')).toHaveValue('20000');
+  const fine = '#s=' + Buffer.from(JSON.stringify({ v: 1, loanAmount: '20000' })).toString('base64url');
+  await page.goto('about:blank'); await open(page, { hash: fine }); await waitDone(page);
+  await expect(page.locator('#link-note')).toBeHidden();
+});
+
+test('screen readers: the tiles are a list, every "?" says what it explains, the tile link moves the focus (UAT finding 8)', async ({ page }) => {
+  await open(page); await waitDone(page);
+  const items = page.locator('#tiles[role="list"] > [role="listitem"]');
+  expect(await items.count()).toBe(await page.locator('#tiles .tile').count());
+  await expect(page.locator('#answer button.q')).toHaveAttribute('aria-label', 'More about this number');
+  await expect(page.locator('#sec-falls button.q')).toHaveAttribute('aria-label', 'More: 20 possible futures');
+  for (const b of await page.locator('main button.q').all()) expect(await b.getAttribute('aria-label')).not.toBe('More');
+  await page.locator('#tiles a.tile-risk').focus(); await page.keyboard.press('Enter');
+  await expect(page.locator('#risk-cost h4')).toBeFocused();
+});
+
+test('small details: the currency sits beside the amount, one precision for an existing loan\'s interest, the LTV hint (UAT findings 6 and 12)', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await open(page); await waitDone(page);
+  await page.locator('#own-terms-link').click();
+  await expect(page.locator('#ltv-interest-hint')).toContainText('Some lenders count the interest for the whole term in the starting LTV.');
+  await page.getByRole('button', { name: 'A loan I already have' }).click();
+  await page.locator('#f-loanAmount').fill('10000'); await waitDone(page);
+  // beside the input: both centred on the same line (Safari draws the menu a little shorter)
+  const mid = async (sel) => page.locator(sel).evaluate((e) => { const b = e.getBoundingClientRect(); return Math.round(b.top + b.height / 2); });
+  expect(Math.abs((await mid('#f-loanAmount')) - (await mid('#form [data-k="currency"]')))).toBeLessThanOrEqual(2);
+  await page.locator('#sec-cost > summary').click();
+  await expect(page.locator('#cost-body')).toContainText('of which €999.96 is interest');
+  await expect(page.locator('#risk-cost')).toContainText('instead of €999.96 interest');
+});
+
+test('German: Kosten inklusive Liquidationsrisiko', async ({ page }) => {
   await open(page, { lang: 'de' }); await waitDone(page);
   await page.locator('#sec-cost > summary').click();
   await expect(page.locator('#risk-cost')).toContainText(/Inklusive Liquidationsrisiko: etwa [\d.]+\s€ \(etwa [\d,]+\s% pro Jahr statt 11,6\s%\)\./);
@@ -799,14 +865,14 @@ test('"Show 20 other futures" goes through five different sets and says which on
   await open(page); await waitDone(page);
   await page.locator('#sec-falls > summary').click();
   const btn = page.locator('#other-paths');
-  await expect(btn).toHaveText('Show 20 other futures (2 of 5)');
+  await expect(btn).toHaveText('Show the next 20 futures (set 2 of 5)');
   const seen = new Set();
   for (let i = 0; i < 5; i++) {
     seen.add(await page.locator('#futures-chart svg').innerHTML());
     await btn.click();
   }
   expect(seen.size).toBe(5); // five different sets
-  await expect(btn).toHaveText('Show 20 other futures (2 of 5)'); // back to the first set
+  await expect(btn).toHaveText('Show the next 20 futures (set 2 of 5)'); // back to the first set
 });
 
 test('questions to ask the lender: a folded checklist tile after "Make it safer"; the closed line says what is inside', async ({ page }) => {
