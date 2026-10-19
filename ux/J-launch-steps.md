@@ -9,8 +9,12 @@ Everything here is done by you, in GitHub Desktop, on github.com and in the Clou
    - Close the keyboard ("Done"): the bar "xx of 100 liquidated · See the answer ↑" appears; tapping "See the answer" scrolls up.
    - The sun/moon button switches light and dark; reload: your choice stays.
    - Time the full answer after changing a number on an older phone (it should settle within a few seconds).
+   - Compare two offers, then end the comparison: you choose which offer stays, and a line confirms it.
+   - Change a number, close the tab, open the page again: the example is back (nothing kept). Tick "Remember my inputs" under your terms and repeat: your inputs are back.
+   - Open "How it works": the sample future, the volatility chart and the tables are readable; "Show the formulas" opens the maths.
 2. **Mail and donation (5 min).** Send yourself a test via "Help improve this page" → "Write e-mail" to boddenlennart@proton.me and check it arrives. Open your Bitcoin wallet's receive screen and confirm the address on the page (bc1qvj6c…pj8ld) is one of yours.
-3. **A short test with 3–5 people (S4, optional but advised).** Use round 1 of ux/E-test-plan.md: 15 minutes each, mainly "In your own words, what does the big number mean?".
+3. **Read the new texts (about 1–2 hours).** ux/review/texts-review.md lists every text, numbered, English and German side by side. About 250 are new since your review on 16 Oct (groups "Page: Insights", "Page: How it works", the legal texts, comparison). Note the number of anything unclear or wrong and send me the list.
+4. **A short test with 3–5 people (S4, optional but advised).** Use round 1 of ux/E-test-plan.md: 15 minutes each, mainly "In your own words, what does the big number mean?".
 
 ## 1. GitHub: settings the weekly update needs
 
