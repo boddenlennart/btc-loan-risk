@@ -56,7 +56,8 @@ Loss from this sale = `k·b · max(0, P_end − P_sale)` + `(1 − k)·b · P_en
 | How it works | New section "The cost of the risk" (texts below), after "The lender's rules in the simulation" |
 | Glossary | New entry "Cost of the risk" |
 | Insights | Item 7 renamed to "What liquidations cost since 2014", plus one sentence saying it measures what really happened (BTC's rise included), not the protection price on the check |
-| Tiles under the answer, share text | Unchanged (the answer stays about liquidation; no overload) |
+| Tiles under the answer | Added 19 Oct at the owner's request: under "Full cost" (new loan) or "Interest left" (existing loan) two small lines, "with the liquidation risk: about €X · Y% a year" (existing loan: amount only); a tap opens the explanation. The big number stays the contractual cost. |
+| Share text | Unchanged |
 
 ## 3. Texts (English drafts; German follows the same content)
 

@@ -646,8 +646,15 @@ test('edge cases: one month, a very long loan, too little BTC, a higher tax toda
 
 test('cost including the risk: in "What it costs", in the comparison of offers and of a refinancing, in both languages', async ({ page }) => {
   const { errors } = await open(page); await waitDone(page);
-  await page.locator('#sec-cost > summary').click();
+  // the "Full cost" tile shows the same with the liquidation risk; a tap opens the explanation
+  const tileLine = page.locator('#tiles a.tile-risk');
+  await expect(tileLine).toHaveText(/^with the liquidation risk:\s*about €[\d,]+ · [\d.]+% a year$/);
+  const tileTotal = (await tileLine.textContent()).match(/about (€[\d,]+)/)[1];
+  await tileLine.click();
+  await expect(page.locator('#sec-cost')).toHaveAttribute('open', '');
+  await expect(page.locator('#risk-cost h4')).toBeInViewport();
   const block = page.locator('#risk-cost');
+  await expect(block).toContainText(`Including the liquidation risk: about ${tileTotal} (`);
   await expect(block).toContainText(/Including the liquidation risk: about €[\d,]+ \(about [\d.]+% a year instead of 11\.6%\)\./);
   await expect(block).toContainText(/In \d+ of 100 futures it is zero/);
   await expect(block.locator('a')).toHaveAttribute('href', /method\/#risk-cost$/);
@@ -668,6 +675,7 @@ test('cost including the risk: in "What it costs", in the comparison of offers a
   await page.locator('#f-loanAmount').fill('10000');
   await waitDone(page);
   await expect(block).toContainText(/Including the liquidation risk: about €[\d,]+ for the 12 months left, instead of €1,000 interest\./);
+  await expect(tileLine).toHaveText(/^with the liquidation risk:\s*about €[\d,]+$/); // no yearly rate for a loan already running
   await page.locator('#compare-btn').click();
   await waitDone(page);
   await expect(page.locator('#cmp tbody tr').filter({ hasText: 'Cost including the risk' }).locator('td')).toHaveCount(2);

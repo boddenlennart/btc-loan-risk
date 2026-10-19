@@ -389,6 +389,10 @@ function onClick(e) {
     loadPrice(true);
   } else if (tgt.matches('[data-other-paths]')) {
     pathSet += 1; renderFutures();
+  } else if (tgt.closest('[data-open-risk]')) { // the tile line opens "What it costs" at its explanation
+    e.preventDefault();
+    $('#sec-cost').open = true;
+    requestAnimationFrame(() => $('#risk-cost').scrollIntoView({ block: 'start' }));
   } else if (tgt.closest('[data-open-terms]')) {
     setTermsOpen(true, { focus: true });
   } else if (tgt.closest('[data-share]')) {
@@ -570,7 +574,7 @@ function update() {
   runId++;
   if (compare) settings.compareTerms = compare.offers.map((_, i) => (i === compare.active ? null : validTermsOf(i)));
   const sameAsEmbedded = !compare && embeddedKey !== null && exampleKey(state) === embeddedKey;
-  if (sameAsEmbedded) { riskTerms = terms; riskSettings = settings; } // same answer, today's price for the charts
+  if (sameAsEmbedded) { riskTerms = terms; riskSettings = settings; if (lastRisk) renderTiles(terms); } // same answer, today's price for the charts (the tile line needs it)
   else if (lastRisk) document.body.classList.add('outdated');
   updateAnswerBar();
   if (!started) return;
@@ -800,12 +804,27 @@ const pastMarginCall = (tm) => tm.mode === 'existing' && !!tm.marginCallLtv && t
 // The yearly rate, also when it is beyond what the calculation resolves (absurd fees)
 const aprText = (x) => (x >= 9.99 ? `> ${pct(10, 0)}` : pct(x, 1));
 
+// Under "Full cost" / "Interest left": the same with the liquidation risk (ux/M-risk-cost-spec.md). It comes
+// from the simulation, so it shows "…" until the result for exactly these terms has arrived.
+// While a new result is being calculated, the previous line stays (dimmed with the whole answer), so nothing jumps.
+let lastTileRisk = '';
+function tileRiskLine(tm, s) {
+  const R = texts().results; const r = lastRisk;
+  let value = lastTileRisk || '…';
+  if (r && r.main && r.main.riskCost && riskTerms === tm) {
+    const x = riskTotal(tm, s, r.main.riskCost.value); const total = money0(round10(x.total), tm.currency);
+    value = tm.mode === 'existing' ? t('results.tileRiskExisting', { total }) : t('results.tileRiskValue', { total, rate: aprText(x.rate) });
+    lastTileRisk = value;
+  }
+  return `<a class="s tile-risk" href="#risk-cost" data-open-risk>${esc(R.tileRiskLabel)}<br>${esc(value)}</a>`;
+}
+
 // Key figures under the answer. All of them need no simulation, so they follow typing at once.
 function renderTiles(tm) {
   const R = texts().results; const cur = tm.currency;
   const { lp, mp, rules } = salePrices(tm);
   const s = loanSummary(costTerms(tm));
-  const tile = (label, value, sub, cls = '') => `<div class="tile${cls}"><div class="label">${esc(label)}</div><div class="v">${esc(value)}</div><div class="s">${esc(sub)}</div></div>`;
+  const tile = (label, value, sub, cls = '', extra = '') => `<div class="tile${cls}"><div class="label">${esc(label)}</div><div class="v">${esc(value)}</div><div class="s">${esc(sub)}</div>${extra}</div>`;
   let html = tile(rules.liquidationSale === 'partial' ? R.tilePartSold : R.tileSold, money0(lp.atStart, cur), t('results.tileSoldSub', { drop: `−${pct(dropToLiquidation(tm), 0)}` }));
   const marginTile = mp ? tile(R.tileMargin, money0(mp.atStart, cur), rules.behaviour === 'autoPartial' ? R.tileMarginAuto : rules.afterCure ? t('results.tileMarginHours', { hours: tm.curePeriodHours }) : R.tileMarginWarning, ' desk-only') : '';
   const pastMargin = pastMarginCall(tm);
@@ -813,11 +832,11 @@ function renderTiles(tm) {
   $('#now-note').hidden = !pastMargin;
   $('#now-note').textContent = pastMargin ? t('results.nowAboveMargin', { ltv: pct(tm.initialLtv, 0), mc: pct(tm.marginCallLtv, 0) }) : '';
   if (tm.mode === 'existing') {
-    html += tile(R.tileInterest, money0(s.totalInterest, cur), R.tileInterestSub);
+    html += tile(R.tileInterest, money0(s.totalInterest, cur), R.tileInterestSub, '', tileRiskLine(tm, s));
     html += !mp ? '' : pastMargin ? tile(R.tileMargin, money0(mp.atStart, cur), R.tileMarginNow) : marginTile.replace(' desk-only', '');
   } else {
     html += marginTile;
-    html += tile(R.tileCost, money0(s.totalCost, cur), t('results.tileCostSub', { apr: aprText(s.effectiveApr) }));
+    html += tile(R.tileCost, money0(s.totalCost, cur), t('results.tileCostSub', { apr: aprText(s.effectiveApr) }), '', tileRiskLine(tm, s));
     const rise = tm.purpose === 'buy' ? s.totalPayback / s.amountReceived - 1 : breakevenReturn(costTerms(tm), { taxRateNow: tm.taxRateNow, taxRateAtMaturity: tm.taxRateAtMaturity });
     html += tile(tm.purpose === 'buy' ? R.tileBreakevenBuy : R.tileBreakeven, t('results.tileBreakevenValue', { rise: signedPct(rise, 0) }), R.tileBreakevenSub);
   }
@@ -989,6 +1008,7 @@ function renderRisk() {
   const r = lastRisk; const tm = riskTerms;
   if (!r || !tm || r.currency !== tm.currency) return;
   document.body.classList.remove('outdated');
+  if (tm === lastTerms) renderTiles(tm); // the tile line with the liquidation risk needs this result
   const R = texts().results; const cur = tm.currency; const months = tm.durationMonths;
   const m = r.main;
   const [nLiq, nPart, nMargin, nNone] = heroSplit(m);
