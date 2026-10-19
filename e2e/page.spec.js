@@ -718,6 +718,34 @@ test('refinancing to buy more BTC: the extra cash is compared, future by future,
   expect(errors).toEqual([]);
 });
 
+test('"Compare an offer" scrolls up to the table once; while the new offer is calculated, nothing moves (computer and phone)', async ({ page }) => {
+  for (const width of [1280, 375]) {
+    await page.setViewportSize({ width, height: 800 });
+    await open(page); await waitDone(page);
+    const btn = page.locator('#compare-btn');
+    await btn.scrollIntoViewIfNeeded();
+    // record the table's position from the click until the new offer's answer has arrived
+    await page.evaluate(() => {
+      window.rec = [];
+      window.sampler = setInterval(() => { const c = document.querySelector('#cmp'); if (!c.hidden) window.rec.push([performance.now(), Math.round(c.getBoundingClientRect().top), Math.round(window.scrollY)]); }, 20);
+    });
+    await btn.click();
+    // the one wanted scroll: the table's top lands just below the sticky top bar
+    await expect.poll(async () => page.evaluate(() => document.querySelector('#cmp').getBoundingClientRect().top - document.querySelector('.top').getBoundingClientRect().bottom), { timeout: 5000 }).toBeGreaterThanOrEqual(0);
+    await expect.poll(async () => page.evaluate(() => document.querySelector('#cmp').getBoundingClientRect().top - document.querySelector('.top').getBoundingClientRect().bottom), { timeout: 5000 }).toBeLessThanOrEqual(30);
+    await expect(page.locator('#cmp')).toBeFocused();
+    const settled = await page.evaluate(() => performance.now());
+    await waitDone(page);
+    await expect(page.locator('#cmp tbody tr').filter({ hasText: 'Cost including the risk' }).locator('td').nth(1)).toContainText('€');
+    const rec = await page.evaluate(() => { clearInterval(window.sampler); return window.rec; });
+    const after = rec.filter(([t]) => t > settled).map((r) => r[1]);
+    expect(after.length).toBeGreaterThan(3);
+    expect(Math.max(...after) - Math.min(...after), `${width} px: table top after the scroll at ${[...new Set(after)].join(', ')}`).toBeLessThanOrEqual(2);
+    if (width === 1280) await expect(page.locator('#f-loanAmount')).toBeInViewport(); // the terms stay beside the table
+    await page.locator('[data-compare-keep="0"]').click();
+  }
+});
+
 test('German: Kosten inklusive Risiko', async ({ page }) => {
   await open(page, { lang: 'de' }); await waitDone(page);
   await page.locator('#sec-cost > summary').click();

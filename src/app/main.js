@@ -675,7 +675,16 @@ function startCompare() {
     ? { ...structuredClone(state), mode: 'new', ltvInput: 'btc', originationFee: { value: 0, type: 'percent' }, purpose: 'spend', refi: { change: 'same', extra: '', back: '', exitFee: '', transferFee: '' } }
     : structuredClone(state));
   setActive(1);
-  setTermsOpen(true, { focus: true });
+  setTermsOpen(true);
+  toCompare();
+}
+// After "Compare an offer": the table appears above the answer, out of sight from the button, so the
+// page scrolls up to it once. The table then takes the focus: it is the fixed point that keepInPlace
+// holds still while the new offer is calculated (and screen readers land on it).
+function toCompare() {
+  const el = $('#cmp');
+  el.focus({ preventScroll: true });
+  el.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
 }
 function addOffer() {
   if (!compare || compare.kind !== 'offers' || compare.offers.length >= 3) return;
@@ -793,7 +802,7 @@ function renderCompare() {
     lastCmp = { kind: 'refi', months: span, a: nLiq[0] ?? wait, b: sameSpan ?? wait };
   }
   el.hidden = false;
-  el.innerHTML = `<div class="label">${esc(compare.kind === 'refi' ? Cm.titleRefi : Cm.title)} · ${esc(Cm.sameFutures)}</div>
+  el.innerHTML = `<div class="label" id="cmp-label">${esc(compare.kind === 'refi' ? Cm.titleRefi : Cm.title)} · ${esc(Cm.sameFutures)}</div>
     <div class="table-wrap" tabindex="0" role="region" aria-label="${esc(compare.kind === 'refi' ? Cm.titleRefi : Cm.title)}"><table class="cmp"><thead>${head}</thead><tbody>${rows}</tbody></table></div>
     <p class="meta">${esc(Cm.noWinner)}${notes.length ? ` ${notes.map(esc).join(' ')}` : ''}</p>
     <p class="actions">${compare.kind === 'offers' && n < 3 ? `<button type="button" class="secondary" data-compare-add>${esc(Cm.addC)}</button>` : ''}
