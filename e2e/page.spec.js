@@ -397,11 +397,50 @@ test('refinancing: current loan vs. a cash-out offer, compared over the same mon
   expect(Number(refiSpan)).toBeGreaterThanOrEqual(Number(cur));
   expect(Number(whole)).toBeGreaterThanOrEqual(Number(refiSpan));
   expect(Number(whole)).toBe(await headlineNumber(page));
-  await expect(rows.nth(3)).toContainText('€2,000'); // you receive now
+  await expect(rows.filter({ hasText: 'At the start' })).toContainText('You receive €2,000');
   // too much extra cash: the new loan would start in a margin call; the reason is shown at once
   await page.locator('#f-refiExtra').fill('5000');
   await expect(page.locator('#ltv-today')).toContainText('starting LTV');
   await expect(page.locator('#error-banner')).toBeVisible();
+});
+
+test('refinancing: switching costs, BTC taken back and different lengths are shown where the visitor looks', async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.getByRole('button', { name: 'A loan I already have' }).click();
+  await page.locator('#f-loanAmount').fill('10000');
+  await waitDone(page);
+  await page.locator('#compare-btn').click();
+  await expect(page.locator('#form')).toContainText('The terms below start as a copy of your current loan.');
+  // the slider cannot change a refinancing: it is replaced by a pointer to "What changes?"
+  await expect(page.locator('#ltv-slider')).toBeHidden();
+  await expect(page.locator('#safer')).toContainText('Change this in your terms under "What changes?"');
+  await page.locator('[data-set="refi.change"][data-val="more"]').click();
+  await page.locator('#f-refiExtra').fill('2000');
+  await page.locator('#form details[data-remember="switch"] summary').click();
+  await page.locator('#f-refiExitFee').fill('200');
+  await waitDone(page);
+  const start = page.locator('#cmp tbody tr').filter({ hasText: 'At the start' });
+  await expect(start).toContainText('You receive €1,800');
+  // the cost of the refinancing includes the switching costs everywhere: table, tile and "What it costs"
+  const cost = page.locator('#cmp tbody tr').filter({ hasText: 'Full cost' });
+  await expect(cost).toContainText('€1,400');
+  await expect(cost).toContainText('interest, 12 months left');
+  await expect(page.locator('#tiles')).toContainText('€1,400');
+  await expect(page.locator('#cost-body')).toContainText('Of the new loan of €12,000.00, €10,000.00 repays your current loan. At the start: you receive €1,800.00.');
+  await expect(page.locator('#cost-body')).toContainText('The new loan costs €1,400.00 if nothing goes wrong, switching costs included');
+  await expect(page.locator('#cost-body')).toContainText('Keeping the loan only beats selling BTC today');
+  await expect(page.locator('#cmp tbody tr').filter({ hasText: 'Interest rate' })).toBeVisible();
+  // BTC taken back is shown with the money paid at the start
+  await page.locator('[data-set="refi.change"][data-val="back"]').click();
+  await page.locator('#f-refiBack').fill('0.03');
+  await expect(start).toContainText('You get 0.0300 BTC back, you pay €200');
+  // a shorter new loan: its number is marked as covering only its own months
+  await page.locator('[data-set="durationMonths"][data-val="6"]').click();
+  await waitDone(page);
+  await expect(page.locator('#cmp tbody tr').first()).toContainText('only its 6 months');
+  await expect(page.locator('#cmp .meta')).toContainText('The new loan runs 6 months, 12 are left on the current one.');
+  await page.locator('[data-set="durationMonths"][data-val="24"]').click();
+  await expect(page.locator('#cmp .meta')).toContainText('Its full cost covers all 24 months, the current loan\'s only 12.');
 });
 
 test('phone: while typing the terms, a bar shows the answer and the number before the change; "See the answer" scrolls up', async ({ page }) => {

@@ -15,7 +15,7 @@ import { lenderRules, partialSaleBtc } from '../engine/lender.js';
 import { getSpotPrice } from '../live/price.js';
 import { setData as jobSetData, run as jobRun } from './riskjob.js';
 import { encodeState, decodeLink } from './share.js';
-import { toTerms, numOr, today, exampleKey, switchCosts } from './terms.js';
+import { toTerms, numOr, today, exampleKey, switchCosts, withSwitching } from './terms.js';
 import { initShell, renderShell, setTheme } from './shell.js';
 import { dataAge } from '../data/candles.js';
 import { gunzipSync, strFromU8 } from 'fflate';
@@ -260,7 +260,8 @@ function buildForm() {
       ${ch === 'more' ? numField('refi.extra', Cm.extra, cur, { id: 'refiExtra' }) : ''}
       ${ch === 'back' ? numField('refi.back', Cm.backBtc, 'BTC', { id: 'refiBack' }) : ''}
       <p class="hint" id="ltv-today"></p>
-      <p class="refi-note" id="refi-note" role="status" hidden></p>`;
+      <p class="refi-note" id="refi-note" role="status" hidden></p>
+      <p class="hint">${esc(Cm.copyHint)}</p>`;
   } else {
     top = `${compare ? '' : seg('mode', [['new', fm.modeNew], ['existing', fm.modeExisting]], '', { id: 'mode' })}
     <p class="hint"><button type="button" class="link" aria-expanded="false" aria-controls="where">${esc(t('ui.whereLink'))}</button></p>
@@ -699,6 +700,19 @@ function heroSplit(m) {
   return splitTo100([m.pLiquidation, m.pPartial, pMarginOnly, 1 - m.pLiquidation - m.pPartial - pMarginOnly]);
 }
 let lastCmp = null; // the numbers in the table, for the share summary
+// What changes hands when a refinancing starts: the cash left after repaying the current loan (`owed`)
+// and paying fee and switching costs (`sum` from the terms with switching costs), and the BTC taken back.
+function startText(sum, form, owed, cur, fmt = money0) {
+  const cash = sum.amountReceived - owed;
+  const back = form.refi && form.refi.change === 'back' ? numOr(form.refi.back, 0) : 0;
+  const parts = [];
+  if (back > 0) parts.push(t('compare.nowBtc', { btc: num(back, 4) }));
+  if (cash < -0.5) parts.push(t('compare.nowPay', { amount: fmt(-cash, cur) }));
+  else if (cash > 0.5 || !parts.length) parts.push(t('compare.nowGet', { amount: fmt(Math.max(0, cash), cur) }));
+  return parts.join(', ');
+}
+// The cost figures of the shown offer: a refinancing offer carries its switching costs like a fee.
+const costTerms = (tm) => (state.refi ? withSwitching(tm, switchCosts(state)) : tm);
 function renderCompare() {
   const el = $('#cmp');
   $('#compare-btn').hidden = !!compare;
@@ -716,13 +730,16 @@ function renderCompare() {
   const head = `<tr><td></td>${idx.map((i) => `<th scope="col"><button type="button" class="col${i === compare.active ? ' active' : ''}" data-offer="${i}" aria-pressed="${i === compare.active}">${esc(offerName(i))}</button></th>`).join('')}</tr>`;
   const row = (label, sub, cells, cls = '') => `<tr${cls ? ` class="${cls}"` : ''}><th scope="row">${esc(label)}${sub ? `<small>${esc(sub)}</small>` : ''}</th>${cells.join('')}</tr>`;
   const sold = idx.map((i) => (T[i] ? cell(esc(money0(liquidationPrices(T[i]).atStart, cur)), `−${pct(dropToLiquidation(T[i]), 0)}`) : cell(Cm.fixTerms)));
+  const marginRow = row(Cm.rowMargin, '', idx.map((i) => { const mp = T[i] && marginCallPrices(T[i]); if (!mp) return cell(dash); const r = lenderRules(T[i]); return cell(esc(money0(mp.atStart, cur)), r.behaviour === 'autoPartial' ? texts().results.tileMarginAuto : r.afterCure ? t('results.tileMarginHours', { hours: T[i].curePeriodHours }) : texts().results.tileMarginWarning); }), 'desk-only');
+  const rateRow = row(F().rateAnnual.label, '', idx.map((i) => (!T[i] ? cell(dash) : T[i].rate.type === 'fixed' ? cell(esc(pct(T[i].rate.annual, 1)), t('ui.perYear'))
+    : cell(esc(pct(T[i].rate.path[0].annual, 1)), texts().form.rateChanges))));
   let rows = ''; const notes = [];
   if (compare.kind === 'offers') {
     rows += row(Cm.rowLiq, '', idx.map((i) => cell(T[i] ? big(nLiq[i] ?? wait) : dash, T[i] ? t('compare.withinMonths', { months: T[i].durationMonths }) : '')));
     rows += row(Cm.rowSold, '', sold);
     rows += row(Cm.rowCost, '', idx.map((i) => { if (!T[i]) return cell(dash); const s = loanSummary(T[i]); return cell(esc(money0(s.totalCost, cur)), t('compare.perYear', { apr: pct(s.effectiveApr, 1) })); }));
     rows += row(Cm.rowReceive, '', idx.map((i) => cell(T[i] ? esc(money0(loanSummary(T[i]).amountReceived, cur)) : dash)));
-    rows += row(Cm.rowMargin, '', idx.map((i) => { const mp = T[i] && marginCallPrices(T[i]); if (!mp) return cell(dash); const r = lenderRules(T[i]); return cell(esc(money0(mp.atStart, cur)), r.behaviour === 'autoPartial' ? texts().results.tileMarginAuto : r.afterCure ? t('results.tileMarginHours', { hours: T[i].curePeriodHours }) : texts().results.tileMarginWarning); }), 'desk-only');
+    rows += marginRow; rows += rateRow;
     const ok = T.filter(Boolean);
     if (new Set(ok.map((x) => Math.round(x.loanAmount))).size > 1) notes.push(Cm.diffAmount);
     if (new Set(ok.map((x) => x.durationMonths)).size > 1) notes.push(Cm.diffMonths);
@@ -731,13 +748,19 @@ function renderCompare() {
     const cur0 = T[0]; const span = cur0 ? cur0.durationMonths : null;
     const m1 = mainOf(1);
     const sameSpan = T[1] && m1 ? (span <= T[1].durationMonths ? Math.round(m1.cumulativeByMonth[span - 1] * 100) : nLiq[1]) : null;
-    rows += row(Cm.rowLiq, span ? t('compare.nextMonths', { months: span }) : '', [cell(T[0] ? big(nLiq[0] ?? wait) : dash), cell(T[1] ? big(sameSpan ?? wait) : dash)]);
-    rows += row(Cm.rowLiq, T[1] ? t('compare.wholeTerm', { months: T[1].durationMonths }) : '', [cell(dash), cell(T[1] ? big(nLiq[1] ?? wait) : dash)]);
+    const m1Months = T[1] ? T[1].durationMonths : null; const shorter = T[1] && span && m1Months < span;
+    rows += row(Cm.rowLiq, span ? t('compare.nextMonths', { months: span }) : '', [cell(T[0] ? big(nLiq[0] ?? wait) : dash), cell(T[1] ? big(sameSpan ?? wait) : dash, shorter ? t('compare.onlyMonths', { months: m1Months }) : '')]);
+    rows += row(Cm.rowLiq, T[1] ? t('compare.wholeTerm', { months: m1Months }) : '', [cell(dash), cell(T[1] ? big(nLiq[1] ?? wait) : dash)]);
     rows += row(Cm.rowSold, '', sold);
+    rows += marginRow; rows += rateRow;
     const refiForm1 = compare.active === 1 ? state : compare.offers[1];
-    rows += row(Cm.rowReceiveNow, '', [cell(dash), cell(T[1] && cur0 ? esc(money0(loanSummary(T[1]).amountReceived - cur0.loanAmount - switchCosts(refiForm1), cur)) : dash)]);
-    rows += row(Cm.rowCost, '', [cell(cur0 ? esc(money0(loanSummary(cur0).totalInterest, cur)) : dash, Cm.interestLeft), cell(T[1] ? esc(money0(loanSummary(T[1]).totalCost + switchCosts(refiForm1), cur)) : dash, Cm.inclSwitching)]);
-    if (T[1] && span && T[1].durationMonths < span) notes.push(Cm.shorterRefi);
+    const s1 = T[1] ? loanSummary(withSwitching(T[1], switchCosts(refiForm1))) : null;
+    const startCell = s1 && cur0 ? startText(s1, refiForm1, cur0.loanAmount, cur) : '';
+    rows += row(Cm.rowReceiveNow, '', [cell(dash), cell(startCell ? esc(startCell[0].toUpperCase() + startCell.slice(1)) : dash)]);
+    rows += row(Cm.rowCost, '', [cell(cur0 ? esc(money0(loanSummary(cur0).totalInterest, cur)) : dash, cur0 ? t('compare.interestLeft', { months: span }) : ''),
+      cell(s1 ? esc(money0(s1.totalCost, cur)) : dash, s1 ? t('compare.inclSwitching', { months: m1Months, apr: pct(s1.effectiveApr, 1) }) : '')]);
+    if (shorter) notes.push(t('compare.shorterRefi', { m: m1Months, n: span }));
+    if (T[1] && span && m1Months > span) notes.push(t('compare.longerRefi', { m: m1Months, n: span }));
     lastCmp = { kind: 'refi', months: span, a: nLiq[0] ?? wait, b: sameSpan ?? wait };
   }
   el.hidden = false;
@@ -763,7 +786,7 @@ function partialAt(tm, price) {
 function renderTiles(tm) {
   const R = texts().results; const cur = tm.currency;
   const { lp, mp, rules } = salePrices(tm);
-  const s = loanSummary(tm);
+  const s = loanSummary(costTerms(tm));
   const tile = (label, value, sub, cls = '') => `<div class="tile${cls}"><div class="label">${esc(label)}</div><div class="v">${esc(value)}</div><div class="s">${esc(sub)}</div></div>`;
   let html = tile(rules.liquidationSale === 'partial' ? R.tilePartSold : R.tileSold, money0(lp.atStart, cur), t('results.tileSoldSub', { drop: `−${pct(dropToLiquidation(tm), 0)}` }));
   const marginTile = mp ? tile(R.tileMargin, money0(mp.atStart, cur), rules.behaviour === 'autoPartial' ? R.tileMarginAuto : rules.afterCure ? t('results.tileMarginHours', { hours: tm.curePeriodHours }) : R.tileMarginWarning, ' desk-only') : '';
@@ -772,8 +795,8 @@ function renderTiles(tm) {
     html += mp ? marginTile.replace(' desk-only', '') : '';
   } else {
     html += marginTile;
-    html += tile(R.tileCost, money0(s.totalCost + switchCosts(state), cur), t('results.tileCostSub', { apr: pct(s.effectiveApr, 1) }));
-    const rise = tm.purpose === 'buy' ? s.totalPayback / s.amountReceived - 1 : breakevenReturn(tm, { taxRateNow: tm.taxRateNow, taxRateAtMaturity: tm.taxRateAtMaturity });
+    html += tile(R.tileCost, money0(s.totalCost, cur), t('results.tileCostSub', { apr: pct(s.effectiveApr, 1) }));
+    const rise = tm.purpose === 'buy' ? s.totalPayback / s.amountReceived - 1 : breakevenReturn(costTerms(tm), { taxRateNow: tm.taxRateNow, taxRateAtMaturity: tm.taxRateAtMaturity });
     html += tile(tm.purpose === 'buy' ? R.tileBreakevenBuy : R.tileBreakeven, t('results.tileBreakevenValue', { rise: signedPct(rise, 0) }), R.tileBreakevenSub);
   }
   $('#tiles').innerHTML = html;
@@ -862,23 +885,25 @@ window.addEventListener('resize', layoutLadder);
 
 function renderCost() {
   const tm = lastTerms; const cur = tm.currency; const C = texts().cost;
-  const s = loanSummary(tm);
+  const ct = costTerms(tm); const s = loanSummary(ct);
   const existing = tm.mode === 'existing';
+  const owed = state.refi ? toTerms(formOf(0)).terms.loanAmount : 0;
   const rows = s.schedule.map((r) => `<tr><td>${r.month}</td><td>${esc(isoDate(r.date))}</td><td>${money(r.interest, cur)}</td><td>${money(r.principal, cur)}</td><td>${money(r.payment, cur)}</td><td>${money(r.balanceAfter, cur)}</td></tr>`).join('');
   let html = `<p>${esc(existing ? t('cost.lineExisting', { payback: money(s.totalPayback, cur), interest: money(s.totalInterest, cur) })
+    : state.refi ? t('cost.lineRefi', { amount: money(tm.loanAmount, cur), owed: money(owed, cur), now: startText(s, state, owed, cur, money), payback: money(s.totalPayback, cur), cost: money(s.totalCost, cur), apr: pct(s.effectiveApr, 1) })
     : t('cost.line', { received: money(s.amountReceived, cur), payback: money(s.totalPayback, cur), cost: money(s.totalCost, cur), apr: pct(s.effectiveApr, 1) }))}</p>
     <p class="hint">${esc(C.timingNote)}</p>
     <details class="table-details" data-remember="plan"${openDetails.has('plan') ? ' open' : ''}><summary>${esc(C.schedule)}</summary><div class="table-wrap" tabindex="0" role="region" aria-label="${esc(t('ui.showTable'))}"><table><thead><tr>${C.scheduleHead.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></details>`;
   if (tm.purpose !== 'buy') {
-    html += `<h4>${esc(texts().sections.borrowOrSell)}</h4><p>${esc(C.sellIntro)}</p>
-      <p class="big-line">${esc(t('cost.breakeven', { rise: pct(breakevenReturn(tm, { taxRateNow: tm.taxRateNow, taxRateAtMaturity: tm.taxRateAtMaturity }), 1) }))}</p>
+    html += `<h4>${esc(texts().sections.borrowOrSell)}</h4><p>${esc(state.refi ? C.sellIntroRefi : C.sellIntro)}</p>
+      <p class="big-line">${esc(t('cost.breakeven', { rise: pct(breakevenReturn(ct, { taxRateNow: tm.taxRateNow, taxRateAtMaturity: tm.taxRateAtMaturity }), 1) }))}</p>
       <div class="pair tax">${numField('taxRateNow', C.taxNow, '%')}${numField('taxRateAtMaturity', C.taxLater, '%')}</div><p class="hint">${esc(C.taxNote)}</p>`;
   } else {
     html += '<div id="leverage"></div>';
   }
   const active = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.k : null;
   if (active === 'taxRateNow' || active === 'taxRateAtMaturity') { // don't rebuild the field being typed in
-    const bl = $('#cost-body .big-line'); if (bl) bl.textContent = t('cost.breakeven', { rise: pct(breakevenReturn(tm, { taxRateNow: tm.taxRateNow, taxRateAtMaturity: tm.taxRateAtMaturity }), 1) });
+    const bl = $('#cost-body .big-line'); if (bl) bl.textContent = t('cost.breakeven', { rise: pct(breakevenReturn(ct, { taxRateNow: tm.taxRateNow, taxRateAtMaturity: tm.taxRateAtMaturity }), 1) });
     return;
   }
   $('#cost-body').innerHTML = html;
@@ -1003,7 +1028,7 @@ function renderSafer() {
   const posOf = (ltv) => Math.round(((ltv - lo) / (hi - lo)) * 1000);
   const nearest = (pos) => grid.reduce((b, g, i) => (Math.abs(posOf(g.ltv) - pos) < Math.abs(posOf(grid[b].ltv) - pos) ? i : b), 0);
   const tickLtvs = []; for (let x = Math.ceil(lo * 10 - 1e-9) / 10; x <= hi + 1e-9; x += 0.1) tickLtvs.push(Math.round(x * 100) / 100);
-  el.innerHTML = `<div class="slider"><label for="ltv-slider" id="slider-line">${esc(line(idx))}</label>
+  el.innerHTML = `${state.refi ? `<p class="hint">${esc(R.sliderRefi)}</p>` : ''}<div class="slider"${state.refi ? ' hidden' : ''}><label for="ltv-slider" id="slider-line">${esc(line(idx))}</label>
     <input id="ltv-slider" type="range" min="0" max="1000" step="1" value="${posOf(grid[idx].ltv)}" style="--fill:${posOf(grid[idx].ltv) / 10}%">
     <div class="ticks" aria-hidden="true">${tickLtvs.map((x) => `<span style="--at:${posOf(x) / 1000}">${pct(x, 0)}</span>`).join('')}</div>
     <p class="hint">${esc(R.sliderNote)}</p></div>

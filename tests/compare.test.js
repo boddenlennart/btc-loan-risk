@@ -4,7 +4,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import * as job from '../src/app/riskjob.js';
 import { loadHourly, hasData } from './helpers/history.js';
 import { toBase64, fitGarch } from './helpers/regression.js';
-import { toTerms, refiForm, switchCosts } from '../src/app/terms.js';
+import { toTerms, refiForm, switchCosts, withSwitching } from '../src/app/terms.js';
 import { EXAMPLE_FORM } from '../src/content/examples.js';
 import { loanSummary, liquidationPrices } from '../src/engine/loan.js';
 
@@ -30,6 +30,12 @@ describe('refinancing terms (no data needed)', () => {
     const { terms } = toTerms({ ...EXAMPLE_FORM, refi: { change: 'back', back: '0.05' } }, { base: current });
     expect(terms.loanAmount).toBe(10000);
     expect(terms.initialLtv).toBeCloseTo(10000 / (0.23 * 70000), 12);
+  });
+  it('switching costs count like a fee in the cost figures: less received, the same payback, a higher cost', () => {
+    const tm = { loanAmount: 10000, originationFee: { type: 'percent', value: 0.01 } };
+    expect(withSwitching(tm, 0)).toBe(tm);
+    expect(withSwitching(tm, 220).originationFee).toEqual({ type: 'fixed', value: 320 });
+    expect(withSwitching({ loanAmount: 10000 }, 50).originationFee).toEqual({ type: 'fixed', value: 50 });
   });
   it('switching costs add up the early-repayment fee and other costs, and nothing else', () => {
     expect(switchCosts({ refi: { exitFee: '120', transferFee: 30 } })).toBe(150);

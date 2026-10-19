@@ -21,6 +21,15 @@ export function refiForm(r, base) {
  *  (early-repayment fee of the current loan, transfer and other costs), in money. */
 export const switchCosts = (r) => (r && r.refi ? numOr(r.refi.exitFee, 0) + numOr(r.refi.transferFee, 0) : 0);
 
+/** Engine terms with the switching costs added to the origination fee, for the cost figures only
+ *  (amount received, full cost, yearly rate, breakeven). The simulation keeps the plain terms. */
+export function withSwitching(terms, costs) {
+  if (!costs) return terms;
+  const f = terms.originationFee ?? { type: 'percent', value: 0 };
+  const fee = f.type === 'fixed' ? f.value : terms.loanAmount * f.value;
+  return { ...terms, originationFee: { type: 'fixed', value: fee + costs } };
+}
+
 /** Form state -> engine terms (fractions) and simulation settings.
  *  `base`: for a refinancing offer, the current loan it starts from. */
 export function toTerms(form, { base = null } = {}) {
