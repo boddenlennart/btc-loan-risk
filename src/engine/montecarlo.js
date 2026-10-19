@@ -2,8 +2,9 @@
 // change day by day (because unpaid interest makes the debt grow).
 //   model 'gbm'       : textbook model, params { mu, sigma } (yearly, same convention as barrier.js)
 //   model 'bootstrap' : glues together random blocks of real past days,
-//                       params { returns, lowRel, blockDays, weights? } from history.dailyReturns;
-//                       weights (history.recencyWeights) make recent blocks more likely
+//                       params { returns, lowRel, blockDays, weights?, trace? } from history.dailyReturns;
+//                       weights (history.recencyWeights) make recent blocks more likely; trace (an
+//                       array) collects where each drawn block starts (for the "one future" chart)
 //   model 'garch'     : GARCH(1,1)-t, params from garch.fitGarchT
 // Within a day, gbm and garch draw the day's low from a Brownian bridge;
 // bootstrap uses the real day's low.
@@ -88,7 +89,7 @@ function makeStepper(model, params, rng) {
     let pos = 0;
     let left = 0;
     return () => {
-      if (left === 0) { pos = pick(); left = block; }
+      if (left === 0) { pos = pick(); left = block; if (params.trace) params.trace.push(pos); }
       const out = [returns[pos], Math.min(lowRel[pos], 0, returns[pos])];
       pos++; left--;
       return out;

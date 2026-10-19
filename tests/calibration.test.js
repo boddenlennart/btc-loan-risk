@@ -17,6 +17,7 @@ import { describe, it, expect } from 'vitest';
 import { runMonteCarlo } from '../src/engine/montecarlo.js';
 import { dailyFromHourly, dailyReturns, recencyWeights } from '../src/engine/history.js';
 import { HALF_LIFE_YEARS } from '../src/app/riskjob.js';
+import { CALIBRATION } from '../src/content/calibration.js';
 import { fitGarchT } from '../src/engine/garch.js';
 import { loadHourly, hasData } from './helpers/history.js';
 
@@ -50,6 +51,9 @@ for (const currency of ['USD', 'EUR']) {
         const r = calibrate(currency, model, horizon);
         process.stderr.write(`${currency} ${model} ${horizon}d: ${r.n} cut-offs, below q05 ${(r.below05 * 100).toFixed(1)}%, below q10 ${(r.below10 * 100).toFixed(1)}%, below median ${(r.below50 * 100).toFixed(1)}%\n`);
         expect(r.below05).toBeLessThanOrEqual(0.10);
+        // the numbers shown on "How it works" (src/content/calibration.js, euro history) stay current
+        const shown = CALIBRATION.rows.find((x) => x.model === (model === 'bootstrap' ? 'simulation' : 'garch') && x.days === horizon);
+        if (currency === 'EUR') expect(Math.abs(r.below05 * 100 - shown.below05), 'update src/content/calibration.js').toBeLessThanOrEqual(2.5);
         expect(r.below10).toBeLessThanOrEqual(0.20);
         expect(r.below50).toBeGreaterThanOrEqual(0.2);
         expect(r.below50).toBeLessThanOrEqual(0.8);

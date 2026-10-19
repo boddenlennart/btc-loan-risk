@@ -45,29 +45,49 @@ test('navigation: three pages, the current one marked; in the top bar on desktop
   await expect.poll(() => page.locator('.top').evaluate((el) => el.getBoundingClientRect().top)).toBe(0); // the name bar stays
 });
 
-test('"How it works": all parts, the example loan\'s charts and method table, no errors or security refusals', async ({ page }) => {
+test('"How it works": three layers, every part, the charts and tables of the example loan, no errors or security refusals', async ({ page }) => {
   const errors = await visit(page, '/method/');
   await expect(page).toHaveTitle('How it works · Bitcoin Loan Check');
-  await expect(page.locator('.toc li')).toHaveCount(7);
-  for (const id of ['steps', 'methods', 'test', 'data', 'trend', 'model-limits', 'verify']) await expect(page.locator(`#${id} h2`)).toBeVisible();
-  await expect(page.locator('#steps-list li')).toHaveCount(4);
-  await expect(page.locator('#example-note')).toContainText('Borrow €10,000 for 12 months');
+  await expect(page.locator('.toc li')).toHaveCount(11);
+  await expect(page.locator('p.layer')).toHaveText(['For everyone', 'The details', 'For experts']);
+  for (const id of ['one-future', 'volatility', 'your-number', 'rules', 'methods', 'test', 'data', 'trend', 'model-limits', 'maths', 'verify']) await expect(page.locator(`#${id} h2`)).toBeVisible();
+  // one simulated future: a real path, coloured piece by piece, with the margin-call and liquidation lines
+  await expect(page.locator('#one-chart path.piece-a').first()).toBeVisible();
+  await expect(page.locator('#one-chart path.line-critical')).toHaveCount(1);
+  await expect(page.locator('#one-steps li')).toHaveCount(4);
+  await expect(page.locator('#one-steps')).toContainText(/the loan is liquidated on day \d+/);
+  // volatility per year: one bar per year since 2014, and the weighting table with this page's row marked
+  const years = new Date().getUTCFullYear() - 2014 + 1;
+  await expect(page.locator('#vol-chart rect.bar')).toHaveCount(years);
+  await expect(page.locator('#vol-table tbody tr')).toHaveCount(5);
+  await expect(page.locator('#vol-table tr.us')).toContainText('Half-life 3 years (this page)');
+  await expect(page.locator('#your-number .dots i')).toHaveCount(100);
+  await expect(page.locator('#rules-list li')).toHaveCount(4);
+  await expect(page.locator('#methods-table tbody tr')).toHaveCount(4);
   await expect(page.locator('#fan-chart path.band-outer')).toHaveCount(1);
   await expect(page.locator('#months-chart svg')).toHaveCount(1);
-  await expect(page.locator('#compare tr')).toHaveCount(4);
+  await expect(page.locator('#test-bars .lv')).toHaveCount(4);
   await expect(page.locator('#trend-facts')).toContainText('Since 2014, BTC grew by about');
   await expect(page.locator('#data')).toContainText('European Central Bank');
   await expect(page.locator('#data')).toContainText('Your lender decides which BTC price counts');
-  await expect(page.locator('#verify a')).toHaveAttribute('href', 'https://github.com/boddenlennart/btc-loan-risk');
+  // the maths: folded, with the fitted values filled in
+  await expect(page.locator('details.maths')).not.toHaveAttribute('open', '');
+  await page.locator('details.maths > summary').click();
+  await expect(page.locator('#m-garch')).toContainText(/α = 0\.\d+, β = 0\.\d+/);
+  await expect(page.locator('#m-code a')).toHaveCount(7);
+  await expect(page.locator('#verify a').first()).toHaveAttribute('href', 'https://github.com/boddenlennart/btc-loan-risk');
   await page.locator('#methods a.gloss').first().click(); // a glossary word opens the glossary in the footer
   await expect(page.locator('#glossary')).toHaveAttribute('open', '');
   expect(errors).toEqual([]);
 });
 
-test('the method table on "How it works" equals the example answer on the check page', async ({ page }) => {
+test('"How it works" shows the same numbers as the check page: the answer, the dots, the weighting row, real history', async ({ page }) => {
   await visit(page, '/method/');
-  const sim = await page.locator('#compare tr').first().locator('td').textContent();
-  const hist = await page.locator('#compare tr').nth(2).locator('td').textContent();
+  const sim = (await page.locator('#methods-table tbody tr').first().locator('td').last().textContent()).trim();
+  const hist = (await page.locator('#methods-table tbody tr').nth(2).locator('td').last().textContent()).trim();
+  await expect(page.locator('#vol-table tr.us td').last()).toHaveText(sim);
+  await expect(page.locator('#your-number .dots i.d-liq')).toHaveCount(Number(sim));
+  await expect(page.locator('#num-list')).toContainText(`shown as ${sim}.`);
   await visit(page, '/');
   await expect(page.locator('#headline-text em')).toHaveText(sim);
   await expect(page.locator('#methods-line')).toContainText(`real history since 2014 ${hist} of 100`);

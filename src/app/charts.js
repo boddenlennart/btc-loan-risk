@@ -305,3 +305,68 @@ export function lineChart(el, data) {
     return { x: x(pts[k][0]), html: `<b>${esc(data.fmtDate(pts[k][0]))}</b><br>${esc(data.fmt(pts[k][1]))}` };
   });
 }
+
+/**
+ * "One simulated future": one path, coloured piece by piece (each piece = 30 real days from another time),
+ * the liquidation line and the day of the sale. Hover shows where the piece under the pointer came from.
+ * data: { weekly, days, liq: [start, end], mc: [start, end] | null, pieces: [{ fromDay, label }], event: { day } | null, fmt, monthLabel, labels: { title, liq, margin, piece } }
+ */
+export function onePathChart(el, data) {
+  remember(el, () => onePathChart(el, data));
+  const H = 280;
+  const pad = { l: 64, r: 16, t: 14, b: 30 };
+  const { svg, tip } = frame(el, H, data.labels.title);
+  const maxY = Math.max(...data.weekly, data.liq[0], data.liq[1], ...(data.mc || [])) * 1.08;
+  const ax = priceAxes(svg, { H, pad, days: data.days, maxY, fmt: data.fmt, monthLabel: data.monthLabel });
+  const dayOf = (k) => Math.min(data.days, k * 7);
+  const pts = data.weekly.map((v, k) => [ax.x(dayOf(k)), ax.y(v), dayOf(k)]);
+  const sold = data.event ? data.event.day : Infinity;
+  let lines = '';
+  data.pieces.forEach((p, j) => {
+    const end = j + 1 < data.pieces.length ? data.pieces[j + 1].fromDay : data.days;
+    const seg = pts.filter(([, , d], i) => (d >= p.fromDay - 7 && d <= end) && (i === 0 || pts[i - 1][2] < end));
+    const before = seg.filter(([, , d]) => d <= sold + 7); const after = seg.filter(([, , d]) => d >= sold);
+    if (before.length > 1) lines += `<path d="M${before.map(([x, y]) => `${x},${y}`).join('L')}" class="${j % 2 ? 'piece-b' : 'piece-a'}"/>`;
+    if (after.length > 1) lines += `<path d="M${after.map(([x, y]) => `${x},${y}`).join('L')}" class="story-after" style="stroke:var(--muted)"/>`;
+  });
+  if (data.event) {
+    const k = Math.min(data.weekly.length - 1, Math.round(data.event.day / 7));
+    lines += `<text x="${ax.x(data.event.day)}" y="${ax.y(data.weekly[k]) + 5}" class="mark-sold" text-anchor="middle">✕</text>`;
+  }
+  const trig = triggerLines(ax, { days: data.days, liq: data.liq, mc: data.mc, labels: { margin: data.labels.margin, sale: data.labels.liq } });
+  svg.innerHTML = `${ax.g}${lines}${trig}<line class="cross" y1="${pad.t}" y2="${H - pad.b}" opacity="0"/><rect class="hit" x="${pad.l}" y="0" width="${W - pad.l - pad.r}" height="${H}" fill="transparent"/>`;
+  hover(el, svg, tip, pad, (xv) => {
+    const d = Math.round(((xv - pad.l) / (W - pad.l - pad.r)) * data.days);
+    let j = 0; while (j + 1 < data.pieces.length && data.pieces[j + 1].fromDay <= d) j++;
+    const c = svg.querySelector('.cross');
+    c.setAttribute('x1', ax.x(d)); c.setAttribute('x2', ax.x(d)); c.setAttribute('opacity', 1);
+    return { x: ax.x(d), html: `<b>${esc(data.monthLabel(Math.round(d / 30.44)))}</b><br>${esc(data.labels.piece(data.pieces[j].label))}` };
+  });
+}
+
+/**
+ * Volatility per year: one bar per year, shaded by how much that year counts in the simulation,
+ * and a dashed line at the volatility the simulation effectively uses.
+ * data: { rows: [{ year, vol, weight }], sim, fmtPct, labels: { title, sim, tip(year, vol, weight) } }
+ */
+export function volChart(el, data) {
+  remember(el, () => volChart(el, data));
+  const H = 230;
+  const pad = { l: 48, r: 16, t: 26, b: 30 };
+  const { svg, tip } = frame(el, H, data.labels.title);
+  const n = data.rows.length; const bw = (W - pad.l - pad.r) / n;
+  const top = Math.max(1, ...data.rows.map((r) => r.vol)) * 1.05;
+  const y = (v) => pad.t + (1 - v / top) * (H - pad.t - pad.b);
+  const maxW = Math.max(...data.rows.map((r) => r.weight));
+  const grid = [0, 0.5, 1].map((v) => `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y(v)}" y2="${y(v)}" class="grid"/><text x="${pad.l - 6}" y="${y(v) + 4}" class="axis" text-anchor="end">${esc(data.fmtPct(v))}</text>`).join('');
+  const bars = data.rows.map((r, i) => `<rect class="bar" x="${pad.l + i * bw + bw * 0.15}" y="${y(r.vol)}" width="${bw * 0.7}" height="${y(0) - y(r.vol)}" rx="3" style="opacity:${(0.2 + 0.8 * (r.weight / maxW)).toFixed(2)}"/>`).join('');
+  const every = narrow() ? 3 : 2;
+  const xt = data.rows.map((r, i) => ((n - 1 - i) % every === 0 ? `<text x="${pad.l + (i + 0.5) * bw}" y="${H - 8}" class="axis" text-anchor="middle">${r.year}</text>` : '')).join('');
+  const sim = `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y(data.sim)}" y2="${y(data.sim)}" class="line-critical"/><text x="${W - pad.r}" y="${y(data.sim) - 6}" class="label-critical" text-anchor="end">${esc(data.labels.sim)}</text>`;
+  svg.innerHTML = `${grid}${bars}${sim}${xt}<rect class="hit" x="${pad.l}" y="0" width="${W - pad.l - pad.r}" height="${H}" fill="transparent"/>`;
+  hover(el, svg, tip, pad, (xv) => {
+    const i = Math.min(n - 1, Math.max(0, Math.floor((xv - pad.l) / bw)));
+    const r = data.rows[i];
+    return { x: pad.l + (i + 0.5) * bw, html: esc(data.labels.tip(r.year, r.vol, r.weight)) };
+  });
+}

@@ -259,7 +259,7 @@ Public APIs can change their rules at any time; the page then falls back to the 
 
 ## Tests and how each was verified
 
-Run with `npm test` (389 tests) and `npm run test:e2e` (68 browser tests, each in Chrome's, Safari's and Firefox's engine). Quality measurements: [ux/G-quality-report.md](ux/G-quality-report.md) (coverage, planted bugs, hostile input, browsers, speed, accessibility, security). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
+Run with `npm test` (390 tests) and `npm run test:e2e` (68 browser tests, each in Chrome's, Safari's and Firefox's engine). Quality measurements: [ux/G-quality-report.md](ux/G-quality-report.md) (coverage, planted bugs, hostile input, browsers, speed, accessibility, security). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
 
 | # | Test | How it was verified |
 |---|---|---|

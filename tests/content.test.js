@@ -34,7 +34,7 @@ const OUTPUTS = {
   headline: 'results.headlineHelp', dots: 'results.legendLiquidated', saleLine: 'method.measure', limits: 'results.limits',
   slider: 'results.sliderNote', levers: 'results.otherOptions', trend: 'history.trendIntro', leverageTrend: 'cost.levTrendUnit', ladder: 'falls.marginCure',
   futures: 'falls.futuresHelp', cost: 'glossary.terms.aprVsRate', breakeven: 'cost.sellIntro', leverage: 'cost.levIntro',
-  replay: 'glossary.terms.historicalReplay', stories: 'history.storiesLine', method: 'method.steps', fan: 'method.fanNote',
+  replay: 'glossary.terms.historicalReplay', stories: 'history.storiesLine', method: 'method.oneSteps', fan: 'method.fanNote',
   compare: 'method.barrierNote', feedback: 'feedback.intro', donate: 'donate.public',
 };
 const GLOSSARY = ['ltv', 'marginCall', 'liquidation', 'partialLiquidation', 'collateral', 'curePeriod', 'originationFee', 'aprVsRate',

@@ -68,3 +68,21 @@ describe('page addresses per language', () => {
     expect(m.pageHref('method/', 'en')).toBe('/copy/method/');
   });
 });
+
+describe('"How it works": the built figures agree with each other and with the check page', async () => {
+  const { existsSync, readFileSync } = await import('node:fs');
+  const file = new URL('../docs/method/index.html', import.meta.url);
+  const meta = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8').match(/<script type="application\/json" id="meta">([\s\S]*?)<\/script>/)[1]) : null;
+  it.skipIf(!meta)('one simulation behind every number on the page', () => {
+    const { result: r, method: md, terms } = meta.example;
+    expect(md.p).toBe(r.bootstrap); // the same answer as the check page's example
+    expect(md.weighting.find((w) => w.current).p).toBe(md.p);
+    expect(md.deadline.find((d) => d.days === Math.ceil(terms.curePeriodHours / 24)).p).toBe(md.p);
+    expect(Math.abs(md.shown - md.p * 100)).toBeLessThanOrEqual(1);
+    expect(md.volByYear.reduce((a, y) => a + y.weight, 0)).toBeCloseTo(1, 9);
+    expect(md.onePath.pieces.length).toBe(Math.ceil(md.onePath.days / md.blockDays));
+    expect(md.onePath.event.day).toBeGreaterThan(0);
+    expect(md.se).toBeCloseTo(Math.sqrt((md.p * (1 - md.p)) / md.nPaths), 12);
+    expect(r.barrier.sigma).toBeCloseTo(md.simVol, 12); // the textbook formula uses the simulation's volatility
+  });
+});

@@ -17,6 +17,8 @@ import { EXAMPLE_FORM } from '../src/content/examples.js';
 import { toTerms, exampleKey } from '../src/app/terms.js';
 import { parseEcbCsv, checkFx, convertHourly, lastRate, FX_CURRENCIES } from '../src/data/fx.js';
 import { computeInsights } from '../src/insights/compute.js';
+import { methodData } from '../src/app/method-data.js';
+import { HALF_LIFE_YEARS } from '../src/app/riskjob.js';
 import en from '../src/content/text.en.js';
 import de from '../src/content/text.de.js';
 
@@ -96,6 +98,11 @@ const methodMeta = ex && {
       bootstrap: ex.result.main.pLiquidation + (ex.result.main.pPartial || 0), garch: ex.result.garchMc.pLiquidation + (ex.result.garchMc.pPartial || 0),
       replay: ex.result.replay.liquidatedShare + (ex.result.replay.partialShare || 0), nPaths: toTerms(EXAMPLE_FORM).settings.nPaths, blockDays: toTerms(EXAMPLE_FORM).settings.blockDays,
     },
+    // the figures that explain the simulation (one future, volatility per year, weighting, precision, …)
+    method: methodData({
+      hourly: decodeHourly(gunzipSync(readFileSync(file(EXAMPLE_FORM.currency)))), terms: toTerms({ ...EXAMPLE_FORM, btcPrice: meta[EXAMPLE_FORM.currency].lastClose }).terms,
+      garch: garch[EXAMPLE_FORM.currency], settings: toTerms(EXAMPLE_FORM).settings, halfLifeYears: HALF_LIFE_YEARS,
+    }),
   },
 };
 // "Insights": what happened to loans since 2014, on the real US-dollar history (src/insights/compute.js).
