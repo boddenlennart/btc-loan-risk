@@ -52,7 +52,10 @@ export const texts = () => TEXTS[lang];
 export function t(path, vars = {}) {
   const v = path.split('.').reduce((o, k) => (o == null ? o : o[k]), TEXTS[lang]);
   if (typeof v !== 'string') return v ?? path;
-  return v.replace(/\{(\w+)\}/g, (_, k) => (vars[k] ?? `{${k}}`));
+  // one month, not "1 months" / "1 Monaten"
+  const one = Object.keys(vars).filter((k) => Number(vars[k]) === 1 && typeof vars[k] !== 'boolean');
+  const s = one.reduce((acc, k) => acc.replace(new RegExp(`\\{${k}\\} (months|Monaten|Monate)\\b`, 'g'), (_, w) => `{${k}} ${w.startsWith('m') ? 'month' : 'Monat'}`), v);
+  return s.replace(/\{(\w+)\}/g, (_, k) => (vars[k] ?? `{${k}}`));
 }
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));

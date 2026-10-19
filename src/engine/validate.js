@@ -23,11 +23,13 @@ export function validateTerms(t) {
 
   // "I already have a loan": the current LTV comes from the BTC pledged and the amount owed.
   const existing = t.mode === 'existing';
-  if ((existing || t.ltvInput === 'btc') && (!num(t.collateralInput) || t.collateralInput <= 0)) add('collateralBtc', 'COLLATERAL_INVALID');
+  const collateralBad = (existing || t.ltvInput === 'btc') && (!num(t.collateralInput) || t.collateralInput <= 0);
+  if (collateralBad) add('collateralBtc', 'COLLATERAL_INVALID');
+  const amountAndPriceOk = num(t.loanAmount) && t.loanAmount > 0 && num(t.btcPrice) && t.btcPrice > 0;
   const initialOk = num(t.initialLtv) && t.initialLtv > 0 && t.initialLtv < 1;
   if (existing && num(t.initialLtv) && num(t.liquidationLtv) && t.initialLtv >= t.liquidationLtv) add('collateralBtc', 'EXISTING_LOAN_AT_LIQUIDATION');
   else if (!initialOk && !(existing || t.ltvInput === 'btc')) add('initialLtv', 'LTV_OUT_OF_RANGE');
-  else if (!initialOk) add('collateralBtc', 'COLLATERAL_INVALID');
+  else if (!initialOk && !collateralBad && amountAndPriceOk) add('collateralBtc', 'COLLATERAL_TOO_LOW'); // the loan is worth more than the BTC
   const liqNum = num(t.liquidationLtv);
   if (!liqNum || t.liquidationLtv > 1) add('liquidationLtv', 'LIQ_LTV_TOO_HIGH');
   else if (initialOk && !existing && t.liquidationLtv <= t.initialLtv) add('liquidationLtv', 'LIQ_LTV_NOT_ABOVE_INITIAL');

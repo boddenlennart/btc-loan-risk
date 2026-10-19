@@ -35,6 +35,8 @@ const SOURCE_NAMES = { bitstamp: 'Bitstamp', coinbase: 'Coinbase', embedded: '' 
 
 // ------------------------------------------------------------------ state
 const linkData = decodeLink(location.hash);
+// a share link opened in a tab where the page is already open only changes the hash: load it
+window.addEventListener('hashchange', () => { if (decodeLink(location.hash)) location.reload(); });
 const openedFromLink = !!linkData; let scrolledToAnswer = false;
 // A comparison: { kind: 'offers' | 'refi', active, offers: [forms], names: [] }. `state` is always
 // the selected offer's form; the others wait in compare.offers. null when nothing is compared.
@@ -278,7 +280,7 @@ function buildForm() {
     <div class="field" data-field="durationMonths"><span class="label" id="l-dur">${esc(existing ? f.durationMonths.labelExisting : f.durationMonths.label)}</span>
       <div class="chips" role="group" aria-labelledby="l-dur">${durChips}<span class="with-unit other"><input type="number" step="1" min="1" inputmode="numeric" data-k="durationMonths" aria-label="${esc(fm.otherDuration)}" placeholder="${esc(fm.otherDuration)}" value="${other ? esc(state.durationMonths) : ''}"><span class="unit">${esc(t('ui.months'))}</span></span></div>${existing ? '' : `<p class="hint">${esc(f.durationMonths.hint)}</p>`}<p class="err" role="alert" hidden></p></div>
     ${rate}
-    ${refi ? '' : seg('purpose', [['spend', f.purpose.spend], ['buy', f.purpose.buy]], f.purpose.label) + `<p class="hint purpose-hint">${esc(f.purpose.hint)}</p>`}
+    ${refi || existing ? '' : seg('purpose', [['spend', f.purpose.spend], ['buy', f.purpose.buy]], f.purpose.label) + `<p class="hint purpose-hint">${esc(f.purpose.hint)}</p>`}
     <p class="price-line" id="price-line" aria-live="polite"></p>
     <div class="field" data-field="btcPrice" id="price-edit" hidden><span class="with-unit"><input type="number" step="any" inputmode="decimal" data-k="btcPrice" aria-label="BTC ${esc(cur)}" value="${esc(state.btcPrice ?? '')}"><span class="unit">${esc(cur)}</span></span><p class="err" role="alert" hidden></p></div>
     <details class="more" data-remember="more"><summary>${esc(refi ? Cm.moreTerms : existing ? fm.moreTermsExisting : fm.moreTerms)} <span class="sum" id="more-sum"></span></summary>${more}</details>
@@ -680,8 +682,10 @@ function addOffer() {
 function removeOffer(i) {
   if (!compare) return;
   if (compare.offers.length <= 2 || (compare.kind === 'refi' && i === 0)) { endCompare(i === 0 ? 1 : 0); return; }
+  const { btcPrice, currency } = state;
+  compare.offers[compare.active] = state; // the shown offer's latest inputs, before the list changes
   compare.offers.splice(i, 1); compare.names.splice(i, 1);
-  compare.active = 0; state = formOf(0);
+  compare.active = 0; state = { ...compare.offers[0], btcPrice, currency };
   saveState(); renderForm(); update();
 }
 function endCompare(keep = compare.active) {
@@ -737,7 +741,7 @@ function renderCompare() {
   if (compare.kind === 'offers') {
     rows += row(Cm.rowLiq, '', idx.map((i) => cell(T[i] ? big(nLiq[i] ?? wait) : dash, T[i] ? t('compare.withinMonths', { months: T[i].durationMonths }) : '')));
     rows += row(Cm.rowSold, '', sold);
-    rows += row(Cm.rowCost, '', idx.map((i) => { if (!T[i]) return cell(dash); const s = loanSummary(T[i]); return cell(esc(money0(s.totalCost, cur)), t('compare.perYear', { apr: pct(s.effectiveApr, 1) })); }));
+    rows += row(Cm.rowCost, '', idx.map((i) => { if (!T[i]) return cell(dash); const s = loanSummary(T[i]); return cell(esc(money0(s.totalCost, cur)), t('compare.perYear', { apr: aprText(s.effectiveApr) })); }));
     rows += row(Cm.rowReceive, '', idx.map((i) => cell(T[i] ? esc(money0(loanSummary(T[i]).amountReceived, cur)) : dash)));
     rows += marginRow; rows += rateRow;
     const ok = T.filter(Boolean);
@@ -758,7 +762,7 @@ function renderCompare() {
     const startCell = s1 && cur0 ? startText(s1, refiForm1, cur0.loanAmount, cur) : '';
     rows += row(Cm.rowReceiveNow, '', [cell(dash), cell(startCell ? esc(startCell[0].toUpperCase() + startCell.slice(1)) : dash)]);
     rows += row(Cm.rowCost, '', [cell(cur0 ? esc(money0(loanSummary(cur0).totalInterest, cur)) : dash, cur0 ? t('compare.interestLeft', { months: span }) : ''),
-      cell(s1 ? esc(money0(s1.totalCost, cur)) : dash, s1 ? t('compare.inclSwitching', { months: m1Months, apr: pct(s1.effectiveApr, 1) }) : '')]);
+      cell(s1 ? esc(money0(s1.totalCost, cur)) : dash, s1 ? t('compare.inclSwitching', { months: m1Months, apr: aprText(s1.effectiveApr) }) : '')]);
     if (shorter) notes.push(t('compare.shorterRefi', { m: m1Months, n: span }));
     if (T[1] && span && m1Months > span) notes.push(t('compare.longerRefi', { m: m1Months, n: span }));
     lastCmp = { kind: 'refi', months: span, a: nLiq[0] ?? wait, b: sameSpan ?? wait };
@@ -782,6 +786,11 @@ function partialAt(tm, price) {
   return { sold: num(sold, 4), left: num(btc - sold, 4), btc: num(btc, 4), target: pct(rules.target, 0) };
 }
 
+// An existing loan whose LTV today is already at or above its margin call
+const pastMarginCall = (tm) => tm.mode === 'existing' && !!tm.marginCallLtv && tm.initialLtv >= tm.marginCallLtv;
+// The yearly rate, also when it is beyond what the calculation resolves (absurd fees)
+const aprText = (x) => (x >= 9.99 ? `> ${pct(10, 0)}` : pct(x, 1));
+
 // Key figures under the answer. All of them need no simulation, so they follow typing at once.
 function renderTiles(tm) {
   const R = texts().results; const cur = tm.currency;
@@ -790,12 +799,16 @@ function renderTiles(tm) {
   const tile = (label, value, sub, cls = '') => `<div class="tile${cls}"><div class="label">${esc(label)}</div><div class="v">${esc(value)}</div><div class="s">${esc(sub)}</div></div>`;
   let html = tile(rules.liquidationSale === 'partial' ? R.tilePartSold : R.tileSold, money0(lp.atStart, cur), t('results.tileSoldSub', { drop: `−${pct(dropToLiquidation(tm), 0)}` }));
   const marginTile = mp ? tile(R.tileMargin, money0(mp.atStart, cur), rules.behaviour === 'autoPartial' ? R.tileMarginAuto : rules.afterCure ? t('results.tileMarginHours', { hours: tm.curePeriodHours }) : R.tileMarginWarning, ' desk-only') : '';
+  const pastMargin = pastMarginCall(tm);
+  $('#questions-title').textContent = t(tm.mode === 'existing' ? 'falls.questionsTitleExisting' : 'falls.questionsTitle', { n: texts().falls.questions.length });
+  $('#now-note').hidden = !pastMargin;
+  $('#now-note').textContent = pastMargin ? t('results.nowAboveMargin', { ltv: pct(tm.initialLtv, 0), mc: pct(tm.marginCallLtv, 0) }) : '';
   if (tm.mode === 'existing') {
     html += tile(R.tileInterest, money0(s.totalInterest, cur), R.tileInterestSub);
-    html += mp ? marginTile.replace(' desk-only', '') : '';
+    html += !mp ? '' : pastMargin ? tile(R.tileMargin, money0(mp.atStart, cur), R.tileMarginNow) : marginTile.replace(' desk-only', '');
   } else {
     html += marginTile;
-    html += tile(R.tileCost, money0(s.totalCost, cur), t('results.tileCostSub', { apr: pct(s.effectiveApr, 1) }));
+    html += tile(R.tileCost, money0(s.totalCost, cur), t('results.tileCostSub', { apr: aprText(s.effectiveApr) }));
     const rise = tm.purpose === 'buy' ? s.totalPayback / s.amountReceived - 1 : breakevenReturn(costTerms(tm), { taxRateNow: tm.taxRateNow, taxRateAtMaturity: tm.taxRateAtMaturity });
     html += tile(tm.purpose === 'buy' ? R.tileBreakevenBuy : R.tileBreakeven, t('results.tileBreakevenValue', { rise: signedPct(rise, 0) }), R.tileBreakevenSub);
   }
@@ -803,7 +816,8 @@ function renderTiles(tm) {
   // what a sale leaves you with: "liquidated" does not mean "everything lost"
   if (rules.liquidationSale === 'all') {
     const lq = costIfLiquidated(tm, { price: lp.atStart, debt: tm.loanAmount });
-    $('#sold-line').textContent = t('results.soldGetBack', { back: num(Math.max(0, lq.btcReturned), 4), btc: num(collateralBtc(tm), 4) });
+    $('#sold-line').textContent = lq.btcReturned < 0.00005 ? t('results.soldNothing', { btc: num(collateralBtc(tm), 4) })
+      : t('results.soldGetBack', { back: num(lq.btcReturned, 4), btc: num(collateralBtc(tm), 4) });
   } else $('#sold-line').textContent = t('results.soldPartial', partialAt(tm, lp.atStart));
 }
 
@@ -811,7 +825,7 @@ function renderTiles(tm) {
 function renderTermsChips(tm) {
   const f = F(); const cur = tm.currency;
   const parts = [money0(tm.loanAmount, cur), `LTV ${pct(tm.initialLtv, 0)}`, `${f.liquidationLtv.label} ${pct(tm.liquidationLtv, 0)}`,
-    `${tm.durationMonths} ${t('ui.months')}`, tm.rate.type === 'fixed' ? `${pct(tm.rate.annual, 1)} ${t('ui.perYear')}` : f.rateAnnual.label];
+    `${tm.durationMonths} ${t(tm.durationMonths === 1 ? 'ui.month' : 'ui.months')}`, tm.rate.type === 'fixed' ? `${pct(tm.rate.annual, 1)} ${t('ui.perYear')}` : f.rateAnnual.label];
   if (tm.marginCallLtv) parts.push(`${f.marginCallLtv.label} ${pct(tm.marginCallLtv, 0)}`);
   $('#terms-chips').innerHTML = parts.map((p) => `<span>${esc(p)}</span>`).join('');
 }
@@ -840,12 +854,16 @@ function renderFallsText() {
   const tm = lastTerms; const cur = tm.currency; const Fa = texts().falls;
   const { lp, mp, rules } = salePrices(tm);
   const target = rules.target;
-  const ladder = [[Fa.ladderToday, tm.btcPrice, 'today'], ...(mp ? [[Fa.ladderMargin, mp.atStart, 'margin']] : []), [Fa.ladderSale, lp.atStart, 'sale']];
+  const past = pastMarginCall(tm);
+  const ladder = [[Fa.ladderToday, tm.btcPrice, 'today'], ...(mp && !past ? [[Fa.ladderMargin, mp.atStart, 'margin']] : []), [Fa.ladderSale, lp.atStart, 'sale']];
   const span = Math.max(0.3, 1 - lp.atStart / tm.btcPrice) * 1.15;
   const pos = (p) => 90 - ((1 - p / tm.btcPrice) / span) * 80;
   // dots on the line; the labels are placed by layoutLadder() so they never overlap
   let html = `<div class="ladder" role="img" aria-label="${esc(ladder.map(([l, p]) => `${l} ${money0(p, cur)}`).join(', '))}"><div class="ln"></div>${ladder.map(([, p, k]) => `<i class="dot dot-${k}" style="left:${pos(p)}%"></i>`).join('')}${ladder.map(([l, p, k]) => `<div class="lab lab-${k}" data-at="${pos(p)}">${esc(l)}<br><b>${esc(money0(p, cur))}</b>${k === 'today' ? '' : `<br>−${esc(pct(1 - p / tm.btcPrice, 0))}`}</div>`).join('')}</div>`;
-  if (mp) {
+  if (mp && past) {
+    const top = topUpToCure(tm, { price: tm.btcPrice, debt: tm.loanAmount, targetLtv: target });
+    html += `<p>${esc(t('falls.marginNow', { topUp: num(top.btc, 4), topUpValue: money0(top.value, cur), repay: money0(top.repayInstead, cur), target: pct(target, 0) }))}</p>`;
+  } else if (mp) {
     const top = topUpToCure(tm, { price: mp.atStart, debt: tm.loanAmount, targetLtv: target });
     const vals = { mcPrice: money0(mp.atStart, cur), topUp: num(top.btc, 4), topUpValue: money0(top.value, cur), repay: money0(top.repayInstead, cur), target: pct(target, 0), hours: tm.curePeriodHours };
     if (rules.behaviour === 'autoPartial') html += `<p>${esc(t('falls.marginAuto', { ...vals, ...partialAt(tm, mp.atStart) }))}</p>`;
@@ -883,6 +901,11 @@ function layoutLadder() {
 }
 window.addEventListener('resize', layoutLadder);
 
+// How much BTC must rise for borrowing to beat selling today; with a higher tax today, it may even fall
+function breakevenLine(ct, tm) {
+  const rise = breakevenReturn(ct, { taxRateNow: tm.taxRateNow, taxRateAtMaturity: tm.taxRateAtMaturity });
+  return rise < 0 ? t('cost.breakevenFall', { fall: pct(-rise, 1) }) : t('cost.breakeven', { rise: pct(rise, 1) });
+}
 function renderCost() {
   const tm = lastTerms; const cur = tm.currency; const C = texts().cost;
   const ct = costTerms(tm); const s = loanSummary(ct);
@@ -890,20 +913,20 @@ function renderCost() {
   const owed = state.refi ? toTerms(formOf(0)).terms.loanAmount : 0;
   const rows = s.schedule.map((r) => `<tr><td>${r.month}</td><td>${esc(isoDate(r.date))}</td><td>${money(r.interest, cur)}</td><td>${money(r.principal, cur)}</td><td>${money(r.payment, cur)}</td><td>${money(r.balanceAfter, cur)}</td></tr>`).join('');
   let html = `<p>${esc(existing ? t('cost.lineExisting', { payback: money(s.totalPayback, cur), interest: money(s.totalInterest, cur) })
-    : state.refi ? t('cost.lineRefi', { amount: money(tm.loanAmount, cur), owed: money(owed, cur), now: startText(s, state, owed, cur, money), payback: money(s.totalPayback, cur), cost: money(s.totalCost, cur), apr: pct(s.effectiveApr, 1) })
-    : t('cost.line', { received: money(s.amountReceived, cur), payback: money(s.totalPayback, cur), cost: money(s.totalCost, cur), apr: pct(s.effectiveApr, 1) }))}</p>
-    <p class="hint">${esc(C.timingNote)}</p>
+    : state.refi ? t('cost.lineRefi', { amount: money(tm.loanAmount, cur), owed: money(owed, cur), now: startText(s, state, owed, cur, money), payback: money(s.totalPayback, cur), cost: money(s.totalCost, cur), apr: aprText(s.effectiveApr) })
+    : t('cost.line', { received: money(s.amountReceived, cur), payback: money(s.totalPayback, cur), cost: money(s.totalCost, cur), apr: aprText(s.effectiveApr) }))}</p>
+    ${existing ? '' : `<p class="hint">${esc(C.timingNote)}</p>`}
     <details class="table-details" data-remember="plan"${openDetails.has('plan') ? ' open' : ''}><summary>${esc(C.schedule)}</summary><div class="table-wrap" tabindex="0" role="region" aria-label="${esc(t('ui.showTable'))}"><table><thead><tr>${C.scheduleHead.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></details>`;
   if (tm.purpose !== 'buy') {
-    html += `<h4>${esc(texts().sections.borrowOrSell)}</h4><p>${esc(state.refi ? C.sellIntroRefi : C.sellIntro)}</p>
-      <p class="big-line">${esc(t('cost.breakeven', { rise: pct(breakevenReturn(ct, { taxRateNow: tm.taxRateNow, taxRateAtMaturity: tm.taxRateAtMaturity }), 1) }))}</p>
+    html += `<h4>${esc(texts().sections.borrowOrSell)}</h4><p>${esc(state.refi ? C.sellIntroRefi : existing ? C.sellIntroExisting : C.sellIntro)}</p>
+      <p class="big-line">${esc(breakevenLine(ct, tm))}</p>
       <div class="pair tax">${numField('taxRateNow', C.taxNow, '%')}${numField('taxRateAtMaturity', C.taxLater, '%')}</div><p class="hint">${esc(C.taxNote)}</p>`;
   } else {
     html += '<div id="leverage"></div>';
   }
   const active = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.k : null;
   if (active === 'taxRateNow' || active === 'taxRateAtMaturity') { // don't rebuild the field being typed in
-    const bl = $('#cost-body .big-line'); if (bl) bl.textContent = t('cost.breakeven', { rise: pct(breakevenReturn(ct, { taxRateNow: tm.taxRateNow, taxRateAtMaturity: tm.taxRateAtMaturity }), 1) });
+    const bl = $('#cost-body .big-line'); if (bl) bl.textContent = breakevenLine(ct, tm);
     return;
   }
   $('#cost-body').innerHTML = html;
@@ -955,7 +978,8 @@ function renderRisk() {
   $('#assume-line').textContent = !rules.afterCure ? '' : tm.reserveAmount > 0 ? t('results.assumeReserve', { reserve: money0(tm.reserveAmount, cur) }) : texts().results.assumeNoTopUp;
   // "the simulation is the most cautious" only where it is true for this loan
   const h = of100(r.replay.liquidatedShare); const g = of100(r.garchMc.pLiquidation); const n = shown(m.pLiquidation);
-  $('#methods-line').textContent = `${t('results.otherMethods', { h, g })}${n >= h && n >= g ? R.mostCautious : ''} · `;
+  const hasHistory = r.replay.starts > 0; // none for a loan longer than the real prices allow
+  $('#methods-line').textContent = `${hasHistory ? t('results.otherMethods', { h, g }) : t('results.otherMethodNoHistory', { g })}${n >= g && (!hasHistory || n >= h) ? R.mostCautious : ''} · `;
   // the whole period the results are based on, and when the stored data was last updated
   $('#data-period').textContent = t('ui.dataThrough', { from: date(META.prices[cur].from), to: date(lastHour), updated: date(META.dataUpdated || META.prices[cur].to) });
   renderSafer(); renderTrend(); renderCompare(); updateAnswerBar();
@@ -982,7 +1006,7 @@ function renderFallHook(r, tm) {
 // The visitor's own number is shown exactly as in the headline (which rounds so the dots add up to 100).
 let headlineShown = null;
 const shown = (p) => (headlineShown && p === headlineShown.p ? headlineShown.n : of100(p));
-const leverLabel = (l, tm) => t(`results.levers.${l.id}`, {
+const leverLabel = (l, tm) => t(`results.levers.${tm.mode === 'existing' && ['lowerLtv', 'shorter'].includes(l.id) ? `${l.id}Existing` : l.id}`, {
   value: l.id === 'reserve' ? money0(l.value, tm.currency) : l.id === 'shorter' ? l.value : l.value !== null ? pct(l.value, 0) : '', months: tm.durationMonths,
 });
 // Under the answer: the one change from "Make it safer" that lowers the number most
@@ -1031,7 +1055,7 @@ function renderSafer() {
   el.innerHTML = `${state.refi ? `<p class="hint">${esc(R.sliderRefi)}</p>` : ''}<div class="slider"${state.refi ? ' hidden' : ''}><label for="ltv-slider" id="slider-line">${esc(line(idx))}</label>
     <input id="ltv-slider" type="range" min="0" max="1000" step="1" value="${posOf(grid[idx].ltv)}" style="--fill:${posOf(grid[idx].ltv) / 10}%">
     <div class="ticks" aria-hidden="true">${tickLtvs.map((x) => `<span style="--at:${posOf(x) / 1000}">${pct(x, 0)}</span>`).join('')}</div>
-    <p class="hint">${esc(R.sliderNote)}</p></div>
+    <p class="hint">${esc(tm.mode === 'existing' ? R.sliderExisting : R.sliderNote)}</p></div>
     <p class="sub">${esc(R.otherOptions)}</p>
     <div class="levers">${row(R.yourTerms, r.leverBase, true)}${levers.map((l) => row(label(l), l.p)).join('')}</div>
     ${higher && Math.abs(higher.p - r.leverBase) < 0.05 ? `<p class="hint">${esc(R.higherLiqNote)}</p>` : ''}`;
@@ -1112,7 +1136,9 @@ function historyText() {
   const r = lastRisk; const rp = r.replay;
   const partial = rp.partialShare >= 0.005 ? t('history.replayPartial', { m: of100(rp.partialShare) }) : '';
   const h = of100(rp.liquidatedShare); const n = shown(r.main.pLiquidation);
+  if (!rp.starts) return `<p>${esc(texts().history.replayNone)}</p>`;
   let html = `<p class="big-line">${esc(t('history.replay', { n: h, partial }))}</p>`;
+  if (rp.starts < 4 * 365) html += `<p>${esc(t('history.replayFew', { last: date(rp.lastStart) }))}</p>`; // fewer than 4 years of start days
   if (h !== n) html += `<p>${esc(t(h < n ? 'history.bridgeLower' : 'history.bridgeOther', { n }))}</p>`;
   return html;
 }
@@ -1154,6 +1180,7 @@ function renderStories() {
   const r = lastRisk; if (!r || !r.stories) return;
   const tm = riskTerms; const H = texts().history;
   const names = r.stories.map((s) => isoDate(s.start));
+  if (!r.stories.length) { storiesChart($('#stories-chart'), { stories: [] }); $('#stories-legend').innerHTML = `<li>${esc(H.storiesNone)}</li>`; return; }
   storiesChart($('#stories-chart'), { ...chartCommon(), stories: r.stories, s0: tm.btcPrice, colors: STORY_COLORS, labels: { title: H.storiesTitle, names, margin: texts().falls.ladderMargin, sale: texts().falls.ladderSale } });
   $('#stories-legend').innerHTML = r.stories.map((s, j) => {
     const d = isoDate(s.start);
@@ -1181,7 +1208,7 @@ function renderStatic() {
   $('#headline-help').innerHTML = rich(tx.results.headlineHelp);
   $('#futures-help').innerHTML = rich(tx.falls.futuresHelp);
   $('#questions').innerHTML = tx.falls.questions.map((x) => `<li>${esc(x)}</li>`).join('');
-  $('#questions-title').textContent = t('falls.questionsTitle', { n: tx.falls.questions.length });
+  $('#questions-title').textContent = t(state.mode === 'existing' ? 'falls.questionsTitleExisting' : 'falls.questionsTitle', { n: tx.falls.questions.length });
   // the embedded history is maintained by the weekly update; warn if it has not run for 45 days
   const oldest = Math.min(...Object.values(META.prices).map((m) => m.to));
   $('#data-old').hidden = !dataAge(oldest).stale;

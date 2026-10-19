@@ -3002,11 +3002,6 @@
       "p": 0.624
      },
      {
-      "id": "higherLiqWarning",
-      "value": 0.9,
-      "p": 0.7715
-     },
-     {
       "id": "lowerLtv",
       "value": 0.64,
       "p": 0.8415
@@ -3017,19 +3012,9 @@
       "p": 0.859
      },
      {
-      "id": "warningOnly",
-      "value": null,
-      "p": 0.906
-     },
-     {
       "id": "shorter",
       "value": 6,
       "p": 0.981
-     },
-     {
-      "id": "higherLiq",
-      "value": 0.9,
-      "p": 0.987
      }
     ],
     "leverBase": 0.988,

@@ -126,6 +126,12 @@ function leverList(t) {
     const m = Math.max(1, Math.round(t.durationMonths / 2));
     add('shorter', { durationMonths: m, rate: t.rate.type === 'variable' ? { ...t.rate, path: t.rate.path.filter((p) => p.fromMonth < m) } : t.rate }, m);
   }
+  // a loan already running: its rules are fixed, so only what the borrower can do (add BTC or repay part,
+  // repay early, keep money ready) is offered
+  if (t.mode === 'existing') {
+    if (t.marginCallLtv) add('reserve', { reserveAmount: t.reserveAmount > 0 ? t.reserveAmount : Math.round(t.loanAmount * 0.2 / 100) * 100 }, t.reserveAmount > 0 ? t.reserveAmount : Math.round(t.loanAmount * 0.2 / 100) * 100);
+    return out;
+  }
   if (t.marginCallLtv) {
     const reserve = t.reserveAmount > 0 ? t.reserveAmount : Math.round(t.loanAmount * 0.2 / 100) * 100;
     add('reserve', { reserveAmount: reserve }, reserve);
@@ -200,7 +206,7 @@ async function run(id, terms, settings, garch, post = postMessage) {
     }
   }
   result.garchMc = simulate(terms, s, settings, { model: 'garch' }); await tick();
-  { const { perStart, ...replay } = replayAll(s.hourly, terms); result.replay = replay; } await tick(); // the per-start-day lists are not shown on the page
+  { const { perStart, ...replay } = replayAll(s.hourly, terms); result.replay = { ...replay, lastStart: perStart.time.at(-1) ?? null }; } await tick(); // the per-start-day lists are not shown on the page
   result.stories = STORIES.map((iso) => story(s, terms, iso)).filter(Boolean);
   const lp = liquidationPrices(terms);
   // under the answer: how fast BTC fell as far as this loan's sale price at its fastest since 2014

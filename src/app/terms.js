@@ -57,7 +57,7 @@ export function toTerms(form, { base = null } = {}) {
     curePeriodHours: numOr(s.curePeriodHours, 0), marginCallConsequence: s.marginCallConsequence, liquidationSale: s.liquidationSale,
     cureTargetLtv: pctOrNull(s.cureTargetLtv) ?? (existing ? 0.5 : null), reserveAmount: numOr(s.reserveAmount, 0),
     taxRateNow: (pctOrNull(s.taxRateNow) ?? 0), taxRateAtMaturity: (pctOrNull(s.taxRateAtMaturity) ?? 0),
-    purpose: s.purpose, repayWith: s.repayWith,
+    purpose: existing ? 'spend' : s.purpose, repayWith: s.repayWith, // a loan already running has no money left to invest
   };
   const settings = {
     nPaths: Number(s.simPaths) || 10000,

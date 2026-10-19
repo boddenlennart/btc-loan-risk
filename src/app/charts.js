@@ -245,6 +245,7 @@ export function futuresChart(el, data) {
  */
 export function storiesChart(el, data) {
   remember(el, () => storiesChart(el, data));
+  if (!data.stories.length) { el.innerHTML = ''; return; } // a loan longer than any of the real years allows
   const H = 300;
   const pad = { l: 64, r: 16, t: 14, b: 30 };
   const { svg, tip } = frame(el, H, data.labels.title);

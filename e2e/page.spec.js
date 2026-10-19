@@ -560,8 +560,10 @@ test('comparison: a third offer, removing one, ending it; a refinancing offer ke
   await page.locator('#compare-btn').click();
   await page.locator('[data-compare-add]').click();
   await expect(page.locator('#cmp thead button.col')).toHaveText(['Offer A', 'Offer B', 'Offer C']);
+  await page.locator('#f-loanAmount').fill('15000'); // C differs from A
   await page.locator('[data-compare-remove]').click(); // removes the selected one (C)
   await expect(page.locator('#cmp thead button.col')).toHaveText(['Offer A', 'Offer B']);
+  await expect(page.locator('#f-loanAmount')).toHaveValue('10000'); // A keeps its own terms, not C's
   await page.locator('[data-compare-keep="0"]').click();
   await expect(page.locator('#cmp')).toBeHidden();
   await expect(page.locator('#compare-btn')).toBeVisible();
@@ -578,6 +580,75 @@ test('comparison: a third offer, removing one, ending it; a refinancing offer ke
   await expect(page.locator('#f-loanAmount')).toHaveValue('11000');
   await expect(page.locator('#f-collateralBtc')).toHaveValue('0.4');
   await expect(page.locator('#tiles')).toContainText('Liquidated at');
+});
+
+test('a loan already running: past its margin call, only what the borrower can do, no "buy more BTC"', async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.getByRole('button', { name: 'A loan I already have' }).click();
+  await expect(page.locator('#form')).not.toContainText('What will you do with the money?');
+  await page.locator('#f-loanAmount').fill('15000'); // against 0.3333 BTC at 60,000: LTV 75%, margin call at 70%
+  await waitDone(page);
+  await expect(page.locator('#now-note')).toContainText('Your LTV today (75%) is already above the margin call at 70%.');
+  await expect(page.locator('#tiles')).toContainText('already reached today');
+  await page.locator('#sec-falls > summary').click();
+  await expect(page.locator('#falls-text')).toContainText('Your loan is already past its margin call: at today\'s price');
+  await expect(page.locator('#falls-text')).not.toContainText('−-');
+  await expect(page.locator('#safer')).toContainText('add BTC or repay part');
+  await expect(page.locator('#safer')).not.toContainText('Liquidation LTV 90%');
+  await expect(page.locator('#safer')).not.toContainText('Starting LTV');
+  await expect(page.locator('#questions-title')).not.toContainText('Before you sign');
+  await page.locator('#sec-cost > summary').click();
+  await expect(page.locator('#cost-body')).toContainText('Keeping the loan only beats selling BTC today');
+  await expect(page.locator('#cost-body')).not.toContainText('The yearly rate including fees');
+  await page.locator('#f-loanAmount').fill('10000');
+  await expect(page.locator('#now-note')).toBeHidden();
+});
+
+test('edge cases: one month, a very long loan, too little BTC, a higher tax today, nothing left after a liquidation, an absurd fee', async ({ page }) => {
+  test.setTimeout(300_000); // a 10- and a 17-year loan take about 25 and 35 seconds to calculate
+  const { errors } = await open(page); await waitDone(page);
+  await page.locator('[data-field="durationMonths"] input').fill('1');
+  await expect(page.locator('#headline-text')).toContainText('within 1 month.');
+  // longer than the real prices since 2014 allow for the four real years: a note, no broken chart
+  await page.locator('[data-field="durationMonths"] input').fill('120');
+  await expect(page.locator('#progress')).toBeHidden({ timeout: 180_000 });
+  await page.locator('#sec-history > summary').click();
+  await expect(page.locator('#stories-legend')).toContainText('none of these real years can be followed to its end');
+  await expect(page.locator('#history-text')).toContainText('rests on few separate periods');
+  await page.locator('[data-field="durationMonths"] input').fill('200'); // longer than all the data
+  await expect(page.locator('#progress')).toBeHidden({ timeout: 180_000 });
+  await expect(page.locator('#history-text')).toContainText('cannot be replayed on them');
+  await expect(page.locator('#methods-line')).toContainText('Other method: a volatility model');
+  await page.locator('[data-set="durationMonths"][data-val="12"]').click();
+  await waitDone(page);
+  // too little BTC: the real reason, once
+  await page.locator('[data-set="ltvInput"][data-val="btc"]').click();
+  await page.locator('#f-collateralBtc').fill('0.01');
+  await expect(page.locator('[data-field="collateralBtc"] .err')).toHaveText(/^With this little BTC, the loan is larger than the value of the BTC/);
+  await page.locator('#f-collateralBtc').fill('');
+  await expect(page.locator('[data-field="collateralBtc"] .err')).toHaveText(/^The amount of BTC pledged must be a number above zero\. Enter the BTC amount, for example 0\.25\.\s*$/);
+  await page.locator('#f-collateralBtc').fill('0.3333');
+  await waitDone(page);
+  // a higher tax today than later: BTC may even fall
+  await page.locator('#sec-cost > summary').click();
+  await page.locator('#cost-body [data-k="taxRateNow"]').fill('40');
+  await expect(page.locator('#cost-body .big-line')).toContainText('BTC may be up to 33.3% lower at the end');
+  await page.locator('#cost-body [data-k="taxRateNow"]').fill('0');
+  // a liquidation fee that leaves nothing; an absurd origination fee
+  await page.locator('#form details[data-remember="more"] summary').click();
+  await page.locator('#form [data-k="liquidationFeeBasis"]').selectOption('collateralSold');
+  await page.locator('#f-liquidationFee').fill('20');
+  await expect(page.locator('#sold-line')).toContainText('you get nothing back');
+  await page.locator('#f-originationFee').fill('99');
+  await expect(page.locator('#tiles')).toContainText('effective > 1,000% a year');
+  expect(errors).toEqual([]);
+});
+
+test('a share link pasted into a tab where the page is already open loads its terms', async ({ page }) => {
+  await open(page); await waitDone(page);
+  const hash = encodeState({ ...EXAMPLE_FORM, isExample: false, loanAmount: 20000, initialLtv: 40 });
+  await page.evaluate((h) => { location.hash = h.slice(1); }, hash);
+  await expect(page.locator('#f-loanAmount')).toHaveValue('20000');
 });
 
 test('chart tooltips: moving over a chart shows the values at that point', async ({ page }) => {
