@@ -259,7 +259,7 @@ Public APIs can change their rules at any time; the page then falls back to the 
 
 ## Tests and how each was verified
 
-Run with `npm test` (355 tests) and `npm run test:e2e` (68 browser tests, each in Chrome's, Safari's and Firefox's engine). Quality measurements: [ux/G-quality-report.md](ux/G-quality-report.md) (coverage, planted bugs, hostile input, browsers, speed, accessibility, security). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
+Run with `npm test` (389 tests) and `npm run test:e2e` (68 browser tests, each in Chrome's, Safari's and Firefox's engine). Quality measurements: [ux/G-quality-report.md](ux/G-quality-report.md) (coverage, planted bugs, hostile input, browsers, speed, accessibility, security). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
 
 | # | Test | How it was verified |
 |---|---|---|
@@ -312,14 +312,16 @@ The simulation (bootstrap) weights recent days more since 19 Oct 2026: a day fro
 
 | Currency | Model | Horizon | Below "worst 5%" | Below "worst 10%" | Below median |
 |---|---|---|---|---|---|
-| USD | bootstrap | 90 days | 2.3% | 4.7% | 32.0% |
+| USD | bootstrap | 90 days | 2.3% | 6.3% | 32.8% |
 | USD | bootstrap | 365 days | 0.0% | 1.7% | 33.6% |
-| USD | GARCH | 90 days | 5.5% | 10.9% | 47.7% |
+| USD | GARCH | 90 days | 4.7% | 10.9% | 44.5% |
 | USD | GARCH | 365 days | 0.0% | 4.2% | 39.5% |
-| EUR | bootstrap | 90 days | 2.3% | 4.7% | 35.2% |
+| EUR | bootstrap | 90 days | 3.1% | 5.5% | 35.2% |
 | EUR | bootstrap | 365 days | 0.0% | 1.7% | 33.6% |
-| EUR | GARCH | 90 days | 5.5% | 10.2% | 47.7% |
-| EUR | GARCH | 365 days | 0.0% | 2.5% | 41.2% |
+| EUR | GARCH | 90 days | 5.5% | 10.9% | 46.9% |
+| EUR | GARCH | 365 days | 0.0% | 3.4% | 40.3% |
+
+Measured 19 Oct 2026, after the maths audit fixed the random streams per run (ux/K-math-audit.md, F1). The forecasts overlap: the 90-day test holds about 43 independent periods, the 365-day test about 10, so it can catch a clearly optimistic model but cannot prove exact calibration.
 
 Limits: below "worst 5%" at most 10%, below "worst 10%" at most 20%, below median between 20% and 80%. All pass. So the bootstrap model is on the cautious side, and GARCH over 90 days is close to what it promises. With the past trend kept instead of 0%, GARCH over 365 days failed (21.8% below "worst 10%").
 

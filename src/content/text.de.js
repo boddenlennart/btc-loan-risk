@@ -457,7 +457,7 @@ export default {
     barrierNote: 'Die Lehrbuchformel nimmt ruhige, gleichmäßige Kursbewegungen an (Volatilität {sigma} pro Jahr) und lässt die Margin-Call-Regeln außen vor; sie zeigt deshalb eher eine niedrigere Zahl. Sie dient nur als grobe Prüfung.',
     settings: 'Verwendete Einstellungen: {paths} Zukünfte, {block}-Tage-Abschnitte, Daten {from} bis {to}.',
     testTitle: 'Der Test an der Vergangenheit',
-    test: 'Ab 2016 sah die Methode nur die Vergangenheit und sagte dann den tiefsten Kurs der nächsten 90 und 365 Tage voraus. Die Wirklichkeit lag in 0 bis 2 von 100 Fällen unter dem "schlechtesten 5 %"-Wert der Simulation, seltener als die versprochenen 5. Die Methode ist eher vorsichtig als optimistisch, auch mit stärker gewichteten jüngeren Jahren.',
+    test: 'Ab 2016 sah die Methode nur die Vergangenheit und sagte dann den tiefsten Kurs der nächsten 90 und 365 Tage voraus. Die Wirklichkeit lag in 0 bis 3 von 100 Fällen unter dem "schlechtesten 5 %"-Wert der Simulation, seltener als die versprochenen 5. Die Methode ist eher vorsichtig als optimistisch, auch mit stärker gewichteten jüngeren Jahren.',
     dataTitle: 'Daten und die wöchentliche Aktualisierung',
     data: [
       'Kursdaten: stündliche Kurse der Börsen Bitstamp (USD seit 2014, EUR seit 2017) und Kraken (EUR 2014–2016), wie von den Börsen veröffentlicht. Bekannte Lücke: Bitstamp war vom 5. bis 9. Januar 2015 offline.',

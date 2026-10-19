@@ -1,11 +1,19 @@
 // Seeded random numbers so every simulation can be repeated exactly.
 
-/** Mixes two integers into a well-spread 32-bit seed (used for one stream per path). */
-export function mixSeed(a, b) {
-  let h = (a ^ 0x9e3779b9) >>> 0;
-  h = Math.imul(h ^ (b + 0x7f4a7c15), 0x85ebca6b) >>> 0;
+// murmur3's finaliser: every input bit affects every output bit
+function fmix(h) {
+  h = Math.imul(h ^ (h >>> 16), 0x85ebca6b) >>> 0;
   h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35) >>> 0;
   return (h ^ (h >>> 16)) >>> 0;
+}
+
+/**
+ * Mixes a run's seed and a path number into a well-spread 32-bit seed (one random stream per path).
+ * The seed is mixed on its own first, so two runs with neighbouring seeds share no paths (found in the
+ * maths audit: combining both by XOR first made runs 1001 and 1002 share 9,998 of 10,000 paths).
+ */
+export function mixSeed(a, b) {
+  return fmix((fmix((a ^ 0x9e3779b9) >>> 0) + Math.imul(b + 1, 0x7f4a7c15)) >>> 0);
 }
 
 /** Returns { uniform(), normal(), studentT(nu) } driven by an integer seed (sfc32 generator). */

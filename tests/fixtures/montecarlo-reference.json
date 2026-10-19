@@ -1,0 +1,1007 @@
+{
+ "until": 1792022399,
+ "nPaths": 2000,
+ "seed": 20240101,
+ "halfLifeDays": 1095,
+ "block": 30,
+ "currencies": {
+  "EUR": {
+   "days": 4670,
+   "firstDay": 1388534400,
+   "lastClose": 72812.64,
+   "sumR": 4.889552056942729,
+   "sumL": -118.0903813778602,
+   "cases": {
+    "example": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 72812.64,
+     "liquidated": 1079,
+     "partial": 0,
+     "marginCall": 1225,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      null,
+      null,
+      113
+     ]
+    },
+    "warning only": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "warningOnly",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 72812.64,
+     "liquidated": 929,
+     "partial": 0,
+     "marginCall": 1225,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      null,
+      null,
+      114
+     ]
+    },
+    "no margin call": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": null,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 72812.64,
+     "liquidated": 929,
+     "partial": 0,
+     "marginCall": 0,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      null,
+      null,
+      114
+     ]
+    },
+    "partial after the deadline": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "partialAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 72812.64,
+     "liquidated": 487,
+     "partial": 592,
+     "marginCall": 1225,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      null,
+      null,
+      null
+     ]
+    },
+    "partial at once": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "autoPartial",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15",
+      "cureTargetLtv": 0.55
+     },
+     "s0": 72812.64,
+     "liquidated": 231,
+     "partial": 994,
+     "marginCall": 1225,
+     "firstPathsLiquidationDay": [
+      128,
+      37,
+      null,
+      null,
+      null
+     ]
+    },
+    "partial at liquidation, fee on BTC sold": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.03,
+       "basis": "collateralSold"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "partial",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 72812.64,
+     "liquidated": 792,
+     "partial": 287,
+     "marginCall": 1225,
+     "firstPathsLiquidationDay": [
+      null,
+      null,
+      null,
+      null,
+      113
+     ]
+    },
+    "reserve, 72 h": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 72,
+      "liquidationSale": "all",
+      "reserveAmount": 2000,
+      "startDate": "2026-01-15"
+     },
+     "s0": 72812.64,
+     "liquidated": 822,
+     "partial": 0,
+     "marginCall": 1225,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      null,
+      null,
+      140
+     ]
+    },
+    "interest added, compounding, 24 months": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 24,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.12
+      },
+      "repayment": "bullet",
+      "compounding": "monthly",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 72812.64,
+     "liquidated": 1495,
+     "partial": 0,
+     "marginCall": 1591,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      655,
+      null,
+      113
+     ]
+    },
+    "equal payments, 36 months, act/365": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 36,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "amortizing",
+      "compounding": "none",
+      "dayCount": "act/365",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 72812.64,
+     "liquidated": 844,
+     "partial": 0,
+     "marginCall": 1012,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      null,
+      null,
+      130
+     ]
+    },
+    "high LTV 65%, 6 months, 24 h": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.65,
+      "marginCallLtv": 0.75,
+      "liquidationLtv": 0.85,
+      "durationMonths": 6,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 24,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 72812.64,
+     "liquidated": 1352,
+     "partial": 0,
+     "marginCall": 1495,
+     "firstPathsLiquidationDay": [
+      105,
+      36,
+      null,
+      null,
+      107
+     ]
+    },
+    "low LTV 25%, 12 months": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.25,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 72812.64,
+     "liquidated": 151,
+     "partial": 0,
+     "marginCall": 196,
+     "firstPathsLiquidationDay": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ]
+    },
+    "variable rate": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "variable",
+       "path": [
+        {
+         "fromMonth": 0,
+         "annual": 0.08
+        },
+        {
+         "fromMonth": 6,
+         "annual": 0.14
+        }
+       ]
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 72812.64,
+     "liquidated": 1079,
+     "partial": 0,
+     "marginCall": 1223,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      null,
+      null,
+      113
+     ]
+    }
+   }
+  },
+  "USD": {
+   "days": 4670,
+   "firstDay": 1388534400,
+   "lastClose": 81574.32,
+   "sumR": 4.682684495393981,
+   "sumL": -120.955002036259,
+   "cases": {
+    "example": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 81574.32,
+     "liquidated": 1061,
+     "partial": 0,
+     "marginCall": 1218,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      null,
+      null,
+      111
+     ]
+    },
+    "warning only": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "warningOnly",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 81574.32,
+     "liquidated": 934,
+     "partial": 0,
+     "marginCall": 1218,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      null,
+      null,
+      111
+     ]
+    },
+    "no margin call": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": null,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 81574.32,
+     "liquidated": 934,
+     "partial": 0,
+     "marginCall": 0,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      null,
+      null,
+      111
+     ]
+    },
+    "partial after the deadline": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "partialAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 81574.32,
+     "liquidated": 464,
+     "partial": 597,
+     "marginCall": 1218,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      null,
+      null,
+      111
+     ]
+    },
+    "partial at once": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "autoPartial",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15",
+      "cureTargetLtv": 0.55
+     },
+     "s0": 81574.32,
+     "liquidated": 232,
+     "partial": 986,
+     "marginCall": 1218,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      null,
+      null,
+      null
+     ]
+    },
+    "partial at liquidation, fee on BTC sold": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.03,
+       "basis": "collateralSold"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "partial",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 81574.32,
+     "liquidated": 782,
+     "partial": 279,
+     "marginCall": 1218,
+     "firstPathsLiquidationDay": [
+      null,
+      null,
+      null,
+      null,
+      111
+     ]
+    },
+    "reserve, 72 h": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 72,
+      "liquidationSale": "all",
+      "reserveAmount": 2000,
+      "startDate": "2026-01-15"
+     },
+     "s0": 81574.32,
+     "liquidated": 814,
+     "partial": 0,
+     "marginCall": 1218,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      null,
+      null,
+      114
+     ]
+    },
+    "interest added, compounding, 24 months": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 24,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.12
+      },
+      "repayment": "bullet",
+      "compounding": "monthly",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 81574.32,
+     "liquidated": 1482,
+     "partial": 0,
+     "marginCall": 1577,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      677,
+      null,
+      109
+     ]
+    },
+    "equal payments, 36 months, act/365": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 36,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "amortizing",
+      "compounding": "none",
+      "dayCount": "act/365",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 81574.32,
+     "liquidated": 836,
+     "partial": 0,
+     "marginCall": 1021,
+     "firstPathsLiquidationDay": [
+      128,
+      179,
+      null,
+      null,
+      113
+     ]
+    },
+    "high LTV 65%, 6 months, 24 h": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.65,
+      "marginCallLtv": 0.75,
+      "liquidationLtv": 0.85,
+      "durationMonths": 6,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 24,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 81574.32,
+     "liquidated": 1348,
+     "partial": 0,
+     "marginCall": 1481,
+     "firstPathsLiquidationDay": [
+      106,
+      37,
+      null,
+      null,
+      88
+     ]
+    },
+    "low LTV 25%, 12 months": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.25,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 81574.32,
+     "liquidated": 141,
+     "partial": 0,
+     "marginCall": 187,
+     "firstPathsLiquidationDay": [
+      null,
+      null,
+      null,
+      null,
+      307
+     ]
+    },
+    "variable rate": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "variable",
+       "path": [
+        {
+         "fromMonth": 0,
+         "annual": 0.08
+        },
+        {
+         "fromMonth": 6,
+         "annual": 0.14
+        }
+       ]
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15"
+     },
+     "s0": 81574.32,
+     "liquidated": 1067,
+     "partial": 0,
+     "marginCall": 1221,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      null,
+      null,
+      111
+     ]
+    }
+   }
+  }
+ }
+}

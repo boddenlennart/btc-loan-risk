@@ -13,6 +13,10 @@ Measured on 17 Oct 2026, updated 18 Oct 2026 for the three-page site (branch `ux
 
 Not run by any test: rare fallback branches inside library code (compression), and a few chart tooltip details. Every feature visible on the page has at least one browser test.
 
+## 1b. Maths audit (19 Oct 2026)
+
+See ux/K-math-audit.md. An independent Python version of the simulation (raw data, own daily series, the independent loan reference, the lender rules from their description, the same random numbers) agrees **exactly** with the page for 12 loans in EUR and USD. The volatility model matches the standard package `arch`. Answers known in advance come out exactly. Five problems were found and fixed (the main one: runs with neighbouring seeds shared almost all paths; no effect on the page, which uses one seed), seven smaller effects are measured and disclosed.
+
 ## 2. Breaking things on purpose
 
 **Planted bugs** (`node tools/mutation-check.mjs`): 19 realistic slips in the calculation code, one at a time. Examples:

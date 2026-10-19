@@ -462,7 +462,7 @@ export default {
     barrierNote: 'The textbook formula assumes calm, regular price moves (volatility {sigma} a year) and ignores the margin-call rules, so it tends to show a lower number. It is a rough check only.',
     settings: 'Settings used: {paths} futures, {block}-day stretches, data {from} to {to}.',
     testTitle: 'The test against history',
-    test: 'From 2016 on, the method only saw the past and then predicted the lowest price of the next 90 and 365 days. Reality fell below the simulation\'s "worst 5%" level in 0 to 2 of 100 cases, fewer than the promised 5. The method is cautious rather than optimistic, also with recent years weighted more.',
+    test: 'From 2016 on, the method only saw the past and then predicted the lowest price of the next 90 and 365 days. Reality fell below the simulation\'s "worst 5%" level in 0 to 3 of 100 cases, fewer than the promised 5. The method is cautious rather than optimistic, also with recent years weighted more.',
     dataTitle: 'Data and the weekly update',
     data: [
       'Price data: hourly prices from the exchanges Bitstamp (USD since 2014, EUR since 2017) and Kraken (EUR 2014–2016), as published by the exchanges. Known gap: Bitstamp was offline from 5 to 9 January 2015.',
