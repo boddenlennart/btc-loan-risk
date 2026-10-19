@@ -653,6 +653,9 @@ test('cost including the risk: in "What it costs", in the comparison of offers a
   await tileLine.click();
   await expect(page.locator('#sec-cost')).toHaveAttribute('open', '');
   await expect(page.locator('#risk-cost h4')).toBeInViewport();
+  // the heading lands below the sticky top bar, not hidden behind it
+  const below = await page.evaluate(() => document.querySelector('#risk-cost h4').getBoundingClientRect().top - document.querySelector('.top').getBoundingClientRect().bottom);
+  expect(below).toBeGreaterThanOrEqual(4);
   const block = page.locator('#risk-cost');
   await expect(block).toContainText(`Including the liquidation risk: about ${tileTotal} (`);
   await expect(block).toContainText(/Including the liquidation risk: about €[\d,]+ \(about [\d.]+% a year instead of 11\.6%\)\./);

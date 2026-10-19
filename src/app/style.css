@@ -173,6 +173,7 @@ body.bar-on { padding-bottom: 72px; }
 .tile { background: var(--surface-2); border-radius: 6px; padding: 10px; min-width: 0; }
 .tile .v { font: 600 17px/1.2 var(--serif); margin-top: 4px; overflow-wrap: anywhere; }
 .tile .s { color: var(--text-2); font-size: 13px; line-height: 1.35; margin-top: 2px; }
+.risk-cost { scroll-margin-top: 76px; } /* the tile's link lands here, below the sticky top bar */
 .tile a.tile-risk { display: block; margin-top: 6px; color: var(--text-2); text-decoration: underline dotted; text-underline-offset: 3px; }
 .tile a.tile-risk:hover { color: var(--text); }
 .tile .label { overflow-wrap: anywhere; }
