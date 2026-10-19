@@ -98,6 +98,12 @@
      "q90": 0.16
     },
     "leverage": null,
+    "riskCost": {
+     "value": 1555.145273709,
+     "se": 124.870409677,
+     "noSale": 0.532,
+     "scale": 0.848329852
+    },
     "samplePaths": {
      "count": 100,
      "sold": 43,
@@ -435,6 +441,12 @@
      "q90": 0.267991665
     },
     "leverage": null,
+    "riskCost": {
+     "value": 1978.875906623,
+     "se": 137.814119687,
+     "noSale": 0.3995,
+     "scale": 0.848329852
+    },
     "samplePaths": {
      "count": 100,
      "sold": 54,
@@ -835,6 +847,12 @@
      "q90": 0.16
     },
     "leverage": null,
+    "riskCost": {
+     "value": 757.914045251,
+     "se": 186.338346108,
+     "noSale": 0.8515,
+     "scale": 0.563478565
+    },
     "samplePaths": {
      "count": 100,
      "sold": 16,
@@ -1172,6 +1190,12 @@
      "q90": 0.16
     },
     "leverage": null,
+    "riskCost": {
+     "value": 1630.434966178,
+     "se": 126.20900171,
+     "noSale": 0.528,
+     "scale": 0.841620226
+    },
     "samplePaths": {
      "count": 100,
      "sold": 42,
@@ -1509,6 +1533,12 @@
      "q90": 0.557894737
     },
     "leverage": null,
+    "riskCost": {
+     "value": 1721.672224743,
+     "se": 117.365106928,
+     "noSale": 0.388,
+     "scale": 0.848329852
+    },
     "samplePaths": {
      "count": 100,
      "sold": 57,
@@ -1856,6 +1886,12 @@
      "q90": 0.51585449
     },
     "leverage": null,
+    "riskCost": {
+     "value": 1240.654241734,
+     "se": 95.433444488,
+     "noSale": 0.4635,
+     "scale": 0.841620226
+    },
     "samplePaths": {
      "count": 100,
      "sold": 48,
@@ -2196,6 +2232,12 @@
      "q90": 0.0025
     },
     "leverage": null,
+    "riskCost": {
+     "value": 1159.333543862,
+     "se": 127.9391444,
+     "noSale": 0.6785,
+     "scale": 0.848329852
+    },
     "samplePaths": {
      "count": 100,
      "sold": 31,
@@ -2548,6 +2590,12 @@
      "q90": 0.29564547
     },
     "leverage": null,
+    "riskCost": {
+     "value": 1388.587445966,
+     "se": 123.945639143,
+     "noSale": 0.5905,
+     "scale": 0.848329852
+    },
     "samplePaths": {
      "count": 100,
      "sold": 37,
@@ -2895,6 +2943,12 @@
      "q90": 0.254367633
     },
     "leverage": null,
+    "riskCost": {
+     "value": 4241.772562424,
+     "se": 186.589715245,
+     "noSale": 0.012,
+     "scale": 0.848329852
+    },
     "samplePaths": {
      "count": 100,
      "sold": 99,
@@ -3243,6 +3297,12 @@
       "lessKept": -0.068858524,
       "liquidated": -0.2775
      }
+    },
+    "riskCost": {
+     "value": 920.735343609,
+     "se": 113.363980877,
+     "noSale": 0.7215,
+     "scale": 0.841620226
     },
     "samplePaths": {
      "count": 100,
@@ -3619,6 +3679,12 @@
       "liquidated": -0.4525
      }
     },
+    "riskCost": {
+     "value": 999.785350879,
+     "se": 119.957466265,
+     "noSale": 0.715,
+     "scale": 0.706887873
+    },
     "samplePaths": {
      "count": 100,
      "sold": 24,
@@ -3944,6 +4010,12 @@
      "q90": 0.16
     },
     "leverage": null,
+    "riskCost": {
+     "value": 774.053898542,
+     "se": 63.076123105,
+     "noSale": 0.706,
+     "scale": 0.901766074
+    },
     "samplePaths": {
      "count": 100,
      "sold": 29,

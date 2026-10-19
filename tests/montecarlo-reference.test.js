@@ -36,20 +36,22 @@ describe.skipIf(!ref)('simulation = independent Python reference (same random dr
         expect(lowRel.reduce((a, b) => a + b, 0)).toBeCloseTo(R.sumL, 9);
       });
       for (const [name, c] of Object.entries(R ? R.cases : {})) {
-        it(`${name}: liquidated, partly liquidated and margin calls agree exactly`, () => {
+        it(`${name}: liquidated, partly liquidated, margin calls and the cost of the risk agree exactly`, () => {
           const { returns, lowRel, weights } = data();
           const t = { ...c.terms, btcPrice: c.s0 };
           const res = runMonteCarlo({
             model: 'bootstrap', params: { returns, lowRel, weights, blockDays: ref.block }, s0: c.s0,
             days: debtByDay(t).length - 1, nPaths: ref.nPaths, seed: ref.seed, logDriftPerDay: 0,
             loan: { debtByDay: debtByDay(t), collateralBtc: collateralBtc(t), rules: lenderRules(t) },
-            cureDays: Math.max(1, Math.ceil((t.curePeriodHours ?? 0) / 24)), samplePaths: 5,
+            cureDays: Math.max(1, Math.ceil((t.curePeriodHours ?? 0) / 24)), samplePaths: 5, riskCost: true,
           });
           expect(Math.round(res.pLiquidation * ref.nPaths)).toBe(c.liquidated);
           expect(Math.round(res.pPartial * ref.nPaths)).toBe(c.partial);
           if (t.marginCallLtv) expect(Math.round(res.pMarginCall * ref.nPaths)).toBe(c.marginCall);
           // first five paths: for liquidated ones, the day of the first sale of any kind (as in the chart)
           expect(res.samplePaths.map((p) => (p.liquidated ? p.event.day : null))).toEqual(c.firstPathsLiquidationDay);
+          // the cost of the risk (ux/M-risk-cost-spec.md), from each side's own sale records
+          expect(Math.abs(res.riskCost.value - c.riskCost)).toBeLessThanOrEqual(1e-9 * Math.max(1, c.riskCost));
         }, 120_000);
       }
     });

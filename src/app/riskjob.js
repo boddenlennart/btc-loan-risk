@@ -102,11 +102,11 @@ function setData(currency, base64, appended, fx) {
 const monthEndsFor = (t) => Array.from({ length: t.durationMonths }, (_, m) => daysBetween(t.startDate, addMonths(t.startDate, m + 1)));
 
 /** One simulation of the loan `t`. */
-function simulate(t, s, settings, { model = 'bootstrap', nPaths = settings.nPaths, trend = 0, samplePaths = 0, leverage = false, seed = 20240101 } = {}) {
+function simulate(t, s, settings, { model = 'bootstrap', nPaths = settings.nPaths, trend = 0, samplePaths = 0, leverage = false, riskCost = false, seed = 20240101 } = {}) {
   const sum = loanSummary(t);
   return runMonteCarlo({
     model, params: model === 'bootstrap' ? { returns: s.returns, lowRel: s.lowRel, weights: s.weights, blockDays: settings.blockDays } : s.garch,
-    s0: t.btcPrice, days: loanDays(t), nPaths, seed, monthEnds: monthEndsFor(t), samplePaths,
+    s0: t.btcPrice, days: loanDays(t), nPaths, seed, monthEnds: monthEndsFor(t), samplePaths, riskCost,
     logDriftPerDay: Math.log(1 + trend) / 365,
     loan: { debtByDay: debtByDay(t), collateralBtc: collateralBtc(t), rules: lenderRules(t) },
     cureDays: Math.max(1, Math.ceil((t.curePeriodHours ?? 0) / 24)),
@@ -191,7 +191,7 @@ async function run(id, terms, settings, garch, post = postMessage) {
 
   const buy = terms.purpose === 'buy';
   const result = { currency: terms.currency, garch: s.garch, facts: s.facts, history: { from: s.hourly.time[0], to: s.hourly.time[s.hourly.time.length - 1] } };
-  result.main = simulate(terms, s, settings, { samplePaths: 100, leverage: buy }); // 5 × 20 for "show 20 other futures"
+  result.main = simulate(terms, s, settings, { samplePaths: 100, leverage: buy, riskCost: true }); // 5 × 20 for "show 20 other futures"
   await tick();
   // Comparison: every other offer on the same simulated futures, so differences come only from
   // the terms. Each value equals what that offer's own full result shows when it is selected.
@@ -200,8 +200,8 @@ async function run(id, terms, settings, garch, post = postMessage) {
     result.compare = [];
     for (const t of others) {
       if (!t) { result.compare.push(null); continue; }
-      const m = simulate(t, s, settings, { leverage: t.purpose === 'buy' });
-      result.compare.push({ pLiquidation: m.pLiquidation, pPartial: m.pPartial, pMarginCall: m.pMarginCall, cumulativeByMonth: m.cumulativeByMonth, leverageMore: m.leverage ? m.leverage.more : null });
+      const m = simulate(t, s, settings, { leverage: t.purpose === 'buy', riskCost: true });
+      result.compare.push({ pLiquidation: m.pLiquidation, pPartial: m.pPartial, pMarginCall: m.pMarginCall, cumulativeByMonth: m.cumulativeByMonth, leverageMore: m.leverage ? m.leverage.more : null, riskCost: m.riskCost });
       await tick();
     }
   }

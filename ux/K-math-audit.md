@@ -24,6 +24,7 @@ Five problems were found and fixed; seven smaller effects were measured and are 
 | 8 | Textbook formula | Formula review; existing test against a simulation of the textbook model | Correct (reflection formula, no trend). |
 | 9 | Test against history | Re-run with the page's settings; how many independent cases it really contains | Passes (simulation: "worst 5%" breached 0–3 times in 100). See L6 on its strength. |
 | 10 | Data | Long stretches without trades; the largest daily moves | Largest moves are real events (12 Mar 2020: −38%). See L7 for the 2015 outage. |
+| 11 | Cost of the risk (added 19 Oct 2026, `ux/M-risk-cost-spec.md`) | The Python version computes it from its own sale records; answers known in advance; the textbook barrier-option formula (Reiner and Rubinstein) on smooth prices; the margin-call premiums of the paper the definition comes from | **Exact agreement** in all 24 cases. Known answers exact (no sale, fee, partial sale with both fee bases). Simulation and formula agree within the simulation's precision. The paper's 0.6 / 2.1 / 4.8% are reproduced within 0.15 points. Tests: `tests/montecarlo-reference.test.js`, `tests/risk-cost.test.js`. |
 
 ## Found and fixed
 
@@ -51,6 +52,7 @@ Five problems were found and fixed; seven smaller effects were measured and are 
 
 - `tests/montecarlo-reference.test.js` with `tests/fixtures/montecarlo-reference.json` (from `reference/reference_montecarlo.py`): any change in the simulation or the lender rules that is not made in both implementations fails.
 - `tests/math-audit.test.js`: answers known in advance, independent random streams, precision, no built-in trend.
+- `tests/risk-cost.test.js`: the cost of the risk against answers known in advance, the textbook option formula and the paper's premiums; the Python version checks it in every reference case.
 - The test against history checks the page's actual settings (weighted, no trend).
 
 To regenerate the Python reference after an intended change: `.tools/py/bin/python reference/reference_montecarlo.py`.

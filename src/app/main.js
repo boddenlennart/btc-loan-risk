@@ -733,6 +733,13 @@ function renderCompare() {
   const nLiq = idx.map((i) => { const m = mainOf(i); return T[i] && m ? heroSplit(m)[0] : null; });
   const head = `<tr><td></td>${idx.map((i) => `<th scope="col"><button type="button" class="col${i === compare.active ? ' active' : ''}" data-offer="${i}" aria-pressed="${i === compare.active}">${esc(offerName(i))}</button></th>`).join('')}</tr>`;
   const row = (label, sub, cells, cls = '') => `<tr${cls ? ` class="${cls}"` : ''}><th scope="row">${esc(label)}${sub ? `<small>${esc(sub)}</small>` : ''}</th>${cells.join('')}</tr>`;
+  // cost including the risk: full cost (or interest left) plus the cost of the risk of that offer's own simulation
+  const riskCell = (tm, sum, m) => {
+    if (!tm || !sum) return cell(dash);
+    if (!m || !m.riskCost) return cell(wait);
+    const x = riskTotal(tm, sum, m.riskCost.value);
+    return cell(esc(money0(round10(x.total), cur)), t('compare.perYearAbout', { rate: aprText(x.rate) }));
+  };
   const sold = idx.map((i) => (T[i] ? cell(esc(money0(liquidationPrices(T[i]).atStart, cur)), `−${pct(dropToLiquidation(T[i]), 0)}`) : cell(Cm.fixTerms)));
   const marginRow = row(Cm.rowMargin, '', idx.map((i) => { const mp = T[i] && marginCallPrices(T[i]); if (!mp) return cell(dash); const r = lenderRules(T[i]); return cell(esc(money0(mp.atStart, cur)), r.behaviour === 'autoPartial' ? texts().results.tileMarginAuto : r.afterCure ? t('results.tileMarginHours', { hours: T[i].curePeriodHours }) : texts().results.tileMarginWarning); }), 'desk-only');
   const rateRow = row(F().rateAnnual.label, '', idx.map((i) => (!T[i] ? cell(dash) : T[i].rate.type === 'fixed' ? cell(esc(pct(T[i].rate.annual, 1)), t('ui.perYear'))
@@ -742,6 +749,7 @@ function renderCompare() {
     rows += row(Cm.rowLiq, '', idx.map((i) => cell(T[i] ? big(nLiq[i] ?? wait) : dash, T[i] ? t('compare.withinMonths', { months: T[i].durationMonths }) : '')));
     rows += row(Cm.rowSold, '', sold);
     rows += row(Cm.rowCost, '', idx.map((i) => { if (!T[i]) return cell(dash); const s = loanSummary(T[i]); return cell(esc(money0(s.totalCost, cur)), t('compare.perYear', { apr: aprText(s.effectiveApr) })); }));
+    rows += row(Cm.rowRisk, '', idx.map((i) => riskCell(T[i], T[i] && loanSummary(T[i]), mainOf(i))));
     rows += row(Cm.rowReceive, '', idx.map((i) => cell(T[i] ? esc(money0(loanSummary(T[i]).amountReceived, cur)) : dash)));
     rows += marginRow; rows += rateRow;
     const ok = T.filter(Boolean);
@@ -763,6 +771,7 @@ function renderCompare() {
     rows += row(Cm.rowReceiveNow, '', [cell(dash), cell(startCell ? esc(startCell[0].toUpperCase() + startCell.slice(1)) : dash)]);
     rows += row(Cm.rowCost, '', [cell(cur0 ? esc(money0(loanSummary(cur0).totalInterest, cur)) : dash, cur0 ? t('compare.interestLeft', { months: span }) : ''),
       cell(s1 ? esc(money0(s1.totalCost, cur)) : dash, s1 ? t('compare.inclSwitching', { months: m1Months, apr: aprText(s1.effectiveApr) }) : '')]);
+    rows += row(Cm.rowRisk, '', [riskCell(cur0, cur0 && loanSummary(cur0), mainOf(0)), riskCell(T[1], s1, m1)]);
     if (shorter) notes.push(t('compare.shorterRefi', { m: m1Months, n: span }));
     if (T[1] && span && m1Months > span) notes.push(t('compare.longerRefi', { m: m1Months, n: span }));
     lastCmp = { kind: 'refi', months: span, a: nLiq[0] ?? wait, b: sameSpan ?? wait };
@@ -917,21 +926,47 @@ function renderCost() {
     : t('cost.line', { received: money(s.amountReceived, cur), payback: money(s.totalPayback, cur), cost: money(s.totalCost, cur), apr: aprText(s.effectiveApr) }))}</p>
     ${existing ? '' : `<p class="hint">${esc(C.timingNote)}</p>`}
     <details class="table-details" data-remember="plan"${openDetails.has('plan') ? ' open' : ''}><summary>${esc(C.schedule)}</summary><div class="table-wrap" tabindex="0" role="region" aria-label="${esc(t('ui.showTable'))}"><table><thead><tr>${C.scheduleHead.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></details>`;
+  html += '<div id="risk-cost" class="risk-cost"></div>'; // filled from the simulation (renderRiskCost)
   if (tm.purpose !== 'buy') {
     html += `<h4>${esc(texts().sections.borrowOrSell)}</h4><p>${esc(state.refi ? C.sellIntroRefi : existing ? C.sellIntroExisting : C.sellIntro)}</p>
-      <p class="big-line">${esc(breakevenLine(ct, tm))}</p>
+      <p class="big-line" id="breakeven-line">${esc(breakevenLine(ct, tm))}</p>
       <div class="pair tax">${numField('taxRateNow', C.taxNow, '%')}${numField('taxRateAtMaturity', C.taxLater, '%')}</div><p class="hint">${esc(C.taxNote)}</p>`;
   } else {
     html += '<div id="leverage"></div>';
   }
   const active = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.k : null;
   if (active === 'taxRateNow' || active === 'taxRateAtMaturity') { // don't rebuild the field being typed in
-    const bl = $('#cost-body .big-line'); if (bl) bl.textContent = breakevenLine(ct, tm);
+    const bl = $('#breakeven-line'); if (bl) bl.textContent = breakevenLine(ct, tm);
     return;
   }
   $('#cost-body').innerHTML = html;
   $('#sec-cost-title').textContent = `${texts().sections.cost} · ${tm.purpose === 'buy' ? texts().sections.leverage : texts().sections.borrowOrSell}`;
   if (tm.purpose === 'buy') renderLeverage();
+  renderRiskCost();
+}
+
+// "Cost including the risk" (ux/M-risk-cost-spec.md): the full cost plus the cost of the risk, an
+// option price from the simulation, so it follows the last calculation (like the other simulated numbers)
+const round10 = (x) => Math.round(x / 10) * 10;
+function riskTotal(tm, sum, riskValue) {
+  const years = tm.durationMonths / 12;
+  if (tm.mode === 'existing') return { total: sum.totalInterest + riskValue, rate: (sum.totalInterest + riskValue) / tm.loanAmount / years };
+  return { total: sum.totalCost + riskValue, rate: sum.effectiveApr + riskValue / tm.loanAmount / years };
+}
+function renderRiskCost() {
+  const el = $('#risk-cost'); if (!el) return;
+  const r = lastRisk; const tm = riskTerms;
+  if (!r || !r.main || !r.main.riskCost || !tm) { el.innerHTML = ''; return; }
+  const C = texts().cost; const cur = tm.currency;
+  const s = loanSummary(costTerms(tm)); const rc = r.main.riskCost;
+  const { total, rate } = riskTotal(tm, s, rc.value);
+  const line = tm.mode === 'existing'
+    ? t('cost.riskLineExisting', { total: money0(round10(total), cur), months: tm.durationMonths, interest: money0(s.totalInterest, cur) })
+    : t('cost.riskLine', { total: money0(round10(total), cur), rate: aprText(rate), apr: aprText(s.effectiveApr) });
+  el.innerHTML = `<h4>${esc(C.riskTitle)}</h4><p class="big-line">${esc(line)}</p>
+    <p>${esc(t('cost.riskPart', { risk: money0(round10(rc.value), cur) }))}</p>
+    <p class="hint">${esc(t('cost.riskNotFee', { none: Math.round(rc.noSale * 100) }))} ${esc(C.riskCompare)}</p>
+    <p class="hint"><a href="${pageHref('method/')}#risk-cost">${esc(C.riskLink)}</a></p>`;
 }
 
 // ------------------------------------------------------------------ results: from the simulation
@@ -984,6 +1019,7 @@ function renderRisk() {
   $('#data-period').textContent = t('ui.dataThrough', { from: date(META.prices[cur].from), to: date(lastHour), updated: date(META.dataUpdated || META.prices[cur].to) });
   renderSafer(); renderTrend(); renderCompare(); updateAnswerBar();
   if (tm.purpose === 'buy') renderLeverage();
+  renderRiskCost();
   $('#history-text').innerHTML = historyText();
   $('#falls-month').textContent = fallsMonthText();
   renderFallHook(r, tm);

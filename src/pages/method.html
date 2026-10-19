@@ -24,12 +24,13 @@
       <li><a href="#your-number" data-t="method.numTitle"></a></li></ol></div>
     <div><p class="label" data-t="method.layers.details"></p><ol start="4">
       <li><a href="#rules" data-t="method.rulesTitle"></a></li>
+      <li><a href="#risk-cost" data-t="method.riskTitle"></a></li>
       <li><a href="#methods" data-t="method.methodsTitle"></a></li>
       <li><a href="#test" data-t="method.testTitle"></a></li>
       <li><a href="#data" data-t="method.dataTitle"></a></li>
       <li><a href="#trend" data-t="method.trendTitle"></a></li>
       <li><a href="#model-limits" data-t="method.limitsTitle"></a></li></ol></div>
-    <div><p class="label" data-t="method.layers.experts"></p><ol start="10">
+    <div><p class="label" data-t="method.layers.experts"></p><ol start="11">
       <li><a href="#maths" data-t="method.mathsTitle"></a></li>
       <li><a href="#verify" data-t="method.verifyTitle"></a></li></ol></div>
   </nav>
@@ -64,6 +65,26 @@
   <section class="part" id="rules" aria-labelledby="rules-h">
     <h2 id="rules-h" data-t="method.rulesTitle"></h2>
     <ul id="rules-list"></ul>
+  </section>
+
+  <section class="part" id="risk-cost" aria-labelledby="risk-h">
+    <h2 id="risk-h" data-t="method.riskTitle"></h2>
+    <p id="risk-what" data-t="method.riskWhat"></p>
+    <h3 data-t="method.riskOneTitle"></h3>
+    <p id="risk-one"></p>
+    <h3 data-t="method.riskAllTitle"></h3>
+    <p id="risk-all"></p>
+    <h3 data-t="method.riskScaleTitle"></h3>
+    <p id="risk-scale"></p>
+    <h3 data-t="method.riskOptionTitle"></h3>
+    <p data-t="method.riskOption"></p>
+    <div class="table-wrap" tabindex="0" role="region" id="risk-wrap"><table class="itable" id="risk-table"></table></div>
+    <p class="hint" data-t="method.riskWhy"></p>
+    <h3 data-t="method.riskReadTitle"></h3>
+    <ul id="risk-read"></ul>
+    <h3 data-t="method.riskLenderTitle"></h3>
+    <p data-t="method.riskLender"></p>
+    <p class="hint" data-t="method.riskNot"></p>
   </section>
 
   <section class="part" id="methods" aria-labelledby="methods-h">
@@ -122,6 +143,9 @@
       <p class="hint" id="m-garch"></p>
       <h3 data-t="method.mathsBarrier"></h3>
       <p class="f">P = Φ((ln(b/S<sub>0</sub>) − mT) / (σ√T)) + (b/S<sub>0</sub>)<sup>2m/σ²</sup> · Φ((ln(b/S<sub>0</sub>) + mT) / (σ√T)), &nbsp; m = 0 <span data-t="method.mathsNoTrend"></span>, &nbsp; σ = <span id="m-sigma"></span></p>
+      <h3 data-t="method.mathsRisk"></h3>
+      <p class="f">C = (1/N) Σ<sub>i</sub> Σ<sub>sales</sub> [ k·b · max(0, S̃<sub>T,i</sub> − P) + (1 − k)·b · S̃<sub>T,i</sub> ], &nbsp; S̃<sub>T,i</sub> = S<sub>T,i</sub> · S<sub>0</sub> / ((1/N) Σ<sub>j</sub> S<sub>T,j</sub>)</p>
+      <p class="hint" data-t="method.mathsRiskNote"></p>
       <h3 data-t="method.mathsReplay"></h3>
       <p class="hint" data-t="method.mathsReplayNote"></p>
       <h3 data-t="method.mathsCode"></h3>

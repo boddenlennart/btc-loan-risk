@@ -45,7 +45,7 @@ export function createLoanState(collateral) {
 }
 
 /** Share of the sale proceeds that repays debt (the rest is the fee). */
-const repaidShare = (rules) => (rules.feeBasis === 'collateralSold' ? 1 - rules.feeValue : 1 / (1 + rules.feeValue));
+export const repaidShare = (rules) => (rules.feeBasis === 'collateralSold' ? 1 - rules.feeValue : 1 / (1 + rules.feeValue));
 
 /**
  * Sell just enough BTC at `price` to bring the LTV down to the target.

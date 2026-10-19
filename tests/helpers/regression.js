@@ -82,7 +82,7 @@ export async function resultsFor(ref, job, garch) {
   const m = res.main;
   const risk = {
     pLiquidation: m.pLiquidation, pPartial: m.pPartial, pMarginCall: m.pMarginCall, cumulativeByMonth: m.cumulativeByMonth,
-    fanLastMonth: m.fanByMonth.at(-1), keptAfterSale: m.keptAfterSale ?? null, leverage: m.leverage ?? null,
+    fanLastMonth: m.fanByMonth.at(-1), keptAfterSale: m.keptAfterSale ?? null, leverage: m.leverage ?? null, riskCost: m.riskCost ?? null,
     samplePaths: { count: m.samplePaths.length, sold: m.samplePaths.filter((p) => p.event).length, firstEvent: m.samplePaths.find((p) => p.event)?.event ?? null },
     trends: res.trends,
     garch: { pLiquidation: res.garchMc.pLiquidation, pPartial: res.garchMc.pPartial },

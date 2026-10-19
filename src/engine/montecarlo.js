@@ -14,7 +14,7 @@
 // The same seed always gives the same paths, and a longer horizon extends the
 // same paths (so results for 6 and 12 months are directly comparable).
 import { makeRng, mixSeed } from './random.js';
-import { createLoanState, stepLoan } from './lender.js';
+import { createLoanState, stepLoan, repaidShare } from './lender.js';
 
 const barrierFn = (b) => (b === null || b === undefined ? () => -Infinity : typeof b === 'number' ? () => b : (d) => b[Math.min(d, b.length - 1)]);
 
@@ -116,7 +116,7 @@ function makeStepper(model, params, rng) {
 /**
  * runMonteCarlo({ model, params, s0, days, nPaths, seed, logDriftPerDay?, monthEnds?,
  *                 loan?, liquidationBarrier?, marginBarrier?, reserve?, cureDays?,
- *                 collectMinRatios?, samplePaths?, leverage? })
+ *                 collectMinRatios?, samplePaths?, leverage?, riskCost? })
  *
  * Two ways to describe what ends a path:
  *  - loan: { debtByDay, collateralBtc, rules } (rules from lender.js) — the page uses
@@ -127,7 +127,14 @@ function makeStepper(model, params, rng) {
  * The low during day d (from d-1 to d) is compared with the debt of day d-1.
  *
  * Returns { pLiquidation, pPartial, pMarginCall, cumulativeByMonth, fanByMonth,
- *           keptAfterSale?, minRatios?, samplePaths?, leverage? }
+ *           keptAfterSale?, minRatios?, samplePaths?, leverage?, riskCost? }
+ *  - riskCost (opts.riskCost true): the cost of the liquidation risk, an option price
+ *    (ux/M-risk-cost-spec.md). For every sale, the BTC that repaid debt loses the rise
+ *    above the sale price by the end, the BTC paid as the fee loses its whole end value.
+ *    End prices are scaled so that their average equals s0 (as an option price with an
+ *    interest rate of 0). { value, se, noSale, scale }: average over all paths (in money), its
+ *    standard error, the share of paths without any sale, and the factor applied to end prices.
+ *  - samplePaths also list each path's sales as [BTC sold, price].
  *  - keptAfterSale: for paths with any forced sale, the share of the pledged BTC still
  *    yours at the end (quantiles q10, q50, q90)
  *  - samplePaths: n → the first n paths, weekly closing prices plus the day and kind of
@@ -172,6 +179,9 @@ export function runMonteCarlo(opts) {
   const endBtc = lev ? new Float64Array(nPaths) : null;
   const endLiq = lev ? new Uint8Array(nPaths) : null; // 1 = this future ended in a liquidation
   const keptAfterSale = []; // share of the pledged BTC still yours at the end, for paths with any forced sale
+  // cost of the risk: per path its end price and the BTC paid as fees; per sale the BTC that repaid debt and the price
+  const risk = opts.riskCost ? { end: new Float64Array(nPaths), fee: new Float64Array(nPaths), q: [], price: [], path: [] } : null;
+  const k = repaidShare(rules);
   let liquidated = 0; let partial = 0; let marginCalls = 0;
   let levMore = 0; let levLessKept = 0;
 
@@ -200,12 +210,18 @@ export function runMonteCarlo(opts) {
       if (mi >= 0) fan[mi * nPaths + p] = Math.exp(logS);
       if (weekly && (d % 7 === 0 || d === days)) weekly.push(Math.exp(logS));
     }
+    if (risk) {
+      risk.end[p] = Math.exp(logS);
+      const sales = st.partialSales.map((x) => [x.btc, x.price]);
+      if (st.liquidation) sales.push([st.liquidation.btcSold, st.liquidation.price]);
+      for (const [btc, price] of sales) { risk.q.push(k * btc); risk.price.push(price); risk.path.push(p); risk.fee[p] += (1 - k) * btc; }
+    }
     if (st.liquidation) liquidated++;
     else if (st.partialSales.length) partial++;
     if (st.liquidation || st.partialSales.length) keptAfterSale.push((st.liquidation ? st.liquidation.btcReturned : st.c) / loan.collateralBtc);
     if (st.firstMargin) marginCalls++;
     if (minRatios) minRatios[p] = Math.exp(minLog) / s0;
-    if (weekly) samples.push({ weekly, event, liquidated: !!st.liquidation, partial: !st.liquidation && st.partialSales.length > 0 });
+    if (weekly) samples.push({ weekly, event, liquidated: !!st.liquidation, partial: !st.liquidation && st.partialSales.length > 0, sales: [...st.partialSales.map((x) => [x.btc, x.price]), ...(st.liquidation ? [[st.liquidation.btcSold, st.liquidation.price]] : [])] });
     if (lev) {
       // BTC at the end: collateral left (or returned after a liquidation) + bought BTC
       // − BTC sold at the end to repay (only when repaying by selling)
@@ -232,6 +248,21 @@ export function runMonteCarlo(opts) {
   if (keptAfterSale.length) {
     const srt = Float64Array.from(keptAfterSale).sort();
     out.keptAfterSale = { q10: quantile(srt, 0.1), q50: quantile(srt, 0.5), q90: quantile(srt, 0.9) };
+  }
+  if (risk) {
+    let sum = 0; for (let p = 0; p < nPaths; p++) sum += risk.end[p];
+    const scale = s0 / (sum / nPaths); // the average end price becomes today's price
+    const loss = new Float64Array(nPaths); const sold = new Uint8Array(nPaths);
+    for (let p = 0; p < nPaths; p++) loss[p] = risk.fee[p] * risk.end[p] * scale;
+    for (let i = 0; i < risk.q.length; i++) {
+      const p = risk.path[i]; sold[p] = 1;
+      loss[p] += risk.q[i] * Math.max(0, risk.end[p] * scale - risk.price[i]);
+    }
+    let m = 0; for (let p = 0; p < nPaths; p++) m += loss[p];
+    m /= nPaths;
+    let v = 0; let none = 0;
+    for (let p = 0; p < nPaths; p++) { v += (loss[p] - m) ** 2; if (!sold[p]) none++; }
+    out.riskCost = { value: m, se: Math.sqrt(v / (nPaths - 1) / nPaths), noSale: none / nPaths, scale };
   }
   if (minRatios) out.minRatios = Array.from(minRatios);
   if (nSample) out.samplePaths = samples;

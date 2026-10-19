@@ -4,7 +4,8 @@
 import { runMonteCarlo } from '../engine/montecarlo.js';
 import { dailyFromHourly, dailyReturns, recencyWeights } from '../engine/history.js';
 import { debtByDay, collateralBtc, loanDays, liquidationPrices, marginCallPrices } from '../engine/loan.js';
-import { lenderRules } from '../engine/lender.js';
+import { lenderRules, repaidShare } from '../engine/lender.js';
+import { riskCostTextbook } from '../engine/barrier.js';
 import { replayOne } from '../engine/replay.js';
 
 const year = (t) => new Date(t * 1000).getUTCFullYear();
@@ -45,7 +46,7 @@ export function methodData({ hourly, terms, garch, settings, halfLifeYears }) {
   const main = weighting.find((x) => x.current);
 
   // one simulated future: a path that is liquidated after month 3, with the dates its 30-day pieces came from
-  const sample = sim({ weights }, { samplePaths: 60 });
+  const sample = sim({ weights }, { samplePaths: 60, riskCost: true });
   let k = sample.samplePaths.findIndex((p) => p.liquidated && p.event.kind !== 'partial' && p.event.day >= 90 && p.event.day <= 270);
   if (k < 0) k = sample.samplePaths.findIndex((p) => p.liquidated);
   let onePath = null;
@@ -59,6 +60,21 @@ export function methodData({ hourly, terms, garch, settings, halfLifeYears }) {
       pieces: trace.slice(k * perPath, (k + 1) * perPath).map((pos, j) => ({ fromDay: j * settings.blockDays, origin: daily.time[pos + 1] })),
     };
   }
+
+  // the cost of the risk (ux/M-risk-cost-spec.md) on the example, the one future above worked through,
+  // and the textbook option formula with the same volatility (smooth prices, sold at the liquidation price)
+  const rc = sample.riskCost; const kRepaid = repaidShare(lenderRules(terms));
+  // worked through: a future in which BTC recovered after a full sale, so the missed rise shows
+  let riskOne = null;
+  const kOne = sample.samplePaths.findIndex((p) => p.liquidated && p.sales.length === 1 && p.weekly.at(-1) * rc.scale > p.sales[0][1]);
+  if (kOne >= 0) {
+    const sp = sample.samplePaths[kOne]; const end = sp.weekly.at(-1) * rc.scale;
+    const [btc, price] = sp.sales[0];
+    const repaid = kRepaid * btc; const fee = (1 - kRepaid) * btc;
+    riskOne = { day: sp.event.day, price, repaid, fee, end, missed: repaid * Math.max(0, end - price), feeValue: fee * end, total: sp.sales.reduce((a, [b, p]) => a + kRepaid * b * Math.max(0, end - p) + (1 - kRepaid) * b * end, 0) };
+  }
+  const risk = { value: rc.value, se: rc.se, noSale: rc.noSale, up: 1 / rc.scale - 1, one: riskOne,
+    textbook: riskCostTextbook({ s0: terms.btcPrice, debt: terms.loanAmount, liquidationPrice: liquidationPrices(terms).atStart, repaidShare: kRepaid, sigma: weighting.find((x) => x.current).vol, years: days / 365 }) };
 
   // the margin-call deadline in whole days, and without any margin call
   const deadline = [1, 2, 3].map((d) => ({ days: d, p: sim({ weights }, { cureDays: d }).pLiquidation }));
@@ -86,6 +102,6 @@ export function methodData({ hourly, terms, garch, settings, halfLifeYears }) {
     volByYear, simVol: main.vol, allVol: weighting[0].vol, sharePre2019: pre2019,
     garch: { alpha: garch.alpha, beta: garch.beta, nu: garch.nu, todayVol: Math.sqrt(garch.hLast * 365) },
     weighting, p: main.p, se: Math.sqrt((main.p * (1 - main.p)) / settings.nPaths),
-    onePath, deadline, noMarginCall, gap: { n: gaps.length, median: q(0.5), p90: q(0.9), worst: q(1) },
+    onePath, deadline, noMarginCall, risk, gap: { n: gaps.length, median: q(0.5), p90: q(0.9), worst: q(1) },
   };
 }

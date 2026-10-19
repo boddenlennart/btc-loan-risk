@@ -131,6 +131,7 @@ class Loan:
         self.partials = 0
         self.first_event = None  # day of the first sale of any kind (partial or full)
         self.liquidated = None  # (day, reason)
+        self.sales = []  # (BTC sold, price) of every sale, for the cost of the risk
         self.t = t
         fee = t["liquidationFee"]
         self.k = (1 - fee["value"]) if fee["basis"] == "collateralSold" else 1 / (1 + fee["value"])
@@ -145,11 +146,16 @@ class Loan:
         if proceeds / price >= self.c:
             return False
         self.c -= proceeds / price
+        self.sales.append((proceeds / price, price))
         self.scale *= (debt - self.k * proceeds) / debt
         self.partials += 1
         if self.first_event is None:
             self.first_event = day
         return True
+
+    def sell_all(self, price, debt):
+        # the debt plus the fee, at most all the BTC: the fee is a share of the debt or of the sale
+        self.sales.append((min(self.c, debt / self.k / price), price))
 
     def step(self, day, low, close, scheduled_debt, cure):
         if self.liquidated:
@@ -163,6 +169,7 @@ class Loan:
                 self.deadline = None
                 return
             self.liquidated = (day, "liquidation")
+            self.sell_all(liq, debt)
             if self.first_event is None:
                 self.first_event = day
             return
@@ -172,6 +179,7 @@ class Loan:
                 if self.rule == "partialAfterCure" and self.sell_enough(close, debt, day):
                     return
                 self.liquidated = (day, "deadline")
+                self.sell_all(close, debt)
                 if self.first_event is None:
                     self.first_event = day
                 return
@@ -221,6 +229,7 @@ def simulate(r, l, t, s0, n_paths, seed, weights):
     cure = max(1, math.ceil(t.get("curePeriodHours", 0) / 24))
     liq = part = margin = 0
     first_days = []
+    ends, path_sales = [], []
     for p in range(n_paths):
         rng = Sfc32(mix_seed(seed, p))
         loan = Loan(btc, t)
@@ -243,6 +252,8 @@ def simulate(r, l, t, s0, n_paths, seed, weights):
             low = math.exp(log_s + low_rel)
             log_s += ret
             loan.step(d, low, math.exp(log_s), debts[d - 1], cure)
+        ends.append(math.exp(log_s))
+        path_sales.append(loan.sales)
         if loan.liquidated:
             liq += 1
         elif loan.partials:
@@ -251,7 +262,16 @@ def simulate(r, l, t, s0, n_paths, seed, weights):
             margin += 1
         if p < 5:
             first_days.append(loan.first_event if loan.liquidated else None)  # as the page's chart: the first sale's day
-    return dict(liquidated=liq, partial=part, marginCall=margin, firstPathsLiquidationDay=first_days)
+    # the cost of the risk (ux/M-risk-cost-spec.md): end prices scaled to an average of today's price;
+    # per sale, the part that repaid debt misses the rise above the sale price, the fee part is lost whole
+    k = Loan(btc, t).k
+    scale = s0 / (sum(ends) / n_paths)
+    total = 0.0
+    for end, sales in zip(ends, path_sales):
+        e = end * scale
+        for b, price in sales:
+            total += k * b * max(0.0, e - price) + (1 - k) * b * e
+    return dict(liquidated=liq, partial=part, marginCall=margin, firstPathsLiquidationDay=first_days, riskCost=total / n_paths)
 
 
 def loan(**kw):

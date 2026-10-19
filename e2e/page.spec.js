@@ -632,7 +632,7 @@ test('edge cases: one month, a very long loan, too little BTC, a higher tax toda
   // a higher tax today than later: BTC may even fall
   await page.locator('#sec-cost > summary').click();
   await page.locator('#cost-body [data-k="taxRateNow"]').fill('40');
-  await expect(page.locator('#cost-body .big-line')).toContainText('BTC may be up to 33.3% lower at the end');
+  await expect(page.locator('#breakeven-line')).toContainText('BTC may be up to 33.3% lower at the end');
   await page.locator('#cost-body [data-k="taxRateNow"]').fill('0');
   // a liquidation fee that leaves nothing; an absurd origination fee
   await page.locator('#form details[data-remember="more"] summary').click();
@@ -642,6 +642,42 @@ test('edge cases: one month, a very long loan, too little BTC, a higher tax toda
   await page.locator('#f-originationFee').fill('99');
   await expect(page.locator('#tiles')).toContainText('effective > 1,000% a year');
   expect(errors).toEqual([]);
+});
+
+test('cost including the risk: in "What it costs", in the comparison of offers and of a refinancing, in both languages', async ({ page }) => {
+  const { errors } = await open(page); await waitDone(page);
+  await page.locator('#sec-cost > summary').click();
+  const block = page.locator('#risk-cost');
+  await expect(block).toContainText(/Including the liquidation risk: about €[\d,]+ \(about [\d.]+% a year instead of 11\.6%\)\./);
+  await expect(block).toContainText(/In \d+ of 100 futures it is zero/);
+  await expect(block.locator('a')).toHaveAttribute('href', /method\/#risk-cost$/);
+  // a comparison of offers: one row with a value and a yearly figure per offer
+  await page.locator('#compare-btn').click();
+  await page.locator('#f-rateAnnual').fill('6');
+  await waitDone(page);
+  const row = page.locator('#cmp tbody tr').filter({ hasText: 'Cost including the risk' });
+  await expect(row.locator('td')).toHaveCount(2);
+  await expect(row.locator('td').nth(0)).toContainText(/€[\d,]+about [\d.]+% a year/);
+  await expect(row.locator('td').nth(1)).toContainText(/€[\d,]+about [\d.]+% a year/);
+  // the same loan at a lower rate: the same risk, so less in total
+  const val = async (i) => Number((await row.locator('td').nth(i).evaluate((el) => el.firstChild.textContent)).replace(/[^\d]/g, ''));
+  expect(await val(1)).toBeLessThan(await val(0));
+  await page.locator('[data-compare-keep="0"]').click();
+  // a refinancing: the current loan over its months left, the new loan over its term
+  await page.getByRole('button', { name: 'A loan I already have' }).click();
+  await page.locator('#f-loanAmount').fill('10000');
+  await waitDone(page);
+  await expect(block).toContainText(/Including the liquidation risk: about €[\d,]+ for the 12 months left, instead of €1,000 interest\./);
+  await page.locator('#compare-btn').click();
+  await waitDone(page);
+  await expect(page.locator('#cmp tbody tr').filter({ hasText: 'Cost including the risk' }).locator('td')).toHaveCount(2);
+  expect(errors).toEqual([]);
+});
+
+test('German: Kosten inklusive Risiko', async ({ page }) => {
+  await open(page, { lang: 'de' }); await waitDone(page);
+  await page.locator('#sec-cost > summary').click();
+  await expect(page.locator('#risk-cost')).toContainText(/Inklusive Liquidationsrisiko: etwa [\d.]+\s€ \(etwa [\d,]+\s% pro Jahr statt 11,6\s%\)\./);
 });
 
 test('a share link pasted into a tab where the page is already open loads its terms', async ({ page }) => {

@@ -72,7 +72,7 @@ function render() {
       [T.cost.head[1], usd(A.cost), usd(B.cost)], [T.cost.head[2], String(of100(A.liquidated)), String(of100(B.liquidated))],
       [T.cost.head[3], usd(A.avgLoss), usd(B.avgLoss)], [T.cost.head[4], usd(A.expected), usd(B.expected)]])}
     ${table(T.cost.title, [T.cost.head[0], ...T.cost.head.slice(2)], C.rows.map((r) => [pct(r.ltv, 0), String(of100(r.liquidated)), usd(r.avgLoss), usd(r.expected)]))}`
-    + hint(t('insights.cost.sameCost', { cost: usd(C.rows[0].cost) })) + hint(T.cost.note));
+    + hint(t('insights.cost.sameCost', { cost: usd(C.rows[0].cost) })) + hint(T.cost.note) + `<p>${esc(T.cost.differs)}</p>`);
 
   // 8. hourly lows vs. a smoother price
   const M = I.measure;

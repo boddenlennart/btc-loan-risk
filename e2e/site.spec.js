@@ -48,9 +48,9 @@ test('navigation: three pages, the current one marked; in the top bar on desktop
 test('"How it works": three layers, every part, the charts and tables of the example loan, no errors or security refusals', async ({ page }) => {
   const errors = await visit(page, '/method/');
   await expect(page).toHaveTitle('How it works · Bitcoin Loan Check');
-  await expect(page.locator('.toc li')).toHaveCount(11);
+  await expect(page.locator('.toc li')).toHaveCount(12);
   await expect(page.locator('p.layer')).toHaveText(['For everyone', 'The details', 'For experts']);
-  for (const id of ['one-future', 'volatility', 'your-number', 'rules', 'methods', 'test', 'data', 'trend', 'model-limits', 'maths', 'verify']) await expect(page.locator(`#${id} h2`)).toBeVisible();
+  for (const id of ['one-future', 'volatility', 'your-number', 'rules', 'risk-cost', 'methods', 'test', 'data', 'trend', 'model-limits', 'maths', 'verify']) await expect(page.locator(`#${id} h2`)).toBeVisible();
   // one simulated future: a real path, coloured piece by piece, with the margin-call and liquidation lines
   await expect(page.locator('#one-chart path.piece-a').first()).toBeVisible();
   await expect(page.locator('#one-chart path.line-critical')).toHaveCount(1);
@@ -79,6 +79,25 @@ test('"How it works": three layers, every part, the charts and tables of the exa
   await page.locator('#methods a.gloss').first().click(); // a glossary word opens the glossary in the footer
   await expect(page.locator('#glossary')).toHaveAttribute('open', '');
   expect(errors).toEqual([]);
+});
+
+test('"How it works", the cost of the risk: one future worked through, the average, the scaling, the textbook cross-check, the same number as the check', async ({ page }) => {
+  const errors = await visit(page, '/method/');
+  await expect(page.locator('#risk-one')).toContainText(/the example loan is liquidated on day \d+ at €[\d,]+\. 0\.\d{4} BTC repaid the loan, 0\.\d{4} BTC was the fee\./);
+  await expect(page.locator('#risk-one')).toContainText(/In this future: €[\d,]+\./);
+  await expect(page.locator('#risk-all')).toContainText(/On the example: €[\d,]+, precise to about ±€[\d,]+\./);
+  await expect(page.locator('#risk-scale')).toContainText(/the average end price is \d+% higher/);
+  await expect(page.locator('#risk-table tbody tr')).toHaveCount(2);
+  await expect(page.locator('#risk-table tr.us')).toContainText('This page\'s simulation');
+  await expect(page.locator('#risk-read li')).toHaveCount(3);
+  await expect(page.locator('#risk-cost')).toContainText('Loans without a liquidation during the term');
+  const sim = Number((await page.locator('#risk-table tr.us td').textContent()).replace(/[^\d]/g, ''));
+  expect(errors).toEqual([]);
+  // the check shows the same cost of the risk, rounded to 10
+  await visit(page, '/');
+  await expect(page.locator('#progress')).toBeHidden();
+  await page.locator('#sec-cost > summary').click();
+  await expect(page.locator('#risk-cost')).toContainText(`€${(Math.round(sim / 10) * 10).toLocaleString('en-GB')} of it is the cost of the risk`);
 });
 
 test('"How it works" shows the same numbers as the check page: the answer, the dots, the weighting row, real history', async ({ page }) => {

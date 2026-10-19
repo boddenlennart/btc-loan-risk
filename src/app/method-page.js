@@ -7,7 +7,7 @@ import { fanChart, barChart, onePathChart, volChart } from './charts.js';
 import { initShell, renderShell } from './shell.js';
 import { SITE } from '../content/site.js';
 import { CALIBRATION } from '../content/calibration.js';
-import { liquidationPrices, dropToLiquidation } from '../engine/loan.js';
+import { liquidationPrices, dropToLiquidation, loanSummary } from '../engine/loan.js';
 
 const META = JSON.parse(document.getElementById('meta').textContent);
 const $ = (sel) => document.querySelector(sel);
@@ -65,7 +65,22 @@ function render() {
   const rv = { d1: dl(1), d2: dl(2), d3: dl(3), none: of100(md.noMarginCall), median: pct(md.gap.median, 1), p90: pct(md.gap.p90, 0) };
   $('#rules-list').innerHTML = M.rules.map((s) => `<li>${esc(s.replace(/\{(\w+)\}/g, (_, k) => rv[k] ?? `{${k}}`))}</li>`).join('');
 
-  // 5. three methods
+  // 5. the cost of the risk (ux/M-risk-cost-spec.md), on the example and the one future above
+  const rk = md.risk; const sum = loanSummary(tm);
+  if (rk.one) {
+    const o = rk.one;
+    $('#risk-one').textContent = t(o.end > o.price ? 'method.riskOne' : 'method.riskOneFell', { day: o.day, price: money0(o.price, cur), repaid: num(o.repaid, 4), fee: num(o.fee, 4),
+      end: money0(o.end, cur), missed: money0(o.missed, cur), feeValue: money0(o.feeValue, cur), total: money0(o.total, cur) });
+  }
+  $('#risk-all').textContent = t('method.riskAll', { none: of100(rk.noSale), risk: money0(rk.value, cur), ci: money0(1.96 * rk.se, cur), total: money0(sum.totalCost + rk.value, cur), cost: money0(sum.totalCost, cur) });
+  $('#risk-scale').textContent = t('method.riskScale', { up: pct(rk.up, 0) });
+  $('#risk-table').innerHTML = `<thead><tr>${M.riskHead.map((h) => `<th scope="col">${esc(h)}</th>`).join('')}</tr></thead><tbody>
+    <tr><th scope="row" class="wrap">${esc(t('method.riskRowFormula', { vol: pct(md.simVol, 0) }))}</th><td>${money0(rk.textbook, cur)}</td></tr>
+    <tr class="us"><th scope="row" class="wrap">${esc(M.riskRowSim)}</th><td>${money0(rk.value, cur)}</td></tr></tbody>`;
+  $('#risk-read').innerHTML = M.riskRead.map((s) => `<li>${esc(s.replace('{none}', of100(rk.noSale)))}</li>`).join('');
+  $('#risk-wrap').setAttribute('aria-label', M.riskHead[1]);
+
+  // 6. three methods
   const R = M.methodsRows;
   const row = ([name, what], value, cls = '') => `<tr${cls}><th scope="row">${rich(name)}</th><td class="wrap">${rich(what)}</td><td>${value}</td></tr>`;
   $('#methods-table').innerHTML = `<thead><tr>${M.methodsHead.map((h) => `<th scope="col">${esc(h)}</th>`).join('')}</tr></thead><tbody>
@@ -78,13 +93,13 @@ function render() {
   fanChart($('#fan-chart'), { s0: tm.btcPrice, fan: r.fanByMonth, liq: liqByMonth, fmt: (v) => money0(v, cur), monthLabel, labels: { title: M.fanTitle, ...M.fanTip, liq: tx.falls.ladderSale } });
   barChart($('#months-chart'), { values: r.cumulativeByMonth.map((x) => x * 100), fmtPct: (v) => `${Math.round(v)}`, monthLabel: (m) => t('ui.monthN', { n: m }), title: M.byMonthTitle });
 
-  // 6. the test against history (measured values, kept current by tests/calibration.test.js)
+  // 7. the test against history (measured values, kept current by tests/calibration.test.js)
   $('#test-bars').innerHTML = CALIBRATION.rows.map((x) => `<div class="lv"><span>${esc(t('method.testRow', { model: M.testModels[x.model], days: x.days }))}</span><span class="b"><i style="width:${Math.min(100, x.below05 * 10)}%"></i></span><b>${num(x.below05, 1)}</b></div>`).join('')
     + `<p class="sub">${esc(M.testUnit)}</p>`;
   const ind = (d) => CALIBRATION.rows.find((x) => x.days === d).independent;
   $('#test-strength').textContent = t('method.testStrength', { n90: ind(90), n365: ind(365) });
 
-  // 7.–9. data, trend, limits
+  // 8.–10. data, trend, limits
   $('#data-list').innerHTML = list(M.data);
   const [m0, m1] = M.measure.split('{link}');
   $('#measure').innerHTML = `${esc(m0)}<a href="${pageHref('insights/')}#i-measure">${esc(M.measureLink)}</a>${esc(m1 || '')}`;
@@ -96,7 +111,7 @@ function render() {
     <p>${esc(t('history.trendSwings', { deep: f.deepYears, years: f.years }))}</p>`;
   $('#limits-list').innerHTML = list(M.limits);
 
-  // 10. the maths (values from the build)
+  // 11. the maths (values from the build)
   $('#m-h').textContent = md.halfLifeYears; $('#m-block').textContent = md.blockDays;
   $('#m-n').textContent = num(md.nPaths, 0); $('#m-se').textContent = `${num(md.se * 100, 2)} ${t('ui.percentPoints')}`;
   $('#m-sigma').textContent = pct(r.barrier.sigma, 1);
@@ -105,7 +120,7 @@ function render() {
   $('#m-code').innerHTML = ['src/engine/montecarlo.js', 'src/engine/history.js', 'src/engine/lender.js', 'src/engine/garch.js', 'src/engine/barrier.js', 'src/engine/replay.js', 'reference/reference_montecarlo.py']
     .map((path) => `<li><a href="${codeLink(path)}" rel="noopener">${esc(path)}</a></li>`).join('');
 
-  // 11. verify
+  // 12. verify
   const [before, after] = M.code.split('{link}');
   $('#code-line').innerHTML = `${esc(before)}<a href="${SITE.codeUrl}" rel="noopener">${esc(SITE.codeUrl.replace('https://', ''))}</a>${esc(after || '')}`;
   const [v0a, v0b] = M.verify[0].split('{audit}');
