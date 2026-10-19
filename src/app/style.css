@@ -441,3 +441,5 @@ table.itable.methods thead th:nth-child(2) { text-align: left; }
 .toc3 a { display: inline; }
 /* sections being recalculated keep their previous content, dimmed (no jumping) */
 #safer-body.pending, #trend-body.pending { opacity: 0.55; transition: opacity 0.15s; }
+.refi-note { font-size: 14px; color: var(--text-2); background: var(--surface-2); border-radius: 6px; padding: 8px 10px; margin: 6px 0 10px; }
+.refi-note.err { color: var(--critical-ink); background: var(--critical-bg); }

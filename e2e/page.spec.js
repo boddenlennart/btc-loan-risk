@@ -785,3 +785,31 @@ test('computer: while the answer is recalculated, the left side does not jump ("
     await expect(page.locator('#safer-body')).not.toHaveClass(/pending/); // active again afterwards
   }
 });
+
+test('refinancing: today\'s LTV, when borrowing more or taking back BTC is possible, and the limit right under the input', async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.getByRole('button', { name: 'A loan I already have' }).click();
+  await page.locator('#f-loanAmount').fill('10000');
+  await waitDone(page);
+  await page.locator('#compare-btn').click();
+  await expect(page.locator('#form')).toContainText(/Its LTV today: 50%/);
+  const note = page.locator('#refi-note');
+  await page.locator('[data-set="refi.change"][data-val="back"]').click();
+  await expect(page.locator('#form')).toContainText('Possible when BTC has risen since you took the loan');
+  await page.locator('#f-refiBack').fill('0.1');
+  await expect(note).toBeVisible();
+  await expect(note).toContainText(/would reach the margin call at 70%.*at most 0\.0\d{3} BTC can be taken back/);
+  // the stated maximum really keeps the new LTV below the margin call
+  const max = (await note.textContent()).match(/at most (0\.\d+) BTC/)[1];
+  await page.locator('#f-refiBack').fill(max);
+  await expect(note).not.toHaveClass(/err/); // possible now, but much higher than today: the neutral note
+  await expect(note).toContainText('much higher than your loan today (50%)');
+  await expect(page.locator('#ltv-today')).toContainText(/starting LTV 69\.\d%/);
+  await page.locator('[data-set="refi.change"][data-val="more"]').click();
+  await page.locator('#f-refiExtra').fill('3000');
+  await expect(note).toContainText('much higher than your loan today (50%)');
+  await page.locator('#f-refiExtra').fill('5000');
+  await expect(note).toContainText(/at most €3,\d{3} more can be borrowed/);
+  await page.locator('[data-set="refi.change"][data-val="same"]').click();
+  await expect(note).toBeHidden();
+});

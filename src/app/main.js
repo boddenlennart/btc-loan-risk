@@ -253,11 +253,14 @@ function buildForm() {
   if (refi) {
     const base = compare.offers[0];
     const ch = state.refi.change;
-    top = `<p class="hint">${esc(t('compare.startsFrom', { owed: money0(numOr(base.loanAmount), cur), btc: num(numOr(base.collateralBtc), 4), months: base.durationMonths }))}</p>
+    const todayLtv = toTerms(formOf(0)).terms.initialLtv;
+    top = `<p class="hint">${esc(t('compare.startsFrom', { owed: money0(numOr(base.loanAmount), cur), btc: num(numOr(base.collateralBtc), 4), months: base.durationMonths, ltv: pct(todayLtv, 0) }))}</p>
       ${seg('refi.change', [['same', Cm.same], ['more', Cm.more], ['back', Cm.back]], Cm.whatChanges, { id: 'refiChange' })}
+      ${ch === 'more' || ch === 'back' ? `<p class="hint">${esc(Cm.whenRisen)}</p>` : ''}
       ${ch === 'more' ? numField('refi.extra', Cm.extra, cur, { id: 'refiExtra' }) : ''}
       ${ch === 'back' ? numField('refi.back', Cm.backBtc, 'BTC', { id: 'refiBack' }) : ''}
-      <p class="hint" id="ltv-today"></p>`;
+      <p class="hint" id="ltv-today"></p>
+      <p class="refi-note" id="refi-note" role="status" hidden></p>`;
   } else {
     top = `${compare ? '' : seg('mode', [['new', fm.modeNew], ['existing', fm.modeExisting]], '', { id: 'mode' })}
     <p class="hint"><button type="button" class="link" aria-expanded="false" aria-controls="where">${esc(t('ui.whereLink'))}</button></p>
@@ -550,6 +553,7 @@ function update() {
       ? t('compare.newLoanLine', { amount: money0(terms.loanAmount, terms.currency), btc: num(terms.collateralInput, 4), ltv: pct(terms.initialLtv, 1) })
       : `LTV ${pct(terms.initialLtv, 1)}`;
   }
+  renderRefiNote(terms);
   if (!lastRisk) $('#headline-text').innerHTML = `<em class="hero-n">…</em> <span class="of">${esc(texts().results.heroOf)}</span> <span class="sentence">${esc(texts().ui.computingShort)}</span>`;
   renderCompare(); // also while the selected offer has an error, so the table and names stay current
   if (compare) $('#ans-label').textContent = offerName(compare.active);
@@ -599,6 +603,34 @@ function renderAnswerTop(tm) {
     ltv: pct(tm.initialLtv, 0), liq: pct(tm.liquidationLtv, 0),
   }) : '';
   $('#own-terms-link').textContent = ex ? R.ownTerms : R.editTerms;
+}
+
+// Refinancing that borrows more or takes back BTC raises the LTV. Say so right under the input: above the
+// margin call (or the liquidation LTV) no loan can start, and how far one can go at today's price; well above
+// today's LTV, a lender may not offer it (no claim about lenders, only "ask your lender").
+function renderRefiNote(terms) {
+  const el = $('#refi-note'); if (!el) return;
+  const ch = state.refi && state.refi.change;
+  el.hidden = true; el.classList.remove('err');
+  if (!ch || ch === 'same' || !Number.isFinite(terms.initialLtv)) return;
+  const Cm = texts().compare; const base = toTerms(formOf(0)).terms; const price = terms.btcPrice; const cur = terms.currency;
+  const limit = terms.marginCallLtv || terms.liquidationLtv;
+  const limitName = terms.marginCallLtv ? Cm.atMargin : Cm.atLiquidation;
+  const owed = base.loanAmount; const btc = base.collateralInput;
+  if (terms.initialLtv >= limit - 1e-9) {
+    // the most that keeps the new loan half a point below the limit (so it never shows as the limit), rounded down
+    const room = limit - 0.005;
+    const maxBack = Math.floor((btc - owed / (room * price)) * 1e4) / 1e4;
+    const maxMore = Math.floor((room * btc * price - owed) / 10) * 10;
+    const v = { ltv: pct(terms.initialLtv, 1), limit: `${limitName} ${pct(limit, 0)}` };
+    el.textContent = ch === 'back'
+      ? (maxBack > 0 ? t('compare.limitBack', { ...v, max: num(maxBack, 4) }) : t('compare.limitBackNone', v))
+      : (maxMore > 0 ? t('compare.limitMore', { ...v, max: money0(maxMore, cur) }) : t('compare.limitMoreNone', v));
+    el.classList.add('err'); el.hidden = false;
+  } else if (terms.initialLtv - base.initialLtv >= 0.1) {
+    el.textContent = t('compare.higherThanToday', { ltv: pct(terms.initialLtv, 0), today: pct(base.initialLtv, 0) });
+    el.hidden = false;
+  }
 }
 
 // ------------------------------------------------------------------ comparing offers
