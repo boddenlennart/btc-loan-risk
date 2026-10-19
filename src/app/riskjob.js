@@ -104,13 +104,15 @@ const monthEndsFor = (t) => Array.from({ length: t.durationMonths }, (_, m) => d
 /** One simulation of the loan `t`. */
 function simulate(t, s, settings, { model = 'bootstrap', nPaths = settings.nPaths, trend = 0, samplePaths = 0, leverage = false, riskCost = false, seed = 20240101 } = {}) {
   const sum = loanSummary(t);
+  // leverage: true = the whole loan buys BTC; an object = given as is (a refinancing's extra cash, see run())
+  const lev = !leverage ? null : typeof leverage === 'object' ? leverage : { bought: sum.amountReceived / t.btcPrice, payback: sum.totalPayback, repay: t.repayWith === 'cash' ? 'cash' : 'sell' };
   return runMonteCarlo({
     model, params: model === 'bootstrap' ? { returns: s.returns, lowRel: s.lowRel, weights: s.weights, blockDays: settings.blockDays } : s.garch,
     s0: t.btcPrice, days: loanDays(t), nPaths, seed, monthEnds: monthEndsFor(t), samplePaths, riskCost,
     logDriftPerDay: Math.log(1 + trend) / 365,
     loan: { debtByDay: debtByDay(t), collateralBtc: collateralBtc(t), rules: lenderRules(t) },
     cureDays: Math.max(1, Math.ceil((t.curePeriodHours ?? 0) / 24)),
-    leverage: leverage ? { bought: sum.amountReceived / t.btcPrice, payback: sum.totalPayback, repay: t.repayWith === 'cash' ? 'cash' : 'sell' } : null,
+    leverage: lev,
   });
 }
 
@@ -191,7 +193,15 @@ async function run(id, terms, settings, garch, post = postMessage) {
 
   const buy = terms.purpose === 'buy';
   const result = { currency: terms.currency, garch: s.garch, facts: s.facts, history: { from: s.hourly.time[0], to: s.hourly.time[s.hourly.time.length - 1] } };
-  result.main = simulate(terms, s, settings, { samplePaths: 100, leverage: buy, riskCost: true }); // 5 × 20 for "show 20 other futures"
+  // a refinancing that borrows more to buy BTC: compared, future by future, with the same refinancing
+  // without the extra cash (settings.leverageBase), so the question is what the extra borrowing does
+  let lev = buy;
+  if (buy && settings.leverageBase) {
+    const bt = settings.leverageBase; const sb = loanSummary(bt); const sn = loanSummary(terms); const repay = terms.repayWith === 'cash' ? 'cash' : 'sell';
+    const base = simulate(bt, s, settings, { leverage: { bought: 0, payback: sb.totalPayback, repay, keepPaths: true } });
+    lev = { bought: (sn.amountReceived - sb.amountReceived) / terms.btcPrice, payback: sn.totalPayback, repay, base: base.leverage.endBtcPerPath };
+  }
+  result.main = simulate(terms, s, settings, { samplePaths: 100, leverage: lev, riskCost: true }); // 5 × 20 for "show 20 other futures"
   await tick();
   // Comparison: every other offer on the same simulated futures, so differences come only from
   // the terms. Each value equals what that offer's own full result shows when it is selected.
@@ -234,9 +244,9 @@ async function run(id, terms, settings, garch, post = postMessage) {
   // Same random paths as the main answer, only shifted, so "no trend" is exactly the answer above.
   result.trends = [];
   for (const trend of TRENDS) {
-    const sim = trend === 0 ? result.main : simulate(terms, s, settings, { trend, leverage: buy });
+    const sim = trend === 0 ? result.main : simulate(terms, s, settings, { trend, leverage: buy && !settings.leverageBase }); // no trend rows for a refinancing's extra cash
     // liquidated only, like the answer at the top (partial sales are shown separately there)
-    result.trends.push({ trend, p: sim.pLiquidation, more: sim.leverage ? sim.leverage.more : null });
+    result.trends.push({ trend, p: sim.pLiquidation, more: sim.leverage && !settings.leverageBase ? sim.leverage.more : null });
     await tick();
   }
   result.slider = [];

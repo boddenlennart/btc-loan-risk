@@ -14,7 +14,8 @@ export function refiForm(r, base) {
   const extra = ch.change === 'more' ? numOr(ch.extra, 0) : 0;
   const back = ch.change === 'back' ? numOr(ch.back, 0) : 0;
   return { ...r, mode: 'new', ltvInput: 'btc', currency: base.currency, btcPrice: base.btcPrice, startDate: '',
-    loanAmount: owed + extra, collateralBtc: String(btc - back) };
+    loanAmount: owed + extra, collateralBtc: String(btc - back),
+    purpose: ch.change === 'more' ? r.purpose : 'spend' }; // only extra cash can buy BTC
 }
 
 /** Costs of switching to the refinancing offer that are not part of the new loan itself

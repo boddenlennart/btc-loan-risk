@@ -243,7 +243,7 @@ function buildForm() {
       ${(mc || anyPartial) ? numField('cureTargetLtv', f.cureTargetLtv.label, '%', { hint: existing ? '' : f.cureTargetLtv.hint }) : ''}
     </fieldset>
     <div class="field" data-field="liquidationFee"><label for="f-liquidationFee">${esc(f.liquidationFee.label)}</label><div class="pair"><input id="f-liquidationFee" data-k="liquidationFee" type="number" step="any" min="0" inputmode="decimal" value="${esc(state.liquidationFee)}">${feeSel('liquidationFeeBasis', [['debt', f.liquidationFee.debt], ['collateralSold', f.liquidationFee.collateralSold]])}</div><p class="err" role="alert" hidden></p></div>
-    ${state.purpose === 'buy' ? seg('repayWith', ['sell', 'cash'].map((v) => [v, f.repayWith[v]]), f.repayWith.label) : ''}`;
+    ${state.purpose === 'buy' && !existing && (!state.refi || state.refi.change === 'more') ? seg('repayWith', ['sell', 'cash'].map((v) => [v, f.repayWith[v]]), f.repayWith.label) : ''}`;
   const expert = `
     ${existing ? '' : `<div class="field" data-field="startDate"><label for="f-startDate">${esc(f.startDate.label)}</label><input id="f-startDate" type="date" data-k="startDate" value="${esc(state.startDate || today())}"><p class="hint">${esc(f.startDate.hint)}</p></div>`}
     ${select('dayCount', ['30/360', 'act/365', 'act/360'].map((v) => [v, f.dayCount[v]]), f.dayCount.label)}
@@ -280,7 +280,7 @@ function buildForm() {
     <div class="field" data-field="durationMonths"><span class="label" id="l-dur">${esc(existing ? f.durationMonths.labelExisting : f.durationMonths.label)}</span>
       <div class="chips" role="group" aria-labelledby="l-dur">${durChips}<span class="with-unit other"><input type="number" step="1" min="1" inputmode="numeric" data-k="durationMonths" aria-label="${esc(fm.otherDuration)}" placeholder="${esc(fm.otherDuration)}" value="${other ? esc(state.durationMonths) : ''}"><span class="unit">${esc(t('ui.months'))}</span></span></div>${existing ? '' : `<p class="hint">${esc(f.durationMonths.hint)}</p>`}<p class="err" role="alert" hidden></p></div>
     ${rate}
-    ${refi || existing ? '' : seg('purpose', [['spend', f.purpose.spend], ['buy', f.purpose.buy]], f.purpose.label) + `<p class="hint purpose-hint">${esc(f.purpose.hint)}</p>`}
+    ${existing || (refi && state.refi.change !== 'more') ? '' : seg('purpose', [['spend', f.purpose.spend], ['buy', f.purpose.buy]], refi ? Cm.extraPurpose : f.purpose.label) + `<p class="hint purpose-hint">${esc(f.purpose.hint)}</p>`}
     <p class="price-line" id="price-line" aria-live="polite"></p>
     <div class="field" data-field="btcPrice" id="price-edit" hidden><span class="with-unit"><input type="number" step="any" inputmode="decimal" data-k="btcPrice" aria-label="BTC ${esc(cur)}" value="${esc(state.btcPrice ?? '')}"><span class="unit">${esc(cur)}</span></span><p class="err" role="alert" hidden></p></div>
     <details class="more" data-remember="more"><summary>${esc(refi ? Cm.moreTerms : existing ? fm.moreTermsExisting : fm.moreTerms)} <span class="sum" id="more-sum"></span></summary>${more}</details>
@@ -552,6 +552,7 @@ function showErrors(errors) {
 
 function update() {
   const { terms, settings } = toTerms(state, { base: activeBase() });
+  if (state.refi && terms.purpose === 'buy') settings.leverageBase = refiWithoutExtra().terms; // what the extra cash does (riskjob.js)
   const v = validateTerms(terms);
   showErrors(v.errors);
   const ltvToday = $('#ltv-today');
@@ -708,6 +709,17 @@ function heroSplit(m) {
   return splitTo100([m.pLiquidation, m.pPartial, pMarginOnly, 1 - m.pLiquidation - m.pPartial - pMarginOnly]);
 }
 let lastCmp = null; // the numbers in the table, for the share summary
+// A refinancing that borrows more, without the extra cash: the comparison for "buy more BTC" with that cash
+const refiWithoutExtra = () => toTerms({ ...state, refi: { ...state.refi, change: 'same' } }, { base: activeBase() });
+// The money that buys BTC and what it costs: the whole loan, or for a refinancing only the extra cash
+// (its fees and the extra payback, compared with the same refinancing without it)
+function buyMoney(tm) {
+  const s = loanSummary(tm);
+  if (!state.refi) return { received: s.amountReceived, payback: s.totalPayback };
+  const b = loanSummary(refiWithoutExtra().terms);
+  return { received: s.amountReceived - b.amountReceived, payback: s.totalPayback - b.totalPayback, refi: true };
+}
+
 // What changes hands when a refinancing starts: the cash left after repaying the current loan (`owed`)
 // and paying fee and switching costs (`sum` from the terms with switching costs), and the BTC taken back.
 function startText(sum, form, owed, cur, fmt = money0) {
@@ -837,7 +849,7 @@ function renderTiles(tm) {
   } else {
     html += marginTile;
     html += tile(R.tileCost, money0(s.totalCost, cur), t('results.tileCostSub', { apr: aprText(s.effectiveApr) }), '', tileRiskLine(tm, s));
-    const rise = tm.purpose === 'buy' ? s.totalPayback / s.amountReceived - 1 : breakevenReturn(costTerms(tm), { taxRateNow: tm.taxRateNow, taxRateAtMaturity: tm.taxRateAtMaturity });
+    const rise = tm.purpose === 'buy' ? (({ received, payback }) => payback / received - 1)(buyMoney(tm)) : breakevenReturn(costTerms(tm), { taxRateNow: tm.taxRateNow, taxRateAtMaturity: tm.taxRateAtMaturity });
     html += tile(tm.purpose === 'buy' ? R.tileBreakevenBuy : R.tileBreakeven, t('results.tileBreakevenValue', { rise: signedPct(rise, 0) }), R.tileBreakevenSub);
   }
   $('#tiles').innerHTML = html;
@@ -1163,26 +1175,26 @@ function renderTrend() {
 function renderLeverage() {
   const r = lastRisk; const tm = riskTerms || lastTerms; const C = texts().cost; const el = $('#leverage');
   if (!el) return;
-  const s = loanSummary(tm); const cur = tm.currency;
-  const bought = s.amountReceived / tm.btcPrice; const c0 = collateralBtc(tm);
-  let html = `<h4>${esc(texts().sections.leverage)}</h4><p>${esc(t('cost.levIntro', { received: money0(s.amountReceived, cur), bought: num(bought, 4) }))}</p>`;
+  const s = loanSummary(tm); const cur = tm.currency; const bm = buyMoney(tm);
+  const bought = bm.received / tm.btcPrice; const c0 = collateralBtc(tm);
+  let html = `<h4>${esc(texts().sections.leverage)}</h4><p>${esc(t(bm.refi ? 'cost.levIntroRefi' : 'cost.levIntro', { received: money0(bm.received, cur), bought: num(bought, 4) }))}</p>`;
   if (r && r.main && r.main.leverage) {
     const L = r.main.leverage;
     const [more, lessKept, liq] = splitTo100([L.more, L.lessKept, L.liquidated]);
-    const sentence = t('cost.levHeadline', { more, less: lessKept + liq, liq });
+    const sentence = t(bm.refi ? 'cost.levHeadlineRefi' : 'cost.levHeadline', { more, less: lessKept + liq, liq });
     html += `<p class="big-line">${esc(sentence)}</p>${dotsHtml([[more, 'd-good'], [lessKept, 'd-none'], [liq, 'd-liq']], sentence)}
       ${legendHtml([[more, 'd-good', C.levLegendMore], [lessKept, 'd-none', C.levLegendLess], [liq, 'd-liq', C.levLegendLiq]])}`;
     if (L.middleDiff) {
       const sz = (x) => (x === null ? '–' : `${x > 0 ? '+' : x < 0 ? '−' : ''}${num(Math.abs(x), 4)} BTC`);
-      html += `<p class="sub" id="lev-sizes">${esc(t('cost.levSizes', { more: sz(L.middleDiff.more), less: sz(L.middleDiff.lessKept), liq: sz(L.middleDiff.liquidated) }))}</p>`;
+      html += `<p class="sub" id="lev-sizes">${esc(t(bm.refi ? 'cost.levSizesRefi' : 'cost.levSizes', { more: sz(L.middleDiff.more), less: sz(L.middleDiff.lessKept), liq: sz(L.middleDiff.liquidated) }))}</p>`;
     }
     if (r.trends && r.trends[0].more !== null) html += `<h4>${esc(C.levTrendTitle)}</h4><div class="levers">${trendRows(r, (x) => x.more, C.levTrendUnit)}</div>`;
   }
-  if (lenderRules(tm).liquidationSale === 'all') {
+  if (!bm.refi && lenderRules(tm).liquidationSale === 'all') { // (a refinancing: compared with no extra cash, not with no loan)
     const lq = costIfLiquidated(tm, { price: liquidationPrices(tm).atStart, debt: tm.loanAmount });
     html += `<p>${esc(t('cost.levLiquidated', { end: num(lq.btcReturned + bought, 4), start: num(c0, 4) }))}</p>`;
   }
-  html += `<p>${esc(t('cost.levBreakeven', { rise: pct(s.totalPayback / s.amountReceived - 1, 1) }))}</p>`;
+  html += `<p>${esc(t('cost.levBreakeven', { rise: pct(bm.payback / bm.received - 1, 1) }))}</p>`;
   if (tm.repayWith === 'cash') html += `<p>${esc(t('cost.levCash', { payback: money0(s.totalPayback, cur) }))}</p>`;
   el.innerHTML = html;
 }

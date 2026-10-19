@@ -139,7 +139,9 @@ function makeStepper(model, params, rng) {
  *    yours at the end (quantiles q10, q50, q90)
  *  - samplePaths: n → the first n paths, weekly closing prices plus the day and kind of
  *    the first sale (for the "possible futures" chart)
- *  - leverage: { bought, payback, repay: 'sell' | 'cash' } → BTC held at the end
+ *  - leverage: { bought, payback, repay: 'sell' | 'cash', base?, keepPaths? } → BTC held at the end, compared
+ *    with the pledged BTC, or path by path with base (BTC at the end without the extra borrowing, from a
+ *    run with keepPaths, which returns leverage.endBtcPerPath)
  *    compared with not borrowing (profile "buy more BTC")
  */
 export function runMonteCarlo(opts) {
@@ -229,7 +231,7 @@ export function runMonteCarlo(opts) {
       const repaySell = !st.liquidation && lev.repay === 'sell' ? (lev.payback * st.scale) / endPrice : 0;
       const held = (st.liquidation ? st.liquidation.btcReturned : st.c) + lev.bought - repaySell;
       endBtc[p] = held; endLiq[p] = st.liquidation ? 1 : 0;
-      if (!st.liquidation) { if (held > loan.collateralBtc) levMore++; else levLessKept++; }
+      if (!st.liquidation) { if (held > (lev.base ? lev.base[p] : loan.collateralBtc)) levMore++; else levLessKept++; }
     }
   }
 
@@ -271,7 +273,7 @@ export function runMonteCarlo(opts) {
     // how big each outcome is: the middle value of each group, in BTC compared with not borrowing
     const groups = { more: [], lessKept: [], liquidated: [] };
     for (let p = 0; p < nPaths; p++) {
-      const diff = endBtc[p] - loan.collateralBtc;
+      const diff = endBtc[p] - (lev.base ? lev.base[p] : loan.collateralBtc);
       groups[endLiq[p] ? 'liquidated' : diff > 0 ? 'more' : 'lessKept'].push(diff);
     }
     const middle = (a) => (a.length ? quantile(Float64Array.from(a).sort(), 0.5) : null);
@@ -280,6 +282,7 @@ export function runMonteCarlo(opts) {
       endBtc: { q05: quantile(srt, 0.05), q50: quantile(srt, 0.5), q95: quantile(srt, 0.95) },
       middleDiff: { more: middle(groups.more), lessKept: middle(groups.lessKept), liquidated: middle(groups.liquidated) },
     };
+    if (lev.keepPaths) out.leverage.endBtcPerPath = endBtc;
   }
   return out;
 }

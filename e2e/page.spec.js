@@ -685,6 +685,39 @@ test('cost including the risk: in "What it costs", in the comparison of offers a
   expect(errors).toEqual([]);
 });
 
+test('refinancing to buy more BTC: the extra cash is compared, future by future, with the same refinancing without it', async ({ page }) => {
+  const { errors } = await open(page); await waitDone(page);
+  // a loan taken when BTC was at 30,000 (LTV 40%), two months left; BTC has doubled to 60,000
+  await page.getByRole('button', { name: 'A loan I already have' }).click();
+  await page.locator('#form [data-k="currency"]').selectOption('USD');
+  await page.locator('#f-loanAmount').fill('10000');
+  await page.locator('#f-collateralBtc').fill('0.8333');
+  await page.locator('[data-field="durationMonths"] input').fill('2');
+  await waitDone(page);
+  await page.locator('#compare-btn').click();
+  await expect(page.locator('#form')).not.toContainText('What will you do with the extra cash?'); // only when borrowing more
+  await page.locator('[data-set="refi.change"][data-val="more"]').click();
+  await page.locator('#f-refiExtra').fill('5000');
+  await expect(page.locator('#refi-note')).toContainText('Starting LTV 30%, up from 20% today. Check that this is within your lender\'s maximum starting LTV.');
+  await page.locator('[data-set="durationMonths"][data-val="12"]').click();
+  await page.locator('[data-set="purpose"][data-val="buy"]').click();
+  await waitDone(page);
+  // the extra US$5,000 buys 0.0833 BTC and costs US$500 interest a year: it pays off above +10%
+  await expect(page.locator('#tiles')).toContainText(/PAYS OFF IF\s*BTC \+10%/i);
+  await page.locator('#sec-cost > summary').click();
+  const lev = page.locator('#leverage');
+  await expect(lev).toContainText('With the extra US$5,000 you buy 0.0833 BTC today. Compared below: the same refinancing without the extra cash.');
+  await expect(lev).toContainText(/In \d+ of 100 futures you end with more BTC than without the extra cash\./);
+  await expect(lev).toContainText('Breakeven: BTC must be 10.0% higher at the end');
+  await expect(lev).not.toContainText('Does the price trend matter here?');
+  // back to the same amount: the question and the leverage view go away
+  await page.locator('[data-set="refi.change"][data-val="same"]').click();
+  await expect(page.locator('#form')).not.toContainText('What will you do with the extra cash?');
+  await waitDone(page);
+  await expect(page.locator('#sec-cost-title')).toContainText('Borrow or sell?');
+  expect(errors).toEqual([]);
+});
+
 test('German: Kosten inklusive Risiko', async ({ page }) => {
   await open(page, { lang: 'de' }); await waitDone(page);
   await page.locator('#sec-cost > summary').click();
@@ -960,11 +993,11 @@ test('refinancing: today\'s LTV, when borrowing more or taking back BTC is possi
   const max = (await note.textContent()).match(/at most (0\.\d+) BTC/)[1];
   await page.locator('#f-refiBack').fill(max);
   await expect(note).not.toHaveClass(/err/); // possible now, but much higher than today: the neutral note
-  await expect(note).toContainText('much higher than your loan today (50%)');
+  await expect(note).toContainText(/Starting LTV \d+%, up from 50% today\. Check that this is within your lender's maximum starting LTV\./);
   await expect(page.locator('#ltv-today')).toContainText(/starting LTV 69\.\d%/);
   await page.locator('[data-set="refi.change"][data-val="more"]').click();
   await page.locator('#f-refiExtra').fill('3000');
-  await expect(note).toContainText('much higher than your loan today (50%)');
+  await expect(note).toContainText(/Starting LTV \d+%, up from 50% today\. Check that this is within your lender's maximum starting LTV\./);
   await page.locator('#f-refiExtra').fill('5000');
   await expect(note).toContainText(/at most €3,\d{3} more can be borrowed/);
   await page.locator('[data-set="refi.change"][data-val="same"]').click();

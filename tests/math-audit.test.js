@@ -43,6 +43,24 @@ describe('answers known in advance', () => {
   });
 });
 
+describe('borrowing extra cash to buy BTC, compared future by future with not borrowing it', () => {
+  // 100 BTC pledged at 100; without the extra cash the loan repays 5,500 at the end; with 1,000 extra
+  // (which buys 10 BTC today) it repays 6,600. At the end BTC is at 100 or at 120, the same in every future.
+  const levRun = (endRel, lev) => runMonteCarlo({ model: 'fixed', params: { steps: [[Math.log(endRel), 0], [0, 0]] }, s0: 100, days: 30, nPaths: 3, seed: 1,
+    loan: loanOf(new Float64Array(31).fill(5000), 100), leverage: lev });
+  const base = (endRel) => levRun(endRel, { bought: 0, payback: 5500, repay: 'sell', keepPaths: true }).leverage.endBtcPerPath;
+  it('BTC flat: the extra 1,000 costs 1,100 back, so less BTC than without it', () => {
+    const r = levRun(1, { bought: 10, payback: 6600, repay: 'sell', base: base(1) });
+    expect(r.leverage.lessKept).toBe(1);
+    expect(r.leverage.middleDiff.lessKept).toBeCloseTo(10 - 1100 / 100, 9); // −1 BTC
+  });
+  it('BTC 20% higher: the 10 BTC bought are worth more than the 1,100 to repay, so more BTC', () => {
+    const r = levRun(1.2, { bought: 10, payback: 6600, repay: 'sell', base: base(1.2) });
+    expect(r.leverage.more).toBe(1);
+    expect(r.leverage.middleDiff.more).toBeCloseTo(10 - 1100 / 120, 9);
+  });
+});
+
 describe('random streams and precision', () => {
   it('one stream per path, all different; runs with neighbouring seeds share no path', () => {
     const run1 = new Set(Array.from({ length: 20000 }, (_, p) => mixSeed(1001, p)));
