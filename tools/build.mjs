@@ -107,7 +107,7 @@ const methodMeta = ex && {
 };
 // "Insights": what happened to loans since 2014, on the real US-dollar history (src/insights/compute.js).
 // Recomputed at every build, so the weekly data update refreshes it.
-const insights = currencies.includes('USD') ? computeInsights(decodeHourly(gunzipSync(readFileSync(file('USD'))))) : null;
+const insights = currencies.includes('USD') ? computeInsights(decodeHourly(gunzipSync(readFileSync(file('USD')))), { halfLifeYears: HALF_LIFE_YEARS }) : null;
 if (!insights) console.warn('WARNING: no USD history: the insights page is empty');
 const PAGES = [
   { dir: '', src: 'src/app/index.html', extra: forget, parts: {

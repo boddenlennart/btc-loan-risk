@@ -94,7 +94,7 @@ function render() {
   // 11. today's price swings
   const W = I.swings;
   block('swings', T.swings.title, T.swings.lead, t('insights.swings.take', { now: pct(W.now, 0), n: of100(W.calmerShare) }),
-    `<p>${esc(t('insights.swings.range', { q50: pct(W.q50, 0), q10: pct(W.q10, 0), q90: pct(W.q90, 0) }))}</p><div id="swings-chart"></div>` + hint(t('insights.swings.now', { now: pct(W.now, 0) })) + hint(T.swings.note));
+    `<p>${esc(t('insights.swings.range', { q50: pct(W.q50, 0), q10: pct(W.q10, 0), q90: pct(W.q90, 0) }))}</p><p>${esc(t('insights.swings.vsSim', { sim: pct(W.simVol, 0) }))}</p><div id="swings-chart"></div>` + hint(t('insights.swings.now', { now: pct(W.now, 0) })) + hint(T.swings.note));
   lineChart($('#swings-chart'), { points: W.weekly, fmt: (v) => pct(v, 0), fmtDate: date, title: T.swings.chartTitle });
 
   document.body.dataset.ready = '1';

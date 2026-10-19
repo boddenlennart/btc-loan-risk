@@ -5,7 +5,7 @@
 const KEYS = ['mode', 'currency', 'loanAmount', 'ltvInput', 'initialLtv', 'collateralBtc', 'liquidationLtv', 'durationMonths', 'rateType',
   'rateAnnual', 'ratePath', 'purpose', 'repayWith', 'repayment', 'compounding', 'originationFee', 'marginCallLtv', 'marginCallConsequence',
   'curePeriodHours', 'liquidationSale', 'cureTargetLtv', 'liquidationFee', 'liquidationFeeBasis', 'reserveAmount', 'taxRateNow',
-  'taxRateAtMaturity', 'dayCount', 'simPaths', 'bootstrapBlockDays', 'refi'];
+  'taxRateAtMaturity', 'dayCount', 'refi']; // the model's settings (futures, piece length) are fixed and not shared
 const pickForm = (f) => Object.fromEntries(KEYS.filter((k) => f[k] !== undefined).map((k) => [k, f[k]]));
 
 const toB64url = (s) => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');

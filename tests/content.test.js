@@ -27,7 +27,6 @@ const INPUTS = {
   marginCallConsequence: 'form.help.marginCall', curePeriodHours: 'glossary.terms.curePeriod', liquidationSale: 'glossary.terms.partialLiquidation',
   cureTargetLtv: 'form.fields.cureTargetLtv.hint', liquidationFee: 'glossary.terms.liquidation', repayWith: 'cost.levCash',
   currency: 'form.fields.currency.label', startDate: 'form.fields.startDate.hint', dayCount: 'glossary.terms.dayCount',
-  simPaths: 'glossary.terms.simulatedFuture', bootstrapBlockDays: 'glossary.terms.blockBootstrap',
 };
 // Every result, and where it is explained.
 const OUTPUTS = {
@@ -35,7 +34,7 @@ const OUTPUTS = {
   slider: 'results.sliderNote', levers: 'results.otherOptions', trend: 'history.trendIntro', leverageTrend: 'cost.levTrendUnit', ladder: 'falls.marginCure',
   futures: 'falls.futuresHelp', cost: 'glossary.terms.aprVsRate', breakeven: 'cost.sellIntro', leverage: 'cost.levIntro',
   replay: 'glossary.terms.historicalReplay', stories: 'history.storiesLine', method: 'method.oneSteps', fan: 'method.fanNote',
-  compare: 'method.barrierNote', feedback: 'feedback.intro', donate: 'donate.public',
+  compare: 'method.methodsWhy', feedback: 'feedback.intro', donate: 'donate.public',
 };
 const GLOSSARY = ['ltv', 'marginCall', 'liquidation', 'partialLiquidation', 'collateral', 'curePeriod', 'originationFee', 'aprVsRate',
   'drawdown', 'ohlc', 'compounding', 'dayCount', 'priceIndex', 'counterpartyRisk', 'rehypothecation', 'simulatedFuture',

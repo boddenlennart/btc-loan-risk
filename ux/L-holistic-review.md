@@ -44,6 +44,10 @@ Each page has one clear job and the three connect: **the check** answers "what a
 - **The owner's plain-language review covered the 391 texts of 16 Oct.** About 250 texts are new since then (Insights, How it works, legal, comparison). They have passed the automatic rules (short sentences, no advice or market claims), but not a human reading.
 - **The comparison of offers does not show "cost including the risk"**, although Insights shows that it can reverse which offer is cheaper. Valuable, but it needs a careful definition in the simulation (C1).
 
+## Status
+
+19 Oct 2026: S1–S5 done (commit after d2301e6). S6 is yours.
+
 ## Before launch (MoSCoW)
 
 **Must:** nothing new beyond ux/J-launch-steps.md (your checks and clicks).

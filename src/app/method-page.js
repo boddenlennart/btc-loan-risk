@@ -1,7 +1,7 @@
 // "How it works": how the numbers are made, on the example loan. Every figure is computed by the build
 // (tools/build.mjs, src/app/method-data.js) with the page's own calculation on the embedded history, so
 // this page needs no price history and no background calculation. No wording lives here.
-import { initLang, t, texts, rich, esc } from './i18n.js';
+import { initLang, t, texts, rich, esc, pageHref } from './i18n.js';
 import { money0, pct, num, date } from './format.js';
 import { fanChart, barChart, onePathChart, volChart } from './charts.js';
 import { initShell, renderShell } from './shell.js';
@@ -45,7 +45,7 @@ function render() {
   // 2. which volatility
   volChart($('#vol-chart'), {
     rows: md.volByYear, sim: md.simVol, fmtPct: (x) => pct(x, 0),
-    labels: { title: M.volChartTitle, sim: t('method.volSim', { vol: pct(md.simVol, 0) }), tip: (year, vol, weight) => t('method.volTip', { year, vol: pct(vol, 0), weight: pct(weight, 1) }) },
+    labels: { title: M.volChartTitle, sim: t('method.volSim', { vol: pct(md.simVol, 0) }), tip: (year, vol, weight) => t(year === md.volByYear.at(-1).year ? 'method.volTipSoFar' : 'method.volTip', { year, vol: pct(vol, 0), weight: pct(weight, 1) }) },
   });
   $('#vol-chart').nextElementSibling.textContent = t('method.volChartNote', { h: md.halfLifeYears });
   $('#vol-why').textContent = t('method.volWhy', { pre: pct(md.sharePre2019, 0) });
@@ -73,7 +73,6 @@ function render() {
     ${row([R.garch[0], t('method.methodsRows.garch.1', { today: pct(md.garch.todayVol, 0) })], of100(r.garch))}
     ${row(R.replay, of100(r.replay))}
     ${row([R.barrier[0], t('method.methodsRows.barrier.1', { vol: pct(r.barrier.sigma, 0) })], of100(r.barrier.p))}</tbody>`;
-  $('#barrier-note').textContent = t('method.barrierNote', { sigma: pct(r.barrier.sigma, 0) });
   const lp = liquidationPrices(tm);
   const liqByMonth = [0, ...r.fanByMonth.map((f) => f.day)].map((d) => lp.byDay[d]);
   fanChart($('#fan-chart'), { s0: tm.btcPrice, fan: r.fanByMonth, liq: liqByMonth, fmt: (v) => money0(v, cur), monthLabel, labels: { title: M.fanTitle, ...M.fanTip, liq: tx.falls.ladderSale } });
@@ -87,6 +86,8 @@ function render() {
 
   // 7.–9. data, trend, limits
   $('#data-list').innerHTML = list(M.data);
+  const [m0, m1] = M.measure.split('{link}');
+  $('#measure').innerHTML = `${esc(m0)}<a href="${pageHref('insights/')}#i-measure">${esc(M.measureLink)}</a>${esc(m1 || '')}`;
   const p = META.prices[cur];
   $('#data-period').textContent = t('ui.dataThrough', { from: date(p.from), to: date(p.to), updated: date(META.dataUpdated || p.to) });
   const f = r.facts; const by = f.fourYearByStart; const a = by[0]; const z = by[by.length - 1];

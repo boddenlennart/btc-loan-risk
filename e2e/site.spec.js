@@ -296,3 +296,26 @@ test('reading pages: every section starts at the same left edge as the page titl
     for (const h of await page.locator('main .part h2').all()) expect(await h.evaluate((x) => Math.round(x.getBoundingClientRect().left)), `${path} ${await h.textContent()}`).toBe(left);
   }
 });
+
+test('whole-site review fixes: fixed model settings, no repeats, the volatility figures explained, links between the pages', async ({ page }) => {
+  await visit(page, '/');
+  // S1: the model's own settings are not on the page and cannot come in through a shared link
+  await page.locator('#own-terms-link').click();
+  await page.locator('details.more[data-remember="expert"] > summary').click();
+  await expect(page.locator('#form')).not.toContainText('Simulated futures');
+  await expect(page.locator('[data-k="simPaths"], [data-k="bootstrapBlockDays"]')).toHaveCount(0);
+  // S2: "you get back" once (the answer), the falls section says what it adds
+  await page.locator('#sec-falls > summary').click();
+  await expect(page.locator('#sold-line')).toContainText('If liquidated: you get back about');
+  await expect(page.locator('#falls-text')).not.toContainText('get back');
+  // S4, S5
+  await expect(page.locator('#safer-body')).toContainText('Other options (liquidated, of 100)');
+  await expect(page.locator('#headline-help')).toContainText('with recent years counting more');
+  await visit(page, '/method/');
+  await expect(page.locator('#measure a')).toHaveAttribute('href', '/insights/#i-measure');
+  await expect(page.locator('#barrier-note')).toHaveCount(0);
+  await expect(page.locator('#your-number .to-check a')).toHaveAttribute('href', '/');
+  await expect(page.locator('#methods-table')).toContainText('its estimate of today\'s volatility');
+  await visit(page, '/insights/');
+  await expect(page.locator('#i-swings')).toContainText(/the simulation on the check assumes \d+% a year/);
+});

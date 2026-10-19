@@ -120,6 +120,9 @@ function loadState() {
   if (okCompare) compare = { kind: c.kind, active: c.active, names: Array.isArray(c.names) ? c.names.map((n) => String(n ?? '').slice(0, 40)) : [], offers: c.offers.map((o) => ({ ...EXAMPLE_FORM, ...o })) };
   const s = { ...EXAMPLE_FORM, ...(saved && saved.state), ...(fromLink || {}), ...(compare ? compare.offers[compare.active] : {}) };
   if (fromLink) s.priceManual = false;
+  // the model's own settings are fixed (10,000 futures, 30-day pieces): every explanation and the test against
+  // history rest on them, so inputs saved by an older version cannot change them
+  s.simPaths = EXAMPLE_FORM.simPaths; s.bootstrapBlockDays = EXAMPLE_FORM.bootstrapBlockDays;
   if (!META.prices[s.currency]) s.currency = Object.keys(META.prices)[0];
   // until the live price arrives, start from the last stored price, so the answer can show at once
   if (numOr(s.btcPrice, null) === null) { s.btcPrice = META.prices[s.currency].lastClose; s.priceManual = false; }
@@ -211,8 +214,7 @@ function renderForm() {
   const expert = `
     ${existing ? '' : `<div class="field" data-field="startDate"><label for="f-startDate">${esc(f.startDate.label)}</label><input id="f-startDate" type="date" data-k="startDate" value="${esc(state.startDate || today())}"><p class="hint">${esc(f.startDate.hint)}</p></div>`}
     ${select('dayCount', ['30/360', 'act/365', 'act/360'].map((v) => [v, f.dayCount[v]]), f.dayCount.label)}
-    ${select('simPaths', ['2000', '10000', '20000'].map((v) => [v, f.simPaths[v]]), f.simPaths.label)}
-    ${numField('bootstrapBlockDays', f.bootstrapBlockDays.label, '', { step: '1' })}`;
+`;
 
   const Cm = texts().compare; const refi = !!state.refi;
   const nameField = compare ? `<div class="field"><label for="f-offerName">${esc(Cm.nameLabel)}</label><input id="f-offerName" type="text" maxlength="40" data-offer-name value="${esc(compare.names[compare.active] || '')}" placeholder="${esc(offerName(compare.active))}"></div>` : '';

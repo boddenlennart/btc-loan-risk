@@ -4,7 +4,7 @@
 // One reference loan (the page's example rules) unless a table varies a term on purpose.
 import { replayAll } from '../engine/replay.js';
 import { loanSummary, breakevenReturn } from '../engine/loan.js';
-import { dailyFromHourly } from '../engine/history.js';
+import { dailyFromHourly, recencyWeights } from '../engine/history.js';
 import { toTerms } from '../app/terms.js';
 import { EXAMPLE_FORM } from '../content/examples.js';
 
@@ -196,21 +196,25 @@ export function borrowOrSell(hourly) {
 }
 
 /** 11. Today's price swings: the last 30 days' volatility (yearly terms) compared with every 30-day period since 2014. */
-export function swingsToday(hourly) {
+export function swingsToday(hourly, halfLifeYears = 3) {
   const d = dailyFromHourly(hourly);
   const r = []; for (let i = 1; i < d.close.length; i++) r.push(Math.log(d.close[i] / d.close[i - 1]));
   const vol = (a, b) => { const x = r.slice(a, b); const m = x.reduce((s, v) => s + v, 0) / x.length; return Math.sqrt((x.reduce((s, v) => s + (v - m) ** 2, 0) / (x.length - 1)) * 365); };
   const series = []; for (let j = 30; j <= r.length; j++) series.push({ time: d.time[j], vol: vol(j - 30, j) });
   const now = series[series.length - 1];
   const sorted = series.map((x) => x.vol).sort((a, b) => a - b);
-  return { now: now.vol, asOf: now.time, calmerShare: series.filter((x) => x.vol < now.vol).length / series.length, q10: quantile(sorted, 0.1), q50: quantile(sorted, 0.5), q90: quantile(sorted, 0.9), weekly: series.filter((_, k) => (series.length - 1 - k) % 7 === 0).map((x) => [x.time, Math.round(x.vol * 1000) / 1000]) };
+  // the volatility the check's simulation effectively uses (recent days weighted more), for comparison
+  const w = recencyWeights(r.length, halfLifeYears * 365); const W = w.reduce((a, b) => a + b, 0);
+  const wm = r.reduce((a, x, i) => a + x * w[i], 0) / W;
+  const simVol = Math.sqrt((r.reduce((a, x, i) => a + w[i] * (x - wm) ** 2, 0) / W) * 365);
+  return { now: now.vol, asOf: now.time, simVol, calmerShare: series.filter((x) => x.vol < now.vol).length / series.length, q10: quantile(sorted, 0.1), q50: quantile(sorted, 0.5), q90: quantile(sorted, 0.9), weekly: series.filter((_, k) => (series.length - 1 - k) % 7 === 0).map((x) => [x.time, Math.round(x.vol * 1000) / 1000]) };
 }
 
 /** All 11, plus what they were measured on. */
-export function computeInsights(hourly, { currency = 'USD' } = {}) {
+export function computeInsights(hourly, { currency = 'USD', halfLifeYears = 3 } = {}) {
   return {
     currency, from: hourly.time[0], to: hourly.time[hourly.time.length - 1],
     survival: survivalMap(hourly), falls: worstFalls(hourly), speed: crashSpeed(hourly), levers: leverRanking(hourly), reserve: reserveSizing(hourly),
-    partial: partialVsFull(hourly), cost: expectedCost(hourly), measure: priceMeasure(hourly), buy: buyMore(hourly), spend: borrowOrSell(hourly), swings: swingsToday(hourly),
+    partial: partialVsFull(hourly), cost: expectedCost(hourly), measure: priceMeasure(hourly), buy: buyMore(hourly), spend: borrowOrSell(hourly), swings: swingsToday(hourly, halfLifeYears),
   };
 }

@@ -71,3 +71,14 @@ describe('share link with a comparison', () => {
     expect(p.compare.offers[0].notes).toBeUndefined();
   });
 });
+
+describe('share link: the model settings are fixed and never travel in a link', async () => {
+  const { encodeState, decodeLink } = await import('../src/app/share.js');
+  it('futures and piece length are left out', () => {
+    const link = encodeState({ loanAmount: 1000, simPaths: '2000', bootstrapBlockDays: 5 });
+    const back = decodeLink(link).form;
+    expect(back.loanAmount).toBe(1000);
+    expect(back.simPaths).toBeUndefined();
+    expect(back.bootstrapBlockDays).toBeUndefined();
+  });
+});
