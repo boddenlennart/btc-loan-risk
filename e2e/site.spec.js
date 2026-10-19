@@ -319,3 +319,12 @@ test('whole-site review fixes: fixed model settings, no repeats, the volatility 
   await visit(page, '/insights/');
   await expect(page.locator('#i-swings')).toContainText(/the simulation on the check assumes \d+% a year/);
 });
+
+test('"Where to find these numbers": the five words to look for, without a sample text', async ({ page }) => {
+  await visit(page, '/');
+  await page.locator('#own-terms-link').click();
+  await page.locator('button[aria-controls="where"]').click();
+  await expect(page.locator('#where')).toContainText('Look for these words');
+  await expect(page.locator('#where .sample')).toHaveCount(0);
+  await expect(page.locator('#where ol li')).toHaveCount(5);
+});

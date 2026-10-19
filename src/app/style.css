@@ -253,7 +253,6 @@ textarea { resize: vertical; }
 .price-line { font-size: 14px; color: var(--muted); }
 .price-line.stale { color: var(--critical-ink); font-weight: 600; }
 .where { background: var(--surface-2); border-radius: 6px; padding: 8px 12px; font-size: 14px; }
-.where .sample { font-family: ui-monospace, Menlo, monospace; font-size: 13px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; }
 details.more { border-top: 1px solid var(--border); padding: 4px 0; }
 details.more > summary { cursor: pointer; font-weight: 600; padding: 10px 0; min-height: 44px; color: var(--accent-ink); }
 details.more > summary .sum { font-weight: 400; color: var(--muted); font-size: 13px; }

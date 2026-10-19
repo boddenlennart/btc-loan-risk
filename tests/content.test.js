@@ -119,7 +119,7 @@ for (const lang of ['en', 'de']) {
     });
     it('readable (D3): short sentences in all explanations', async () => {
       const t = await load(lang);
-      const texts = allStrings(t).filter(([p]) => !p.startsWith('legal') && !p.startsWith('footer.privacy') && !p.startsWith('where.sample')).map(([, s]) => s.replace(/\[\[\w+\]\]/g, 'X'));
+      const texts = allStrings(t).filter(([p]) => !p.startsWith('legal') && !p.startsWith('footer.privacy')).map(([, s]) => s.replace(/\[\[\w+\]\]/g, 'X'));
       const sentences = texts.flatMap((s) => s.split(/(?<=[.!?])\s+/)).filter((s) => /\p{L}/u.test(s));
       const words = (s) => (s.match(/[\p{L}\p{N}][\p{L}\p{N}'’.,%€$-]*/gu) || []).length;
       const long = sentences.filter((s) => words(s) > 30);

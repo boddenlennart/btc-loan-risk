@@ -288,7 +288,7 @@ function buildForm() {
 
 function whereHtml() {
   const w = texts().where;
-  return `<p><b>${esc(w.title)}</b></p><p class="sample">${esc(w.sample)}</p><p>${esc(w.intro)}</p>
+  return `<p><b>${esc(w.title)}</b></p><p>${esc(w.intro)}</p>
     <ol>${w.items.map((i) => `<li><b>${esc(i.field)}</b>: ${esc(i.words)}</li>`).join('')}</ol><p class="hint">${esc(w.others)}</p>`;
 }
 

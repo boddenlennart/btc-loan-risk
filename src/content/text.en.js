@@ -135,7 +135,6 @@ export default {
       { field: 'Interest rate', words: '"nominal rate", "interest rate", "Sollzins". Not the APR: the page calculates that itself' },
     ],
     others: 'The other terms are in sections called "fees", "collateral monitoring" or "margin call". The page fills them with starting values you can change under "More terms from your offer".',
-    sample: 'Principal amount: EUR 15,000.00 · Term: 12 months · Loan-to-Value at origination: 50 % · Nominal interest rate: 11.5 % p.a. · If the LTV reaches 83 %, the lender may sell collateral.',
   },
 
   results: {

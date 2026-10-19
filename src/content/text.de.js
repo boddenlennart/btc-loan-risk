@@ -130,7 +130,6 @@ export default {
       { field: 'Zinssatz', words: '"Sollzins", "Nominalzins", "Zinssatz", "interest rate". Nicht den Effektivzins: den berechnet die Seite selbst' },
     ],
     others: 'Die übrigen Bedingungen stehen in Abschnitten wie "Gebühren", "Überwachung der Sicherheit" oder "Margin Call". Die Seite füllt sie mit Startwerten, die Sie unter "Weitere Bedingungen aus Ihrem Angebot" ändern können.',
-    sample: 'Darlehensbetrag: EUR 15.000,00 · Laufzeit: 12 Monate · Beleihungsquote bei Auszahlung: 50 % · Sollzins: 11,5 % p. a. · Erreicht die Beleihungsquote 83 %, darf der Kreditgeber die Sicherheit verwerten.',
   },
 
   results: {
