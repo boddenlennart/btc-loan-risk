@@ -864,7 +864,9 @@ function renderRisk() {
   // simulation is the most cautious; the real history and the volatility model are shown with it)
   const rules = lenderRules(tm);
   $('#assume-line').textContent = !rules.afterCure ? '' : tm.reserveAmount > 0 ? t('results.assumeReserve', { reserve: money0(tm.reserveAmount, cur) }) : texts().results.assumeNoTopUp;
-  $('#methods-line').textContent = `${t('results.otherMethods', { h: of100(r.replay.liquidatedShare), g: of100(r.garchMc.pLiquidation) })} · `;
+  // "the simulation is the most cautious" only where it is true for this loan
+  const h = of100(r.replay.liquidatedShare); const g = of100(r.garchMc.pLiquidation); const n = shown(m.pLiquidation);
+  $('#methods-line').textContent = `${t('results.otherMethods', { h, g })}${n >= h && n >= g ? R.mostCautious : ''} · `;
   // the whole period the results are based on, and when the stored data was last updated
   $('#data-period').textContent = t('ui.dataThrough', { from: date(META.prices[cur].from), to: date(lastHour), updated: date(META.dataUpdated || META.prices[cur].to) });
   renderSafer(); renderTrend(); renderCompare(); updateAnswerBar();

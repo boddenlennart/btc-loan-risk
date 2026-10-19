@@ -11,10 +11,12 @@
 // number of independent checks is small; that is why the band is wide.
 // The same is done for the "worst 10%" level (fail above 20%) and the median
 // (reality should land below it between 20% and 80% of the time).
-// The models run with the page's default assumption: no price trend (0% a year).
+// The models run with the page's default assumption: no price trend (0% a year), and the simulation
+// weights recent days more, exactly as on the page.
 import { describe, it, expect } from 'vitest';
 import { runMonteCarlo } from '../src/engine/montecarlo.js';
-import { dailyFromHourly, dailyReturns } from '../src/engine/history.js';
+import { dailyFromHourly, dailyReturns, recencyWeights } from '../src/engine/history.js';
+import { HALF_LIFE_YEARS } from '../src/app/riskjob.js';
 import { fitGarchT } from '../src/engine/garch.js';
 import { loadHourly, hasData } from './helpers/history.js';
 
@@ -27,7 +29,8 @@ function calibrate(currency, model, horizonDays) {
     if (daily.time[i] < FIRST_CUTOFF) continue;
     const past = { time: daily.time.slice(0, i), open: daily.open.slice(0, i), low: daily.low.slice(0, i), close: daily.close.slice(0, i) };
     const { returns, lowRel } = dailyReturns(past);
-    const params = model === 'bootstrap' ? { returns, lowRel, blockDays: 30 } : fitGarchT(returns);
+    // the page's simulation: real days in 30-day pieces, recent days weighted more (half-life HALF_LIFE_YEARS)
+    const params = model === 'bootstrap' ? { returns, lowRel, blockDays: 30, weights: recencyWeights(returns.length, HALF_LIFE_YEARS * 365) } : fitGarchT(returns);
     const s0 = daily.close[i - 1];
     const sim = runMonteCarlo({ model, params, s0, days: horizonDays, nPaths: 2000, seed: i, liquidationBarrier: 0, collectMinRatios: true, logDriftPerDay: 0 });
     let realMin = Infinity;

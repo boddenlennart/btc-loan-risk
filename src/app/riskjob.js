@@ -5,7 +5,7 @@
 import { gunzipSync } from 'fflate';
 import { decodeHourly } from '../data/codec.js';
 import { convertHourly } from '../data/fx.js';
-import { dailyFromHourly, dailyReturns, fastestFall, largestFall } from '../engine/history.js';
+import { dailyFromHourly, dailyReturns, fastestFall, largestFall, recencyWeights } from '../engine/history.js';
 import { fitGarchT } from '../engine/garch.js';
 import { runMonteCarlo } from '../engine/montecarlo.js';
 import { gbmBarrierHitProbability } from '../engine/barrier.js';
@@ -13,6 +13,9 @@ import { replayAll, replayOne } from '../engine/replay.js';
 import { lenderRules } from '../engine/lender.js';
 import { collateralBtc, liquidationPrices, debtByDay, loanDays, loanSummary, addMonths, daysBetween } from '../engine/loan.js';
 
+// The simulation weights recent days more: a day from three years ago counts half as much as today's
+// (decided 19 Oct 2026; see "How it works"). The test against history checks this setting.
+export const HALF_LIFE_YEARS = 3;
 const store = {}; // currency -> { hourly, daily, returns, lowRel, sigma, garch, facts }
 
 function b64ToBytes(b64) {
@@ -87,9 +90,13 @@ function setData(currency, base64, appended, fx) {
   }
   const daily = dailyFromHourly(hourly);
   const { returns, lowRel } = dailyReturns(daily);
-  const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
-  const sigma = Math.sqrt(returns.reduce((a, b) => a + (b - mean) ** 2, 0) / (returns.length - 1) * 365);
-  store[currency] = { hourly, daily, returns, lowRel, sigma, garch: null, facts: historyFacts(daily, hourly) };
+  // the volatility the simulation effectively uses (recent days weighted more), in yearly terms; the
+  // textbook formula uses the same, so all methods rest on the same assumption
+  const weights = recencyWeights(returns.length, HALF_LIFE_YEARS * 365);
+  const W = weights.reduce((a, b) => a + b, 0);
+  const mean = returns.reduce((a, r, i) => a + r * weights[i], 0) / W;
+  const sigma = Math.sqrt((returns.reduce((a, r, i) => a + weights[i] * (r - mean) ** 2, 0) / W) * 365);
+  store[currency] = { hourly, daily, returns, lowRel, weights, sigma, garch: null, facts: historyFacts(daily, hourly) };
 }
 
 const monthEndsFor = (t) => Array.from({ length: t.durationMonths }, (_, m) => daysBetween(t.startDate, addMonths(t.startDate, m + 1)));
@@ -98,7 +105,7 @@ const monthEndsFor = (t) => Array.from({ length: t.durationMonths }, (_, m) => d
 function simulate(t, s, settings, { model = 'bootstrap', nPaths = settings.nPaths, trend = 0, samplePaths = 0, leverage = false, seed = 20240101 } = {}) {
   const sum = loanSummary(t);
   return runMonteCarlo({
-    model, params: model === 'bootstrap' ? { returns: s.returns, lowRel: s.lowRel, blockDays: settings.blockDays } : s.garch,
+    model, params: model === 'bootstrap' ? { returns: s.returns, lowRel: s.lowRel, weights: s.weights, blockDays: settings.blockDays } : s.garch,
     s0: t.btcPrice, days: loanDays(t), nPaths, seed, monthEnds: monthEndsFor(t), samplePaths,
     logDriftPerDay: Math.log(1 + trend) / 365,
     loan: { debtByDay: debtByDay(t), collateralBtc: collateralBtc(t), rules: lenderRules(t) },

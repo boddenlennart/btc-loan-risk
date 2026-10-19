@@ -308,14 +308,16 @@ Run with `npm test` (355 tests) and `npm run test:e2e` (68 browser tests, each i
 
 ### Calibration results (assumed trend 0%)
 
+The simulation (bootstrap) weights recent days more since 19 Oct 2026: a day from three years ago counts half as much as today's (`HALF_LIFE_YEARS` in `src/app/riskjob.js`, `recencyWeights` in `src/engine/history.js`). Reason: BTC's swings have shrunk as the market grew (about 80–90% a year in 2017–2021, 42–52% since 2023). The test cannot decide between weightings (all candidates passed and stayed cautious: half-lives of 1–4 years and equal weights); the choice is a judgement backed by the falling volatility. Example loan: 60 of 100 with equal weights, 53 with the 3-year half-life.
+
 | Currency | Model | Horizon | Below "worst 5%" | Below "worst 10%" | Below median |
 |---|---|---|---|---|---|
-| USD | bootstrap | 90 days | 2.3% | 3.9% | 30.5% |
-| USD | bootstrap | 365 days | 0.0% | 1.7% | 31.9% |
+| USD | bootstrap | 90 days | 2.3% | 4.7% | 32.0% |
+| USD | bootstrap | 365 days | 0.0% | 1.7% | 33.6% |
 | USD | GARCH | 90 days | 5.5% | 10.9% | 47.7% |
 | USD | GARCH | 365 days | 0.0% | 4.2% | 39.5% |
-| EUR | bootstrap | 90 days | 3.1% | 5.5% | 32.0% |
-| EUR | bootstrap | 365 days | 0.0% | 1.7% | 31.9% |
+| EUR | bootstrap | 90 days | 2.3% | 4.7% | 35.2% |
+| EUR | bootstrap | 365 days | 0.0% | 1.7% | 33.6% |
 | EUR | GARCH | 90 days | 5.5% | 10.2% | 47.7% |
 | EUR | GARCH | 365 days | 0.0% | 2.5% | 41.2% |
 

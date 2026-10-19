@@ -2,7 +2,8 @@
 // change day by day (because unpaid interest makes the debt grow).
 //   model 'gbm'       : textbook model, params { mu, sigma } (yearly, same convention as barrier.js)
 //   model 'bootstrap' : glues together random blocks of real past days,
-//                       params { returns, lowRel, blockDays } from history.dailyReturns
+//                       params { returns, lowRel, blockDays, weights? } from history.dailyReturns;
+//                       weights (history.recencyWeights) make recent blocks more likely
 //   model 'garch'     : GARCH(1,1)-t, params from garch.fitGarchT
 // Within a day, gbm and garch draw the day's low from a Brownian bridge;
 // bootstrap uses the real day's low.
@@ -35,13 +36,37 @@ function quantile(sorted, q) {
 function withDrift(model, params, logDriftPerDay) {
   if (logDriftPerDay === null || logDriftPerDay === undefined) return params;
   if (model === 'bootstrap') {
-    const mean = params.returns.reduce((a, b) => a + b, 0) / params.returns.length;
+    // the average move as the simulation draws it: with recency weights, the weighted average (otherwise the
+    // recent years, which rose less, would carry a built-in downtrend after the shift)
+    const w = params.weights;
+    const mean = w ? params.returns.reduce((a, r, i) => a + r * w[i], 0) / w.reduce((a, b) => a + b, 0)
+      : params.returns.reduce((a, b) => a + b, 0) / params.returns.length;
     const shift = logDriftPerDay - mean;
     return { ...params, returns: params.returns.map((r) => r + shift), lowRel: params.lowRel.map((l) => l + shift) };
   }
   if (model === 'garch') return { ...params, mu: logDriftPerDay };
   if (model === 'gbm') return { ...params, mu: logDriftPerDay * 365 + (params.sigma ** 2) / 2 };
   return params;
+}
+
+// Where a block of real days starts: every position equally likely, or, with params.weights (one weight
+// per day, e.g. halving every few years back in time), recent blocks more often. Cached per params object.
+const pickCache = new WeakMap();
+function blockPicker(params, n, block, rng) {
+  const starts = n - block + 1;
+  if (!params.weights) return () => Math.floor(rng.uniform() * starts);
+  let cum = pickCache.get(params);
+  if (!cum) {
+    cum = new Float64Array(starts); let total = 0;
+    for (let i = 0; i < starts; i++) { total += params.weights[i]; cum[i] = total; }
+    pickCache.set(params, cum);
+  }
+  const total = cum[starts - 1];
+  return () => {
+    const u = rng.uniform() * total; let lo = 0; let hi = starts - 1;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (cum[mid] > u) hi = mid; else lo = mid + 1; }
+    return lo;
+  };
 }
 
 /** Makes a stepper: step() -> [logReturn, logLowRelativeToPreviousClose]. */
@@ -59,10 +84,11 @@ function makeStepper(model, params, rng) {
   if (model === 'bootstrap') {
     const { returns, lowRel } = params;
     const block = Math.max(1, Math.min(params.blockDays ?? 30, returns.length));
+    const pick = blockPicker(params, returns.length, block, rng);
     let pos = 0;
     let left = 0;
     return () => {
-      if (left === 0) { pos = Math.floor(rng.uniform() * (returns.length - block + 1)); left = block; }
+      if (left === 0) { pos = pick(); left = block; }
       const out = [returns[pos], Math.min(lowRel[pos], 0, returns[pos])];
       pos++; left--;
       return out;

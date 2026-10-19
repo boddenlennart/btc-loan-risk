@@ -182,7 +182,8 @@ export default {
     kept: 'After a partial liquidation, you keep about {kept} of your BTC (middle value).',
     rising: 'Because interest is added to the debt, the liquidation price rises to {end} by the end.',
     basis: 'No price trend assumed · not a forecast',
-    otherMethods: 'Other methods: real history since 2014 {h} of 100, a volatility model {g} of 100; the simulation is the most cautious',
+    otherMethods: 'Other methods: real history since 2014 {h} of 100, a volatility model {g} of 100',
+    mostCautious: '; the simulation is the most cautious',
     assumeNoTopUp: 'Assumes you add no BTC or money after a margin call.',
     assumeReserve: 'Assumes you add {reserve} once at the first margin call, and nothing more.',
     soldGetBack: 'If liquidated: you get back about {back} of your {btc} BTC; the rest repays the loan and the fee.',
@@ -441,7 +442,7 @@ export default {
     stepsTitle: 'How the numbers are made',
     steps: [
       'Real prices: every hour since 2014, with its lowest price, so short crashes are not missed.',
-      'Possible futures: real daily price moves, cut into 30-day pieces and joined at random into 10,000 paths.',
+      'Possible futures: real daily price moves, cut into 30-day pieces and joined at random into 10,000 paths. Recent pieces are drawn more often: a day from three years ago counts half as much as one from today.',
       'The lender\'s rules: margin call, deadlines, partial sales and fees, applied exactly as entered, on every path.',
       'Counted: in how many of 100 paths the loan is liquidated before it ends. That is the number at the top.',
     ],
@@ -461,7 +462,7 @@ export default {
     barrierNote: 'The textbook formula assumes calm, regular price moves (volatility {sigma} a year) and ignores the margin-call rules, so it tends to show a lower number. It is a rough check only.',
     settings: 'Settings used: {paths} futures, {block}-day stretches, data {from} to {to}.',
     testTitle: 'The test against history',
-    test: 'From 2016 on, the method only saw the past and then predicted the lowest price of the next 90 and 365 days. Reality fell below its "worst 5%" level in 0 to 6 of 100 cases, close to or below the promised 5. The method is cautious rather than optimistic.',
+    test: 'From 2016 on, the method only saw the past and then predicted the lowest price of the next 90 and 365 days. Reality fell below the simulation\'s "worst 5%" level in 0 to 2 of 100 cases, fewer than the promised 5. The method is cautious rather than optimistic, also with recent years weighted more.',
     dataTitle: 'Data and the weekly update',
     data: [
       'Price data: hourly prices from the exchanges Bitstamp (USD since 2014, EUR since 2017) and Kraken (EUR 2014–2016), as published by the exchanges. Known gap: Bitstamp was offline from 5 to 9 January 2015.',

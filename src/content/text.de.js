@@ -177,7 +177,8 @@ export default {
     kept: 'Nach einer Teilliquidation behalten Sie etwa {kept} Ihrer BTC (mittlerer Wert).',
     rising: 'Weil Zinsen zur Schuld addiert werden, steigt der Liquidationskurs bis zum Ende auf {end}.',
     basis: 'Ohne Kurstrend gerechnet · keine Prognose',
-    otherMethods: 'Andere Methoden: echte Vergangenheit seit 2014 {h} von 100, ein Volatilitätsmodell {g} von 100; die Simulation ist die vorsichtigste',
+    otherMethods: 'Andere Methoden: echte Vergangenheit seit 2014 {h} von 100, ein Volatilitätsmodell {g} von 100',
+    mostCautious: '; die Simulation ist die vorsichtigste',
     assumeNoTopUp: 'Angenommen: Sie schießen nach einem Margin Call weder BTC noch Geld nach.',
     assumeReserve: 'Angenommen: Sie schießen beim ersten Margin Call einmal {reserve} nach, danach nichts mehr.',
     soldGetBack: 'Bei einer Liquidation erhalten Sie etwa {back} Ihrer {btc} BTC zurück; der Rest tilgt Kredit und Gebühr.',
@@ -436,7 +437,7 @@ export default {
     stepsTitle: 'Wie die Zahlen entstehen',
     steps: [
       'Echte Kurse: jede Stunde seit 2014, mit ihrem tiefsten Kurs, damit kurze Einbrüche nicht verloren gehen.',
-      'Mögliche Zukünfte: echte tägliche Kursbewegungen, in 30-Tage-Stücke geschnitten und zufällig zu 10.000 Verläufen aneinandergereiht.',
+      'Mögliche Zukünfte: echte tägliche Kursbewegungen, in 30-Tage-Stücke geschnitten und zufällig zu 10.000 Verläufen aneinandergereiht. Neuere Stücke werden häufiger gezogen: Ein Tag von vor drei Jahren zählt halb so viel wie ein heutiger.',
       'Die Regeln des Kreditgebers: Margin Call, Fristen, Teilverkäufe und Gebühren, genau wie eingegeben, in jedem Verlauf.',
       'Gezählt: in wie vielen von 100 Verläufen der Kredit vor Laufzeitende liquidiert wird. Das ist die Zahl oben.',
     ],
@@ -456,7 +457,7 @@ export default {
     barrierNote: 'Die Lehrbuchformel nimmt ruhige, gleichmäßige Kursbewegungen an (Volatilität {sigma} pro Jahr) und lässt die Margin-Call-Regeln außen vor; sie zeigt deshalb eher eine niedrigere Zahl. Sie dient nur als grobe Prüfung.',
     settings: 'Verwendete Einstellungen: {paths} Zukünfte, {block}-Tage-Abschnitte, Daten {from} bis {to}.',
     testTitle: 'Der Test an der Vergangenheit',
-    test: 'Ab 2016 sah die Methode nur die Vergangenheit und sagte dann den tiefsten Kurs der nächsten 90 und 365 Tage voraus. Die Wirklichkeit lag in 0 bis 6 von 100 Fällen unter ihrem "schlechtesten 5 %"-Wert, nahe an oder unter den versprochenen 5. Die Methode ist eher vorsichtig als optimistisch.',
+    test: 'Ab 2016 sah die Methode nur die Vergangenheit und sagte dann den tiefsten Kurs der nächsten 90 und 365 Tage voraus. Die Wirklichkeit lag in 0 bis 2 von 100 Fällen unter dem "schlechtesten 5 %"-Wert der Simulation, seltener als die versprochenen 5. Die Methode ist eher vorsichtig als optimistisch, auch mit stärker gewichteten jüngeren Jahren.',
     dataTitle: 'Daten und die wöchentliche Aktualisierung',
     data: [
       'Kursdaten: stündliche Kurse der Börsen Bitstamp (USD seit 2014, EUR seit 2017) und Kraken (EUR 2014–2016), wie von den Börsen veröffentlicht. Bekannte Lücke: Bitstamp war vom 5. bis 9. Januar 2015 offline.',

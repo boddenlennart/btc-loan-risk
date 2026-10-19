@@ -63,3 +63,14 @@ export function fastestFall(hourly, drop) {
   while (lo < hi) { const mid = (lo + hi) >> 1; if (hitWithin(mid)) hi = mid; else lo = mid + 1; }
   return lo;
 }
+
+/**
+ * One weight per day for drawing blocks of real days: 1 for the newest day, halving every `halfLifeDays`
+ * back in time. BTC's swings have shrunk as the market grew (about 80–90% a year in 2017–2021,
+ * 42–52% since 2023), so recent days count more; older crashes still count, with less weight.
+ */
+export function recencyWeights(n, halfLifeDays) {
+  const w = new Float64Array(n);
+  for (let i = 0; i < n; i++) w[i] = 2 ** (-(n - 1 - i) / halfLifeDays);
+  return w;
+}
