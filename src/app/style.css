@@ -440,3 +440,5 @@ table.itable td.wrap { white-space: normal; text-align: left; color: var(--text-
 table.itable tr.us th, table.itable tr.us td { background: var(--surface-2); font-weight: 700; }
 table.itable.methods thead th:nth-child(2) { text-align: left; }
 .toc3 a { display: inline; }
+/* sections being recalculated keep their previous content, dimmed (no jumping) */
+#safer-body.pending, #trend-body.pending { opacity: 0.55; transition: opacity 0.15s; }

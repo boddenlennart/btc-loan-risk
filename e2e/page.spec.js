@@ -767,3 +767,21 @@ test('typing into a field that changes the form (margin call empty → 70): the 
     await expect(page.locator('#f-marginCallConsequence')).toBeVisible(); // the new options are there
   }
 });
+
+test('computer: while the answer is recalculated, the left side does not jump ("Make it safer" keeps its height)', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await open(page); await waitDone(page);
+  for (const y of [0, 700, 1400]) {
+    await page.evaluate((v) => window.scrollTo(0, v), y);
+    await page.evaluate(() => {
+      window.rec = [];
+      window.sampler = setInterval(() => window.rec.push([Math.round(document.querySelector('#questions-block').getBoundingClientRect().top), Math.round(window.scrollY)]), 20);
+    });
+    await page.locator('#f-loanAmount').fill(String(11000 + y));
+    await waitDone(page);
+    const rec = await page.evaluate(() => { clearInterval(window.sampler); return window.rec; });
+    const tops = rec.map((r) => r[0]);
+    expect(Math.max(...tops) - Math.min(...tops), `scrolled to ${y}: block below "Make it safer" at ${[...new Set(tops)].join(', ')}`).toBeLessThanOrEqual(2);
+    await expect(page.locator('#safer-body')).not.toHaveClass(/pending/); // active again afterwards
+  }
+});

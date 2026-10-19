@@ -935,10 +935,18 @@ function bestLeverText(r) {
   return t('results.bestLever', { lever: leverLabel(best, riskTerms), p: shown(best.p) });
 }
 
+function holdWhileComputing(el) {
+  if (!el.children.length) { el.innerHTML = `<p class="progress">${esc(texts().ui.computingShort)}</p>`; return; } // nothing to keep yet
+  el.classList.add('pending'); el.inert = true; // still visible, not clickable until the new values arrive
+}
+
 function renderSafer() {
   const r = lastRisk; const tm = riskTerms; const R = texts().results;
   const el = $('#safer-body');
-  if (!r.slider) { el.innerHTML = `<p class="progress">${esc(texts().ui.computingShort)}</p>`; return; }
+  // while the options are recalculated, the previous ones stay in place, dimmed and inactive, so the page
+  // below does not jump up and down (they used to shrink to one line "Calculating…" for a moment)
+  if (!r.slider) { holdWhileComputing(el); return; }
+  el.classList.remove('pending'); el.inert = false;
   const grid = r.slider;
   if (!grid.length) { el.innerHTML = ''; return; }
   const idx = grid.reduce((best, g, i) => (Math.abs(g.ltv - tm.initialLtv) < Math.abs(grid[best].ltv - tm.initialLtv) ? i : best), 0);
@@ -1008,7 +1016,8 @@ function trendRows(r, value, label) {
 }
 function renderTrend() {
   const r = lastRisk; const el = $('#trend-body'); if (!el) return;
-  if (!r || !r.trends) { el.innerHTML = `<p class="progress">${esc(texts().ui.computingShort)}</p>`; return; }
+  if (!r || !r.trends) { holdWhileComputing(el); return; }
+  el.classList.remove('pending'); el.inert = false;
   const H = texts().history;
   const top = r.trends.at(-1);
   el.innerHTML = `<p class="hint">${rich(H.trendIntro)}</p><div class="levers">${trendRows(r, (x) => x.p, H.trendUnit)}</div>
