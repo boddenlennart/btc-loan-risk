@@ -303,6 +303,25 @@ test('chart axes: every price label lies inside its chart, in four currencies an
   }
 });
 
+test('links to other websites open in a new tab and say so to screen readers; the page itself stays open', async ({ page, context }) => {
+  for (const path of ['/', '/method/', '/insights/', '/de/', '/de/method/']) {
+    await visit(page, path);
+    await page.evaluate(() => document.querySelectorAll('details').forEach((d) => { d.open = true; }));
+    const links = await page.locator('a[href^="http"]').evaluateAll((as) => as.filter((a) => new URL(a.href).origin !== location.origin)
+      .map((a) => ({ href: a.getAttribute('href'), target: a.target, rel: a.rel, hint: (a.querySelector('.visually-hidden') || {}).textContent || '' })));
+    expect(links.length, path).toBeGreaterThan(0);
+    for (const l of links) {
+      expect(l.target, `${path} ${l.href}`).toBe('_blank');
+      expect(l.rel, `${path} ${l.href}`).toContain('noopener');
+      expect(l.hint.trim(), `${path} ${l.href}`).toMatch(path.startsWith('/de/') ? /neuen Tab/ : /new tab/);
+    }
+  }
+  await visit(page, '/');
+  const [tab] = await Promise.all([context.waitForEvent('page'), page.locator('#code-link').click()]);
+  expect(tab).toBeTruthy();
+  expect(new URL(page.url()).pathname).toBe('/'); // the check page did not navigate away
+});
+
 test('"Insights": all 11, each with what was measured and a table or chart; the line under the answer leads to the first group', async ({ page }) => {
   const errors = await visit(page, '/insights/');
   await expect(page).toHaveTitle('Insights · Bitcoin Loan Check');

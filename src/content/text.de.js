@@ -36,6 +36,7 @@ export default {
     whereLink: 'Wo Sie diese Zahlen finden',
     close: 'Schließen',
     more: 'Mehr',
+    newTab: ' (öffnet in einem neuen Tab)',
     moreNumber: 'Mehr zu dieser Zahl',
     computing: 'Berechnung läuft… {pct} %',
     computingShort: 'Die Antwort wird berechnet…',

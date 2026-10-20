@@ -39,6 +39,7 @@ export default {
     whereLink: 'Where to find these numbers',
     close: 'Close',
     more: 'More',
+    newTab: ' (opens in a new tab)',
     moreNumber: 'More about this number',
     computing: 'Calculating… {pct}%',
     computingShort: 'Calculating the answer…',

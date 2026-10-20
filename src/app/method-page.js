@@ -18,6 +18,8 @@ const signedPct = (x, d = 0) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${pct(Math.a
 const list = (items) => items.map((x) => `<li>${rich(x)}</li>`).join('');
 const monthYear = (unix) => new Intl.DateTimeFormat(document.documentElement.lang, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(unix * 1000));
 const codeLink = (path) => `${SITE.codeUrl}/blob/main/${path}`;
+// links to other websites (GitHub) open in a new tab, so this page stays open; screen readers hear that
+const ext = (href, text) => `<a href="${href}" target="_blank" rel="noopener noreferrer">${esc(text)} ↗<span class="visually-hidden">${esc(texts().ui.newTab)}</span></a>`;
 
 function render() {
   const tx = texts(); const M = tx.method; const ex = META.example; const r = ex.result; const md = ex.method; const tm = ex.terms; const cur = tm.currency;
@@ -118,13 +120,13 @@ function render() {
   const g = md.garch;
   $('#m-garch').textContent = t('method.mathsGarchValues', { alpha: num(g.alpha, 3), beta: num(g.beta, 3), persistence: num(g.alpha + g.beta, 4), nu: num(g.nu, 2), today: pct(g.todayVol, 0) });
   $('#m-code').innerHTML = ['src/engine/montecarlo.js', 'src/engine/history.js', 'src/engine/lender.js', 'src/engine/garch.js', 'src/engine/barrier.js', 'src/engine/replay.js', 'reference/reference_montecarlo.py']
-    .map((path) => `<li><a href="${codeLink(path)}" rel="noopener">${esc(path)}</a></li>`).join('');
+    .map((path) => `<li>${ext(codeLink(path), path)}</li>`).join('');
 
   // 12. verify
   const [before, after] = M.code.split('{link}');
-  $('#code-line').innerHTML = `${esc(before)}<a href="${SITE.codeUrl}" rel="noopener">${esc(SITE.codeUrl.replace('https://', ''))}</a>${esc(after || '')}`;
+  $('#code-line').innerHTML = `${esc(before)}${ext(SITE.codeUrl, SITE.codeUrl.replace('https://', ''))}${esc(after || '')}`;
   const [v0a, v0b] = M.verify[0].split('{audit}');
-  $('#verify-list').innerHTML = `<li>${esc(v0a)}<a href="${codeLink('ux/K-math-audit.md')}" rel="noopener">ux/K-math-audit.md</a>${esc(v0b || '')}</li>${list(M.verify.slice(1))}`;
+  $('#verify-list').innerHTML = `<li>${esc(v0a)}${ext(codeLink('ux/K-math-audit.md'), 'ux/K-math-audit.md')}${esc(v0b || '')}</li>${list(M.verify.slice(1))}`;
   $('#top').classList.remove('boot'); // drawn: show it (invisible until now, so nothing jumps on slow phones: go/no-go G2)
   document.body.dataset.ready = '1';
 }
