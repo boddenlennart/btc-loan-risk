@@ -24,8 +24,16 @@ On github.com → repository **btc-loan-risk** → **Settings**:
 
 1. **Actions → General → Workflow permissions:** choose **Read and write permissions** and tick **Allow GitHub Actions to create and approve pull requests**. Save. (The weekly data update opens a pull request; it never merges by itself.)
 2. **Pages:** must stay **off** (the site is on Cloudflare).
+3. **Rules → Rulesets → New branch ruleset** "main protected" (Enforcement: Active; Target: Include default branch). Tick:
+   - **Restrict deletions**
+   - **Require a pull request before merging** (required approvals: 0)
+   - **Require status checks to pass** → Add checks → `test`, source **Any source** (the tests' job; the weekly update reports the same name)
+   - **Block force pushes**
 
-Check: nothing to see yet; this is used in step 4.
+   Leave the bypass list empty. From now on every change reaches `main` (and so the live site) only through a pull request whose tests passed.
+4. **Your account → Settings → Emails:** the main address says Verified. **Notifications:** "Participating, @mentions and custom" → Email ticked; "Actions" → Email, "Only notify for failed workflows". The weekly update's pull request (assigned to you) and a failure issue then arrive by e-mail.
+
+Check: the first manual run of the update (step 5) must send you an e-mail about its pull request.
 
 ## 2. GitHub: bring the site to `main`
 
