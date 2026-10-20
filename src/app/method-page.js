@@ -125,6 +125,7 @@ function render() {
   $('#code-line').innerHTML = `${esc(before)}<a href="${SITE.codeUrl}" rel="noopener">${esc(SITE.codeUrl.replace('https://', ''))}</a>${esc(after || '')}`;
   const [v0a, v0b] = M.verify[0].split('{audit}');
   $('#verify-list').innerHTML = `<li>${esc(v0a)}<a href="${codeLink('ux/K-math-audit.md')}" rel="noopener">ux/K-math-audit.md</a>${esc(v0b || '')}</li>${list(M.verify.slice(1))}`;
+  $('#top').classList.remove('boot'); // drawn: show it (invisible until now, so nothing jumps on slow phones: go/no-go G2)
   document.body.dataset.ready = '1';
 }
 

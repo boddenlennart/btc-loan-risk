@@ -761,7 +761,7 @@ test('"Compare an offer" scrolls up to the table once; while the new offer is ca
   }
 });
 
-test('opening on a slow phone: nothing jumps while the page is drawn (layout shift below 0.1, UAT finding 3)', async ({ page, browserName }) => {
+test('opening on a slow phone: nothing jumps while a page is drawn, on all three pages (layout shift below 0.1, UAT finding 3, go/no-go G2)', async ({ page, browserName }) => {
   test.skip(browserName !== 'chromium', 'slowing the processor needs Chromium');
   await page.setViewportSize({ width: 375, height: 812 });
   const cdp = await page.context().newCDPSession(page);
@@ -769,7 +769,32 @@ test('opening on a slow phone: nothing jumps while the page is drawn (layout shi
   await page.addInitScript(() => { window.__cls = 0; new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; }).observe({ type: 'layout-shift', buffered: true }); });
   await open(page); await waitDone(page);
   await expect(page.locator('main')).toBeVisible();
-  expect(await page.evaluate(() => window.__cls)).toBeLessThan(0.1);
+  expect(await page.evaluate(() => window.__cls), '/').toBeLessThan(0.1);
+  for (const path of ['/method/', '/insights/']) {
+    await page.goto(path); await expect(page.locator('body')).toHaveAttribute('data-ready', '1'); await page.waitForTimeout(300);
+    await expect(page.locator('main')).toBeVisible();
+    expect(await page.evaluate(() => window.__cls), path).toBeLessThan(0.1);
+  }
+});
+
+test('a slow connection: the example answer shows before the price history has arrived, and the first calculation waits for it (go/no-go G1)', async ({ page, browserName }) => {
+  test.skip(browserName !== 'chromium', 'controlling the connection needs Chromium');
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Network.enable');
+  // about 1.6 Mbit/s, as Lighthouse's slow mobile connection: the page (1.7 MB) takes several seconds
+  await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 150, downloadThroughput: 200_000, uploadThroughput: 90_000 });
+  await page.route(/^https:\/\//, (r) => (r.request().url().includes('coinbase') ? r.fulfill({ json: { data: { amount: '60000' } } }) : r.request().url().includes('bitstamp') ? r.fulfill({ json: { data: { ohlc: [] } } }) : r.abort()));
+  const errors = []; page.on('pageerror', (e) => errors.push(String(e)));
+  const t0 = Date.now();
+  await page.goto('/', { waitUntil: 'commit' });
+  await expect(page.locator('#headline-text em')).toHaveText('54', { timeout: 20_000 });
+  const answerAfter = Date.now() - t0;
+  const dataThere = await page.evaluate(() => !!document.getElementById('data-FX'));
+  expect(dataThere, 'the answer showed before the history had arrived').toBe(false);
+  // the history arrives, then the page confirms the example with today's price, without errors
+  await expect(page.locator('body')).toHaveAttribute('data-ready', '1', { timeout: 60_000 });
+  expect(errors).toEqual([]);
+  expect(answerAfter).toBeLessThan(5_000);
 });
 
 test('a share link that cannot be read says so instead of silently showing the example (UAT finding 9)', async ({ page }) => {

@@ -2,9 +2,20 @@
 
 Status: 20 Oct 2026, release candidate 090d79e (+ 2bd43fa: weekly update reports the `test` check). Checked on the live preview https://ux-redesign.bitcoinloancheck.pages.dev, which runs exactly this build.
 
-## Verdict: not yet. Two code fixes and your launch clicks remain
+## Verdict: not yet. Your launch clicks remain (the code fixes G1–G3 are done, see the update below)
 
 The page, its numbers, security and legal texts are ready. Four blocking criteria still need you: the data update run, the rollback trial, the iPhone and the reading. The check page also misses the speed target we fixed before any design work (A4, D6) on a slow mobile connection; one smaller fix belongs with it.
+
+## Update 20 Oct: G1–G3 fixed
+
+| # | Fix | Measured | Test |
+|---|---|---|---|
+| G1 | The page's script comes before the 1.7 MB price history; the example answer shows first, everything that needs the history waits for it | Lighthouse, mid-range phone, slow mobile connection, real throttling: answer **2.7 s instead of 10.0 s**, performance **96 instead of 52** (measured locally, uncompressed; the live preview is measured again after the push) | Browser test on a 1.6 Mbit/s connection: the answer shows within 5 s, before the history has arrived, and the first calculation waits for it without errors |
+| G2 | How it works and Insights stay invisible until drawn (Insights jumped on a slow phone too) | Lighthouse: layout shift 0 on all pages; How it works performance **97** | The slow-phone test now checks all three pages |
+| G3 | The text export for your reading is regenerated (808 texts) | – | A test compares a fresh export with the stored one |
+| B3 | Privacy notice: "You are not obliged to provide any data …" (Art. 13(2)(e)); version 20 Oct 2026 | – | Content tests |
+
+Note: Lighthouse's default mode estimates timings as if a page could only be drawn once its whole file has arrived, so it still reports about 10 s for the check page. Real browsers draw while the file arrives, which the measurement with real throttling and the browser test show.
 
 ## Blocking criteria
 

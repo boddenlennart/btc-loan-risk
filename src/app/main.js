@@ -423,11 +423,16 @@ function onToggle(e) {
 }
 
 // ------------------------------------------------------------------ live price & recent candles
+// The price history and the workers' code come after this script in the page, so the page and its example
+// answer show before those 1.7 MB have arrived (go/no-go G1). Everything that reads them waits for dataReady.
+let dataReady = document.readyState !== 'loading';
+const domReady = dataReady ? Promise.resolve() : new Promise((r) => document.addEventListener('DOMContentLoaded', () => { dataReady = true; r(); }, { once: true }));
 async function loadPrice(force = false) {
   if (!force && state.priceManual && numOr(state.btcPrice, null) !== null) { priceInfo = { source: 'manual' }; renderPriceLine(); return; }
   priceInfo = null; renderPriceLine();
   const embedded = Object.fromEntries(Object.entries(META.prices).map(([c, m]) => [c, { price: m.lastClose, time: m.to }]));
   const cur = state.currency;
+  await domReady; // the exchange rates are part of the history
   // CHF, GBP, CAD, AUD, CZK, PLN: today's euro price × the latest ECB rate, like their price history
   const fx = fxFor(cur); let r;
   if (fx) {
@@ -464,6 +469,7 @@ async function fetchRecentCandles(cur) {
 async function ensureRecent(cur) {
   if (appended[cur]) return;
   appended[cur] = [];
+  await domReady;
   // currencies computed from the euro history: recent euro hours × the last ECB rate
   const fx = fxFor(cur); const r = fx ? fx.rates[cur].at(-1) : 1;
   const candles = fx ? (await fetchRecentCandles('EUR')).map((c) => ({ time: c.time, open: c.open * r, high: c.high * r, low: c.low * r, close: c.close * r })) : await fetchRecentCandles(cur);
@@ -598,7 +604,8 @@ function update() {
   updateAnswerBar();
   if (!started) return;
   if (!sameAsEmbedded) { $('#progress').hidden = false; $('#progress').textContent = t('ui.computing', { pct: 0 }); }
-  timer = setTimeout(() => { requestRisk(terms, settings); if (sameAsEmbedded) quietRuns.add(runId); }, 300);
+  // (a calculation needs the history; on a slow connection it may still be arriving)
+  timer = setTimeout(function go() { if (!dataReady) { timer = setTimeout(go, 200); return; } requestRisk(terms, settings); if (sameAsEmbedded) quietRuns.add(runId); }, 300);
 }
 
 // ------------------------------------------------------------------ results: parts that need no simulation
@@ -1366,7 +1373,7 @@ document.addEventListener('focusin', updateAnswerBar); document.addEventListener
 if ('IntersectionObserver' in window) {
   new IntersectionObserver(([e]) => { answerInView = e.isIntersecting; updateAnswerBar(); }).observe($('#headline-text'));
 }
-makeWorker();
+domReady.then(() => { if (!workers.length && !useInline) makeWorker(); });
 const waitMax = (p, ms) => Promise.race([p, new Promise((r) => setTimeout(r, ms))]);
 // wait for the live price (at most 4 s) and the recent hours (at most 1.5 s); later candles are used in the next recalculation
 Promise.all([waitMax(loadPrice(false), 4000), waitMax(ensureRecent(state.currency), 1500)]).then(() => { started = true; update(); });

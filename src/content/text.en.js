@@ -771,6 +771,7 @@ export default {
       { h: '2. In brief', p: [
         'This page has no user accounts, sets no cookies and uses no analytics, tracking or advertising services. All calculations run in your browser; your inputs are not sent to anyone.',
         'Personal data arise only because your browser contacts servers: the hosting service Cloudflare, which delivers the page, and a public price service for the current BTC price. Both see your IP address.',
+        'You are not obliged to provide any data. Without your IP address, however, the page cannot be delivered to you.',
       ] },
       { h: '3. Delivery of the page by Cloudflare', p: [
         'The page is delivered through Cloudflare Pages, including name resolution (DNS) and a worldwide delivery network. The provider is Cloudflare, Inc., 101 Townsend St., San Francisco, CA 94107, USA.',
@@ -815,7 +816,7 @@ export default {
         'You can lodge a complaint with a data protection supervisory authority, in particular in the EU country where you live or work (Art. 77 GDPR).',
         'There is no automated decision-making and no profiling.',
       ] },
-      { h: '12. Version', p: ['Version of this privacy notice: 18 October 2026. If the page changes, we update this notice. The German version is the original.'] },
+      { h: '12. Version', p: ['Version of this privacy notice: 20 October 2026. If the page changes, we update this notice. The German version is the original.'] },
     ],
     links: 'Impressum · Privacy notice',
   },

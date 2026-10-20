@@ -97,6 +97,7 @@ function render() {
     `<p>${esc(t('insights.swings.range', { q50: pct(W.q50, 0), q10: pct(W.q10, 0), q90: pct(W.q90, 0) }))}</p><p>${esc(t('insights.swings.vsSim', { sim: pct(W.simVol, 0) }))}</p><div id="swings-chart"></div>` + hint(t('insights.swings.now', { now: pct(W.now, 0) })) + hint(T.swings.note));
   lineChart($('#swings-chart'), { points: W.weekly, fmt: (v) => pct(v, 0), fmtDate: date, title: T.swings.chartTitle });
 
+  document.getElementById('top').classList.remove('boot'); // drawn: show it (nothing jumps on slow phones: go/no-go G2)
   document.body.dataset.ready = '1';
 }
 

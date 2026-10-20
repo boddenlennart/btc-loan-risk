@@ -766,6 +766,7 @@ export default {
       { h: '2. Das Wichtigste in Kürze', p: [
         'Diese Seite hat keine Benutzerkonten, setzt keine Cookies und nutzt keine Analyse-, Tracking- oder Werbedienste. Alle Berechnungen finden in Ihrem Browser statt; Ihre Eingaben werden an niemanden übermittelt.',
         'Personenbezogene Daten fallen nur an, weil Ihr Browser Server kontaktiert: den Hosting-Dienst Cloudflare, der die Seite ausliefert, und einen öffentlichen Kursdienst für den aktuellen BTC-Kurs. Beide sehen dabei Ihre IP-Adresse.',
+        'Sie sind nicht verpflichtet, Daten bereitzustellen. Ohne Ihre IP-Adresse kann die Seite Ihnen allerdings nicht ausgeliefert werden.',
       ] },
       { h: '3. Auslieferung der Seite durch Cloudflare', p: [
         'Die Seite wird über Cloudflare Pages ausgeliefert, einschließlich Namensauflösung (DNS) und weltweitem Auslieferungsnetz. Anbieter ist Cloudflare, Inc., 101 Townsend St., San Francisco, CA 94107, USA.',
@@ -810,7 +811,7 @@ export default {
         'Sie können sich bei einer Datenschutz-Aufsichtsbehörde beschweren, insbesondere in dem EU-Staat, in dem Sie wohnen oder arbeiten (Art. 77 DSGVO).',
         'Eine automatisierte Entscheidungsfindung oder ein Profiling findet nicht statt.',
       ] },
-      { h: '12. Stand', p: ['Stand dieser Datenschutzerklärung: 18. Oktober 2026. Ändert sich die Seite, passen wir diese Erklärung an.'] },
+      { h: '12. Stand', p: ['Stand dieser Datenschutzerklärung: 20. Oktober 2026. Ändert sich die Seite, passen wir diese Erklärung an.'] },
     ],
     links: 'Impressum · Datenschutzerklärung',
   },

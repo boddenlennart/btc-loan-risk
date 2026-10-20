@@ -28,5 +28,6 @@ for (const [key, title] of GROUPS) {
   for (const [path, text] of rows) out.push(`| ${++n} | ${cell(text)} | ${cell(deMap[path] ?? '(missing)')} | \`${path}\` |`);
   out.push('');
 }
-writeFileSync(new URL('../ux/review/texts-review.md', import.meta.url), out.join('\n'));
+// EXPORT_TO: write somewhere else (the test compares a fresh export with the stored one)
+writeFileSync(process.env.EXPORT_TO || new URL('../ux/review/texts-review.md', import.meta.url), out.join('\n'));
 console.log(`${n} texts written to ux/review/texts-review.md`);
