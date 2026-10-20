@@ -133,8 +133,9 @@ function makeStepper(model, params, rng) {
  *    (ux/M-risk-cost-spec.md). For every sale, the BTC that repaid debt loses the rise
  *    above the sale price by the end, the BTC paid as the fee loses its whole end value.
  *    End prices are scaled so that their average equals s0 (as an option price with an
- *    interest rate of 0). { value, se, noSale, scale }: average over all paths (in money), its
- *    standard error, the share of paths without any sale, and the factor applied to end prices.
+ *    interest rate of 0). { value, se, noSale, scale, soldQ50, soldQ90 }: average over all paths (in money), its
+ *    standard error, the share of paths without any sale, the factor applied to end prices, and the
+ *    middle and 90th-percentile cost among paths with a sale.
  *  - samplePaths also list each path's sales as [BTC sold, price].
  *  - keptAfterSale: for paths with any forced sale, the share of the pledged BTC still
  *    yours at the end (quantiles q10, q50, q90)
@@ -270,7 +271,10 @@ export function runMonteCarlo(opts) {
     m /= nPaths;
     let v = 0; let none = 0;
     for (let p = 0; p < nPaths; p++) { v += (loss[p] - m) ** 2; if (!sold[p]) none++; }
-    out.riskCost = { value: m, se: Math.sqrt(v / (nPaths - 1) / nPaths), noSale: none / nPaths, scale };
+    // the spread among futures with a sale: the middle cost and the cost one in ten exceeds
+    const soldLoss = Float64Array.from(loss.filter((_, p) => sold[p])).sort();
+    out.riskCost = { value: m, se: Math.sqrt(v / (nPaths - 1) / nPaths), noSale: none / nPaths, scale,
+      soldQ50: soldLoss.length ? quantile(soldLoss, 0.5) : 0, soldQ90: soldLoss.length ? quantile(soldLoss, 0.9) : 0 };
   }
   if (minRatios) out.minRatios = Array.from(minRatios);
   if (nSample) out.samplePaths = samples;

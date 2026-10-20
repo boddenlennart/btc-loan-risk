@@ -85,7 +85,18 @@ test('"How it works", the cost of the risk: one future worked through, the avera
   const errors = await visit(page, '/method/');
   await expect(page.locator('#risk-one')).toContainText(/the example loan is liquidated on day \d+ at €[\d,]+\. 0\.\d{4} BTC repaid the loan, 0\.\d{4} BTC was the fee\./);
   await expect(page.locator('#risk-one')).toContainText(/In this future: €[\d,]+\./);
-  await expect(page.locator('#risk-all')).toContainText(/On the example: €[\d,]+, precise to about ±€[\d,]+\./);
+  await expect(page.locator('#risk-all')).toContainText(/In [\d,]+ futures nothing is sold, so their cost is €0\. In the other [\d,]+, it is €[\d,]+ on average/);
+  // the average written out: the arithmetic on the page adds up
+  const nums = (s) => [...s.matchAll(/[\d][\d,.]*/g)].map((m) => Number(m[0].replace(/,/g, '')));
+  const f1 = await page.locator('#risk-formula').textContent();
+  const [n, , none, , sold, avg, , sum, , risk] = nums(f1); // all N costs ÷ N = (none × €0 + sold × avg) ÷ N = sum ÷ N = risk
+  expect(none + sold).toBe(n);
+  expect(Math.abs(sum / n - risk)).toBeLessThanOrEqual(0.5);
+  expect(Math.abs((sold * avg) / n - risk)).toBeLessThanOrEqual(1);
+  const f2 = await page.locator('#risk-formula2').textContent();
+  const [share, avg2, risk2] = nums(f2);
+  expect(risk2).toBe(risk); expect(Math.abs(share * avg2 - risk)).toBeLessThanOrEqual(1); // the share is shown exactly
+  await expect(page.locator('#risk-all-end')).toContainText(/Precise to about ±€[\d,]+\./);
   await expect(page.locator('#risk-scale')).toContainText(/the average end price is \d+% higher/);
   await expect(page.locator('#risk-table tbody tr')).toHaveCount(2);
   await expect(page.locator('#risk-table tr.us')).toContainText('This page\'s simulation');

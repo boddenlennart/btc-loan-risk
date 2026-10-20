@@ -73,7 +73,7 @@ export function methodData({ hourly, terms, garch, settings, halfLifeYears }) {
     const repaid = kRepaid * btc; const fee = (1 - kRepaid) * btc;
     riskOne = { day: sp.event.day, price, repaid, fee, end, missed: repaid * Math.max(0, end - price), feeValue: fee * end, total: sp.sales.reduce((a, [b, p]) => a + kRepaid * b * Math.max(0, end - p) + (1 - kRepaid) * b * end, 0) };
   }
-  const risk = { value: rc.value, se: rc.se, noSale: rc.noSale, up: 1 / rc.scale - 1, one: riskOne,
+  const risk = { value: rc.value, se: rc.se, noSale: rc.noSale, up: 1 / rc.scale - 1, one: riskOne, soldQ50: rc.soldQ50, soldQ90: rc.soldQ90, nPaths: settings.nPaths,
     textbook: riskCostTextbook({ s0: terms.btcPrice, debt: terms.loanAmount, liquidationPrice: liquidationPrices(terms).atStart, repaidShare: kRepaid, sigma: weighting.find((x) => x.current).vol, years: days / 365 }) };
 
   // the margin-call deadline in whole days, and without any margin call

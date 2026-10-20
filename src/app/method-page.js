@@ -74,7 +74,15 @@ function render() {
     $('#risk-one').textContent = t(o.end > o.price ? 'method.riskOne' : 'method.riskOneFell', { day: o.day, price: money0(o.price, cur), repaid: num(o.repaid, 4), fee: num(o.fee, 4),
       end: money0(o.end, cur), missed: money0(o.missed, cur), feeValue: money0(o.feeValue, cur), total: money0(o.total, cur) });
   }
-  $('#risk-all').textContent = t('method.riskAll', { none: of100(rk.noSale), risk: money0(rk.value, cur), ci: money0(1.96 * rk.se, cur), total: money0(sum.totalCost + rk.value, cur), cost: money0(sum.totalCost, cur) });
+  // the average written out: every future's cost, those without a sale as 0, summed and divided by the number of futures
+  const nNone = Math.round(rk.noSale * rk.nPaths); const nSold = rk.nPaths - nNone; const sumSold = rk.value * rk.nPaths; const avgSold = nSold ? sumSold / nSold : 0;
+  const nf = (x) => num(x, 0);
+  $('#risk-all').textContent = t('method.riskAll', { none: nf(nNone), sold: nf(nSold), n: nf(rk.nPaths), avgSold: money0(avgSold, cur), median: money0(rk.soldQ50, cur), p90: money0(rk.soldQ90, cur) });
+  $('#risk-formula').textContent = t('method.riskFormula', { n: nf(rk.nPaths), none: nf(nNone), sold: nf(nSold), avgSold: money0(avgSold, cur), sumSold: money0(sumSold, cur), risk: money0(rk.value, cur) });
+  // the share exactly (5,350 of 10,000 = 0.535), so the product on the page really gives the result
+  const share = nSold / rk.nPaths; const dec = [2, 3, 4].find((d) => Math.abs(Math.round(share * 10 ** d) - share * 10 ** d) < 1e-9) ?? 4;
+  $('#risk-formula2').textContent = t('method.riskFormula2', { share: num(share, dec), avgSold: money0(avgSold, cur), risk: money0(rk.value, cur) });
+  $('#risk-all-end').textContent = t('method.riskAllEnd', { risk: money0(rk.value, cur), ci: money0(1.96 * rk.se, cur), total: money0(sum.totalCost + rk.value, cur), cost: money0(sum.totalCost, cur) });
   $('#risk-scale').textContent = t('method.riskScale', { up: pct(rk.up, 0) });
   $('#risk-table').innerHTML = `<thead><tr>${M.riskHead.map((h) => `<th scope="col">${esc(h)}</th>`).join('')}</tr></thead><tbody>
     <tr><th scope="row" class="wrap">${esc(t('method.riskRowFormula', { vol: pct(md.simVol, 0) }))}</th><td>${money0(rk.textbook, cur)}</td></tr>
