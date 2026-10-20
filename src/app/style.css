@@ -378,6 +378,9 @@ details.table-details > summary { cursor: pointer; color: var(--accent-ink); pad
 .part h2 { font-size: 20px; line-height: 1.3; }
 .part h3 { font-size: 16px; margin: 20px 0 4px; }
 .steps { padding-left: 1.4em; }
+/* reading pages: a bullet starts on the text's left edge, wrapped lines line up behind it (no browser indent of 40 px) */
+.page main ul, main.page ul { padding-left: 1.1em; }
+.page main ol.steps, main.page ol.steps { padding-left: 1.5em; }
 .steps li { margin: 8px 0; }
 
 /* footer */

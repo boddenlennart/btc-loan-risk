@@ -412,6 +412,12 @@ test('reading pages: every section starts at the same left edge as the page titl
     await visit(page, path);
     const left = await page.locator('h1').evaluate((h) => Math.round(h.getBoundingClientRect().left));
     for (const h of await page.locator('main .part h2').all()) expect(await h.evaluate((x) => Math.round(x.getBoundingClientRect().left)), `${path} ${await h.textContent()}`).toBe(left);
+    // lists are not indented: a bullet (or number) starts at the text's left edge; only its own width is kept free
+    for (const l of await page.locator('main .part ul:visible, main .part ol:visible').all()) { // (folded parts have no position)
+      const pad = await l.evaluate((x) => parseFloat(getComputedStyle(x).paddingLeft) / parseFloat(getComputedStyle(x).fontSize));
+      expect(pad, `${path} list "${(await l.textContent()).slice(0, 40)}"`).toBeLessThanOrEqual(1.6);
+      expect(await l.evaluate((x) => Math.round(x.getBoundingClientRect().left)), path).toBe(left);
+    }
   }
 });
 
