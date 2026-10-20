@@ -365,9 +365,12 @@ test('"Insights" on a 375 px phone: no sideways scrolling, neither the page nor 
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
     expect(await tooWide()).toEqual([]);
     // Phones and computers have different system fonts; Linux's is about 10% wider than a Mac's and
-    // pushed three German tables over the edge (found on GitHub, 20 Oct). Widened text must fit too.
-    await page.addStyleTag({ content: 'table { letter-spacing: 0.06em; }' });
-    expect(await tooWide(), `${path}, wider font`).toEqual([]);
+    // pushed three German tables over the edge (found on GitHub, 20 Oct). Elsewhere the text is widened
+    // to about Linux's width; on Linux (GitHub's test computers) the font is already the wide one.
+    if (process.platform !== 'linux') {
+      await page.addStyleTag({ content: 'table { letter-spacing: 0.06em; }' });
+      expect(await tooWide(), `${path}, wider font`).toEqual([]);
+    }
   }
 });
 

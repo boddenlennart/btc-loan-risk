@@ -797,7 +797,9 @@ test('"Compare an offer" scrolls up to the table once; while the new offer is ca
     await expect.poll(async () => page.evaluate(() => document.querySelector('#cmp').getBoundingClientRect().top - document.querySelector('.top').getBoundingClientRect().bottom), { timeout: 5000 }).toBeGreaterThanOrEqual(0);
     await expect.poll(async () => page.evaluate(() => document.querySelector('#cmp').getBoundingClientRect().top - document.querySelector('.top').getBoundingClientRect().bottom), { timeout: 5000 }).toBeLessThanOrEqual(30);
     await expect(page.locator('#cmp')).toBeFocused();
-    const settled = await page.evaluate(() => performance.now());
+    // the smooth scroll has ended once the table stood still for 300 ms (slower computers need longer)
+    await expect.poll(() => page.evaluate(() => { const r = window.rec.slice(-15); return r.length === 15 && r.every((x) => x[1] === r[0][1]); }), { timeout: 10000 }).toBe(true);
+    const settled = await page.evaluate(() => window.rec[window.rec.length - 15][0]);
     await waitDone(page);
     await expect(page.locator('#cmp tbody tr').filter({ hasText: 'Cost incl. liquidation risk' }).locator('td').nth(1)).toContainText('€');
     const rec = await page.evaluate(() => { clearInterval(window.sampler); return window.rec; });
