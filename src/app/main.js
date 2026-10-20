@@ -49,7 +49,7 @@ let riskTerms = null; let riskSettings = null; const pending = {};
 let pathSet = 0; // which 20 of the 100 sample futures are shown
 // the example answer computed by the build (META.example), shown at once while the page recomputes it
 let embeddedKey = null;
-let undoState = null; let sliderChanging = false;
+let undoState = null; let sliderChanging = false; let refocusSlider = false;
 function undoSlider() {
   if (!undoState) return;
   state = undoState; undoState = null; $('#slider-undo').hidden = true;
@@ -1142,9 +1142,13 @@ function renderSafer() {
     <div class="levers">${row(R.yourTerms, r.leverBase, true)}${levers.map((l) => row(label(l), l.p)).join('')}</div>
     ${higher && Math.abs(higher.p - r.leverBase) < 0.05 ? `<p class="hint">${esc(R.higherLiqNote)}</p>` : ''}`;
   const slider = $('#ltv-slider');
+  if (refocusSlider) { refocusSlider = false; slider.focus({ preventScroll: true }); }
   const snap = () => { const i = nearest(Number(slider.value)); slider.value = posOf(grid[i].ltv); slider.style.setProperty('--fill', `${posOf(grid[i].ltv) / 10}%`); return i; };
   slider.setAttribute('aria-valuetext', line(idx));
   // arrow keys jump to the next computed point (the native step of 1 in 1000 would snap back)
+  // the arrow keys set the value themselves, so the browser sends no "change": take the new LTV once
+  // the visitor pauses, and give the rebuilt slider the focus back
+  let keyTimer = 0;
   slider.addEventListener('keydown', (e) => {
     const d = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
     if (!d) return;
@@ -1152,15 +1156,24 @@ function renderSafer() {
     const i = Math.min(grid.length - 1, Math.max(0, nearest(Number(slider.value)) + d));
     slider.value = posOf(grid[i].ltv);
     slider.dispatchEvent(new Event('input'));
+    clearTimeout(keyTimer);
+    keyTimer = setTimeout(() => slider.dispatchEvent(new Event('change')), 600);
   });
-  slider.addEventListener('input', () => { const i = snap(); $('#slider-line').textContent = line(i); slider.setAttribute('aria-valuetext', line(i)); });
+  // While dragging, only the line and the fill follow the nearest point; the slider's own value is not
+  // touched. Safari (every browser on an iPhone) counts a value set by the page as the new starting
+  // point and then sends no "change" when the finger or mouse lets go, so nothing was recalculated.
+  slider.addEventListener('input', () => {
+    const i = nearest(Number(slider.value));
+    slider.style.setProperty('--fill', `${posOf(grid[i].ltv) / 10}%`);
+    $('#slider-line').textContent = line(i); slider.setAttribute('aria-valuetext', line(i));
+  });
   slider.addEventListener('change', () => {
     if (state.refi) return; // the BTC of a refinancing offer follows from "What changes?"
     const g = grid[snap()];
     if (Math.abs(g.ltv - toTerms(state, { base: activeBase() }).terms.initialLtv) < 1e-9) return; // no change
     // Undo goes back to the terms from before the first slider move (also after several moves)
     if (!undoState) undoState = structuredClone(state);
-    sliderChanging = true;
+    sliderChanging = true; refocusSlider = document.activeElement === slider; // a keyboard user stays on the slider
     $('#slider-undo-text').textContent = t('results.sliderUndone', { ltv: pct(g.ltv, 0) });
     $('#slider-undo-btn').textContent = texts().results.sliderUndo;
     $('#slider-undo').hidden = false;

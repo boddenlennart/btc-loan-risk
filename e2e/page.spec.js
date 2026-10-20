@@ -105,9 +105,57 @@ test('the LTV slider changes the starting LTV', async ({ page }) => {
   await open(page); await waitDone(page);
   const slider = page.locator('#ltv-slider');
   await slider.focus();
-  await page.keyboard.press('Home'); // slider to the lowest LTV; "change" fires on release
-  await slider.dispatchEvent('change');
+  await page.keyboard.press('Home'); // slider to the lowest LTV; the browser itself sends "change"
   await expect(page.locator('#f-initialLtv')).toHaveValue('10');
+});
+
+// A real drag, released like a finger or a mouse lets go, with no help from the test. Safari (every
+// browser on an iPhone) sent no "change" on release because the page set the value while dragging,
+// so on phones nothing was recalculated; Chrome and Firefox did not show it.
+test('LTV slider: dragging and letting go recalculates and sets the starting LTV (also in Safari)', async ({ page }) => {
+  await open(page); await waitDone(page);
+  const before = await headlineNumber(page);
+  const slider = page.locator('#ltv-slider');
+  await slider.scrollIntoViewIfNeeded();
+  const b = await slider.boundingBox(); const y = b.y + b.height / 2;
+  const x0 = b.x + b.width * (Number(await slider.inputValue()) / 1000);
+  await page.mouse.move(x0, y); await page.mouse.down();
+  for (let i = 1; i <= 10; i++) await page.mouse.move(x0 - i * (b.width / 40), y);
+  await page.mouse.up();
+  // where the handle lands depends on the drag; what counts: a lower LTV is taken and matches the line
+  await expect.poll(async () => Number(await page.locator('#f-initialLtv').inputValue())).toBeLessThan(50);
+  await expect(page.locator('#slider-line')).toContainText(`Starting LTV ${await page.locator('#f-initialLtv').inputValue()}%`);
+  await expect(page.locator('#slider-undo')).toBeVisible();
+  await expect.poll(async () => headlineNumber(page)).toBeLessThan(before);
+});
+
+test('LTV slider on a phone: a finger drag recalculates and sets the starting LTV', async ({ page, browserName }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open(page); await waitDone(page);
+  const before = await headlineNumber(page);
+  const slider = page.locator('#ltv-slider');
+  await slider.scrollIntoViewIfNeeded();
+  const b = await slider.boundingBox(); const y = b.y + b.height / 2;
+  const x0 = b.x + b.width * (Number(await slider.inputValue()) / 1000);
+  const xs = Array.from({ length: 10 }, (_, i) => x0 - (i + 1) * (b.width / 40));
+  if (browserName === 'chromium') { // real touch events (only Chrome's engine lets a test send them)
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: x0, y }] });
+    for (const x of xs) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  } else { await page.mouse.move(x0, y); await page.mouse.down(); for (const x of xs) await page.mouse.move(x, y); await page.mouse.up(); }
+  await expect.poll(async () => Number(await page.locator('#f-initialLtv').inputValue())).toBeLessThan(50);
+  await expect.poll(async () => headlineNumber(page)).toBeLessThan(before);
+});
+
+test('LTV slider: arrow keys set the starting LTV after a short pause and keep the focus on the slider', async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.locator('#ltv-slider').focus();
+  await page.keyboard.press('ArrowLeft'); await page.keyboard.press('ArrowLeft'); // 50% → 45% → 40%
+  await expect(page.locator('#f-initialLtv')).toHaveValue('40');
+  await waitDone(page);
+  await expect(page.locator('#ltv-slider')).toBeFocused();
+  await expect(page.locator('#slider-line')).toContainText('Starting LTV 40%');
 });
 
 test('LTV slider: each label sits exactly under the handle at its LTV; arrow keys move point by point', async ({ page }) => {
@@ -479,8 +527,7 @@ test('slider: releasing it says what changed, and Undo brings the old terms back
   await open(page); await waitDone(page);
   const slider = page.locator('#ltv-slider');
   await slider.focus();
-  await page.keyboard.press('Home');
-  await slider.dispatchEvent('change');
+  await page.keyboard.press('Home'); // the browser itself sends "change", as for a real visitor
   await expect(page.locator('#slider-undo')).toContainText('Your starting LTV is now 10%.');
   await expect(page.locator('#f-initialLtv')).toHaveValue('10');
   await page.locator('#slider-undo-btn').click();
