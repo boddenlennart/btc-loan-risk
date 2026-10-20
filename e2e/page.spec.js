@@ -853,6 +853,39 @@ test('the same terms give the same number all week: the example does not change 
   expect(asked.filter((u) => u.includes('step=3600'))).toEqual([]);
 });
 
+test('"load current price": a new price from Bitstamp updates the price line and the prices, and recalculates', async ({ page }) => {
+  let price = 60000; const asked = [];
+  await page.route(/^https:\/\//, (r) => {
+    const u = r.request().url(); asked.push(u);
+    if (u.includes('www.bitstamp.net')) return r.fulfill({ json: { data: { ohlc: [{ timestamp: String(Math.floor(Date.now() / 1000)), open: String(price), high: String(price), low: String(price), close: String(price), volume: '1' }] } } });
+    return r.abort();
+  });
+  await page.addInitScript(() => { try { if (!sessionStorage.getItem('set')) { localStorage.clear(); localStorage.setItem('btc-loan-risk:lang', 'en'); sessionStorage.setItem('set', '1'); } } catch {} });
+  await page.goto('/'); await waitDone(page);
+  await expect(page.locator('#price-line')).toContainText('€60,000 · Bitstamp');
+  await expect(page.locator('#tiles .tile').first()).toContainText('€37,500');
+  // a loan entered with its LTV: the prices move with BTC, the chance of liquidation stays the same
+  price = 90000; const before = asked.length;
+  await page.locator('#own-terms-link').click();
+  await page.locator('[data-reload-price]').click();
+  await expect(page.locator('#price-line')).toContainText('€90,000 · Bitstamp');
+  await waitDone(page);
+  expect(asked.slice(before).some((u) => u.includes('www.bitstamp.net') && u.includes('step=60&limit=1'))).toBe(true); // asked again
+  await expect(page.locator('#tiles .tile').first()).toContainText('€56,250'); // 62.5% of the new price
+  expect(await headlineNumber(page)).toBe(54);
+  // a loan entered with its BTC: a higher price lowers the LTV, so the number is recalculated and falls
+  await page.locator('[data-set="ltvInput"][data-val="btc"]').click();
+  await page.locator('#f-collateralBtc').fill('0.2222'); // about LTV 50% at 90,000
+  await waitDone(page);
+  const at90 = await headlineNumber(page);
+  price = 120000;
+  await page.locator('[data-reload-price]').click();
+  await expect(page.locator('#price-line')).toContainText('€120,000 · Bitstamp');
+  await expect(page.locator('#ltv-today')).toContainText('LTV 37.5%');
+  await waitDone(page);
+  expect(await headlineNumber(page)).toBeLessThan(at90);
+});
+
 test('German: Kosten inklusive Liquidationsrisiko', async ({ page }) => {
   await open(page, { lang: 'de' }); await waitDone(page);
   await page.locator('#sec-cost > summary').click();
