@@ -386,6 +386,8 @@ details.table-details > summary { cursor: pointer; color: var(--accent-ink); pad
 /* footer */
 footer { margin: 20px 0 40px; border-top: 1px solid var(--border); padding-top: 16px; font-size: 14px; color: var(--text-2); }
 footer .maker { color: var(--text); font-weight: 600; }
+/* the feedback fields keep 16 px: smaller text in a field makes an iPhone zoom in when it is tapped */
+footer input, footer select, footer textarea { font-size: 16px; }
 footer details { border-top: 1px solid var(--border); }
 footer details > summary { cursor: pointer; padding: 10px 0; min-height: 44px; color: var(--accent-ink); }
 .donate { display: flex; gap: 14px; align-items: flex-start; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin: 14px 0; }

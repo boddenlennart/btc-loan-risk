@@ -1,6 +1,7 @@
 // The three pages together: navigation, the "How it works" and "Insights" pages, languages, and
 // the check page trimmed after the content audit (ux/H-content-audit.md).
 import { test, expect } from '@playwright/test';
+import { openFolded } from './helpers.js';
 
 async function visit(page, path, { lang = 'en', width } = {}) {
   const errors = [];
@@ -169,7 +170,7 @@ test.describe('accessibility', () => {
       test(`axe finds no issues on ${path} (${scheme})`, async ({ page }) => {
         await page.emulateMedia({ colorScheme: scheme });
         await visit(page, path);
-        await page.evaluate(() => { for (const d of document.querySelectorAll('footer details')) d.open = true; });
+        await openFolded(page, 'footer');
         await page.addScriptTag({ path: 'node_modules/axe-core/axe.min.js' });
         const r = await page.evaluate(() => window.axe.run(document, { resultTypes: ['violations'] }));
         expect(r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(', ')}`)).toEqual([]);
@@ -207,7 +208,7 @@ test('price ladder: the labels never overlap, also when margin call and liquidat
   await expect.poll(overlaps).toEqual([]);
 });
 
-test('tile labels are never broken inside a word, only at spaces or proper hyphenation points (narrowest phone, both languages)', async ({ page }) => {
+test('tile labels are never broken inside a word, only at spaces or proper hyphenation points (narrowest phone, both languages)', { tag: '@phone' }, async ({ page }) => {
   await visit(page, '/', { width: 320 });
   for (const w of [320, 375]) {
   await page.setViewportSize({ width: w, height: 812 });
@@ -234,7 +235,7 @@ test('tile labels are never broken inside a word, only at spaces or proper hyphe
   }
 });
 
-test('tiles on phones: every word and number stays whole and inside its tile, in both languages and four currencies (UAT finding 4)', async ({ page }) => {
+test('tiles on phones: every word and number stays whole and inside its tile, in both languages and four currencies (UAT finding 4)', { tag: '@phone' }, async ({ page }) => {
   test.setTimeout(240_000);
   await visit(page, '/', { width: 375 });
   // every letter of every text in the tiles: inside the tile, and a word only continues on a new line after a space or soft hyphen
@@ -268,7 +269,7 @@ test('tiles on phones: every word and number stays whole and inside its tile, in
         expect(await problems(), `${w} px, ${lang}, ${cur}`).toEqual([]);
       }
       // the longest label: a partial sale at the liquidation LTV
-      await page.evaluate(() => document.querySelectorAll('#form details').forEach((d) => { d.open = true; }));
+      await openFolded(page, '#form');
       await page.locator('#form [data-set="liquidationSale"][data-val="partial"]').click(); await done();
       expect(await problems(), `${w} px, ${lang}, partial sale`).toEqual([]);
       await page.locator('#form [data-set="liquidationSale"][data-val="all"]').click();
@@ -278,10 +279,11 @@ test('tiles on phones: every word and number stays whole and inside its tile, in
   }
 });
 
-test('no page scrolls sideways at 320 px, with every folded part open (= 400% zoom; UAT finding 11)', async ({ page }) => {
+test('no page scrolls sideways at 320 px, with every folded part open (= 400% zoom; UAT finding 11)', { tag: '@phone' }, async ({ page }) => {
   for (const path of ['/', '/insights/', '/method/', '/de/', '/de/method/']) {
     await visit(page, path, { width: 320 });
-    await page.evaluate(() => document.querySelectorAll('details').forEach((d) => { d.open = true; }));
+    if (await page.locator('#own-terms-link').isVisible()) await page.locator('#own-terms-link').click(); // the terms, folded on phones
+    await openFolded(page);
     await page.waitForTimeout(400);
     const r = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, w: window.innerWidth,
       out: [...document.querySelectorAll('main *')].filter((e) => e.getBoundingClientRect().right > innerWidth + 1 && !e.closest('.table-wrap')).slice(0, 3).map((e) => `${e.tagName} "${e.textContent.slice(0, 40)}"`) }));
@@ -290,7 +292,7 @@ test('no page scrolls sideways at 320 px, with every folded part open (= 400% zo
   }
 });
 
-test('chart axes: every price label lies inside its chart, in four currencies and both languages (UAT finding 5)', async ({ page }) => {
+test('chart axes: every price label lies inside its chart, in four currencies and both languages (UAT finding 5)', { tag: '@phone' }, async ({ page }) => {
   test.setTimeout(180_000);
   const clipped = () => page.evaluate(() => [...document.querySelectorAll('.chart svg')].flatMap((svg) => {
     const box = svg.getBoundingClientRect(); if (!box.width) return [];
@@ -317,7 +319,7 @@ test('chart axes: every price label lies inside its chart, in four currencies an
 test('links to other websites open in a new tab and say so to screen readers; the page itself stays open', async ({ page, context }) => {
   for (const path of ['/', '/method/', '/insights/', '/de/', '/de/method/']) {
     await visit(page, path);
-    await page.evaluate(() => document.querySelectorAll('details').forEach((d) => { d.open = true; }));
+    await openFolded(page);
     const links = await page.locator('a[href^="http"]').evaluateAll((as) => as.filter((a) => new URL(a.href).origin !== location.origin)
       .map((a) => ({ href: a.getAttribute('href'), target: a.target, rel: a.rel, hint: (a.querySelector('.visually-hidden') || {}).textContent || '' })));
     expect(links.length, path).toBeGreaterThan(0);
@@ -356,7 +358,7 @@ test('"Insights": all 11, each with what was measured and a table or chart; the 
   await expect(page.locator('#buffer h2')).toBeInViewport();
 });
 
-test('"Insights" on a 375 px phone: no sideways scrolling, neither the page nor any table (both languages)', async ({ page }) => {
+test('"Insights" on a 375 px phone: no sideways scrolling, neither the page nor any table (both languages)', { tag: '@phone' }, async ({ page }) => {
   for (const path of ['/insights/', '/de/insights/']) {
     await visit(page, path, { width: 375 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
@@ -388,7 +390,7 @@ test('light/dark switch: follows the device first, the choice sticks on every pa
   expect(errors).toEqual([]);
 });
 
-test('top bar on narrow phones (320 and 375 px): the name stays on one line, nothing overlaps', async ({ page }) => {
+test('top bar on narrow phones (320 and 375 px): the name stays on one line, nothing overlaps', { tag: '@phone' }, async ({ page }) => {
   for (const width of [320, 375]) {
     await visit(page, '/', { width });
     const box = (s) => page.locator(s).boundingBox();
@@ -400,7 +402,7 @@ test('top bar on narrow phones (320 and 375 px): the name stays on one line, not
   }
 });
 
-test('charts on a 375 px phone: axis text really 12 px, labels do not overlap, tooltips still work', async ({ page }) => {
+test('charts on a 375 px phone: axis text really 12 px, labels do not overlap, tooltips still work', { tag: '@phone' }, async ({ page }) => {
   await visit(page, '/method/', { width: 375 });
   for (const id of ['#fan-chart', '#months-chart']) {
     const info = await page.locator(`${id} svg`).evaluate((svg) => {
@@ -418,7 +420,7 @@ test('charts on a 375 px phone: axis text really 12 px, labels do not overlap, t
   await expect(page.locator('#fan-chart .tip')).toBeVisible();
 });
 
-test('reading pages: every section starts at the same left edge as the page title', async ({ page }) => {
+test('reading pages: every section starts at the same left edge as the page title', { tag: '@phone' }, async ({ page }) => {
   for (const path of ['/method/', '/insights/']) {
     await visit(page, path);
     const left = await page.locator('h1').evaluate((h) => Math.round(h.getBoundingClientRect().left));

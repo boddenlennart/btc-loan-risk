@@ -68,9 +68,17 @@ function hover(el, svg, tip, pad, onX) {
     const res = onX(Math.max(pad.l, Math.min(w - pad.r, x)));
     if (res) showTip(el, tip, svg, res.x, res.html);
   };
+  const hide = () => { tip.hidden = true; const c = svg.querySelector('.cross'); if (c) c.setAttribute('opacity', 0); svg.querySelectorAll('.bar').forEach((b) => b.classList.remove('dim')); };
   area.addEventListener('pointermove', move);
   area.addEventListener('pointerdown', move);
-  area.addEventListener('pointerleave', () => { tip.hidden = true; const c = svg.querySelector('.cross'); if (c) c.setAttribute('opacity', 0); });
+  // A finger "leaves" the chart the moment it is lifted: the values of a tap stay until the next tap
+  // somewhere else (they used to vanish at once on phones). A mouse leaving hides them as before.
+  area.addEventListener('pointerleave', (ev) => { if (ev.pointerType !== 'touch') hide(); });
+  const outside = (ev) => {
+    if (!svg.isConnected) { document.removeEventListener('pointerdown', outside); return; } // the chart was redrawn
+    if (ev.pointerType === 'touch' && !svg.contains(ev.target) && !tip.hidden) hide();
+  };
+  document.addEventListener('pointerdown', outside);
 }
 
 /**
@@ -145,7 +153,6 @@ export function barChart(el, data) {
     svg.querySelectorAll('.bar').forEach((b, k) => b.classList.toggle('dim', k !== i));
     return { x: pad.l + (i + 0.5) * bw, html: `<b>${esc(data.monthLabel(i + 1))}</b><br>${esc(data.fmtPct(data.values[i]))}` };
   });
-  svg.querySelector('.hit').addEventListener('pointerleave', () => svg.querySelectorAll('.bar').forEach((b) => b.classList.remove('dim')));
 }
 
 /** Strip of all past start dates: red = liquidated, grey = survived. data: { time, liquidated, liquidationTime, fmtDate, labels } */

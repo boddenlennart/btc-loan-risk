@@ -2,6 +2,7 @@
 // replaced by fixed answers (BTC = 60,000) so results are repeatable, and the
 // headline is compared with the engine run directly in Node on the same data.
 import { test, expect } from '@playwright/test';
+import { openFolded } from './helpers.js';
 import { readFileSync } from 'node:fs';
 import * as job from '../src/app/riskjob.js';
 import { encodeState } from '../src/app/share.js';
@@ -112,7 +113,7 @@ test('the LTV slider changes the starting LTV', async ({ page }) => {
 // A real drag, released like a finger or a mouse lets go, with no help from the test. Safari (every
 // browser on an iPhone) sent no "change" on release because the page set the value while dragging,
 // so on phones nothing was recalculated; Chrome and Firefox did not show it.
-test('LTV slider: dragging and letting go recalculates and sets the starting LTV (also in Safari)', async ({ page }) => {
+test('LTV slider: dragging and letting go recalculates and sets the starting LTV (also in Safari)', { tag: '@phone' }, async ({ page }) => {
   await open(page); await waitDone(page);
   const before = await headlineNumber(page);
   const slider = page.locator('#ltv-slider');
@@ -129,7 +130,7 @@ test('LTV slider: dragging and letting go recalculates and sets the starting LTV
   await expect.poll(async () => headlineNumber(page)).toBeLessThan(before);
 });
 
-test('LTV slider on a phone: a finger drag recalculates and sets the starting LTV', async ({ page, browserName }) => {
+test('LTV slider on a phone: a finger drag recalculates and sets the starting LTV', { tag: '@phone' }, async ({ page, browserName }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await open(page); await waitDone(page);
   const before = await headlineNumber(page);
@@ -251,7 +252,7 @@ test('partial sales count as liquidated: the big number counts every forced sale
   await open(page); await waitDone(page);
   await page.locator('details.more summary').first().click();
   await page.locator('#f-marginCallConsequence').selectOption('warningOnly');
-  await page.evaluate(() => document.querySelectorAll('#form details').forEach((d) => { d.open = true; })); // the form was rebuilt by the change
+  await openFolded(page, '#form'); // the form was rebuilt by the change
   await page.locator('#form [data-set="liquidationSale"][data-val="partial"]').click();
   await page.locator('[data-set="durationMonths"][data-val="36"]').click();
   await waitDone(page);
@@ -279,7 +280,7 @@ test('all sections open with their charts; donation QR, Impressum and privacy no
   expect(errors).toEqual([]);
 });
 
-test('shared link restores the inputs, says it was shared, and opens on the answer (phone)', async ({ page }) => {
+test('shared link restores the inputs, says it was shared, and opens on the answer (phone)', { tag: '@phone' }, async ({ page }) => {
   await open(page, { width: 375, hash: encodeState({ ...EXAMPLE_FORM, initialLtv: 35, durationMonths: 24 }) });
   await expect(page.locator('#f-initialLtv')).toHaveValue('35');
   await expect(page.locator('#headline-text')).toContainText('24 months');
@@ -378,7 +379,7 @@ test('feedback: the copied e-mail text contains the answers', async ({ page, con
   expect(text).toContain('(no loan terms attached)');
 });
 
-test('first phone screen (375 x 812): name, headline, trust line and the answer with its number, in ink not red', async ({ page }) => {
+test('first phone screen (375 x 812): name, headline, trust line and the answer with its number, in ink not red', { tag: '@phone' }, async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await open(page); await waitDone(page);
   for (const sel of ['.brand', 'h1', '.trust', '#headline-text .hero-n', '#headline-text .sentence', '#dots']) {
@@ -506,7 +507,7 @@ test('refinancing: switching costs, BTC taken back and different lengths are sho
   await expect(page.locator('#cmp .meta')).toContainText('Its full cost covers all 24 months, the current loan\'s only 12.');
 });
 
-test('phone: while typing the terms, a bar shows the answer and the number before the change; "See the answer" scrolls up', async ({ page }) => {
+test('phone: while typing the terms, a bar shows the answer and the number before the change; "See the answer" scrolls up', { tag: '@phone' }, async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await open(page); await waitDone(page);
   const before = await headlineNumber(page);
@@ -523,7 +524,7 @@ test('phone: while typing the terms, a bar shows the answer and the number befor
   await expect(bar).toBeHidden(); // the answer is in view again
 });
 
-test('slider: releasing it says what changed, and Undo brings the old terms back', async ({ page }) => {
+test('slider: releasing it says what changed, and Undo brings the old terms back', { tag: '@phone' }, async ({ page }) => {
   await open(page); await waitDone(page);
   const slider = page.locator('#ltv-slider');
   await slider.focus();
@@ -535,7 +536,7 @@ test('slider: releasing it says what changed, and Undo brings the old terms back
   await expect(page.locator('#slider-undo')).toBeHidden();
 });
 
-test('phone width 375 px: no sideways scrolling', async ({ page }) => {
+test('phone width 375 px: no sideways scrolling', { tag: '@phone' }, async ({ page }) => {
   await open(page, { width: 375 }); await waitDone(page);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 });
@@ -780,7 +781,7 @@ test('refinancing to buy more BTC: the extra cash is compared, future by future,
   expect(errors).toEqual([]);
 });
 
-test('"Compare an offer" scrolls up to the table once; while the new offer is calculated, nothing moves (computer and phone)', async ({ page }) => {
+test('"Compare an offer" scrolls up to the table once; while the new offer is calculated, nothing moves (computer and phone)', { tag: '@phone' }, async ({ page }) => {
   for (const width of [1280, 375]) {
     await page.setViewportSize({ width, height: 800 });
     await open(page); await waitDone(page);
@@ -869,7 +870,7 @@ test('screen readers: the tiles are a list, every "?" says what it explains, the
   await expect(page.locator('#risk-cost h4')).toBeFocused();
 });
 
-test('small details: the currency sits beside the amount, one precision for an existing loan\'s interest, the LTV hint (UAT findings 6 and 12)', async ({ page }) => {
+test('small details: the currency sits beside the amount, one precision for an existing loan\'s interest, the LTV hint (UAT findings 6 and 12)', { tag: '@phone' }, async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await open(page); await waitDone(page);
   await page.locator('#own-terms-link').click();
@@ -1040,7 +1041,7 @@ test('"Start over and forget my inputs": deletes what the browser stored, ends a
   await expect(page.locator('#reset-btn')).toHaveCount(0); // one button, not two
 });
 
-test('phone: the answer bar waits while the on-screen keyboard is open, and comes back when it closes', async ({ page }) => {
+test('phone: the answer bar waits while the on-screen keyboard is open, and comes back when it closes', { tag: '@phone' }, async ({ page }) => {
   // a stand-in for the phone's "visual viewport", which shrinks when the keyboard opens
   await page.addInitScript(() => {
     const vv = new EventTarget(); vv.height = window.innerHeight; vv.scale = 1;
@@ -1060,7 +1061,7 @@ test('phone: the answer bar waits while the on-screen keyboard is open, and come
   await expect(bar).toBeVisible();
 });
 
-test('phone: while the answer is recalculated, the field being typed in stays where it is on screen', async ({ page }) => {
+test('phone: while the answer is recalculated, the field being typed in stays where it is on screen', { tag: '@phone' }, async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await open(page); await waitDone(page);
   await page.locator('#own-terms-link').click();
@@ -1149,7 +1150,7 @@ test('ending a comparison: the visitor chooses which offer stays; nothing is dro
   await expect(page.getByRole('button', { name: 'A loan I already have' })).toHaveAttribute('aria-pressed', 'true');
 });
 
-test('typing into a field that changes the form (margin call empty → 70): the cursor stays, nothing jumps (desktop and phone)', async ({ page }) => {
+test('typing into a field that changes the form (margin call empty → 70): the cursor stays, nothing jumps (desktop and phone)', { tag: '@phone' }, async ({ page }) => {
   for (const width of [1280, 375]) {
     await page.setViewportSize({ width, height: 800 });
     await open(page); await waitDone(page);
