@@ -555,7 +555,7 @@ export default {
     data: [
       'Price data: hourly prices from the exchanges Bitstamp (USD since 2014, EUR since 2017) and Kraken (EUR 2014–2016), as published by the exchanges. Known gap: Bitstamp was offline from 5 to 9 January 2015.',
       'Other currencies (CHF, GBP, CAD, AUD, CZK, PLN): the euro prices, converted hour by hour with the daily exchange rate of the European Central Bank. Compared with real exchange prices, half of all hours differ by 0.2% or less.',
-      'Current price: Bitstamp, the same exchange as the price history; only if it does not answer, Coinbase. Other currencies: the euro price × the latest ECB rate. The page also adds the hours since the last weekly update from Bitstamp.',
+      'Current price: Bitstamp, the same exchange as the price history; only if it does not answer, Coinbase. Other currencies: the euro price × the latest ECB rate. The simulation and the real history use the price history up to the last weekly update, so the same terms give the same number all week.',
       'Once a week, an automatic job adds the newest prices and exchange rates. It checks them first (gaps, impossible prices, sources that disagree) and stops if something looks wrong. All figures on this page are recomputed then.',
     ],
     measure: 'Your lender decides which BTC price counts: one exchange, an average of several, or an average over some minutes. This page uses the lowest price of every hour on one exchange, which is cautious. How much a smoother price changes the result: {link}.',
@@ -781,7 +781,7 @@ export default {
         'Legal basis: Art. 6 (1) (f) GDPR. Our legitimate interest is a secure, fast and reliable delivery of the page. More information: https://www.cloudflare.com/privacypolicy/',
       ] },
       { h: '4. Current BTC price', p: [
-        'So that the results use today\'s price, your browser asks Bitstamp (www.bitstamp.net) for public price data when the page opens: the current price and the hourly prices since the last weekly update. Bitstamp has its European companies in Luxembourg.',
+        'So that the results use today\'s price, your browser asks Bitstamp (www.bitstamp.net) for the current BTC price when the page opens. Bitstamp has its European companies in Luxembourg.',
         'Only if Bitstamp does not answer, your browser asks Coinbase instead (api.coinbase.com, Coinbase, Inc., USA). Coinbase states that it is certified under the EU-U.S. Data Privacy Framework. Changing the currency or "Reload price" repeats the request.',
         'The price service receives your IP address, the time and your browser type, as with any visit to a web page. The requests contain no cookies, no referrer and nothing you entered. We receive none of these data. The price services are responsible for their own processing; details are in their privacy notices.',
         'Legal basis: Art. 6 (1) (f) GDPR. Our legitimate interest is calculating with a current price; without it, the results would be out of date. You can enter your own price instead.',

@@ -28,7 +28,7 @@ function fakeFetch({ fail = [], slow = [] } = {}) {
 }
 
 describe('live price fallback chain', () => {
-  it('order is Bitstamp (EU; already used for the recent hours) -> Coinbase (EU-US Data Privacy Framework); no other service', () => {
+  it('order is Bitstamp (EU; the same exchange as the price history) -> Coinbase (EU-US Data Privacy Framework); no other service', () => {
     expect(SOURCES).toEqual(['bitstamp', 'coinbase']);
   });
   it('uses the first source that answers', async () => {

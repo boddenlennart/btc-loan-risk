@@ -343,7 +343,7 @@ function onInput(e) {
     return;
   }
   const v = e.target.value;
-  if (k === 'currency') { lastRisk = null; if (compare) for (const o of compare.offers) o.currency = v; change((s) => { s.currency = v; }, { rerenderForm: true }); loadPrice(true); ensureRecent(v); return; }
+  if (k === 'currency') { lastRisk = null; if (compare) for (const o of compare.offers) o.currency = v; change((s) => { s.currency = v; }, { rerenderForm: true }); loadPrice(true); return; }
   if (k === 'btcPrice') { priceInfo = { source: 'manual' }; change((s) => { s.btcPrice = v; s.priceManual = true; }); renderPriceLine(); return; }
   if (k === 'marginCallLtv') { const wasEmpty = state.marginCallLtv === '' || state.marginCallLtv === null; change((s) => { s.marginCallLtv = v; }, { rerenderForm: wasEmpty !== (v === '') }); return; }
   if (k === 'marginCallConsequence') { change((s) => { s.marginCallConsequence = v; }, { rerenderForm: true }); return; }
@@ -448,34 +448,9 @@ async function loadPrice(force = false) {
   update();
 }
 
-const appended = {};
-async function fetchRecentCandles(cur) {
-  const m = META.prices[cur]; const out = [];
-  let start = m.to + 3600; const now = Date.now() / 1000;
-  try {
-    for (let k = 0; k < 12 && start < now - 7200; k++) {
-      const res = await fetch(`https://www.bitstamp.net/api/v2/ohlc/btc${cur.toLowerCase()}/?step=3600&limit=1000&start=${start}`, { credentials: 'omit', referrerPolicy: 'no-referrer' });
-      const rows = ((await res.json()).data || {}).ohlc || [];
-      if (!rows.length) break;
-      for (const c of rows) {
-        const o = { time: +c.timestamp, open: +c.open, high: +c.high, low: +c.low, close: +c.close };
-        if (o.time >= start && o.time % 3600 === 0 && o.low > 0 && o.low <= Math.min(o.open, o.close) && o.high >= Math.max(o.open, o.close) && o.time + 3600 <= now) out.push(o);
-      }
-      start = +rows[rows.length - 1].timestamp + 3600;
-    }
-  } catch { /* offline: embedded history only */ }
-  return out;
-}
-async function ensureRecent(cur) {
-  if (appended[cur]) return;
-  appended[cur] = [];
-  await domReady;
-  // currencies computed from the euro history: recent euro hours × the last ECB rate
-  const fx = fxFor(cur); const r = fx ? fx.rates[cur].at(-1) : 1;
-  const candles = fx ? (await fetchRecentCandles('EUR')).map((c) => ({ time: c.time, open: c.open * r, high: c.high * r, low: c.low * r, close: c.close * r })) : await fetchRecentCandles(cur);
-  appended[cur] = candles;
-  if (candles.length) sentData.delete(cur); // picked up by the next recalculation
-}
+// The simulation and the real history use only the price history stored in the page (the tested weekly update),
+// never hours fetched live: the same terms then give the same number all week, for everyone, and a shared link shows
+// its recipient the sender's number. The live price is used for prices and LTVs. (The example once jumped 54 -> 53.)
 
 // ------------------------------------------------------------------ worker
 // '#no-worker' in the address forces the fallback (to test browsers that block workers)
@@ -507,7 +482,7 @@ function sendData(cur) {
   if (sentData.has(cur)) return;
   const fx = fxFor(cur);
   const base64 = document.getElementById(`data-${fx ? 'EUR' : cur}`).textContent.trim();
-  if (useInline) jobSetData(cur, base64, appended[cur], fx); else for (const w of workers) w.postMessage({ type: 'data', currency: cur, base64, appended: appended[cur], fx });
+  if (useInline) jobSetData(cur, base64, null, fx); else for (const w of workers) w.postMessage({ type: 'data', currency: cur, base64, fx });
   sentData.add(cur);
 }
 // runs that only confirm the embedded example answer update quietly, once, at the end
@@ -1076,7 +1051,7 @@ function renderRisk() {
   $('#dots').innerHTML = dotsHtml([[nLiq, 'd-liq'], [nPart, 'd-part'], [nMargin, 'd-margin'], [nNone, 'd-none']], headline)
     + legendHtml([[nLiq, 'd-liq', R.legendLiquidated], [nPart, 'd-part', R.legendPartial], [nMargin, 'd-margin', R.legendMargin], [nNone, 'd-none', R.legendNothing]]);
   $('#kept-line').textContent = m.keptAfterSale && m.pPartial >= 0.005 ? t('results.kept', { kept: pct(m.keptAfterSale.q50, 0) }) : '';
-  const lastHour = Math.max(META.prices[cur].to, appended[cur] && appended[cur].length ? appended[cur].at(-1).time : 0);
+  const lastHour = META.prices[cur].to;
   $('#basis-line').textContent = t('results.basis');
   // the assumption behind the number, and the two other methods next to it (fairness: the
   // simulation is the most cautious; the real history and the volatility model are shown with it)
@@ -1375,5 +1350,5 @@ if ('IntersectionObserver' in window) {
 }
 domReady.then(() => { if (!workers.length && !useInline) makeWorker(); });
 const waitMax = (p, ms) => Promise.race([p, new Promise((r) => setTimeout(r, ms))]);
-// wait for the live price (at most 4 s) and the recent hours (at most 1.5 s); later candles are used in the next recalculation
-Promise.all([waitMax(loadPrice(false), 4000), waitMax(ensureRecent(state.currency), 1500)]).then(() => { started = true; update(); });
+// wait for the live price (at most 4 s)
+waitMax(loadPrice(false), 4000).then(() => { started = true; update(); });

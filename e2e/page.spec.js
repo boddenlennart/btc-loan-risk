@@ -837,6 +837,22 @@ test('small details: the currency sits beside the amount, one precision for an e
   await expect(page.locator('#risk-cost')).toContainText('instead of €999.96 interest');
 });
 
+test('the same terms give the same number all week: the example does not change when it is confirmed, no recent hours are fetched', async ({ page }) => {
+  const asked = [];
+  // Bitstamp would offer new hours since the weekly update; the page must not use (or even ask for) them
+  await page.route(/^https:\/\//, (r) => {
+    const u = r.request().url(); asked.push(u);
+    if (u.includes('api.coinbase.com')) return r.fulfill({ json: { data: { amount: '60000' } } });
+    if (u.includes('www.bitstamp.net')) return r.fulfill({ json: { data: { ohlc: [{ timestamp: String(Math.floor(Date.now() / 1000) - 7200), open: '60000', high: '61000', low: '30000', close: '60000', volume: '1' }] } } });
+    return r.abort();
+  });
+  // every number the headline shows from the first moment on, sampled every 20 ms
+  await page.addInitScript(() => { window.__shown = new Set(); setInterval(() => { const e = document.querySelector('#headline-text em'); if (e && /^\d+$/.test(e.textContent)) window.__shown.add(e.textContent); }, 20); });
+  await page.goto('/'); await waitDone(page); await page.waitForTimeout(500);
+  expect(await page.evaluate(() => [...window.__shown])).toEqual(['54']); // never another number, also not after the quiet confirmation
+  expect(asked.filter((u) => u.includes('step=3600'))).toEqual([]);
+});
+
 test('German: Kosten inklusive Liquidationsrisiko', async ({ page }) => {
   await open(page, { lang: 'de' }); await waitDone(page);
   await page.locator('#sec-cost > summary').click();

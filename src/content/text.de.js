@@ -550,7 +550,7 @@ export default {
     data: [
       'Kursdaten: stündliche Kurse der Börsen Bitstamp (USD seit 2014, EUR seit 2017) und Kraken (EUR 2014–2016), wie von den Börsen veröffentlicht. Bekannte Lücke: Bitstamp war vom 5. bis 9. Januar 2015 offline.',
       'Weitere Währungen (CHF, GBP, CAD, AUD, CZK, PLN): die Euro-Kurse, Stunde für Stunde mit dem täglichen Wechselkurs der Europäischen Zentralbank umgerechnet. Gegenüber echten Börsenkursen weicht die Hälfte aller Stunden um höchstens 0,2 % ab.',
-      'Aktueller Kurs: Bitstamp, dieselbe Börse wie die Kurshistorie; nur wenn sie nicht antwortet, Coinbase. Weitere Währungen: der Euro-Kurs × der neueste EZB-Kurs. Die Seite ergänzt außerdem die Stunden seit der letzten wöchentlichen Aktualisierung von Bitstamp.',
+      'Aktueller Kurs: Bitstamp, dieselbe Börse wie die Kurshistorie; nur wenn sie nicht antwortet, Coinbase. Weitere Währungen: der Euro-Kurs × der neueste EZB-Kurs. Die Simulation und die echte Vergangenheit nutzen die Kurshistorie bis zur letzten wöchentlichen Aktualisierung, daher geben dieselben Bedingungen die ganze Woche dieselbe Zahl.',
       'Einmal pro Woche ergänzt ein automatischer Ablauf die neuesten Kurse und Wechselkurse. Er prüft sie zuerst (Lücken, unmögliche Kurse, Quellen, die sich widersprechen) und hält an, wenn etwas nicht stimmt. Alle Zahlen dieser Seite werden dann neu berechnet.',
     ],
     measure: 'Ihr Kreditgeber entscheidet, welcher BTC-Kurs zählt: eine Börse, ein Durchschnitt mehrerer oder ein Durchschnitt über einige Minuten. Diese Seite nutzt den tiefsten Kurs jeder Stunde an einer Börse, das ist vorsichtig. Wie stark ein glatterer Kurs das Ergebnis ändert: {link}.',
@@ -776,7 +776,7 @@ export default {
         'Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse ist eine sichere, schnelle und zuverlässige Auslieferung der Seite. Weitere Informationen: https://www.cloudflare.com/privacypolicy/',
       ] },
       { h: '4. Aktueller BTC-Kurs', p: [
-        'Damit die Ergebnisse mit dem heutigen Kurs rechnen, fragt Ihr Browser beim Öffnen der Seite öffentliche Kursdaten bei Bitstamp ab (www.bitstamp.net): den aktuellen Kurs und die Stundenkurse seit der letzten wöchentlichen Aktualisierung. Bitstamp hat seine europäischen Gesellschaften in Luxemburg.',
+        'Damit die Ergebnisse mit dem heutigen Kurs rechnen, fragt Ihr Browser beim Öffnen der Seite den aktuellen BTC-Kurs bei Bitstamp ab (www.bitstamp.net). Bitstamp hat seine europäischen Gesellschaften in Luxemburg.',
         'Nur wenn Bitstamp nicht antwortet, fragt Ihr Browser stattdessen Coinbase (api.coinbase.com, Coinbase, Inc., USA). Coinbase gibt an, nach dem EU-US Data Privacy Framework zertifiziert zu sein. Ein Wechsel der Währung oder „Kurs neu laden“ wiederholt die Abfrage.',
         'Dabei erhält der Kursdienst Ihre IP-Adresse, die Uhrzeit und Ihren Browsertyp, wie bei jedem Aufruf einer Webseite. Die Abfragen enthalten keine Cookies, keinen Referrer und nichts von Ihren Eingaben. Wir erhalten keine dieser Daten. Für ihre eigene Verarbeitung sind die Kursdienste selbst verantwortlich; Einzelheiten stehen in ihren Datenschutzhinweisen.',
         'Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse ist die Berechnung mit einem aktuellen Kurs; ohne ihn wären die Ergebnisse veraltet. Sie können stattdessen einen eigenen Kurs eingeben.',
