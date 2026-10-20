@@ -1112,18 +1112,26 @@ test('ending a comparison: the visitor chooses which offer stays; nothing is dro
   await expect(row.locator('button')).toHaveText(['Offer A', 'Bank X']); // the visitor's own names
   const bNumber = await headlineNumber(page);
   // the original offer (A) is kept although B was the one selected and edited last
-  await page.locator('#f-initialLtv').fill('36'); // B is being recalculated while A is chosen:
-  // wait until B's first new number is shown and the rest of its calculation is still running
-  await page.waitForFunction(() => !document.body.classList.contains('outdated') && !document.querySelector('#progress').hidden);
-  const bNumber36 = await headlineNumber(page);
   await expect(row.locator('button').first()).toHaveText('Offer A');
-  // click and record in one step, so only what is shown after the click counts
+  // B is recalculated while A is chosen. The page itself clicks "Offer A" at the moment B's first new
+  // number is shown and the rest of its calculation is still running, and records every headline from
+  // then on (a test that looked from outside every few milliseconds missed that moment on slower computers)
   await page.evaluate(() => {
-    window.heads = [];
-    document.querySelector('#cmp .end-row button').click();
-    window.heads.push(document.querySelector('#headline-text').textContent);
-    window.sampler = setInterval(() => window.heads.push(document.querySelector('#headline-text').textContent), 20);
+    window.heads = []; window.bNumber36 = null;
+    const mo = new MutationObserver(() => {
+      if (document.body.classList.contains('outdated') || document.querySelector('#progress').hidden) return;
+      if (document.querySelector('#f-initialLtv').value !== '36') return;
+      mo.disconnect();
+      window.bNumber36 = Number(document.querySelector('#headline-text em').textContent.match(/\d+/)[0]);
+      document.querySelector('#cmp .end-row button').click();
+      window.heads.push(document.querySelector('#headline-text').textContent);
+      window.sampler = setInterval(() => window.heads.push(document.querySelector('#headline-text').textContent), 20);
+    });
+    mo.observe(document.body, { attributes: true, childList: true, subtree: true, characterData: true });
   });
+  await page.locator('#f-initialLtv').fill('36');
+  await page.waitForFunction(() => window.bNumber36 !== null);
+  const bNumber36 = await page.evaluate(() => window.bNumber36);
   await waitDone(page);
   const heads = await page.evaluate(() => { clearInterval(window.sampler); return window.heads; });
   // A's answer, never B's number from the calculation that was still running

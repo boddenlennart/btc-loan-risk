@@ -366,7 +366,7 @@ export default {
       title: 'Die größten Rückgänge innerhalb von 30 Tagen bis einem Jahr',
       lead: 'Vom Eröffnungskurs jedes Tages bis zum tiefsten Stundenkurs innerhalb des Zeitraums.',
       take: 'Innerhalb eines Jahres fiel BTC in 10 von 100 Zeiträumen um {q90} oder mehr. Der schlimmste Rückgang betrug {worst}, ab dem {date}.',
-      head: ['Innerhalb', 'In der Hälfte der Zeiträume', 'In 10 von 100', 'In 5 von 100', 'Schlimmster'],
+      head: ['Inner\u00ADhalb', 'In der Hälfte der Zeit\u00ADräume', 'In 10 von 100', 'In 5 von 100', 'Schlimms\u00ADter'], // \u00AD: where a narrow phone may break the word
       days: '{n} Tage',
       unit: 'Lesart: In 10 von 100 Zeiträumen dieser Länge fiel BTC zwischendurch mindestens so weit.',
       bridge: 'Ein Kredit wird nach einem Rückgang von 1 − Start-LTV ÷ Liquidations-LTV liquidiert. Beispiel: LTV 50 % und Liquidation bei 80 % ergeben 37,5 %.',
@@ -401,7 +401,7 @@ export default {
     reserve: {
       title: 'Wie viel zusätzliche BTC gereicht hätten',
       lead: 'Zusätzliche BTC, als Anteil der hinterlegten BTC, die den LTV das ganze Jahr unter dem Liquidations-LTV (80 %) gehalten hätten.',
-      head: ['Start-LTV', 'Genug an der Hälfte der Starttage', 'Genug an 90 von 100', 'Genug an 95 von 100', 'Schlimmster Starttag'],
+      head: ['Start-LTV', 'Genug an der Hälfte der Start\u00ADtage', 'Genug an 90 von 100', 'Genug an 95 von 100', 'Schlimms\u00ADter Start\u00ADtag'],
       take: 'Bei einem Start-LTV von 50 % hätten an 90 von 100 Starttagen {q90} mehr BTC gereicht. Der schlimmste Starttag brauchte {max} mehr.',
       note: 'Zu Beginn hinterlegt, senken zusätzliche BTC den Start-LTV. Beiseitegelegt helfen sie nur, wenn sie rechtzeitig nachgeschossen werden.',
     },
@@ -417,7 +417,7 @@ export default {
     cost: {
       title: 'Was Liquidationen seit 2014 gekostet haben',
       lead: 'Zinsen und Gebühren, plus der durchschnittliche Verlust einer Liquidation mal ihrer Häufigkeit. Der Verlust: die verkauften BTC, bewertet am Laufzeitende, minus den Kredit, den sie tilgten.',
-      head: ['Start-LTV', 'Zinsen und Gebühren', 'Liquidiert, von 100', 'Durchschnittlicher Verlust bei Liquidation', 'Zinsen, Gebühren und Liquidationen'],
+      head: ['Start-LTV', 'Zinsen und Gebühren', 'Liqui\u00ADdiert, von 100', 'Durch\u00ADschnitt\u00ADlicher Verlust bei Liqui\u00ADdation', 'Zinsen, Gebühren und Liqui\u00ADda\u00ADtionen'],
       offer: 'Angebot',
       sameCost: 'Zinsen und Gebühren: {cost} in jeder Zeile; nur der Start-LTV ändert sich.',
       offersTitle: 'Zwei Angebote für dieselben 10.000 $ über 12 Monate',

@@ -361,8 +361,13 @@ test('"Insights": all 11, each with what was measured and a table or chart; the 
 test('"Insights" on a 375 px phone: no sideways scrolling, neither the page nor any table (both languages)', { tag: '@phone' }, async ({ page }) => {
   for (const path of ['/insights/', '/de/insights/']) {
     await visit(page, path, { width: 375 });
+    const tooWide = () => page.locator('.table-wrap').evaluateAll((ws) => ws.filter((w) => w.scrollWidth > w.clientWidth + 1).map((w) => w.getAttribute('aria-label')));
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
-    expect(await page.locator('.table-wrap').evaluateAll((ws) => ws.filter((w) => w.scrollWidth > w.clientWidth + 1).map((w) => w.getAttribute('aria-label')))).toEqual([]);
+    expect(await tooWide()).toEqual([]);
+    // Phones and computers have different system fonts; Linux's is about 10% wider than a Mac's and
+    // pushed three German tables over the edge (found on GitHub, 20 Oct). Widened text must fit too.
+    await page.addStyleTag({ content: 'table { letter-spacing: 0.06em; }' });
+    expect(await tooWide(), `${path}, wider font`).toEqual([]);
   }
 });
 

@@ -475,11 +475,11 @@ How to review: read each row. Note the **number** of every text you do not under
 | 410 | The largest falls within 30 days to one year | Die größten Rückgänge innerhalb von 30 Tagen bis einem Jahr | `insights.falls.title` |
 | 411 | From each day's opening price to the lowest hourly price within the window. | Vom Eröffnungskurs jedes Tages bis zum tiefsten Stundenkurs innerhalb des Zeitraums. | `insights.falls.lead` |
 | 412 | Within one year, BTC fell by {q90} or more in 10 of 100 periods. The worst fall was {worst}, starting on {date}. | Innerhalb eines Jahres fiel BTC in 10 von 100 Zeiträumen um {q90} oder mehr. Der schlimmste Rückgang betrug {worst}, ab dem {date}. | `insights.falls.take` |
-| 413 | Within | Innerhalb | `insights.falls.head.0` |
-| 414 | In half of the periods | In der Hälfte der Zeiträume | `insights.falls.head.1` |
+| 413 | Within | Inner­halb | `insights.falls.head.0` |
+| 414 | In half of the periods | In der Hälfte der Zeit­räume | `insights.falls.head.1` |
 | 415 | In 10 of 100 | In 10 von 100 | `insights.falls.head.2` |
 | 416 | In 5 of 100 | In 5 von 100 | `insights.falls.head.3` |
-| 417 | Worst | Schlimmster | `insights.falls.head.4` |
+| 417 | Worst | Schlimms­ter | `insights.falls.head.4` |
 | 418 | {n} days | {n} Tage | `insights.falls.days` |
 | 419 | Read: in 10 of 100 periods of this length, BTC fell at least this far at some point. | Lesart: In 10 von 100 Zeiträumen dieser Länge fiel BTC zwischendurch mindestens so weit. | `insights.falls.unit` |
 | 420 | A loan is liquidated after a fall of 1 − starting LTV ÷ liquidation LTV. Example: LTV 50% and liquidation at 80% give a fall of 37.5%. | Ein Kredit wird nach einem Rückgang von 1 − Start-LTV ÷ Liquidations-LTV liquidiert. Beispiel: LTV 50 % und Liquidation bei 80 % ergeben 37,5 %. | `insights.falls.bridge` |
@@ -508,10 +508,10 @@ How to review: read each row. Note the **number** of every text you do not under
 | 443 | How much extra BTC would have been enough | Wie viel zusätzliche BTC gereicht hätten | `insights.reserve.title` |
 | 444 | Extra BTC, as a share of the BTC pledged, that would have kept the LTV below the liquidation LTV (80%) for the whole year. | Zusätzliche BTC, als Anteil der hinterlegten BTC, die den LTV das ganze Jahr unter dem Liquidations-LTV (80 %) gehalten hätten. | `insights.reserve.lead` |
 | 445 | Starting LTV | Start-LTV | `insights.reserve.head.0` |
-| 446 | Enough on half of the start days | Genug an der Hälfte der Starttage | `insights.reserve.head.1` |
+| 446 | Enough on half of the start days | Genug an der Hälfte der Start­tage | `insights.reserve.head.1` |
 | 447 | Enough on 90 of 100 | Genug an 90 von 100 | `insights.reserve.head.2` |
 | 448 | Enough on 95 of 100 | Genug an 95 von 100 | `insights.reserve.head.3` |
-| 449 | Worst start day | Schlimmster Starttag | `insights.reserve.head.4` |
+| 449 | Worst start day | Schlimms­ter Start­tag | `insights.reserve.head.4` |
 | 450 | At a starting LTV of 50%, {q90} more BTC would have been enough on 90 of 100 start days. The worst start day needed {max} more. | Bei einem Start-LTV von 50 % hätten an 90 von 100 Starttagen {q90} mehr BTC gereicht. Der schlimmste Starttag brauchte {max} mehr. | `insights.reserve.take` |
 | 451 | Pledged at the start, extra BTC lowers the starting LTV. Kept aside, it only helps if it can be added in time. | Zu Beginn hinterlegt, senken zusätzliche BTC den Start-LTV. Beiseitegelegt helfen sie nur, wenn sie rechtzeitig nachgeschossen werden. | `insights.reserve.note` |
 | 452 | Partial or full liquidation: the BTC you keep | Teil- oder Komplettliquidation: die BTC, die Ihnen bleiben | `insights.partial.title` |
@@ -526,9 +526,9 @@ How to review: read each row. Note the **number** of every text you do not under
 | 461 | Interest and fees, plus the average loss of a liquidation times how often it happened. The loss: the BTC sold, valued at the end of the loan, minus the loan it repaid. | Zinsen und Gebühren, plus der durchschnittliche Verlust einer Liquidation mal ihrer Häufigkeit. Der Verlust: die verkauften BTC, bewertet am Laufzeitende, minus den Kredit, den sie tilgten. | `insights.cost.lead` |
 | 462 | Starting LTV | Start-LTV | `insights.cost.head.0` |
 | 463 | Interest and fees | Zinsen und Gebühren | `insights.cost.head.1` |
-| 464 | Liquidated, of 100 | Liquidiert, von 100 | `insights.cost.head.2` |
-| 465 | Average loss if liquidated | Durchschnittlicher Verlust bei Liquidation | `insights.cost.head.3` |
-| 466 | Interest, fees and liquidations | Zinsen, Gebühren und Liquidationen | `insights.cost.head.4` |
+| 464 | Liquidated, of 100 | Liqui­diert, von 100 | `insights.cost.head.2` |
+| 465 | Average loss if liquidated | Durch­schnitt­licher Verlust bei Liqui­dation | `insights.cost.head.3` |
+| 466 | Interest, fees and liquidations | Zinsen, Gebühren und Liqui­da­tionen | `insights.cost.head.4` |
 | 467 | Offer | Angebot | `insights.cost.offer` |
 | 468 | Interest and fees: {cost} in every row; only the starting LTV changes. | Zinsen und Gebühren: {cost} in jeder Zeile; nur der Start-LTV ändert sich. | `insights.cost.sameCost` |
 | 469 | Two offers for the same US$10,000 over 12 months | Zwei Angebote für dieselben 10.000 $ über 12 Monate | `insights.cost.offersTitle` |

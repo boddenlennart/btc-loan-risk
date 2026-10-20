@@ -15,9 +15,20 @@ describe('test workflow for every other change', () => {
   it('runs on every push and pull request, with all tests and the browser tests', () => {
     expect(tests.on).toHaveProperty('push');
     expect(tests.on).toHaveProperty('pull_request');
-    const runs = tests.jobs.test.steps.map((s) => s.run || '').join('\n');
-    expect(runs).toMatch(/npm test/);
-    expect(runs).toMatch(/npm run test:e2e/);
+    const runs = (job) => tests.jobs[job].steps.map((s) => s.run || '').join('\n');
+    expect(runs('unit')).toMatch(/npm test/);
+    // the browser tests run in all five setups of playwright.config.js, side by side
+    expect(runs('browser')).toMatch(/npx playwright test --project=\$\{\{ matrix\.project \}\}/);
+    const projects = tests.jobs.browser.strategy.matrix.include.map((m) => m.project).sort();
+    const config = readFileSync(new URL('../playwright.config.js', import.meta.url), 'utf8');
+    expect(projects).toEqual([...config.matchAll(/name: '([a-z]+)'/g)].map((m) => m[1]).sort());
+    expect(tests.jobs.browser.strategy['fail-fast']).toBe(false);
+  });
+  it('"test", the check the protected main branch requires, is green only when the unit tests and every setup passed', () => {
+    const t = tests.jobs.test;
+    expect(t.needs).toEqual(['unit', 'browser']);
+    expect(t.if).toBe('always()'); // also runs (and fails) when one of them failed, instead of being skipped
+    expect(t.steps.map((s) => s.run).join('\n')).toMatch(/needs\.unit\.result \}\}" = success && test "\$\{\{ needs\.browser\.result \}\}" = success/);
   });
 });
 
