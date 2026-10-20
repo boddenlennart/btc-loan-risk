@@ -15,6 +15,16 @@ The page, its numbers, security and legal texts are ready. Four blocking criteri
 | G3 | The text export for your reading is regenerated (808 texts) | – | A test compares a fresh export with the stored one |
 | B3 | Privacy notice: "You are not obliged to provide any data …" (Art. 13(2)(e)); version 20 Oct 2026 | – | Content tests |
 
+**Measured on the live preview after the push (20 Oct, mid-range phone, slow mobile connection, real throttling):**
+
+| Page | Performance | Accessibility | Best practices | First content | Answer / main content | Layout shift |
+|---|---|---|---|---|---|---|
+| Check (EN, DE) | **98–99** | 100 | 96 | 1.0 s | **1.7 s** | 0 |
+| How it works | 100 | 100 | 100 | 0.9 s | 1.4 s | 0 |
+| Insights | 100 | 100 | 100 | 0.9 s | 1.3 s | 0 |
+
+The check page's 96 for best practices comes from Bitstamp refusing Lighthouse's repeated automated runs (rate limit; its refusal lacks the permission header). In a normal browser both Bitstamp requests answer 200, the recent hours are added and the console stays empty (checked on the live preview). D6 (≤ 5 s on a mid-range phone) is met.
+
 Note: Lighthouse's default mode estimates timings as if a page could only be drawn once its whole file has arrived, so it still reports about 10 s for the check page. Real browsers draw while the file arrives, which the measurement with real throttling and the browser test show.
 
 ## Blocking criteria
