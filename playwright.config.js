@@ -7,7 +7,8 @@ export default defineConfig({
   timeout: 90_000,
   expect: { timeout: 30_000 },
   workers: 3,
-  reporter: [['list']],
+  // on GitHub also as notes on the run's page: each failed test with its reason, readable without logging in
+  reporter: process.env.CI ? [['list'], ['github']] : [['list']],
   // E2E_DIR / E2E_PORT: test another build of the page (only for the coverage measurement)
   use: { baseURL: `http://127.0.0.1:${process.env.E2E_PORT || 8799}` },
   // Every browser test runs in the three browser engines: Chrome's, Safari's (WebKit, also used by

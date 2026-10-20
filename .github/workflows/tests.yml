@@ -1,6 +1,11 @@
 # Runs all tests and the browser tests for every push and every pull request
 # (your own changes, edits on the GitHub website). The weekly data update runs
 # the same tests inside its own workflow, before it opens its pull request.
+#
+# The browser tests run in five setups side by side (three computer browsers, an iPhone, an Android
+# phone), so none waits for the others. "test" at the end is the check the protected main branch
+# requires: green only when the unit tests and all five setups passed. A failed browser test shows
+# as a note on the run's page (readable without logging in), with the test's name and the reason.
 name: Tests
 
 on:
@@ -12,9 +17,33 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  unit:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install tools
+        run: npm ci
+      - name: All tests
+        run: npm test
+
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { project: chromium, engine: chromium }
+          - { project: webkit, engine: webkit }
+          - { project: firefox, engine: firefox }
+          - { project: iphone, engine: webkit }
+          - { project: android, engine: chromium }
+    name: browser (${{ matrix.project }})
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,9 +54,17 @@ jobs:
         run: npm ci
       - name: Build the page from the sources (the browser tests use this build)
         run: node tools/build.mjs
-      - name: All tests
-        run: npm test
       - name: The finished page in a real browser
         run: |
-          npx playwright install --with-deps chromium webkit firefox
-          npm run test:e2e
+          npx playwright install --with-deps ${{ matrix.engine }}
+          npx playwright test --project=${{ matrix.project }}
+
+  test:
+    if: always()
+    needs: [unit, browser]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All tests passed
+        run: |
+          echo "unit: ${{ needs.unit.result }}, browser: ${{ needs.browser.result }}"
+          test "${{ needs.unit.result }}" = success && test "${{ needs.browser.result }}" = success
