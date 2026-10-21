@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src /*SCRIPT_HASH*/ blob:; worker-src blob:; style-src 'unsafe-inline'; font-src data:; img-src data: 'self'; connect-src https://www.bitstamp.net https://api.coinbase.com; base-uri 'none'; form-action 'none'">
+/*HEAD*/
+/*ICON*/
+/*THEME*/
+<style>/*STYLE*/</style>
+</head>
+<body>
+/*HEADER*/
+<main class="wrap layout boot" id="top">
+  <div class="intro">
+    <h1 class="pos" data-t="ui.headline"></h1>
+    <p class="subhead" data-t="ui.subhead"></p>
+    <p class="trust"><span data-t="ui.trustBrowser"></span><span class="sep" aria-hidden="true"> · </span><span data-t="ui.trustTracking"></span><span class="sep" aria-hidden="true"> · </span><a id="code-link" target="_blank" rel="noopener noreferrer"><span data-t="ui.trustCode"></span> ↗<span class="visually-hidden" data-t="ui.newTab"></span></a></p>
+  </div>
+
+  <h2 id="results-h" class="visually-hidden" data-t="results.title"></h2>
+  <div class="banners">
+    <p id="error-banner" class="notice error" data-t="ui.fixErrors" hidden></p>
+    <p id="stale-banner" class="notice error" data-t="ui.staleWarning" hidden></p>
+    <p id="data-old" class="notice error" hidden></p>
+    <p id="progress" class="progress" aria-live="polite" hidden></p>
+  </div>
+
+  <section class="compare" id="cmp" tabindex="-1" aria-labelledby="cmp-label" hidden></section>
+  <p class="showing" id="showing" hidden></p>
+  <p class="showing" id="ended-note" role="status" hidden></p>
+
+  <section class="answer" id="answer" aria-labelledby="results-h">
+    <p class="shared-note" id="shared-note" data-t="results.sharedNote" hidden></p>
+    <p class="refi-note err" id="link-note" role="status" hidden></p>
+    <div class="ans-top"><span class="label" id="ans-label"></span><button type="button" class="link strong" data-open-terms id="own-terms-link"></button></div>
+    <p class="example-story" id="example-story"></p>
+    <div class="label-row"><p class="headline" id="headline-text" aria-live="polite"></p><button type="button" class="q" aria-expanded="false" aria-controls="headline-help" aria-label="?">?</button></div>
+    <div class="help" id="headline-help" hidden></div>
+    <div id="dots"></div>
+    <p class="refi-note err" id="now-note" role="status" hidden></p>
+    <p class="assume" id="assume-line"></p>
+    <p class="best-lever" id="best-lever"></p>
+    <div class="tiles" id="tiles" role="list"></div>
+    <p class="sold-line" id="sold-line"></p>
+    <p class="sub" id="kept-line"></p>
+    <p class="hook" id="fall-hook" hidden></p>
+    <p class="actions"><button type="button" class="secondary" data-compare-start id="compare-btn"></button><button type="button" class="secondary" data-share id="share-btn"></button></p>
+    <p class="hint" id="link-copied" data-t="ui.linkCopied" hidden></p>
+    <p class="meta"><span id="methods-line"></span><a id="method-link" data-t="results.howToCheck"></a></p>
+    <p class="meta"><span id="basis-line"></span> · <span id="data-period"></span></p>
+    <p class="meta" data-t="results.counterpartyLine"></p>
+  </section>
+
+  <aside id="terms" class="terms closed" aria-labelledby="terms-h">
+    <div class="terms-head"><h2 id="terms-h" class="label" data-t="form.yourTerms"></h2><button type="button" class="link strong" id="terms-toggle" aria-expanded="false" aria-controls="form-wrap"></button></div>
+    <p class="terms-chips" id="terms-chips"></p>
+    <div id="form-wrap"><form id="form" novalidate autocomplete="off"></form></div>
+  </aside>
+
+  <section class="block" id="safer" aria-labelledby="safer-h">
+    <h2 id="safer-h" class="sec-title" data-t="results.safer"></h2>
+    <div id="safer-body"></div>
+    <p class="undo-line" id="slider-undo" hidden><span id="slider-undo-text"></span> <button type="button" class="link strong" data-slider-undo id="slider-undo-btn"></button></p>
+  </section>
+
+  <details class="checklist" id="questions-block">
+    <summary>
+      <svg class="cl-icon" width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect x="2" y="2" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6.5 11.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="cl-text"><span class="cl-title" id="questions-title"></span><span class="cl-preview" data-t="falls.questionsPreview"></span></span>
+    </summary>
+    <ul class="questions" id="questions"></ul>
+  </details>
+
+  <details class="section" id="sec-falls">
+    <summary><h3 data-t="sections.falls"></h3></summary>
+    <p class="sale-line" id="sale-line"></p>
+    <div id="falls-text"></div>
+    <p id="falls-month"></p>
+    <div class="label-row"><h4 data-t="falls.futuresTitle"></h4><button type="button" class="q" aria-expanded="false" aria-controls="futures-help" aria-label="?">?</button></div>
+    <div class="help" id="futures-help" hidden></div>
+    <p class="sub" id="futures-line"></p>
+    <div id="futures-chart"></div>
+    <p class="hint" id="futures-note" data-t="falls.futuresMarginNote" hidden></p>
+    <p><button type="button" class="link" data-other-paths id="other-paths"></button></p>
+  </details>
+
+  <details class="section" id="sec-cost">
+    <summary><h3 id="sec-cost-title"></h3></summary>
+    <div id="cost-body"></div>
+  </details>
+
+  <details class="section" id="sec-history">
+    <summary><h3 data-t="sections.history"></h3></summary>
+    <div id="history-text"></div>
+    <h4 data-t="history.storiesTitle"></h4>
+    <p class="sub" data-t="history.storiesLine"></p>
+    <div id="stories-chart"></div>
+    <ul class="story-legend" id="stories-legend"></ul>
+    <details class="sub-details" id="trend-details"><summary data-t="history.trendTitle"></summary><div id="trend-body"></div></details>
+  </details>
+
+  <details class="section" id="sec-limits">
+    <summary><h3 data-t="results.limitsTitle"></h3></summary>
+    <ul id="limits"></ul>
+  </details>
+
+  /*FOOTER*/
+</main>
+<div class="answer-bar" id="answer-bar" hidden aria-live="polite"><span id="answer-bar-text"></span><button type="button" class="bar-go" id="answer-bar-btn" data-to-answer></button></div>
+<script type="application/json" id="meta">/*META*/</script>
+<script>/*APP*/</script>
+<!-- after the page's script: the page and its example answer show before the 1.7 MB below have arrived (go/no-go G1) -->
+<script type="text/plain" id="worker-src">/*WORKER*/</script>
+<script type="text/plain" id="data-EUR">/*DATA_EUR*/</script>
+<script type="text/plain" id="data-USD">/*DATA_USD*/</script>
+<script type="text/plain" id="data-FX">/*DATA_FX*/</script>
+</body>
+</html>

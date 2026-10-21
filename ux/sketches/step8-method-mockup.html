@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How it works mock-up</title>
+<style>
+/* Mock-up of the expanded "How it works" page. Numbers are real (example loan, 19 Oct 2026). */
+:root { --paper:#f6f5f1; --surface:#fff; --tile:#efede6; --rule:#e2dfd6; --ink:#15140f; --ink2:#46443e; --muted:#65635c; --brand:#1f4e79; --liq:#b42318; --mc:#a16207; --band:rgba(31,78,121,.14);
+  --serif:"Source Serif 4",Charter,Georgia,serif; --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+* { box-sizing:border-box; }
+body { margin:0; background:#d9d7d0; font:16px/1.55 var(--sans); color:var(--ink); }
+.board { max-width:1100px; margin:0 auto; padding:24px 16px 64px; }
+.board > h1 { font:600 26px/1.2 var(--serif); margin:0 0 4px; }
+.lead { margin:0 0 20px; max-width:820px; color:#3a3934; }
+.page { background:var(--paper); border-radius:12px; padding:28px 32px 40px; max-width:820px; box-shadow:0 10px 30px #0002; }
+h1.t { font:600 32px/1.2 var(--serif); margin:0 0 8px; }
+.sub { color:var(--ink2); }
+.layer { margin:28px 0 6px; font:600 12px var(--sans); text-transform:uppercase; letter-spacing:.07em; color:var(--brand); }
+h2 { font:600 21px/1.3 var(--serif); margin:22px 0 6px; padding-top:18px; border-top:1px solid var(--rule); }
+h3 { font:600 16px var(--serif); margin:16px 0 4px; }
+p { margin:8px 0; } .hint { color:var(--muted); font-size:14px; }
+.new::before { content:"new"; background:#2e7d32; color:#fff; font:600 10px var(--sans); padding:1px 5px; border-radius:4px; margin-right:8px; vertical-align:3px; }
+.changed::before { content:"rewritten"; background:#a16207; color:#fff; font:600 10px var(--sans); padding:1px 5px; border-radius:4px; margin-right:8px; vertical-align:3px; }
+.toc { background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:12px 16px; display:grid; grid-template-columns:repeat(3,1fr); gap:12px; font-size:14px; }
+.toc b { display:block; font:600 12px var(--sans); text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:4px; }
+.toc a { color:var(--brand); display:block; }
+.card { background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:14px 16px; margin:10px 0; }
+table { width:100%; border-collapse:collapse; font-size:14px; margin:8px 0; }
+th, td { padding:7px 6px; border-bottom:1px solid var(--rule); text-align:right; }
+th:first-child, td:first-child { text-align:left; }
+thead th { font:600 12px var(--sans); color:var(--muted); }
+tr.us td { font-weight:700; background:#eef3f8; }
+.steps { counter-reset:s; list-style:none; padding:0; }
+.steps li { counter-increment:s; position:relative; padding-left:34px; margin:10px 0; }
+.steps li::before { content:counter(s); position:absolute; left:0; top:0; width:24px; height:24px; border-radius:50%; background:var(--brand); color:#fff; font:600 13px/24px var(--sans); text-align:center; }
+details.maths { background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:0 16px; margin:12px 0; }
+details.maths summary { cursor:pointer; padding:12px 0; font:600 16px var(--serif); }
+.f { font:15px/1.6 "STIX Two Math","Cambria Math",Georgia,serif; background:var(--tile); border-radius:6px; padding:8px 12px; margin:6px 0; overflow-x:auto; }
+.note { font:13px var(--sans); color:#3a3934; background:#fff7e0; border-left:3px solid var(--mc); padding:6px 10px; margin:6px 0; border-radius:0 6px 6px 0; }
+.dots { display:grid; grid-template-columns:repeat(20,12px); gap:3px; margin:8px 0; }
+.dots i { width:12px; height:12px; border-radius:50%; display:block; }
+.d1 { background:var(--liq); } .d0 { box-shadow:inset 0 0 0 1.5px #8a877e; }
+svg text { font:12px var(--sans); fill:var(--muted); }
+</style>
+</head>
+<body>
+<div class="board">
+  <h1>"How it works", expanded: mock-up</h1>
+  <p class="lead">Structure in three layers: plain language for everyone, details for careful readers, the maths folded away for experts. Green = new, amber = rewritten; the rest stays as it is. All numbers are real (example loan, data until Oct 2026) and will be computed at every build.</p>
+
+  <div class="page">
+    <h1 class="t">How it works</h1>
+    <p class="sub changed">The page builds 10,000 possible futures for the BTC price from real price moves since 2014, with recent years counting more. On each one, it applies your lender's rules. The number at the top counts in how many of 100 futures your loan is liquidated. Two other methods check it.</p>
+
+    <div class="toc">
+      <div><b>For everyone</b><a>One future, step by step</a><a>Which volatility, and why</a><a>From 10,000 futures to your number</a></div>
+      <div><b>The details</b><a>Your lender's rules in the simulation</a><a>Three methods side by side</a><a>The test against history</a><a>Data and the weekly update</a><a>Why no price trend</a><a>What the model cannot do</a></div>
+      <div><b>For experts</b><a>The maths</a><a>Verify it yourself</a></div>
+    </div>
+
+    <div class="layer">For everyone</div>
+
+    <h2 class="new">One simulated future, step by step</h2>
+    <p>The example loan: borrow €10,000 against BTC worth €20,000. Liquidation at LTV 80%, so at a fall of 37.5%.</p>
+    <svg viewBox="0 0 760 240" width="100%" role="img" aria-label="One simulated price path built from 12 pieces of 30 real days">
+      <line x1="40" y1="180" x2="740" y2="180" stroke="#b42318" stroke-width="2" stroke-dasharray="6 4"/>
+      <text x="740" y="172" text-anchor="end" fill="#b42318" style="fill:#b42318;font-weight:600">Liquidation €45,588 (−38%)</text>
+      <line x1="40" y1="100" x2="740" y2="100" stroke="#e2dfd6"/><text x="36" y="104" text-anchor="end">today</text>
+      <g fill="none" stroke-width="2.5">
+        <path stroke="#1f4e79" d="M40,100 L60,92 L80,105 L98,96"/>
+        <path stroke="#6fa0d6" d="M98,96 L120,110 L140,104 L156,120"/>
+        <path stroke="#1f4e79" d="M156,120 L176,112 L196,118 L214,108"/>
+        <path stroke="#6fa0d6" d="M214,108 L236,124 L254,150 L272,146"/>
+        <path stroke="#1f4e79" d="M272,146 L292,160 L310,154 L330,170"/>
+        <path stroke="#6fa0d6" d="M330,170 L346,186"/>
+      </g>
+      <text x="346" y="191" text-anchor="middle" style="fill:#b42318;font-weight:700;font-size:16px">✕</text>
+      <path d="M346,186 L366,176 L388,160 L410,150 L440,128 L470,120" fill="none" stroke="#8a877e" stroke-dasharray="3 3"/>
+      <text x="69" y="80" text-anchor="middle">Mar 2018</text><text x="127" y="140" text-anchor="middle">Jul 2023</text><text x="185" y="96" text-anchor="middle">Jan 2025</text>
+      <text x="243" y="166" text-anchor="middle">Mar 2020</text><text x="300" y="208" text-anchor="middle">Jun 2022</text>
+      <text x="420" y="116">after the sale, the price recovered,</text><text x="420" y="132">but the BTC is already sold</text>
+      <text x="40" y="226">month 1</text><text x="330" y="226">month 6: liquidated</text><text x="740" y="226" text-anchor="end">month 12</text>
+    </svg>
+    <ol class="steps">
+      <li><b>Pick 30 real days.</b> A random start day since 2014; the next 30 days are taken as they happened: each day's move and its lowest price. Here, the first piece comes from March 2018.</li>
+      <li><b>Join pieces.</b> Twelve such pieces make a year. Crashes stay intact inside a piece, because bad days often follow bad days.</li>
+      <li><b>Check every day.</b> Is the day's lowest price below your liquidation price? Here it is, in month 6 (the crash piece from June 2022).</li>
+      <li><b>Repeat 10,000 times</b>, each time with other pieces.</li>
+    </ol>
+
+    <h2 class="new">Which volatility, and why it matters</h2>
+    <p>The simulation does not use a volatility someone chose. It reuses real days, so it has the volatility of BTC's real history. But BTC has become calmer as its market grew:</p>
+    <svg viewBox="0 0 760 210" width="100%" role="img" aria-label="Volatility per year 2014 to 2026; bars shaded by how much each year counts">
+      <g>
+        <line x1="40" y1="170" x2="740" y2="170" stroke="#e2dfd6"/>
+        <text x="34" y="174" text-anchor="end">0%</text><text x="34" y="96" text-anchor="end">50%</text><text x="34" y="22" text-anchor="end">100%</text>
+        <line x1="40" y1="92" x2="740" y2="92" stroke="#e2dfd6"/><line x1="40" y1="18" x2="740" y2="18" stroke="#e2dfd6"/>
+      </g>
+      <g fill="#1f4e79">
+        <rect x="50" y="65" width="38" height="105" opacity=".18"/><rect x="103" y="74" width="38" height="96" opacity=".22"/><rect x="156" y="96" width="38" height="74" opacity=".28"/>
+        <rect x="209" y="35" width="38" height="135" opacity=".35"/><rect x="262" y="46" width="38" height="124" opacity=".44"/><rect x="315" y="68" width="38" height="102" opacity=".55"/>
+        <rect x="368" y="51" width="38" height="119" opacity=".68"/><rect x="421" y="51" width="38" height="119" opacity=".85"/><rect x="474" y="78" width="38" height="92" opacity="1"/>
+        <rect x="527" y="106" width="38" height="64" opacity="1"/><rect x="580" y="93" width="38" height="77" opacity="1"/><rect x="633" y="108" width="38" height="62" opacity="1"/><rect x="686" y="105" width="38" height="65" opacity="1"/>
+      </g>
+      <g text-anchor="middle"><text x="69" y="188">2014</text><text x="175" y="188">2016</text><text x="281" y="188">2018</text><text x="387" y="188">2020</text><text x="493" y="188">2022</text><text x="599" y="188">2024</text><text x="705" y="188">2026</text></g>
+      <g text-anchor="middle" style="font-weight:600"><text x="228" y="30">91%</text><text x="281" y="41">84%</text><text x="546" y="101">43%</text><text x="652" y="103">42%</text></g>
+      <line x1="40" y1="85.6" x2="740" y2="85.6" stroke="#b42318" stroke-dasharray="5 4"/><text x="738" y="80" text-anchor="end" style="fill:#b42318;font-weight:600">57%: what the simulation uses</text>
+      <text x="40" y="205">Darker = counts more in the simulation. A day from three years ago counts half as much as one from today.</text>
+    </svg>
+    <p><b>Why recent years count more:</b> as BTC's market grew, its swings shrank, from 80–90% a year in 2017–2021 to 42–52% since 2023. A larger market needs more money to move it by the same percentage. So the page gives recent years more weight, while older crashes still count: 2014–2018 still makes up 12% of all draws.</p>
+    <table>
+      <thead><tr><th>How the years count</th><th>Volatility used</th><th>Example loan: liquidated, of 100</th></tr></thead>
+      <tbody>
+        <tr><td>All years equally</td><td>67%</td><td>60</td></tr>
+        <tr><td>Half-life 4 years</td><td>60%</td><td>56</td></tr>
+        <tr class="us"><td>Half-life 3 years (this page)</td><td>57%</td><td>53</td></tr>
+        <tr><td>Half-life 2 years</td><td>53%</td><td>51</td></tr>
+        <tr><td>Only 2022 onwards</td><td>49%</td><td>44</td></tr>
+      </tbody>
+    </table>
+    <p class="hint">Honest limit: the test against history cannot tell these weightings apart; all of them passed and stayed cautious. The weighting is a judgement, backed by the falling volatility. If BTC became as wild as in 2017 again, the true risk would be closer to the "all years equally" row.</p>
+
+    <h2 class="new">From 10,000 futures to your number</h2>
+    <div class="dots" data-n="53"></div>
+    <ul>
+      <li><b>Counted:</b> 5,270 of the 10,000 futures end with the loan liquidated: 52.7, shown as <b>53 of 100</b>. Each dot stands for 100 futures.</li>
+      <li><b>Precise to about ±1:</b> with 10,000 futures, the count would land within about one point if it were repeated with new random draws.</li>
+      <li><b>The same terms always give the same number,</b> because the random draws are fixed. "Make it safer", the slider and the comparison of offers use the very same 10,000 futures, so a difference comes only from the one change.</li>
+      <li><b>Not a forecast:</b> it says how often a loan like this failed in futures built from the past, not what will happen.</li>
+    </ul>
+
+    <div class="layer">The details</div>
+
+    <h2 class="new">Your lender's rules in the simulation</h2>
+    <ul>
+      <li>Every simulated day, the day's lowest price is compared with your liquidation price. That price rises when unpaid interest is added to the debt.</li>
+      <li>A margin call is checked at the day's closing price. The deadline is counted in whole days (48 hours = 2 days). The real-history method checks every hour.</li>
+      <li>Partial liquidations, fees and a cash reserve follow exactly the rules you set; the same code is used by all methods.</li>
+    </ul>
+
+    <h2 class="changed">Three methods side by side</h2>
+    <table>
+      <thead><tr><th>Method</th><th>What it assumes</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr class="us"><td>Simulation (the number at the top)</td><td>real days since 2014, recent years weighted more, no trend</td><td>53</td></tr>
+        <tr><td>Volatility model (GARCH)</td><td>today's volatility (39% a year), wild days make more wild days likely, rare extreme days</td><td>52</td></tr>
+        <tr><td>Real history</td><td>the loan started on every real day since 2014; includes BTC's rise since then</td><td>42</td></tr>
+        <tr><td>Textbook formula</td><td>calm, regular moves at the simulation's 57% a year; ignores margin calls</td><td>(lower)</td></tr>
+      </tbody>
+    </table>
+    <p class="hint">Why they differ: real history is lower because BTC rose strongly since 2014, which the simulation deliberately leaves out. The volatility model starts from today's calmer market.</p>
+    <p class="hint">Charts kept from today's page: range of simulated prices, liquidated by the end of each month.</p>
+
+    <h2 class="changed">The test against history</h2>
+    <svg viewBox="0 0 760 150" width="100%" role="img" aria-label="How often reality fell below each model's worst 5% level">
+      <line x1="200" y1="20" x2="200" y2="130" stroke="#b42318" stroke-dasharray="5 4"/><text x="204" y="16" style="fill:#b42318;font-weight:600">promised: 5 of 100</text>
+      <g fill="#1f4e79"><rect x="40" y="34" width="60" height="16"/><rect x="40" y="58" width="2" height="16"/><rect x="40" y="90" width="220" height="16" opacity=".6"/><rect x="40" y="114" width="2" height="16" opacity=".6"/></g>
+      <g><text x="108" y="47">Simulation, 90 days: 2 of 100</text><text x="48" y="71">Simulation, 365 days: 0 of 100</text><text x="268" y="103">Volatility model, 90 days: 5.5 of 100</text><text x="48" y="127">Volatility model, 365 days: 0 of 100</text></g>
+    </svg>
+    <p>From 2016 on, each month, the method saw only the past and predicted the lowest price of the next 90 and 365 days. A fair method is breached about 5 times in 100 at its "worst 5%" level. The simulation was breached 0 to 2 times: cautious rather than optimistic.</p>
+
+    <h2>Data and the weekly update</h2>
+    <p class="hint">As today (sources, ECB conversion, current price, weekly checks, which price counts).</p>
+    <h2>Why no price trend is assumed</h2>
+    <p class="hint">As today.</p>
+    <h2 class="changed">What the model cannot do</h2>
+    <ul>
+      <li>It only knows price moves that happened since 2014.</li>
+      <li>The weighting of recent years is a judgement; a return to 2017-like swings would make the true risk higher.</li>
+      <li>It steps day by day: a deadline of 30 hours counts as 2 days, and two crashes in one day count as one.</li>
+      <li>It joins 30-day pieces at random, so longer phases are mixed up.</li>
+      <li>It assumes no price trend.</li>
+    </ul>
+
+    <div class="layer">For experts</div>
+    <details class="maths new" open>
+      <summary>The maths</summary>
+      <h3>Data</h3>
+      <div class="f">r<sub>t</sub> = ln(C<sub>t</sub> / C<sub>t−1</sub>), &nbsp; ℓ<sub>t</sub> = ln(min(L<sub>t</sub>, C<sub>t</sub>) / C<sub>t−1</sub>) &nbsp;&nbsp; (C: daily close, L: lowest hourly price of the day)</div>
+      <h3>Simulation: weighted block bootstrap</h3>
+      <div class="f">block start s drawn with P(s) ∝ w<sub>s</sub>, &nbsp; w<sub>s</sub> = 2<sup>−(n−1−s)/(3·365)</sup>, &nbsp; blocks of 30 days</div>
+      <div class="f">no trend: r̃<sub>t</sub> = r<sub>t</sub> − r̄<sub>w</sub>, &nbsp; r̄<sub>w</sub> = Σ w<sub>t</sub> r<sub>t</sub> / Σ w<sub>t</sub> &nbsp;&nbsp; S<sub>k</sub> = S<sub>0</sub> · exp(Σ<sub>j≤k</sub> r̃<sub>j</sub>)</div>
+      <div class="f">liquidated on day k if &nbsp; S<sub>k−1</sub> · e<sup>ℓ̃<sub>k</sub></sup> ≤ D<sub>k−1</sub> / (B · LTV<sub>liq</sub>) &nbsp;&nbsp; (D: debt, B: BTC pledged)</div>
+      <div class="f">p̂ = k / N, &nbsp; N = 10,000, &nbsp; standard error √(p̂(1−p̂)/N) ≈ 0.5 points at p̂ = 0.53</div>
+      <h3>Volatility model: GARCH(1,1) with Student-t days</h3>
+      <div class="f">r<sub>t</sub> = μ + ε<sub>t</sub>, &nbsp; ε<sub>t</sub> = √h<sub>t</sub> · z<sub>t</sub>, &nbsp; z<sub>t</sub> ~ t<sub>ν</sub> (scaled), &nbsp; h<sub>t+1</sub> = ω + α ε<sub>t</sub><sup>2</sup> + β h<sub>t</sub></div>
+      <p class="hint">Fitted by maximum likelihood on all days since 2014: α = 0.125, β = 0.875, ν = 3.2; today's volatility √(365·h) = 39% a year. The day's low is drawn with a Brownian bridge. (Values are computed at every build.)</p>
+      <h3>Textbook formula</h3>
+      <div class="f">P(hit) = Φ((ln(b/S<sub>0</sub>) − νT)/(σ√T)) + (b/S<sub>0</sub>)<sup>2ν/σ²</sup> · Φ((ln(b/S<sub>0</sub>) + νT)/(σ√T)), &nbsp; ν = μ − σ²/2 = 0</div>
+      <h3>Real history</h3>
+      <p class="hint">The same loan started at 00:00 UTC on every day since 2014; every hour's lowest price is checked against the liquidation price; margin-call deadlines in hours.</p>
+      <p class="hint">Code: src/engine/montecarlo.js, history.js, garch.js, barrier.js, replay.js, lender.js (links).</p>
+    </details>
+
+    <h2>Verify it yourself</h2>
+    <p class="hint">As today.</p>
+  </div>
+</div>
+<script>
+for (const el of document.querySelectorAll('.dots')) { const n = +el.dataset.n; el.innerHTML = Array.from({ length: 100 }, (_, i) => `<i class="${i < n ? 'd1' : 'd0'}"></i>`).join(''); }
+</script>
+</body>
+</html>

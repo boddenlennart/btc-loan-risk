@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src /*SCRIPT_HASH*/; style-src 'unsafe-inline'; font-src data:; img-src data: 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+/*HEAD*/
+/*ICON*/
+/*THEME*/
+<style>/*STYLE*/</style>
+</head>
+<body>
+/*HEADER*/
+<main class="wrap page boot" id="top">
+  <div class="intro">
+    <h1 class="pos" data-t="method.title"></h1>
+    <p class="subhead" data-t="method.short"></p>
+  </div>
+  <nav class="toc toc3" aria-labelledby="toc-h"><h2 class="visually-hidden" id="toc-h" data-t="method.toc"></h2>
+    <div><p class="label" data-t="method.layers.everyone"></p><ol>
+      <li><a href="#one-future" data-t="method.oneTitle"></a></li>
+      <li><a href="#volatility" data-t="method.volTitle"></a></li>
+      <li><a href="#your-number" data-t="method.numTitle"></a></li></ol></div>
+    <div><p class="label" data-t="method.layers.details"></p><ol start="4">
+      <li><a href="#rules" data-t="method.rulesTitle"></a></li>
+      <li><a href="#risk-cost" data-t="method.riskTitle"></a></li>
+      <li><a href="#methods" data-t="method.methodsTitle"></a></li>
+      <li><a href="#test" data-t="method.testTitle"></a></li>
+      <li><a href="#data" data-t="method.dataTitle"></a></li>
+      <li><a href="#trend" data-t="method.trendTitle"></a></li>
+      <li><a href="#model-limits" data-t="method.limitsTitle"></a></li></ol></div>
+    <div><p class="label" data-t="method.layers.experts"></p><ol start="11">
+      <li><a href="#maths" data-t="method.mathsTitle"></a></li>
+      <li><a href="#verify" data-t="method.verifyTitle"></a></li></ol></div>
+  </nav>
+
+  <p class="layer" data-t="method.layers.everyone"></p>
+  <section class="part" id="one-future" aria-labelledby="one-h">
+    <h2 id="one-h" data-t="method.oneTitle"></h2>
+    <p id="one-lead"></p>
+    <div id="one-chart"></div>
+    <p class="hint" data-t="method.oneChartNote"></p>
+    <ol class="steps" id="one-steps"></ol>
+  </section>
+
+  <section class="part" id="volatility" aria-labelledby="vol-h">
+    <h2 id="vol-h" data-t="method.volTitle"></h2>
+    <p data-t="method.volLead"></p>
+    <div id="vol-chart"></div>
+    <p class="hint" data-t="method.volChartNote"></p>
+    <p id="vol-why"></p>
+    <div class="table-wrap" tabindex="0" role="region" id="vol-wrap"><table class="itable" id="vol-table"></table></div>
+    <p class="hint" id="vol-limit"></p>
+  </section>
+
+  <section class="part" id="your-number" aria-labelledby="num-h">
+    <h2 id="num-h" data-t="method.numTitle"></h2>
+    <div id="num-dots"></div>
+    <ul id="num-list"></ul>
+    <p class="to-check"><a data-page="" data-t="insights.toCheck"></a></p>
+  </section>
+
+  <p class="layer" data-t="method.layers.details"></p>
+  <section class="part" id="rules" aria-labelledby="rules-h">
+    <h2 id="rules-h" data-t="method.rulesTitle"></h2>
+    <ul id="rules-list"></ul>
+  </section>
+
+  <section class="part" id="risk-cost" aria-labelledby="risk-h">
+    <h2 id="risk-h" data-t="method.riskTitle"></h2>
+    <p id="risk-what" data-t="method.riskWhat"></p>
+    <h3 data-t="method.riskOneTitle"></h3>
+    <p id="risk-one"></p>
+    <h3 data-t="method.riskAllTitle"></h3>
+    <p id="risk-all"></p>
+    <p class="f" id="risk-formula"></p>
+    <p class="f" id="risk-formula2"></p>
+    <p id="risk-all-end"></p>
+    <h3 data-t="method.riskScaleTitle"></h3>
+    <p id="risk-scale"></p>
+    <h3 data-t="method.riskOptionTitle"></h3>
+    <p data-t="method.riskOption"></p>
+    <div class="table-wrap" tabindex="0" role="region" id="risk-wrap"><table class="itable" id="risk-table"></table></div>
+    <p class="hint" data-t="method.riskWhy"></p>
+    <h3 data-t="method.riskReadTitle"></h3>
+    <ul id="risk-read"></ul>
+    <h3 data-t="method.riskLenderTitle"></h3>
+    <p data-t="method.riskLender"></p>
+    <p class="hint" data-t="method.riskNot"></p>
+  </section>
+
+  <section class="part" id="methods" aria-labelledby="methods-h">
+    <h2 id="methods-h" data-t="method.methodsTitle"></h2>
+    <p data-t="method.methodsIntro"></p>
+    <div class="table-wrap" tabindex="0" role="region" id="methods-wrap"><table class="itable methods" id="methods-table"></table></div>
+    <p class="hint" data-t="method.methodsWhy"></p>
+    <h3 data-t="method.fanTitle"></h3>
+    <p class="hint" data-t="method.fanNote"></p>
+    <div id="fan-chart"></div>
+    <h3 data-t="method.byMonthTitle"></h3>
+    <div id="months-chart"></div>
+  </section>
+
+  <section class="part" id="test" aria-labelledby="test-h">
+    <h2 id="test-h" data-t="method.testTitle"></h2>
+    <p data-t="method.test"></p>
+    <div class="levers" id="test-bars"></div>
+    <p class="hint" id="test-strength"></p>
+  </section>
+
+  <section class="part" id="data" aria-labelledby="data-h">
+    <h2 id="data-h" data-t="method.dataTitle"></h2>
+    <ul id="data-list"></ul>
+    <p class="hint" id="data-period"></p>
+    <p id="measure"></p>
+  </section>
+
+  <section class="part" id="trend" aria-labelledby="trend-h">
+    <h2 id="trend-h" data-t="method.trendTitle"></h2>
+    <div id="trend-facts"></div>
+    <p data-t="method.trend"></p>
+  </section>
+
+  <section class="part" id="model-limits" aria-labelledby="limits-h">
+    <h2 id="limits-h" data-t="method.limitsTitle"></h2>
+    <ul id="limits-list"></ul>
+  </section>
+
+  <p class="layer" data-t="method.layers.experts"></p>
+  <section class="part" id="maths" aria-labelledby="maths-h">
+    <h2 id="maths-h" data-t="method.mathsTitle"></h2>
+    <p data-t="method.mathsIntro"></p>
+    <details class="maths"><summary data-t="method.mathsOpen"></summary>
+      <h3 data-t="method.mathsData"></h3>
+      <p class="f">r<sub>t</sub> = ln(C<sub>t</sub> / C<sub>t−1</sub>), &nbsp; ℓ<sub>t</sub> = ln(min(L<sub>t</sub>, C<sub>t</sub>) / C<sub>t−1</sub>)</p>
+      <p class="hint" data-t="method.mathsDataNote"></p>
+      <h3 data-t="method.mathsSim"></h3>
+      <p class="f">P(start = s) ∝ w<sub>s</sub>, &nbsp; w<sub>s</sub> = 2<sup>−(n−1−s) / (<span id="m-h"></span>·365)</sup>, &nbsp; <span id="m-block"></span> <span data-t="method.mathsDays"></span></p>
+      <p class="f">r̃<sub>t</sub> = r<sub>t</sub> − r̄<sub>w</sub>, &nbsp; ℓ̃<sub>t</sub> = ℓ<sub>t</sub> − r̄<sub>w</sub>, &nbsp; r̄<sub>w</sub> = Σ w<sub>t</sub> r<sub>t</sub> / Σ w<sub>t</sub> &nbsp;&nbsp; S<sub>k</sub> = S<sub>0</sub> · exp(Σ<sub>j≤k</sub> r̃<sub>j</sub>)</p>
+      <p class="f">S<sub>k−1</sub> · e<sup>min(ℓ̃<sub>k</sub>, 0, r̃<sub>k</sub>)</sup> ≤ D<sub>k−1</sub> / (B · LTV<sub>liq</sub>) &nbsp;⇒&nbsp; <span data-t="method.mathsLiquidated"></span></p>
+      <p class="f">p̂ = k / N, &nbsp; N = <span id="m-n"></span>, &nbsp; √(p̂(1 − p̂) / N) = <span id="m-se"></span></p>
+      <p class="hint" data-t="method.mathsSimNote"></p>
+      <h3 data-t="method.mathsGarch"></h3>
+      <p class="f">r<sub>t</sub> = μ + ε<sub>t</sub>, &nbsp; ε<sub>t</sub> = √h<sub>t</sub> · z<sub>t</sub>, &nbsp; z<sub>t</sub> ~ t<sub>ν</sub> (<span data-t="method.mathsUnitVar"></span>), &nbsp; h<sub>t+1</sub> = ω + α ε<sub>t</sub><sup>2</sup> + β h<sub>t</sub></p>
+      <p class="hint" id="m-garch"></p>
+      <h3 data-t="method.mathsBarrier"></h3>
+      <p class="f">P = Φ((ln(b/S<sub>0</sub>) − mT) / (σ√T)) + (b/S<sub>0</sub>)<sup>2m/σ²</sup> · Φ((ln(b/S<sub>0</sub>) + mT) / (σ√T)), &nbsp; m = 0 <span data-t="method.mathsNoTrend"></span>, &nbsp; σ = <span id="m-sigma"></span></p>
+      <h3 data-t="method.mathsRisk"></h3>
+      <p class="f">C = (1/N) Σ<sub>i</sub> Σ<sub>sales</sub> [ k·b · max(0, S̃<sub>T,i</sub> − P) + (1 − k)·b · S̃<sub>T,i</sub> ], &nbsp; S̃<sub>T,i</sub> = S<sub>T,i</sub> · S<sub>0</sub> / ((1/N) Σ<sub>j</sub> S<sub>T,j</sub>)</p>
+      <p class="hint" data-t="method.mathsRiskNote"></p>
+      <h3 data-t="method.mathsReplay"></h3>
+      <p class="hint" data-t="method.mathsReplayNote"></p>
+      <h3 data-t="method.mathsCode"></h3>
+      <ul id="m-code"></ul>
+    </details>
+  </section>
+
+  <section class="part" id="verify" aria-labelledby="verify-h">
+    <h2 id="verify-h" data-t="method.verifyTitle"></h2>
+    <p id="code-line"></p>
+    <ul id="verify-list"></ul>
+  </section>
+
+  /*FOOTER*/
+</main>
+<script type="application/json" id="meta">/*META*/</script>
+<script>/*APP*/</script>
+</body>
+</html>

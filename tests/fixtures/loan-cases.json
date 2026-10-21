@@ -1,0 +1,2300 @@
+[
+ {
+  "name": "interest-only, 30/360",
+  "terms": {
+   "loanAmount": 10000.0,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.1
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "startDate": "2026-01-01",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   }
+  },
+  "expected": {
+   "schedule": [
+    {
+     "month": 1,
+     "date": "2026-02-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 83.33,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 2,
+     "date": "2026-03-01",
+     "rate": 0.1,
+     "days": 28,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 83.33,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 3,
+     "date": "2026-04-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 83.33,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 4,
+     "date": "2026-05-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 83.33,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 5,
+     "date": "2026-06-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 83.33,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 6,
+     "date": "2026-07-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 83.33,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 7,
+     "date": "2026-08-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 83.33,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 8,
+     "date": "2026-09-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 83.33,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 9,
+     "date": "2026-10-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 83.33,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 10,
+     "date": "2026-11-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 83.33,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 11,
+     "date": "2026-12-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 83.33,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 12,
+     "date": "2027-01-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 83.33,
+     "principal": 10000.0,
+     "payment": 10083.33,
+     "balanceAfter": 0.0
+    }
+   ],
+   "originationFee": 0.0,
+   "amountReceived": 10000.0,
+   "totalInterest": 999.96,
+   "totalPayback": 10999.96,
+   "totalCost": 999.96,
+   "interestShareOfPayback": 0.09090578511194587,
+   "effectiveApr": 0.10473255839390083
+  }
+ },
+ {
+  "name": "interest-only, act/365",
+  "terms": {
+   "loanAmount": 10000.0,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.1
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "act/365",
+   "startDate": "2026-01-01",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   }
+  },
+  "expected": {
+   "schedule": [
+    {
+     "month": 1,
+     "date": "2026-02-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 84.93,
+     "principal": 0.0,
+     "payment": 84.93,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 2,
+     "date": "2026-03-01",
+     "rate": 0.1,
+     "days": 28,
+     "interest": 76.71,
+     "principal": 0.0,
+     "payment": 76.71,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 3,
+     "date": "2026-04-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 84.93,
+     "principal": 0.0,
+     "payment": 84.93,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 4,
+     "date": "2026-05-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 82.19,
+     "principal": 0.0,
+     "payment": 82.19,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 5,
+     "date": "2026-06-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 84.93,
+     "principal": 0.0,
+     "payment": 84.93,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 6,
+     "date": "2026-07-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 82.19,
+     "principal": 0.0,
+     "payment": 82.19,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 7,
+     "date": "2026-08-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 84.93,
+     "principal": 0.0,
+     "payment": 84.93,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 8,
+     "date": "2026-09-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 84.93,
+     "principal": 0.0,
+     "payment": 84.93,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 9,
+     "date": "2026-10-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 82.19,
+     "principal": 0.0,
+     "payment": 82.19,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 10,
+     "date": "2026-11-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 84.93,
+     "principal": 0.0,
+     "payment": 84.93,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 11,
+     "date": "2026-12-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 82.19,
+     "principal": 0.0,
+     "payment": 82.19,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 12,
+     "date": "2027-01-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 84.93,
+     "principal": 10000.0,
+     "payment": 10084.93,
+     "balanceAfter": 0.0
+    }
+   ],
+   "originationFee": 0.0,
+   "amountReceived": 10000.0,
+   "totalInterest": 999.98,
+   "totalPayback": 10999.98,
+   "totalCost": 999.98,
+   "interestShareOfPayback": 0.09090743801352366,
+   "effectiveApr": 0.10471059824946705
+  }
+ },
+ {
+  "name": "interest-only, act/360, 1% fee",
+  "terms": {
+   "loanAmount": 10000.0,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.1
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "act/360",
+   "startDate": "2026-01-01",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.01
+   }
+  },
+  "expected": {
+   "schedule": [
+    {
+     "month": 1,
+     "date": "2026-02-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 86.11,
+     "principal": 0.0,
+     "payment": 86.11,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 2,
+     "date": "2026-03-01",
+     "rate": 0.1,
+     "days": 28,
+     "interest": 77.78,
+     "principal": 0.0,
+     "payment": 77.78,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 3,
+     "date": "2026-04-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 86.11,
+     "principal": 0.0,
+     "payment": 86.11,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 4,
+     "date": "2026-05-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 83.33,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 5,
+     "date": "2026-06-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 86.11,
+     "principal": 0.0,
+     "payment": 86.11,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 6,
+     "date": "2026-07-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 83.33,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 7,
+     "date": "2026-08-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 86.11,
+     "principal": 0.0,
+     "payment": 86.11,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 8,
+     "date": "2026-09-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 86.11,
+     "principal": 0.0,
+     "payment": 86.11,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 9,
+     "date": "2026-10-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 83.33,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 10,
+     "date": "2026-11-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 86.11,
+     "principal": 0.0,
+     "payment": 86.11,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 11,
+     "date": "2026-12-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 83.33,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 12,
+     "date": "2027-01-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 86.11,
+     "principal": 10000.0,
+     "payment": 10086.11,
+     "balanceAfter": 0.0
+    }
+   ],
+   "originationFee": 100.0,
+   "amountReceived": 9900.0,
+   "totalInterest": 1013.87,
+   "totalPayback": 11013.87,
+   "totalCost": 1113.87,
+   "interestShareOfPayback": 0.09205392836487084,
+   "effectiveApr": 0.11793618604416134
+  }
+ },
+ {
+  "name": "bullet, simple",
+  "terms": {
+   "loanAmount": 10000.0,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.1
+   },
+   "repayment": "bullet",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "startDate": "2026-01-01",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   }
+  },
+  "expected": {
+   "schedule": [
+    {
+     "month": 1,
+     "date": "2026-02-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10083.33
+    },
+    {
+     "month": 2,
+     "date": "2026-03-01",
+     "rate": 0.1,
+     "days": 28,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10166.66
+    },
+    {
+     "month": 3,
+     "date": "2026-04-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10249.99
+    },
+    {
+     "month": 4,
+     "date": "2026-05-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10333.32
+    },
+    {
+     "month": 5,
+     "date": "2026-06-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10416.65
+    },
+    {
+     "month": 6,
+     "date": "2026-07-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10499.98
+    },
+    {
+     "month": 7,
+     "date": "2026-08-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10583.31
+    },
+    {
+     "month": 8,
+     "date": "2026-09-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10666.64
+    },
+    {
+     "month": 9,
+     "date": "2026-10-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10749.97
+    },
+    {
+     "month": 10,
+     "date": "2026-11-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10833.3
+    },
+    {
+     "month": 11,
+     "date": "2026-12-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10916.63
+    },
+    {
+     "month": 12,
+     "date": "2027-01-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 83.33,
+     "principal": 10000.0,
+     "payment": 10999.96,
+     "balanceAfter": 0.0
+    }
+   ],
+   "originationFee": 0.0,
+   "amountReceived": 10000.0,
+   "totalInterest": 999.96,
+   "totalPayback": 10999.96,
+   "totalCost": 999.96,
+   "interestShareOfPayback": 0.09090578511194587,
+   "effectiveApr": 0.09999599999999986
+  }
+ },
+ {
+  "name": "bullet, monthly compounding",
+  "terms": {
+   "loanAmount": 10000.0,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.1
+   },
+   "repayment": "bullet",
+   "compounding": "monthly",
+   "dayCount": "30/360",
+   "startDate": "2026-01-01",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   }
+  },
+  "expected": {
+   "schedule": [
+    {
+     "month": 1,
+     "date": "2026-02-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 83.33,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10083.33
+    },
+    {
+     "month": 2,
+     "date": "2026-03-01",
+     "rate": 0.1,
+     "days": 28,
+     "interest": 84.03,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10167.36
+    },
+    {
+     "month": 3,
+     "date": "2026-04-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 84.73,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10252.09
+    },
+    {
+     "month": 4,
+     "date": "2026-05-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 85.43,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10337.52
+    },
+    {
+     "month": 5,
+     "date": "2026-06-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 86.15,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10423.67
+    },
+    {
+     "month": 6,
+     "date": "2026-07-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 86.86,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10510.53
+    },
+    {
+     "month": 7,
+     "date": "2026-08-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 87.59,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10598.12
+    },
+    {
+     "month": 8,
+     "date": "2026-09-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 88.32,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10686.44
+    },
+    {
+     "month": 9,
+     "date": "2026-10-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 89.05,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10775.49
+    },
+    {
+     "month": 10,
+     "date": "2026-11-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 89.8,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10865.29
+    },
+    {
+     "month": 11,
+     "date": "2026-12-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 90.54,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10955.83
+    },
+    {
+     "month": 12,
+     "date": "2027-01-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 91.3,
+     "principal": 10000.0,
+     "payment": 11047.13,
+     "balanceAfter": 0.0
+    }
+   ],
+   "originationFee": 0.0,
+   "amountReceived": 10000.0,
+   "totalInterest": 1047.13,
+   "totalPayback": 11047.13,
+   "totalCost": 1047.13,
+   "interestShareOfPayback": 0.09478751494732118,
+   "effectiveApr": 0.10471299999999972
+  }
+ },
+ {
+  "name": "bullet, compounding, 24 months, act/365",
+  "terms": {
+   "loanAmount": 10000.0,
+   "durationMonths": 24,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.1
+   },
+   "repayment": "bullet",
+   "compounding": "monthly",
+   "dayCount": "act/365",
+   "startDate": "2026-01-01",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   }
+  },
+  "expected": {
+   "schedule": [
+    {
+     "month": 1,
+     "date": "2026-02-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 84.93,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10084.93
+    },
+    {
+     "month": 2,
+     "date": "2026-03-01",
+     "rate": 0.1,
+     "days": 28,
+     "interest": 77.36,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10162.29
+    },
+    {
+     "month": 3,
+     "date": "2026-04-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 86.31,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10248.6
+    },
+    {
+     "month": 4,
+     "date": "2026-05-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 84.24,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10332.84
+    },
+    {
+     "month": 5,
+     "date": "2026-06-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 87.76,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10420.6
+    },
+    {
+     "month": 6,
+     "date": "2026-07-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 85.65,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10506.25
+    },
+    {
+     "month": 7,
+     "date": "2026-08-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 89.23,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10595.48
+    },
+    {
+     "month": 8,
+     "date": "2026-09-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 89.99,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10685.47
+    },
+    {
+     "month": 9,
+     "date": "2026-10-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 87.83,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10773.3
+    },
+    {
+     "month": 10,
+     "date": "2026-11-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 91.5,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10864.8
+    },
+    {
+     "month": 11,
+     "date": "2026-12-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 89.3,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10954.1
+    },
+    {
+     "month": 12,
+     "date": "2027-01-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 93.03,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 11047.13
+    },
+    {
+     "month": 13,
+     "date": "2027-02-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 93.82,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 11140.95
+    },
+    {
+     "month": 14,
+     "date": "2027-03-01",
+     "rate": 0.1,
+     "days": 28,
+     "interest": 85.46,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 11226.41
+    },
+    {
+     "month": 15,
+     "date": "2027-04-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 95.35,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 11321.76
+    },
+    {
+     "month": 16,
+     "date": "2027-05-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 93.06,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 11414.82
+    },
+    {
+     "month": 17,
+     "date": "2027-06-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 96.95,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 11511.77
+    },
+    {
+     "month": 18,
+     "date": "2027-07-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 94.62,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 11606.39
+    },
+    {
+     "month": 19,
+     "date": "2027-08-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 98.57,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 11704.96
+    },
+    {
+     "month": 20,
+     "date": "2027-09-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 99.41,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 11804.37
+    },
+    {
+     "month": 21,
+     "date": "2027-10-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 97.02,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 11901.39
+    },
+    {
+     "month": 22,
+     "date": "2027-11-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 101.08,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 12002.47
+    },
+    {
+     "month": 23,
+     "date": "2027-12-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 98.65,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 12101.12
+    },
+    {
+     "month": 24,
+     "date": "2028-01-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 102.78,
+     "principal": 10000.0,
+     "payment": 12203.9,
+     "balanceAfter": 0.0
+    }
+   ],
+   "originationFee": 0.0,
+   "amountReceived": 10000.0,
+   "totalInterest": 2203.9,
+   "totalPayback": 12203.9,
+   "totalCost": 2203.9,
+   "interestShareOfPayback": 0.18058981145371564,
+   "effectiveApr": 0.10471263231665817
+  }
+ },
+ {
+  "name": "amortizing, 12 months",
+  "terms": {
+   "loanAmount": 10000.0,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.1
+   },
+   "repayment": "amortizing",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "startDate": "2026-01-01",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   }
+  },
+  "expected": {
+   "schedule": [
+    {
+     "month": 1,
+     "date": "2026-02-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 83.33,
+     "principal": 795.83,
+     "payment": 879.16,
+     "balanceAfter": 9204.17
+    },
+    {
+     "month": 2,
+     "date": "2026-03-01",
+     "rate": 0.1,
+     "days": 28,
+     "interest": 76.7,
+     "principal": 802.46,
+     "payment": 879.16,
+     "balanceAfter": 8401.71
+    },
+    {
+     "month": 3,
+     "date": "2026-04-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 70.01,
+     "principal": 809.15,
+     "payment": 879.16,
+     "balanceAfter": 7592.56
+    },
+    {
+     "month": 4,
+     "date": "2026-05-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 63.27,
+     "principal": 815.89,
+     "payment": 879.16,
+     "balanceAfter": 6776.67
+    },
+    {
+     "month": 5,
+     "date": "2026-06-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 56.47,
+     "principal": 822.69,
+     "payment": 879.16,
+     "balanceAfter": 5953.98
+    },
+    {
+     "month": 6,
+     "date": "2026-07-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 49.62,
+     "principal": 829.54,
+     "payment": 879.16,
+     "balanceAfter": 5124.44
+    },
+    {
+     "month": 7,
+     "date": "2026-08-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 42.7,
+     "principal": 836.46,
+     "payment": 879.16,
+     "balanceAfter": 4287.98
+    },
+    {
+     "month": 8,
+     "date": "2026-09-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 35.73,
+     "principal": 843.43,
+     "payment": 879.16,
+     "balanceAfter": 3444.55
+    },
+    {
+     "month": 9,
+     "date": "2026-10-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 28.7,
+     "principal": 850.46,
+     "payment": 879.16,
+     "balanceAfter": 2594.09
+    },
+    {
+     "month": 10,
+     "date": "2026-11-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 21.62,
+     "principal": 857.54,
+     "payment": 879.16,
+     "balanceAfter": 1736.55
+    },
+    {
+     "month": 11,
+     "date": "2026-12-01",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 14.47,
+     "principal": 864.69,
+     "payment": 879.16,
+     "balanceAfter": 871.86
+    },
+    {
+     "month": 12,
+     "date": "2027-01-01",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 7.27,
+     "principal": 871.86,
+     "payment": 879.13,
+     "balanceAfter": 0.0
+    }
+   ],
+   "originationFee": 0.0,
+   "amountReceived": 10000.0,
+   "totalInterest": 549.89,
+   "totalPayback": 10549.89,
+   "totalCost": 549.89,
+   "interestShareOfPayback": 0.05212281834218177,
+   "effectiveApr": 0.10516322972295844
+  }
+ },
+ {
+  "name": "amortizing, 36 months, 250 fixed fee",
+  "terms": {
+   "loanAmount": 25000.0,
+   "durationMonths": 36,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0725
+   },
+   "repayment": "amortizing",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "startDate": "2026-01-01",
+   "originationFee": {
+    "type": "fixed",
+    "value": 250.0
+   }
+  },
+  "expected": {
+   "schedule": [
+    {
+     "month": 1,
+     "date": "2026-02-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 151.04,
+     "principal": 623.75,
+     "payment": 774.79,
+     "balanceAfter": 24376.25
+    },
+    {
+     "month": 2,
+     "date": "2026-03-01",
+     "rate": 0.0725,
+     "days": 28,
+     "interest": 147.27,
+     "principal": 627.52,
+     "payment": 774.79,
+     "balanceAfter": 23748.73
+    },
+    {
+     "month": 3,
+     "date": "2026-04-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 143.48,
+     "principal": 631.31,
+     "payment": 774.79,
+     "balanceAfter": 23117.42
+    },
+    {
+     "month": 4,
+     "date": "2026-05-01",
+     "rate": 0.0725,
+     "days": 30,
+     "interest": 139.67,
+     "principal": 635.12,
+     "payment": 774.79,
+     "balanceAfter": 22482.3
+    },
+    {
+     "month": 5,
+     "date": "2026-06-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 135.83,
+     "principal": 638.96,
+     "payment": 774.79,
+     "balanceAfter": 21843.34
+    },
+    {
+     "month": 6,
+     "date": "2026-07-01",
+     "rate": 0.0725,
+     "days": 30,
+     "interest": 131.97,
+     "principal": 642.82,
+     "payment": 774.79,
+     "balanceAfter": 21200.52
+    },
+    {
+     "month": 7,
+     "date": "2026-08-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 128.09,
+     "principal": 646.7,
+     "payment": 774.79,
+     "balanceAfter": 20553.82
+    },
+    {
+     "month": 8,
+     "date": "2026-09-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 124.18,
+     "principal": 650.61,
+     "payment": 774.79,
+     "balanceAfter": 19903.21
+    },
+    {
+     "month": 9,
+     "date": "2026-10-01",
+     "rate": 0.0725,
+     "days": 30,
+     "interest": 120.25,
+     "principal": 654.54,
+     "payment": 774.79,
+     "balanceAfter": 19248.67
+    },
+    {
+     "month": 10,
+     "date": "2026-11-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 116.29,
+     "principal": 658.5,
+     "payment": 774.79,
+     "balanceAfter": 18590.17
+    },
+    {
+     "month": 11,
+     "date": "2026-12-01",
+     "rate": 0.0725,
+     "days": 30,
+     "interest": 112.32,
+     "principal": 662.47,
+     "payment": 774.79,
+     "balanceAfter": 17927.7
+    },
+    {
+     "month": 12,
+     "date": "2027-01-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 108.31,
+     "principal": 666.48,
+     "payment": 774.79,
+     "balanceAfter": 17261.22
+    },
+    {
+     "month": 13,
+     "date": "2027-02-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 104.29,
+     "principal": 670.5,
+     "payment": 774.79,
+     "balanceAfter": 16590.72
+    },
+    {
+     "month": 14,
+     "date": "2027-03-01",
+     "rate": 0.0725,
+     "days": 28,
+     "interest": 100.24,
+     "principal": 674.55,
+     "payment": 774.79,
+     "balanceAfter": 15916.17
+    },
+    {
+     "month": 15,
+     "date": "2027-04-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 96.16,
+     "principal": 678.63,
+     "payment": 774.79,
+     "balanceAfter": 15237.54
+    },
+    {
+     "month": 16,
+     "date": "2027-05-01",
+     "rate": 0.0725,
+     "days": 30,
+     "interest": 92.06,
+     "principal": 682.73,
+     "payment": 774.79,
+     "balanceAfter": 14554.81
+    },
+    {
+     "month": 17,
+     "date": "2027-06-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 87.94,
+     "principal": 686.85,
+     "payment": 774.79,
+     "balanceAfter": 13867.96
+    },
+    {
+     "month": 18,
+     "date": "2027-07-01",
+     "rate": 0.0725,
+     "days": 30,
+     "interest": 83.79,
+     "principal": 691.0,
+     "payment": 774.79,
+     "balanceAfter": 13176.96
+    },
+    {
+     "month": 19,
+     "date": "2027-08-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 79.61,
+     "principal": 695.18,
+     "payment": 774.79,
+     "balanceAfter": 12481.78
+    },
+    {
+     "month": 20,
+     "date": "2027-09-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 75.41,
+     "principal": 699.38,
+     "payment": 774.79,
+     "balanceAfter": 11782.4
+    },
+    {
+     "month": 21,
+     "date": "2027-10-01",
+     "rate": 0.0725,
+     "days": 30,
+     "interest": 71.19,
+     "principal": 703.6,
+     "payment": 774.79,
+     "balanceAfter": 11078.8
+    },
+    {
+     "month": 22,
+     "date": "2027-11-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 66.93,
+     "principal": 707.86,
+     "payment": 774.79,
+     "balanceAfter": 10370.94
+    },
+    {
+     "month": 23,
+     "date": "2027-12-01",
+     "rate": 0.0725,
+     "days": 30,
+     "interest": 62.66,
+     "principal": 712.13,
+     "payment": 774.79,
+     "balanceAfter": 9658.81
+    },
+    {
+     "month": 24,
+     "date": "2028-01-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 58.36,
+     "principal": 716.43,
+     "payment": 774.79,
+     "balanceAfter": 8942.38
+    },
+    {
+     "month": 25,
+     "date": "2028-02-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 54.03,
+     "principal": 720.76,
+     "payment": 774.79,
+     "balanceAfter": 8221.62
+    },
+    {
+     "month": 26,
+     "date": "2028-03-01",
+     "rate": 0.0725,
+     "days": 29,
+     "interest": 49.67,
+     "principal": 725.12,
+     "payment": 774.79,
+     "balanceAfter": 7496.5
+    },
+    {
+     "month": 27,
+     "date": "2028-04-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 45.29,
+     "principal": 729.5,
+     "payment": 774.79,
+     "balanceAfter": 6767.0
+    },
+    {
+     "month": 28,
+     "date": "2028-05-01",
+     "rate": 0.0725,
+     "days": 30,
+     "interest": 40.88,
+     "principal": 733.91,
+     "payment": 774.79,
+     "balanceAfter": 6033.09
+    },
+    {
+     "month": 29,
+     "date": "2028-06-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 36.45,
+     "principal": 738.34,
+     "payment": 774.79,
+     "balanceAfter": 5294.75
+    },
+    {
+     "month": 30,
+     "date": "2028-07-01",
+     "rate": 0.0725,
+     "days": 30,
+     "interest": 31.99,
+     "principal": 742.8,
+     "payment": 774.79,
+     "balanceAfter": 4551.95
+    },
+    {
+     "month": 31,
+     "date": "2028-08-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 27.5,
+     "principal": 747.29,
+     "payment": 774.79,
+     "balanceAfter": 3804.66
+    },
+    {
+     "month": 32,
+     "date": "2028-09-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 22.99,
+     "principal": 751.8,
+     "payment": 774.79,
+     "balanceAfter": 3052.86
+    },
+    {
+     "month": 33,
+     "date": "2028-10-01",
+     "rate": 0.0725,
+     "days": 30,
+     "interest": 18.44,
+     "principal": 756.35,
+     "payment": 774.79,
+     "balanceAfter": 2296.51
+    },
+    {
+     "month": 34,
+     "date": "2028-11-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 13.87,
+     "principal": 760.92,
+     "payment": 774.79,
+     "balanceAfter": 1535.59
+    },
+    {
+     "month": 35,
+     "date": "2028-12-01",
+     "rate": 0.0725,
+     "days": 30,
+     "interest": 9.28,
+     "principal": 765.51,
+     "payment": 774.79,
+     "balanceAfter": 770.08
+    },
+    {
+     "month": 36,
+     "date": "2029-01-01",
+     "rate": 0.0725,
+     "days": 31,
+     "interest": 4.65,
+     "principal": 770.08,
+     "payment": 774.73,
+     "balanceAfter": 0.0
+    }
+   ],
+   "originationFee": 250.0,
+   "amountReceived": 24750.0,
+   "totalInterest": 2892.38,
+   "totalPayback": 27892.38,
+   "totalCost": 3142.38,
+   "interestShareOfPayback": 0.10369785583015863,
+   "effectiveApr": 0.08234012521727052
+  }
+ },
+ {
+  "name": "interest-only, variable 8% then 12%",
+  "terms": {
+   "loanAmount": 10000.0,
+   "durationMonths": 12,
+   "rate": {
+    "type": "variable",
+    "path": [
+     {
+      "fromMonth": 0,
+      "annual": 0.08
+     },
+     {
+      "fromMonth": 6,
+      "annual": 0.12
+     }
+    ]
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "startDate": "2026-01-01",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   }
+  },
+  "expected": {
+   "schedule": [
+    {
+     "month": 1,
+     "date": "2026-02-01",
+     "rate": 0.08,
+     "days": 31,
+     "interest": 66.67,
+     "principal": 0.0,
+     "payment": 66.67,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 2,
+     "date": "2026-03-01",
+     "rate": 0.08,
+     "days": 28,
+     "interest": 66.67,
+     "principal": 0.0,
+     "payment": 66.67,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 3,
+     "date": "2026-04-01",
+     "rate": 0.08,
+     "days": 31,
+     "interest": 66.67,
+     "principal": 0.0,
+     "payment": 66.67,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 4,
+     "date": "2026-05-01",
+     "rate": 0.08,
+     "days": 30,
+     "interest": 66.67,
+     "principal": 0.0,
+     "payment": 66.67,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 5,
+     "date": "2026-06-01",
+     "rate": 0.08,
+     "days": 31,
+     "interest": 66.67,
+     "principal": 0.0,
+     "payment": 66.67,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 6,
+     "date": "2026-07-01",
+     "rate": 0.08,
+     "days": 30,
+     "interest": 66.67,
+     "principal": 0.0,
+     "payment": 66.67,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 7,
+     "date": "2026-08-01",
+     "rate": 0.12,
+     "days": 31,
+     "interest": 100.0,
+     "principal": 0.0,
+     "payment": 100.0,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 8,
+     "date": "2026-09-01",
+     "rate": 0.12,
+     "days": 31,
+     "interest": 100.0,
+     "principal": 0.0,
+     "payment": 100.0,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 9,
+     "date": "2026-10-01",
+     "rate": 0.12,
+     "days": 30,
+     "interest": 100.0,
+     "principal": 0.0,
+     "payment": 100.0,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 10,
+     "date": "2026-11-01",
+     "rate": 0.12,
+     "days": 31,
+     "interest": 100.0,
+     "principal": 0.0,
+     "payment": 100.0,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 11,
+     "date": "2026-12-01",
+     "rate": 0.12,
+     "days": 30,
+     "interest": 100.0,
+     "principal": 0.0,
+     "payment": 100.0,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 12,
+     "date": "2027-01-01",
+     "rate": 0.12,
+     "days": 31,
+     "interest": 100.0,
+     "principal": 10000.0,
+     "payment": 10100.0,
+     "balanceAfter": 0.0
+    }
+   ],
+   "originationFee": 0.0,
+   "amountReceived": 10000.0,
+   "totalInterest": 1000.02,
+   "totalPayback": 11000.02,
+   "totalCost": 1000.02,
+   "interestShareOfPayback": 0.09091074379864764,
+   "effectiveApr": 0.10419427027344297
+  }
+ },
+ {
+  "name": "amortizing, variable 6% then 9%",
+  "terms": {
+   "loanAmount": 10000.0,
+   "durationMonths": 24,
+   "rate": {
+    "type": "variable",
+    "path": [
+     {
+      "fromMonth": 0,
+      "annual": 0.06
+     },
+     {
+      "fromMonth": 12,
+      "annual": 0.09
+     }
+    ]
+   },
+   "repayment": "amortizing",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "startDate": "2026-01-01",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   }
+  },
+  "expected": {
+   "schedule": [
+    {
+     "month": 1,
+     "date": "2026-02-01",
+     "rate": 0.06,
+     "days": 31,
+     "interest": 50.0,
+     "principal": 393.21,
+     "payment": 443.21,
+     "balanceAfter": 9606.79
+    },
+    {
+     "month": 2,
+     "date": "2026-03-01",
+     "rate": 0.06,
+     "days": 28,
+     "interest": 48.03,
+     "principal": 395.18,
+     "payment": 443.21,
+     "balanceAfter": 9211.61
+    },
+    {
+     "month": 3,
+     "date": "2026-04-01",
+     "rate": 0.06,
+     "days": 31,
+     "interest": 46.06,
+     "principal": 397.15,
+     "payment": 443.21,
+     "balanceAfter": 8814.46
+    },
+    {
+     "month": 4,
+     "date": "2026-05-01",
+     "rate": 0.06,
+     "days": 30,
+     "interest": 44.07,
+     "principal": 399.14,
+     "payment": 443.21,
+     "balanceAfter": 8415.32
+    },
+    {
+     "month": 5,
+     "date": "2026-06-01",
+     "rate": 0.06,
+     "days": 31,
+     "interest": 42.08,
+     "principal": 401.13,
+     "payment": 443.21,
+     "balanceAfter": 8014.19
+    },
+    {
+     "month": 6,
+     "date": "2026-07-01",
+     "rate": 0.06,
+     "days": 30,
+     "interest": 40.07,
+     "principal": 403.14,
+     "payment": 443.21,
+     "balanceAfter": 7611.05
+    },
+    {
+     "month": 7,
+     "date": "2026-08-01",
+     "rate": 0.06,
+     "days": 31,
+     "interest": 38.06,
+     "principal": 405.15,
+     "payment": 443.21,
+     "balanceAfter": 7205.9
+    },
+    {
+     "month": 8,
+     "date": "2026-09-01",
+     "rate": 0.06,
+     "days": 31,
+     "interest": 36.03,
+     "principal": 407.18,
+     "payment": 443.21,
+     "balanceAfter": 6798.72
+    },
+    {
+     "month": 9,
+     "date": "2026-10-01",
+     "rate": 0.06,
+     "days": 30,
+     "interest": 33.99,
+     "principal": 409.22,
+     "payment": 443.21,
+     "balanceAfter": 6389.5
+    },
+    {
+     "month": 10,
+     "date": "2026-11-01",
+     "rate": 0.06,
+     "days": 31,
+     "interest": 31.95,
+     "principal": 411.26,
+     "payment": 443.21,
+     "balanceAfter": 5978.24
+    },
+    {
+     "month": 11,
+     "date": "2026-12-01",
+     "rate": 0.06,
+     "days": 30,
+     "interest": 29.89,
+     "principal": 413.32,
+     "payment": 443.21,
+     "balanceAfter": 5564.92
+    },
+    {
+     "month": 12,
+     "date": "2027-01-01",
+     "rate": 0.06,
+     "days": 31,
+     "interest": 27.82,
+     "principal": 415.39,
+     "payment": 443.21,
+     "balanceAfter": 5149.53
+    },
+    {
+     "month": 13,
+     "date": "2027-02-01",
+     "rate": 0.09,
+     "days": 31,
+     "interest": 38.62,
+     "principal": 411.71,
+     "payment": 450.33,
+     "balanceAfter": 4737.82
+    },
+    {
+     "month": 14,
+     "date": "2027-03-01",
+     "rate": 0.09,
+     "days": 28,
+     "interest": 35.53,
+     "principal": 414.8,
+     "payment": 450.33,
+     "balanceAfter": 4323.02
+    },
+    {
+     "month": 15,
+     "date": "2027-04-01",
+     "rate": 0.09,
+     "days": 31,
+     "interest": 32.42,
+     "principal": 417.91,
+     "payment": 450.33,
+     "balanceAfter": 3905.11
+    },
+    {
+     "month": 16,
+     "date": "2027-05-01",
+     "rate": 0.09,
+     "days": 30,
+     "interest": 29.29,
+     "principal": 421.04,
+     "payment": 450.33,
+     "balanceAfter": 3484.07
+    },
+    {
+     "month": 17,
+     "date": "2027-06-01",
+     "rate": 0.09,
+     "days": 31,
+     "interest": 26.13,
+     "principal": 424.2,
+     "payment": 450.33,
+     "balanceAfter": 3059.87
+    },
+    {
+     "month": 18,
+     "date": "2027-07-01",
+     "rate": 0.09,
+     "days": 30,
+     "interest": 22.95,
+     "principal": 427.38,
+     "payment": 450.33,
+     "balanceAfter": 2632.49
+    },
+    {
+     "month": 19,
+     "date": "2027-08-01",
+     "rate": 0.09,
+     "days": 31,
+     "interest": 19.74,
+     "principal": 430.59,
+     "payment": 450.33,
+     "balanceAfter": 2201.9
+    },
+    {
+     "month": 20,
+     "date": "2027-09-01",
+     "rate": 0.09,
+     "days": 31,
+     "interest": 16.51,
+     "principal": 433.82,
+     "payment": 450.33,
+     "balanceAfter": 1768.08
+    },
+    {
+     "month": 21,
+     "date": "2027-10-01",
+     "rate": 0.09,
+     "days": 30,
+     "interest": 13.26,
+     "principal": 437.07,
+     "payment": 450.33,
+     "balanceAfter": 1331.01
+    },
+    {
+     "month": 22,
+     "date": "2027-11-01",
+     "rate": 0.09,
+     "days": 31,
+     "interest": 9.98,
+     "principal": 440.35,
+     "payment": 450.33,
+     "balanceAfter": 890.66
+    },
+    {
+     "month": 23,
+     "date": "2027-12-01",
+     "rate": 0.09,
+     "days": 30,
+     "interest": 6.68,
+     "principal": 443.65,
+     "payment": 450.33,
+     "balanceAfter": 447.01
+    },
+    {
+     "month": 24,
+     "date": "2028-01-01",
+     "rate": 0.09,
+     "days": 31,
+     "interest": 3.35,
+     "principal": 447.01,
+     "payment": 450.36,
+     "balanceAfter": 0.0
+    }
+   ],
+   "originationFee": 0.0,
+   "amountReceived": 10000.0,
+   "totalInterest": 722.51,
+   "totalPayback": 10722.51,
+   "totalCost": 722.51,
+   "interestShareOfPayback": 0.0673825438260258,
+   "effectiveApr": 0.06991811181944796
+  }
+ },
+ {
+  "name": "zero interest, 2% fee",
+  "terms": {
+   "loanAmount": 10000.0,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "startDate": "2026-01-01",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.02
+   }
+  },
+  "expected": {
+   "schedule": [
+    {
+     "month": 1,
+     "date": "2026-02-01",
+     "rate": 0.0,
+     "days": 31,
+     "interest": 0.0,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 2,
+     "date": "2026-03-01",
+     "rate": 0.0,
+     "days": 28,
+     "interest": 0.0,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 3,
+     "date": "2026-04-01",
+     "rate": 0.0,
+     "days": 31,
+     "interest": 0.0,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 4,
+     "date": "2026-05-01",
+     "rate": 0.0,
+     "days": 30,
+     "interest": 0.0,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 5,
+     "date": "2026-06-01",
+     "rate": 0.0,
+     "days": 31,
+     "interest": 0.0,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 6,
+     "date": "2026-07-01",
+     "rate": 0.0,
+     "days": 30,
+     "interest": 0.0,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 7,
+     "date": "2026-08-01",
+     "rate": 0.0,
+     "days": 31,
+     "interest": 0.0,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 8,
+     "date": "2026-09-01",
+     "rate": 0.0,
+     "days": 31,
+     "interest": 0.0,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 9,
+     "date": "2026-10-01",
+     "rate": 0.0,
+     "days": 30,
+     "interest": 0.0,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 10,
+     "date": "2026-11-01",
+     "rate": 0.0,
+     "days": 31,
+     "interest": 0.0,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 11,
+     "date": "2026-12-01",
+     "rate": 0.0,
+     "days": 30,
+     "interest": 0.0,
+     "principal": 0.0,
+     "payment": 0.0,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 12,
+     "date": "2027-01-01",
+     "rate": 0.0,
+     "days": 31,
+     "interest": 0.0,
+     "principal": 10000.0,
+     "payment": 10000.0,
+     "balanceAfter": 0.0
+    }
+   ],
+   "originationFee": 200.0,
+   "amountReceived": 9800.0,
+   "totalInterest": 0.0,
+   "totalPayback": 10000.0,
+   "totalCost": 200.0,
+   "interestShareOfPayback": 0.0,
+   "effectiveApr": 0.020408163265306034
+  }
+ },
+ {
+  "name": "start on 31st (month-end handling)",
+  "terms": {
+   "loanAmount": 10000.0,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.1
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "act/365",
+   "startDate": "2026-01-31",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   }
+  },
+  "expected": {
+   "schedule": [
+    {
+     "month": 1,
+     "date": "2026-02-28",
+     "rate": 0.1,
+     "days": 28,
+     "interest": 76.71,
+     "principal": 0.0,
+     "payment": 76.71,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 2,
+     "date": "2026-03-31",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 84.93,
+     "principal": 0.0,
+     "payment": 84.93,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 3,
+     "date": "2026-04-30",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 82.19,
+     "principal": 0.0,
+     "payment": 82.19,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 4,
+     "date": "2026-05-31",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 84.93,
+     "principal": 0.0,
+     "payment": 84.93,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 5,
+     "date": "2026-06-30",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 82.19,
+     "principal": 0.0,
+     "payment": 82.19,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 6,
+     "date": "2026-07-31",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 84.93,
+     "principal": 0.0,
+     "payment": 84.93,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 7,
+     "date": "2026-08-31",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 84.93,
+     "principal": 0.0,
+     "payment": 84.93,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 8,
+     "date": "2026-09-30",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 82.19,
+     "principal": 0.0,
+     "payment": 82.19,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 9,
+     "date": "2026-10-31",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 84.93,
+     "principal": 0.0,
+     "payment": 84.93,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 10,
+     "date": "2026-11-30",
+     "rate": 0.1,
+     "days": 30,
+     "interest": 82.19,
+     "principal": 0.0,
+     "payment": 82.19,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 11,
+     "date": "2026-12-31",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 84.93,
+     "principal": 0.0,
+     "payment": 84.93,
+     "balanceAfter": 10000.0
+    },
+    {
+     "month": 12,
+     "date": "2027-01-31",
+     "rate": 0.1,
+     "days": 31,
+     "interest": 84.93,
+     "principal": 10000.0,
+     "payment": 10084.93,
+     "balanceAfter": 0.0
+    }
+   ],
+   "originationFee": 0.0,
+   "amountReceived": 10000.0,
+   "totalInterest": 999.98,
+   "totalPayback": 10999.98,
+   "totalCost": 999.98,
+   "interestShareOfPayback": 0.09090743801352366,
+   "effectiveApr": 0.10471066793483941
+  }
+ }
+]

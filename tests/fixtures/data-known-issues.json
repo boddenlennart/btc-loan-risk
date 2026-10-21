@@ -1,0 +1,26 @@
+{
+  "USD": {
+    "gaps": [],
+    "wicks": [
+      "2015-01-14T07:00:00.000Z"
+    ],
+    "offline": [
+      "2015-01-05T10:00:00.000Z"
+    ],
+    "notes": {
+      "2015-01-14T07:00:00.000Z": "Real crash: low 152.40 after 207.29, 18,263 BTC traded in that hour. Kept.",
+      "2015-01-05T10:00:00.000Z": "Bitstamp offline after a hack until 2015-01-09 20:00 (107 hours, flat price). Replay cannot see lows in that window; mentioned in the README."
+    }
+  },
+  "EUR": {
+    "gaps": [],
+    "wicks": [
+      "2015-11-04T21:00:00.000Z"
+    ],
+    "offline": [],
+    "notes": {
+      "2015-11-04T21:00:00.000Z": "Real flash crash on Kraken XBT/EUR: low 305.00 after a close of 427.50; 956 separate trades below 350 EUR (675 BTC). The USD market fell from 469 to 403 in the same hour. Kept.",
+      "2016-12-31T23:00:00.000Z": "Source switch from Kraken to Bitstamp at 2017-01-01 00:00 UTC; prices on both sides of the seam are within 0.3%."
+    }
+  }
+}

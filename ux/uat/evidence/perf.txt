@@ -1,0 +1,60 @@
+
+### 375px, processor slowed 6×
+  open the page (example)                  answer      – ms · all   3856 ms  CLS 0.7726  slowest reaction 0 ms  shifts: 0.7726@answer,terms,sec-limits,sec-falls
+  (navigation to answer took 3864 ms)
+  own amount 15,000 (12 months)            answer   1078 ms · all   3868 ms  CLS 0.0000  slowest reaction 48 ms
+  starting LTV 60                          answer   1029 ms · all   3366 ms  CLS 0.0000  slowest reaction 0 ms
+  36 months                                answer   2297 ms · all   8475 ms  CLS 0.0000  slowest reaction 56 ms
+  back to 12 months                        answer   1027 ms · all   3387 ms  CLS 0.0000  slowest reaction 40 ms
+  open "What happens when BTC falls"       answer      – ms · all     76 ms  CLS 0.0000  slowest reaction 16 ms
+  open "Your loan in every crash"          answer      – ms · all     42 ms  CLS 0.0000  slowest reaction 0 ms
+  compare an offer                         answer    255 ms · all   3491 ms  CLS 0.0024  slowest reaction 88 ms  shifts: 0.0024@showing,answer
+  offer B rate 6%                          answer   1132 ms · all   3876 ms  CLS 0.0000  slowest reaction 0 ms
+  end comparison, keep A                   answer   1036 ms · all   3386 ms  CLS 0.0092  slowest reaction 40 ms  shifts: 0.0092@dots,best-lever,tiles,assume-line
+  buy more BTC                             answer   1064 ms · all   3413 ms  CLS 0.0000  slowest reaction 40 ms
+  existing loan                            answer   1080 ms · all   3412 ms  CLS 0.0000  slowest reaction 40 ms
+  refinancing offer                        answer    255 ms · all   3930 ms  CLS 0.0000  slowest reaction 72 ms
+  borrow 3,000 more                        answer   1178 ms · all   3929 ms  CLS 0.0000  slowest reaction 48 ms
+
+### 375px, processor slowed 4×
+  open the page (example)                  answer      – ms · all   4166 ms  CLS 0.0000  slowest reaction 0 ms
+  (navigation to answer took 4171 ms)
+  own amount 15,000 (12 months)            answer   1097 ms · all   3873 ms  CLS 0.0000  slowest reaction 40 ms
+  starting LTV 60                          answer   1015 ms · all   3335 ms  CLS 0.0000  slowest reaction 0 ms
+  36 months                                answer   2237 ms · all   8397 ms  CLS 0.0000  slowest reaction 40 ms
+  back to 12 months                        answer   1011 ms · all   3357 ms  CLS 0.0000  slowest reaction 24 ms
+  open "What happens when BTC falls"       answer      – ms · all     20 ms  CLS 0.0000  slowest reaction 0 ms
+  open "Your loan in every crash"          answer      – ms · all     49 ms  CLS 0.0000  slowest reaction 16 ms
+  compare an offer                         answer    217 ms · all   3917 ms  CLS 0.0024  slowest reaction 56 ms  shifts: 0.0024@showing,answer
+  offer B rate 6%                          answer   1095 ms · all   3842 ms  CLS 0.0000  slowest reaction 0 ms
+  end comparison, keep A                   answer   1017 ms · all   3355 ms  CLS 0.0092  slowest reaction 24 ms  shifts: 0.0092@dots,best-lever,tiles,assume-line
+  buy more BTC                             answer   1025 ms · all   3344 ms  CLS 0.0000  slowest reaction 24 ms
+  existing loan                            answer   1024 ms · all   3364 ms  CLS 0.0000  slowest reaction 24 ms
+  refinancing offer                        answer    212 ms · all   3876 ms  CLS 0.0000  slowest reaction 48 ms
+  borrow 3,000 more                        answer   1150 ms · all   3874 ms  CLS 0.0000  slowest reaction 32 ms
+
+### 1280px, processor slowed 1×
+  open the page (example)                  answer      – ms · all   3889 ms  CLS 0.0148  slowest reaction 0 ms  shifts: 0.0148@answer,subhead,trust,site-nav desk-nav
+  (navigation to answer took 3894 ms)
+  own amount 15,000 (12 months)            answer   1064 ms · all   3833 ms  CLS 0.0091  slowest reaction 0 ms  shifts: 0.0091@tiles,dots,label-row,best-lever
+  starting LTV 60                          answer   1010 ms · all   3321 ms  CLS 0.0000  slowest reaction 0 ms
+  36 months                                answer   2163 ms · all   8364 ms  CLS 0.0000  slowest reaction 40 ms
+  back to 12 months                        answer   1004 ms · all   3352 ms  CLS 0.0000  slowest reaction 16 ms
+  open "What happens when BTC falls"       answer      – ms · all     20 ms  CLS 0.0000  slowest reaction 0 ms
+  open "Your loan in every crash"          answer      – ms · all     66 ms  CLS 0.0000  slowest reaction 24 ms
+  compare an offer                         answer   1097 ms · all   3853 ms  CLS 0.0013  slowest reaction 16 ms  shifts: 0.0013@answer,showing
+  offer B rate 6%                          answer   1108 ms · all   3830 ms  CLS 0.0000  slowest reaction 0 ms
+  end comparison, keep A                   answer   1007 ms · all   3334 ms  CLS 0.0000  slowest reaction 24 ms
+  buy more BTC                             answer   1022 ms · all   3325 ms  CLS 0.0000  slowest reaction 24 ms
+  existing loan                            answer   1003 ms · all   3337 ms  CLS 0.0020  slowest reaction 16 ms  shifts: 0.002@actions,fall-hook,meta,sold-line
+  refinancing offer                        answer   1094 ms · all   3853 ms  CLS 0.0006  slowest reaction 24 ms  shifts: 0.0006@showing,answer
+  borrow 3,000 more                        answer   1117 ms · all   3842 ms  CLS 0.0000  slowest reaction 24 ms
+inline, processor ÷1: 12 months, new amount    answer 1146 ms · all 3606 ms
+inline, processor ÷1: 36 months                answer 2476 ms · all 8306 ms
+inline, processor ÷1: back to 12               answer 1125 ms · all 3604 ms
+inline, processor ÷4: 12 months, new amount    answer 3362 ms · all 12423 ms
+inline, processor ÷4: 36 months                answer 8761 ms · all 31923 ms
+inline, processor ÷4: back to 12               answer 3411 ms · all 12489 ms
+inline, processor ÷6: 12 months, new amount    answer 4931 ms · all 17694 ms
+inline, processor ÷6: 36 months                answer 13077 ms · all 47078 ms
+inline, processor ÷6: back to 12               answer 4932 ms · all 17711 ms

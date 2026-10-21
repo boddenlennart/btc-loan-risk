@@ -1,0 +1,23 @@
+{
+  "name": "btc-loan-risk",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:fast": "vitest run --exclude tests/calibration.test.js",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@fontsource/source-serif-4": "^5.3.1",
+    "@playwright/test": "1.64.1",
+    "@vitest/coverage-v8": "5.0.4",
+    "axe-core": "4.14.0",
+    "esbuild": "0.28.2",
+    "fast-check": "4.10.2",
+    "fflate": "0.8.3",
+    "jsqr": "1.4.0",
+    "qrcode": "1.5.4",
+    "vitest": "5.0.4",
+    "yaml": "2.9.1"
+  }
+}

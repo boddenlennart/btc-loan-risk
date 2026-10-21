@@ -1,0 +1,25 @@
+# tools installed inside the project (not committed)
+.tools/
+node_modules/
+# raw exchange downloads (large; re-create with tools/fetch_history.py)
+data/raw/
+# local test copies and logs
+ux/audit/
+*.log
+# editor / OS / local assistant settings
+.DS_Store
+.claude/
+.vscode/
+.idea/
+# never commit secrets
+.env
+.env.*
+*.pem
+*.key
+*.p12
+test-results/
+playwright-report/
+
+# coverage measurement of the page (tools/coverage-e2e.mjs)
+ux/coverage-site/
+coverage/

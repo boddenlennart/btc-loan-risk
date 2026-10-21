@@ -1,0 +1,10 @@
+# Security headers for every file, read by Cloudflare Pages (copied to docs/_headers by tools/build.mjs).
+# The page's own Content-Security-Policy (in index.html) limits outside requests to the named price
+# services; this header adds what only a header can do: no embedding of the page in other sites.
+/*
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+  Cross-Origin-Opener-Policy: same-origin

@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Step 4 mock-up</title>
+<style>
+/* Mock-up only. Production self-hosts "Source Serif 4"; here the system serif stands in. */
+:root {
+  --paper: #f6f5f1; --surface: #ffffff; --tile: #efede6; --rule: #e2dfd6; --field: #8a877e;
+  --ink: #15140f; --ink-2: #46443e; --muted: #65635c; --brand: #1f4e79; --brand-fill: #1f4e79;
+  --liq: #b42318; --margin: #a16207; --partial: #c2410c; --ring: #8a877e;
+  --serif: "Source Serif 4", Charter, "Iowan Old Style", Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #d9d7d0; font: 16px/1.5 var(--sans); color: var(--ink); }
+.board { max-width: 1280px; margin: 0 auto; padding: 24px 16px 64px; }
+.board > h1 { font: 600 28px/1.2 var(--serif); margin: 0 0 4px; }
+.board > p.lead { margin: 0 0 24px; color: #3a3934; max-width: 760px; }
+.row { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; margin-bottom: 40px; }
+.cap { font: 600 13px/1.3 var(--sans); text-transform: uppercase; letter-spacing: .06em; color: #3a3934; margin: 0 0 8px; }
+.note { font-size: 13px; color: #3a3934; max-width: 375px; margin: 8px 0 0; }
+
+/* ---------- phone frame ---------- */
+.phone { width: 375px; background: var(--paper); border-radius: 28px; overflow: hidden; box-shadow: 0 1px 0 #0002, 0 10px 30px #0002; position: relative; }
+.fold { position: absolute; left: 0; right: 0; top: 812px; border-top: 2px dashed #c0392b; z-index: 9; }
+.fold span { position: absolute; right: 8px; top: -22px; font: 600 11px var(--sans); color: #c0392b; background: #fffc; padding: 1px 6px; border-radius: 4px; }
+.bar { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: var(--paper); border-bottom: 1px solid var(--rule); }
+.brand { display: flex; align-items: center; gap: 8px; font: 600 17px/1 var(--serif); color: var(--ink); }
+.lang { font: 600 13px var(--sans); color: var(--brand); border: 1px solid var(--rule); border-radius: 6px; padding: 6px 10px; }
+.pad { padding: 16px; }
+
+/* ---------- type scale (spec) ---------- */
+.t-hero { font: 600 56px/1 var(--serif); letter-spacing: -0.01em; font-variant-numeric: lining-nums tabular-nums; }
+.t-xl { font: 600 26px/1.2 var(--serif); }
+.t-lg { font: 600 20px/1.3 var(--serif); }
+.t-base { font: 400 16px/1.5 var(--sans); }
+.t-sm { font: 400 14px/1.45 var(--sans); }
+.t-xs { font: 400 13px/1.4 var(--sans); }
+.label { font: 600 12px/1.3 var(--sans); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+
+h2.pos { margin: 4px 0 8px; }
+.subhead { color: var(--ink-2); margin: 0 0 10px; }
+.trust { display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--muted); margin: 0 0 16px; }
+.trust a { color: var(--brand); }
+
+.answer { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 16px; }
+.example { color: var(--ink-2); margin: 6px 0 14px; }
+.hero-row { display: flex; align-items: baseline; gap: 8px; }
+.hero-row .of { font: 600 20px/1 var(--serif); color: var(--ink-2); }
+.sentence { margin: 6px 0 12px; }
+.dots { display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; margin: 4px 0 8px; }
+.dots i { aspect-ratio: 1; border-radius: 50%; display: block; }
+.d-liq { background: var(--liq); } .d-mc { background: var(--margin); } .d-none { box-shadow: inset 0 0 0 1.5px var(--ring); }
+.legend { display: flex; flex-wrap: wrap; gap: 2px 14px; color: var(--ink-2); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.best { margin: 14px 0 0; padding: 10px 12px; background: var(--tile); border-radius: 6px; }
+.best b { font-variant-numeric: tabular-nums; }
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0 0; }
+.tile { background: var(--tile); border-radius: 6px; padding: 10px; }
+.tile .v { font: 600 17px/1.2 var(--serif); font-variant-numeric: tabular-nums; margin-top: 4px; }
+.tile .s { color: var(--ink-2); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; }
+.btn { font: 600 15px var(--sans); min-height: 44px; padding: 0 14px; border-radius: 6px; border: 1px solid var(--brand); color: var(--brand); background: var(--surface); display: inline-flex; align-items: center; }
+.btn.fill { background: var(--brand-fill); color: #fff; }
+.btn.quiet { border-color: transparent; padding: 0 4px; text-decoration: underline; }
+.meta { color: var(--muted); margin: 12px 0 0; }
+
+.terms { margin: 16px 0 0; border-top: 1px solid var(--rule); padding-top: 12px; }
+.terms .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.terms .chips span { background: var(--surface); border: 1px solid var(--rule); border-radius: 999px; padding: 3px 10px; font-size: 14px; font-variant-numeric: tabular-nums; }
+
+.section { border-top: 1px solid var(--rule); padding: 14px 0; display: flex; justify-content: space-between; align-items: center; }
+.section .t-lg { font-size: 18px; }
+.section .chev { color: var(--brand); font-weight: 600; }
+.lever { display: grid; grid-template-columns: 1fr 80px 26px; gap: 8px; align-items: center; margin: 6px 0; }
+.lever .b { height: 8px; border-radius: 2px; background: var(--tile); position: relative; }
+.lever .b i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink-2); border-radius: 2px; }
+.lever b { text-align: right; font-variant-numeric: tabular-nums; }
+.lever.own span:first-child { font-weight: 600; }
+
+/* ---------- comparison ---------- */
+.cmp { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.cmp th, .cmp td { padding: 8px 6px; text-align: right; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.cmp th:first-child, .cmp td:first-child { text-align: left; color: var(--ink-2); font-weight: 400; }
+.cmp thead th { font: 600 15px var(--serif); color: var(--ink); }
+.cmp thead th.active { box-shadow: inset 0 -3px 0 var(--brand); }
+.cmp td small { display: block; color: var(--muted); font-size: 12px; }
+.cmp .big { font: 600 20px/1.1 var(--serif); }
+.showing { margin: 12px 0 0; padding: 8px 12px; background: var(--tile); border-radius: 6px; }
+
+.seg { display: flex; border: 1px solid var(--field); border-radius: 6px; overflow: hidden; }
+.seg span { flex: 1; text-align: center; padding: 10px 4px; font: 600 13px/1.2 var(--sans); color: var(--ink-2); border-right: 1px solid var(--field); }
+.seg span:last-child { border-right: none; }
+.seg .on { background: var(--brand-fill); color: #fff; }
+.field { margin: 12px 0; }
+.field label { display: block; font: 600 14px var(--sans); margin-bottom: 4px; }
+.input { display: flex; align-items: center; border: 1px solid var(--field); border-radius: 6px; background: var(--surface); min-height: 44px; padding: 0 4px 0 12px; font-variant-numeric: tabular-nums; }
+.input .u { margin-left: auto; color: var(--muted); padding: 0 8px; }
+.step { width: 40px; height: 36px; border-radius: 6px; background: var(--tile); display: grid; place-items: center; font-weight: 600; color: var(--ink-2); margin-left: 4px; }
+.fold-row { border-top: 1px solid var(--rule); padding: 12px 0; color: var(--brand); font-weight: 600; }
+
+/* ---------- desktop ---------- */
+.desk { width: 1180px; max-width: 100%; background: var(--paper); border-radius: 10px; overflow: hidden; box-shadow: 0 10px 30px #0002; }
+.desk .bar { padding: 14px 32px; }
+.desk-body { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 40px; padding: 28px 32px 40px; }
+.desk .answer { padding: 24px; }
+.desk .t-hero { font-size: 72px; }
+.panel { position: sticky; top: 70px; background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 16px; }
+
+/* ---------- logos & tokens ---------- */
+.logos { display: grid; grid-template-columns: repeat(3, minmax(260px, 1fr)); gap: 20px; width: 100%; }
+.logo-card { background: var(--paper); border-radius: 12px; padding: 18px; }
+.logo-card.dark { background: #121210; color: #f2f0ea; }
+.logo-card .lock { display: flex; align-items: center; gap: 10px; font: 600 22px/1 var(--serif); }
+.logo-card .sizes { display: flex; align-items: end; gap: 14px; margin-top: 14px; }
+.logo-card p { font-size: 13px; color: #3a3934; margin: 12px 0 0; }
+.logo-card.dark p { color: #c9c6bd; }
+.sw { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; width: 100%; }
+.sw div { background: #fff; border-radius: 8px; padding: 8px; font-size: 12px; }
+.sw div i { display: block; height: 36px; border-radius: 4px; margin-bottom: 6px; border: 1px solid #0001; }
+</style>
+</head>
+<body>
+<div class="board">
+  <h1>Step 4: mock-up of the answer-first report</h1>
+  <p class="lead">Sketch for discussion, not the final page. Numbers in the answer are the real example result (€10,000, LTV 50%, 12 months). Numbers in the comparison and refinancing views are illustrative. The red dashed line marks the bottom of the first screen on a 375 × 812 phone.</p>
+
+  <div class="row">
+    <!-- PHONE 1: first visit -->
+    <div>
+      <p class="cap">Phone · first visit (example shown before any input)</p>
+      <div class="phone">
+        <div class="fold"><span>end of first screen</span></div>
+        <div class="bar"><span class="brand"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 25.5h26" stroke="#15140f" stroke-width="2.4" stroke-linecap="round"/><path d="M7.5 15.5l6 8.5L25.5 6" fill="none" stroke="#1f4e79" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Bitcoin Loan Check</span><span class="lang">DE</span></div>
+        <div class="pad">
+          <h2 class="pos t-xl">An independent check for any Bitcoin loan offer.</h2>
+          <p class="subhead t-sm">Enter the terms from any lender. See the price at which BTC would be sold, how often that happened since 2014, and the full cost compared with selling.</p>
+          <p class="trust t-xs"><span>Runs only in your browser</span><span>No tracking</span><a href="#">Open source ↗</a></p>
+
+          <div class="answer">
+            <div style="display:flex;justify-content:space-between;align-items:center"><span class="label">Example</span><a href="#" class="t-sm" style="color:var(--brand);font-weight:600">Use your own terms →</a></div>
+            <p class="example t-sm">Borrow €10,000 for 12 months against BTC worth €20,000 (LTV 50%). Sale at LTV 80%.</p>
+            <div class="hero-row"><span class="t-hero">60</span><span class="of">of 100</span></div>
+            <p class="sentence t-base">simulated futures end with this loan liquidated within 12 months.</p>
+            <div class="dots" data-dots="60,7,33"></div>
+            <p class="legend t-xs"><span><i class="d-liq"></i>60 liquidated</span><span><i class="d-mc"></i>7 margin call, nothing sold</span><span><i class="d-none"></i>33 nothing happened</span></p>
+            <p class="best t-sm">One change lowers this: <b>starting LTV 30% → 22 of 100</b>.</p>
+            <div class="tiles">
+              <div class="tile"><div class="label">Sold at</div><div class="v">€45,348</div><div class="s t-xs">−38% from today</div></div>
+              <div class="tile"><div class="label">Full cost</div><div class="v">€1,100</div><div class="s t-xs">11.6% a year</div></div>
+              <div class="tile"><div class="label">Break-even</div><div class="v">+11%</div><div class="s t-xs">BTC by the end</div></div>
+            </div>
+            <div class="actions"><span class="btn fill">Use your own terms</span><span class="btn">+ Compare an offer</span><span class="btn quiet">Share</span></div>
+            <p class="meta t-xs">Real BTC prices 1 Jan 2014 – 16 Oct 2026 · other method: 52 of 100 · no price trend assumed · <a href="#" style="color:var(--brand)">How to check this number</a></p>
+          </div>
+
+          <div class="section"><span class="t-lg">Make it safer</span><span class="chev">▾</span></div>
+          <div class="lever own"><span>Your terms</span><span class="b"><i style="width:60%"></i></span><b>60</b></div>
+          <div class="lever"><span>Starting LTV 30%</span><span class="b"><i style="width:22%"></i></span><b>22</b></div>
+          <div class="lever"><span>Starting LTV 40%</span><span class="b"><i style="width:42%"></i></span><b>42</b></div>
+          <div class="lever"><span>6 months instead of 12</span><span class="b"><i style="width:44%"></i></span><b>44</b></div>
+          <div class="section"><span class="t-lg">What happens when BTC falls</span><span class="chev">▸</span></div>
+          <div class="section"><span class="t-lg">What it costs · Borrow or sell?</span><span class="chev">▸</span></div>
+          <div class="section"><span class="t-lg">Your loan in every crash since 2014</span><span class="chev">▸</span></div>
+          <div class="section"><span class="t-lg">How these numbers are made</span><span class="chev">▸</span></div>
+          <div class="section" style="border-bottom:1px solid var(--rule)"><span class="t-lg">What this does not include</span><span class="chev">▸</span></div>
+          <p class="t-xs" style="color:var(--muted)">Free, open source (MIT). Not financial advice. Impressum · Privacy · Support this page with BTC</p>
+        </div>
+      </div>
+      <p class="note">First screen: name, what it is, why to trust it, and the answer with its number. The form is one tap away ("Enter your terms"), not in the way.</p>
+    </div>
+
+    <!-- PHONE 2: comparison -->
+    <div>
+      <p class="cap">Phone · comparing new offers</p>
+      <div class="phone">
+        <div class="bar"><span class="brand"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 25.5h26" stroke="#15140f" stroke-width="2.4" stroke-linecap="round"/><path d="M7.5 15.5l6 8.5L25.5 6" fill="none" stroke="#1f4e79" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Bitcoin Loan Check</span><span class="lang">DE</span></div>
+        <div class="pad">
+          <div class="answer">
+            <div class="label">Compare offers · same simulated futures for all</div>
+            <table class="cmp t-sm" style="margin-top:8px">
+              <thead><tr><th></th><th class="active">Offer A</th><th>Offer B</th><th>Offer C</th></tr></thead>
+              <tbody>
+                <tr><td>Liquidated, of 100<small>within 12 months</small></td><td class="big">60</td><td class="big">31</td><td class="big">44</td></tr>
+                <tr><td>Sold at</td><td>€45,348<small>−38%</small></td><td>€37,900<small>−48%</small></td><td>€41,300<small>−43%</small></td></tr>
+                <tr><td>Full cost</td><td>€1,100<small>11.6%/yr</small></td><td>€1,390<small>14.1%/yr</small></td><td>€940<small>9.8%/yr</small></td></tr>
+                <tr><td>You receive</td><td>€9,900</td><td>€9,850</td><td>€10,000</td></tr>
+              </tbody>
+            </table>
+            <p class="t-xs" style="color:var(--muted);margin:8px 0 0">No offer is marked as better: one can be safer, another cheaper. Tap a column to see it in full below.</p>
+            <div class="actions"><span class="btn">Edit Offer B</span><span class="btn">+ Offer C</span><span class="btn quiet">Share all</span></div>
+          </div>
+          <p class="showing t-sm">Showing below: <b>Offer A</b> · everything under this line is about Offer A</p>
+          <div class="answer" style="margin-top:12px">
+            <div class="hero-row"><span class="t-hero">60</span><span class="of">of 100</span></div>
+            <p class="sentence t-base">simulated futures end with Offer A liquidated within 12 months.</p>
+            <div class="dots" data-dots="60,7,33"></div>
+          </div>
+          <div class="section"><span class="t-lg">Make it safer</span><span class="chev">▸</span></div>
+          <div class="section" style="border-bottom:1px solid var(--rule)"><span class="t-lg">What it costs · Borrow or sell?</span><span class="chev">▸</span></div>
+        </div>
+      </div>
+      <p class="note">Comparison table on top; the full report below follows the selected column. Rows: liquidation chance, sale price, full cost, cash received. Illustrative numbers.</p>
+    </div>
+
+    <!-- PHONE 3: refinancing -->
+    <div>
+      <p class="cap">Phone · current loan vs. refinancing</p>
+      <div class="phone">
+        <div class="bar"><span class="brand"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 25.5h26" stroke="#15140f" stroke-width="2.4" stroke-linecap="round"/><path d="M7.5 15.5l6 8.5L25.5 6" fill="none" stroke="#1f4e79" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Bitcoin Loan Check</span><span class="lang">DE</span></div>
+        <div class="pad">
+          <div class="answer">
+            <div class="label">Refinancing offer</div>
+            <p class="t-sm" style="color:var(--ink-2);margin:6px 0 10px">Starts from your current loan: you owe €10,000 against 0.2762 BTC, 8 months left.</p>
+            <div class="field"><label>What changes?</label>
+              <div class="seg"><span>Same amount</span><span class="on">Borrow more</span><span>Take back BTC</span></div></div>
+            <div class="field"><label>Extra cash</label><div class="input">5,000<span class="u">€</span><span class="step">−</span><span class="step">+</span></div></div>
+            <div class="field"><label>New interest rate</label><div class="input">9.5<span class="u">% a year</span><span class="step">−</span><span class="step">+</span></div></div>
+            <div class="field"><label>New duration</label><div class="input">24<span class="u">months</span><span class="step">−</span><span class="step">+</span></div></div>
+            <div class="fold-row">▸ More terms of the new loan</div>
+            <div class="fold-row" style="border-bottom:1px solid var(--rule)">▸ Switching costs <span style="color:var(--muted);font-weight:400">· €0 so far</span></div>
+          </div>
+          <div class="answer" style="margin-top:12px">
+            <table class="cmp t-sm">
+              <thead><tr><th></th><th class="active">Current</th><th>Refinanced</th></tr></thead>
+              <tbody>
+                <tr><td>Liquidated, of 100<small>next 8 months</small></td><td class="big">38</td><td class="big">57</td></tr>
+                <tr><td>Liquidated, of 100<small>whole new term, 24 months</small></td><td>–</td><td class="big">71</td></tr>
+                <tr><td>Sold at</td><td>€45,348<small>−38%</small></td><td>€68,000<small>−6%</small></td></tr>
+                <tr><td>You receive now</td><td>–</td><td>€5,000</td></tr>
+                <tr><td>Full cost</td><td>€700</td><td>€3,400<small>incl. switching</small></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <p class="note">One choice covers rollover, lender switch, cash-out and taking BTC back. The same-span row ("next 8 months") makes both loans comparable. Illustrative numbers.</p>
+    </div>
+  </div>
+
+  <!-- DESKTOP -->
+  <p class="cap">Desktop · 1280 px · the report on the left, your terms beside it</p>
+  <div class="desk" style="margin-bottom:40px">
+    <div class="bar"><span class="brand" style="font-size:19px"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 25.5h26" stroke="#15140f" stroke-width="2.4" stroke-linecap="round"/><path d="M7.5 15.5l6 8.5L25.5 6" fill="none" stroke="#1f4e79" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Bitcoin Loan Check</span><span class="lang">Deutsch</span></div>
+    <div class="desk-body">
+      <div>
+        <h2 class="pos t-xl" style="font-size:32px">An independent check for any Bitcoin loan offer.</h2>
+        <p class="subhead t-base" style="max-width:620px">Enter the terms from any lender. See the price at which BTC would be sold, how often that happened since 2014, and the full cost compared with selling.</p>
+        <p class="trust t-xs"><span>Runs only in your browser</span><span>No tracking</span><a href="#">Open source ↗</a></p>
+        <div class="answer">
+          <div class="label">Example · €10,000 for 12 months against BTC worth €20,000</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;margin-top:10px">
+            <div>
+              <div class="hero-row"><span class="t-hero">60</span><span class="of">of 100</span></div>
+              <p class="sentence t-base">simulated futures end with this loan liquidated within 12 months.</p>
+              <p class="best t-sm">One change lowers this: <b>starting LTV 30% → 22 of 100</b>.</p>
+            </div>
+            <div>
+              <div class="dots" data-dots="60,7,33"></div>
+              <p class="legend t-xs"><span><i class="d-liq"></i>60 liquidated</span><span><i class="d-mc"></i>7 margin call, nothing sold</span><span><i class="d-none"></i>33 nothing happened</span></p>
+            </div>
+          </div>
+          <div class="tiles" style="grid-template-columns:repeat(4,1fr)">
+            <div class="tile"><div class="label">Sold at</div><div class="v">€45,348</div><div class="s t-xs">−38% from today</div></div>
+            <div class="tile"><div class="label">Margin call at</div><div class="v">€51,826</div><div class="s t-xs">48 h to fix</div></div>
+            <div class="tile"><div class="label">Full cost</div><div class="v">€1,100</div><div class="s t-xs">11.6% a year</div></div>
+            <div class="tile"><div class="label">Break-even</div><div class="v">+11%</div><div class="s t-xs">BTC by the end</div></div>
+          </div>
+          <div class="actions"><span class="btn">+ Compare an offer</span><span class="btn quiet">Share</span></div>
+          <p class="meta t-xs">Real BTC prices 1 Jan 2014 – 16 Oct 2026 · other method: 52 of 100 · no price trend assumed · <a href="#" style="color:var(--brand)">How to check this number</a></p>
+        </div>
+        <div class="section" style="margin-top:12px"><span class="t-lg">Make it safer</span><span class="chev">▾</span></div>
+        <div class="section"><span class="t-lg">What happens when BTC falls</span><span class="chev">▸</span></div>
+        <div class="section"><span class="t-lg">What it costs · Borrow or sell?</span><span class="chev">▸</span></div>
+        <div class="section" style="border-bottom:1px solid var(--rule)"><span class="t-lg">Your loan in every crash since 2014</span><span class="chev">▸</span></div>
+      </div>
+      <aside class="panel">
+        <div class="label">Your terms</div>
+        <div class="seg" style="margin:10px 0"><span class="on">A loan offer</span><span>A loan I have</span></div>
+        <div class="field"><label>Loan amount</label><div class="input">10,000<span class="u">€</span></div></div>
+        <div class="field"><label>Starting LTV</label><div class="input">50<span class="u">%</span><span class="step">−</span><span class="step">+</span></div></div>
+        <div class="field"><label>Sold at LTV (liquidation)</label><div class="input">80<span class="u">%</span><span class="step">−</span><span class="step">+</span></div></div>
+        <div class="field"><label>Duration</label><div class="input">12<span class="u">months</span><span class="step">−</span><span class="step">+</span></div></div>
+        <div class="field"><label>Interest rate</label><div class="input">10<span class="u">% a year</span><span class="step">−</span><span class="step">+</span></div></div>
+        <div class="fold-row">▸ Margin call · fees · more</div>
+        <p class="t-xs" style="color:var(--muted);margin:8px 0 0">The answer updates when you leave a field. Sale price updates at once.</p>
+      </aside>
+    </div>
+  </div>
+
+  <!-- LOGOS -->
+  <p class="cap">Logo variants · wordmark + mark, light and dark, and at favicon size</p>
+  <div class="row">
+    <div class="logos">
+      <div class="logo-card">
+        <div class="lock"><svg width="40" height="40" viewBox="0 0 32 32"><path d="M3 25.5h26" stroke="#15140f" stroke-width="2.4" stroke-linecap="round"/><path d="M7.5 15.5l6 8.5L25.5 6" fill="none" stroke="#1f4e79" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Bitcoin Loan Check</div>
+        <div class="sizes"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#f6f5f1"/><path d="M4 26h24" stroke="#15140f" stroke-width="2.6" stroke-linecap="round"/><path d="M8 16l5.5 8.5L25 7" fill="none" stroke="#1f4e79" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg><svg width="16" height="16" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#1f4e79"/><path d="M4 26h24" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M8 16l5.5 8.5L25 7" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <p><b>A · Check on the line.</b> A check mark that rests exactly on a line: the sale price, checked. Simple, readable at 16 px. Risk: check marks are common.</p>
+      </div>
+      <div class="logo-card">
+        <div class="lock"><svg width="40" height="40" viewBox="0 0 32 32"><circle cx="16" cy="8.5" r="5" fill="#1f4e79"/><path d="M16 15v7" stroke="#1f4e79" stroke-width="2" stroke-dasharray="2 2.2"/><path d="M3 25.5h26" stroke="#15140f" stroke-width="2.4" stroke-linecap="round"/><path d="M12 22.5l4 3 4-3" fill="none" stroke="#1f4e79" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Bitcoin Loan Check</div>
+        <div class="sizes"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#f6f5f1"/><circle cx="16" cy="9" r="5" fill="#1f4e79"/><path d="M16 15.5v6" stroke="#1f4e79" stroke-width="2.2" stroke-dasharray="2 2"/><path d="M4 26h24" stroke="#15140f" stroke-width="2.6" stroke-linecap="round"/></svg><svg width="16" height="16" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#1f4e79"/><circle cx="16" cy="10" r="6" fill="#fff"/><path d="M4 26h24" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg></div>
+        <p><b>B · Distance to the line.</b> The price (dot) above the sale line, with the gap between them. Says "how far until sale". Less obvious at first sight; at 16 px it becomes dot-over-line.</p>
+      </div>
+      <div class="logo-card dark">
+        <div class="lock" style="flex-direction:column;align-items:flex-start;gap:4px"><span>Bitcoin Loan Check</span><svg width="232" height="14" viewBox="0 0 232 14"><path d="M1 11h196" stroke="#a29f96" stroke-width="1.6"/><path d="M200 7l5 5 11-11" fill="none" stroke="#9cc0e8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="sizes"><svg width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#1b1a17"/><text x="16" y="21" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="15" fill="#f2f0ea">LC</text><path d="M6 25h20" stroke="#9cc0e8" stroke-width="1.8"/></svg><svg width="16" height="16" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#9cc0e8"/><text x="16" y="22" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="17" fill="#121210">LC</text></svg></div>
+        <p><b>C · Ledger rule.</b> Wordmark with a ruled line ending in a small tick, like a checked line in an account book. Most "print-like"; the small icon needs letters (LC), which read less well at 16 px.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOKENS -->
+  <p class="cap">Colours (light) with contrast against the page background</p>
+  <div class="row">
+    <div class="sw">
+      <div><i style="background:#f6f5f1"></i>Paper #f6f5f1 · page</div>
+      <div><i style="background:#ffffff"></i>Surface #ffffff · answer</div>
+      <div><i style="background:#efede6"></i>Tile #efede6 · key figures</div>
+      <div><i style="background:#15140f"></i>Ink #15140f · 16.9:1</div>
+      <div><i style="background:#46443e"></i>Ink 2 #46443e · 8.9:1</div>
+      <div><i style="background:#65635c"></i>Muted #65635c · 5.5:1</div>
+      <div><i style="background:#1f4e79"></i>Brand #1f4e79 · 7.9:1 · white on it 8.7:1</div>
+      <div><i style="background:#b42318"></i>Liquidated #b42318 · 6.0:1</div>
+      <div><i style="background:#a16207"></i>Margin call #a16207 · 4.5:1</div>
+      <div><i style="background:#c2410c"></i>Partly sold #c2410c · 5.2:1 vs surface</div>
+      <div><i style="background:#fff;box-shadow:inset 0 0 0 2px #8a877e"></i>Nothing happened: ring #8a877e · 3.6:1</div>
+      <div><i style="background:#8a877e"></i>Field border #8a877e · 3.6:1</div>
+    </div>
+  </div>
+</div>
+<script>
+for (const el of document.querySelectorAll('[data-dots]')) {
+  const [a, b, c] = el.dataset.dots.split(',').map(Number);
+  el.innerHTML = [...Array(a).fill('d-liq'), ...Array(b).fill('d-mc'), ...Array(c).fill('d-none')].map((k) => `<i class="${k}"></i>`).join('');
+}
+</script>
+</body>
+</html>
