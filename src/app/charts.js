@@ -294,12 +294,14 @@ export function storiesChart(el, data) {
 
 /**
  * A line over time with one marked point (the latest), e.g. 30-day price swings since 2014.
- * data: { points: [[unixTime, value], ...], fmt(value), fmtDate(unixTime), title } (the dot is explained next to the chart)
+ * data: { points: [[unixTime, value], ...], fmt(value), fmtDate(unixTime), title, marks? } (the dot is explained next to the chart)
+ * marks: [{ t: unixTime, label }] dashed vertical lines with a label on top, e.g. the halvings
  */
 export function lineChart(el, data) {
   remember(el, () => lineChart(el, data));
   const H = 240;
-  const pad = { l: 48, r: 16, t: 14, b: 30 };
+  const marks = data.marks || [];
+  const pad = { l: 48, r: 16, t: marks.length ? 28 : 14, b: 30 };
   const { svg, tip } = frame(el, H, data.title);
   const pts = data.points; const n = pts.length;
   const t0 = pts[0][0]; const t1 = pts[n - 1][0];
@@ -314,7 +316,8 @@ export function lineChart(el, data) {
   const xt = years.map((yr) => `<text x="${x(Date.UTC(yr, 0, 1) / 1000)}" y="${H - 8}" class="axis" text-anchor="middle">${yr}</text>`).join('');
   const line = `M${pts.map(([t, v]) => `${x(t).toFixed(1)},${y(v).toFixed(1)}`).join('L')}`;
   const [lt, lv] = pts[n - 1];
-  svg.innerHTML = `${grid}${xt}<path d="${line}" class="line-series"/>
+  const mk = marks.filter((m) => m.t > t0 && m.t < t1).map((m) => `<line x1="${x(m.t)}" x2="${x(m.t)}" y1="${pad.t - 4}" y2="${H - pad.b}" class="line-mark"/><text x="${x(m.t)}" y="${pad.t - 9}" class="axis" text-anchor="middle">${esc(m.label)}</text>`).join('');
+  svg.innerHTML = `${grid}${xt}${mk}<path d="${line}" class="line-series"/>
     <circle cx="${x(lt)}" cy="${y(lv)}" r="5" class="mark-now"/>
     <line class="cross" y1="${pad.t}" y2="${H - pad.b}" opacity="0"/>
     <rect class="hit" x="${pad.l}" y="0" width="${W - pad.l - pad.r}" height="${H}" fill="transparent"/>`;

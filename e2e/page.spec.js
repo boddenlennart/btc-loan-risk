@@ -2,7 +2,7 @@
 // replaced by fixed answers (BTC = 60,000) so results are repeatable, and the
 // headline is compared with the engine run directly in Node on the same data.
 import { test, expect } from '@playwright/test';
-import { openFolded } from './helpers.js';
+import { openFolded, exampleAnswer } from './helpers.js';
 import { readFileSync } from 'node:fs';
 import * as job from '../src/app/riskjob.js';
 import { encodeState } from '../src/app/share.js';
@@ -842,7 +842,7 @@ test('a slow connection: the example answer shows before the price history has a
   const errors = []; page.on('pageerror', (e) => errors.push(String(e)));
   const t0 = Date.now();
   await page.goto('/', { waitUntil: 'commit' });
-  await expect(page.locator('#headline-text em')).toHaveText('54', { timeout: 20_000 });
+  await expect(page.locator('#headline-text em')).toHaveText(String(exampleAnswer()), { timeout: 20_000 });
   const answerAfter = Date.now() - t0;
   const dataThere = await page.evaluate(() => !!document.getElementById('data-FX'));
   expect(dataThere, 'the answer showed before the history had arrived').toBe(false);
@@ -904,7 +904,7 @@ test('the same terms give the same number all week: the example does not change 
   // every number the headline shows from the first moment on, sampled every 20 ms
   await page.addInitScript(() => { window.__shown = new Set(); setInterval(() => { const e = document.querySelector('#headline-text em'); if (e && /^\d+$/.test(e.textContent)) window.__shown.add(e.textContent); }, 20); });
   await page.goto('/'); await waitDone(page); await page.waitForTimeout(500);
-  expect(await page.evaluate(() => [...window.__shown])).toEqual(['54']); // never another number, also not after the quiet confirmation
+  expect(await page.evaluate(() => [...window.__shown])).toEqual([String(exampleAnswer())]); // never another number, also not after the quiet confirmation
   expect(asked.filter((u) => u.includes('step=3600'))).toEqual([]);
 });
 
@@ -927,7 +927,7 @@ test('"load current price": a new price from Bitstamp updates the price line and
   await waitDone(page);
   expect(asked.slice(before).some((u) => u.includes('www.bitstamp.net') && u.includes('step=60&limit=1'))).toBe(true); // asked again
   await expect(page.locator('#tiles .tile').first()).toContainText('€56,250'); // 62.5% of the new price
-  expect(await headlineNumber(page)).toBe(54);
+  expect(await headlineNumber(page)).toBe(exampleAnswer()); // with the LTV fixed, a new price does not change the chance
   // a loan entered with its BTC: a higher price lowers the LTV, so the number is recalculated and falls
   await page.locator('[data-set="ltvInput"][data-val="btc"]').click();
   await page.locator('#f-collateralBtc').fill('0.2222'); // about LTV 50% at 90,000
@@ -1254,7 +1254,7 @@ test('computer: while the answer is recalculated, the left side does not jump ("
       window.sampler = setInterval(() => window.rec.push([Math.round(document.querySelector('#questions-block').getBoundingClientRect().top), Math.round(window.scrollY)]), 20);
     });
     await page.locator('#f-loanAmount').fill(String(11000 + y));
-    await waitDone(page);
+    await waitFresh(page); // the whole recalculation is recorded, not only its first moment
     const rec = await page.evaluate(() => { clearInterval(window.sampler); return window.rec; });
     const tops = rec.map((r) => r[0]);
     expect(Math.max(...tops) - Math.min(...tops), `scrolled to ${y}: block below "Make it safer" at ${[...new Set(tops)].join(', ')}`).toBeLessThanOrEqual(2);

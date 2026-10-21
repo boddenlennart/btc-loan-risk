@@ -1,30 +1,42 @@
 <!doctype html>
 <html><head><meta charset="utf-8"><title>og</title>
 <style>/*FONTS*/
-/* 1200 x 630 link-preview image (ux/D-share-preview.md). Everything important sits in the centre
-   600 px, so a square crop keeps it. Rendered by tools/build-og.mjs with the embedded Source Serif 4. */
-:root { --paper:#f6f5f1; --ink:#15140f; --ink2:#46443e; --muted:#65635c; --brand:#1f4e79; --serif:"Source Serif 4",Charter,"Iowan Old Style",Georgia,serif; --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+/* 1200 x 630 link-preview image (ux/D-share-preview.md): the example's answer with its dots on the left,
+   the name and the promise on the right. Rendered by tools/build-og.mjs with the embedded Source Serif 4;
+   the answer and the dots are read from the built page, so they always match it. */
+:root { --paper:#f6f5f1; --ink:#15140f; --ink2:#46443e; --muted:#65635c; --brand:#1f4e79; --line:#e2dfd6;
+  --red:#c81e1e; --gold:#b08800; --ring:#8a877e;
+  --serif:"Source Serif 4",Charter,"Iowan Old Style",Georgia,serif; --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
 * { box-sizing:border-box; margin:0; }
 html,body { width:1200px; height:630px; background:var(--paper); overflow:hidden; }
 body { font-family:var(--sans); color:var(--ink); position:relative; }
-.col { position:absolute; left:300px; width:600px; top:0; bottom:0; display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:58px; }
-.brand { display:flex; align-items:center; gap:12px; font:600 30px/1 var(--serif); }
-h1 { font:600 54px/1.1 var(--serif); letter-spacing:-0.01em; margin:38px 0 22px; }
+.grid { position:absolute; inset:0 0 70px; display:grid; grid-template-columns:500px 1fr; align-items:center; padding:0 60px; gap:56px; }
+.card { background:#fff; border:2px solid var(--line); border-radius:22px; padding:30px 32px; }
+.label { font:600 17px var(--sans); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+.n { font:600 112px/1 var(--serif); margin-top:10px; }
+.n small { font-size:34px; color:var(--muted); margin-left:6px; }
+.sent { font:400 21px/1.35 var(--sans); margin:12px 0 18px; }
+.dots { display:grid; grid-template-columns:repeat(20,1fr); gap:5px; }
+.dots i { aspect-ratio:1; border-radius:50%; display:block; }
+.d-liq { background:var(--red); }
+.d-part { background:linear-gradient(90deg,var(--red) 50%,transparent 50%); box-shadow:inset 0 0 0 2.5px var(--red); }
+.d-margin { background:var(--gold); }
+.d-none { box-shadow:inset 0 0 0 2.5px var(--ring); }
+.brand { display:flex; align-items:center; gap:14px; font:600 32px/1 var(--serif); }
+h1 { font:600 54px/1.1 var(--serif); letter-spacing:-0.01em; margin:30px 0 22px; }
 .facts { font:400 23px/1.4 var(--sans); color:var(--ink2); }
 .facts b { color:var(--ink); font-weight:600; }
-.foot { position:absolute; bottom:44px; font:600 20px var(--sans); color:var(--muted); }
+.foot { position:absolute; left:0; right:0; bottom:40px; text-align:center; font:600 20px var(--sans); color:var(--muted); }
 .foot .dom { color:var(--brand); }
-.line { position:absolute; left:0; right:0; top:452px; height:0; }
-.side { position:absolute; top:0; bottom:0; width:300px; }
 </style></head>
 <body>
-  <svg class="side" style="left:0" viewBox="0 0 300 630" aria-hidden="true"><circle cx="150" cy="200" r="34" fill="#1f4e79" opacity=".9"/><path d="M150 248v150" stroke="#1f4e79" stroke-width="4" stroke-dasharray="9 10" opacity=".9"/><path d="M132 382l18 16 18-16" fill="none" stroke="#1f4e79" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 412h220" stroke="#15140f" stroke-width="6" stroke-linecap="round"/></svg>
-  <svg class="side" style="right:0" viewBox="0 0 300 630" aria-hidden="true"><path d="M40 412h220" stroke="#15140f" stroke-width="6" stroke-linecap="round"/></svg>
-  <div class="col">
-    <div class="brand"><svg width="44" height="44" viewBox="0 0 32 32"><circle cx="16" cy="8.5" r="5" fill="#1f4e79"/><path d="M16 15v7" stroke="#1f4e79" stroke-width="2" stroke-dasharray="2 2.2"/><path d="M3 25.5h26" stroke="#15140f" stroke-width="2.4" stroke-linecap="round"/><path d="M12 22.5l4 3 4-3" fill="none" stroke="#1f4e79" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="name"></span></div>
-    <h1 id="head"></h1>
-    <p class="facts" id="facts"></p>
-    <div class="foot"><span class="dom">bitcoinloancheck.com</span> · <span id="trust"></span></div>
+  <div class="grid">
+    <div class="card"><div class="label" id="label"></div><div class="n"><span id="n"></span><small id="of"></small></div><p class="sent" id="sent"></p><div class="dots" id="dots"></div></div>
+    <div>
+      <div class="brand"><svg width="52" height="52" viewBox="0 0 32 32" id="mark"></svg><span id="name"></span></div>
+      <h1 id="head"></h1>
+      <p class="facts" id="facts"></p>
+    </div>
   </div>
-
+  <div class="foot"><span class="dom">bitcoinloancheck.com</span> · <span id="trust"></span></div>
 </body></html>

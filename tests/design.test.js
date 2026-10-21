@@ -52,3 +52,45 @@ describe('rules of the identity', () => {
     for (const px of sizes) expect(ALLOWED, `${px}px`).toContain(px);
   });
 });
+
+// Owner, 21 Oct 2026: orange is Bitcoin's colour and the logo's, never a sign of something bad. Liquidated is a clear
+// red, partly liquidated a half-filled red dot, a margin call yellow/gold; these differ for colour-blind eyes too.
+const hue = (hex) => {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const mx = Math.max(r, g, b); const mn = Math.min(r, g, b); const d = mx - mn;
+  if (!d) return null;
+  const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return (h * 60 + 360) % 360;
+};
+// red-green colour blindness (deuteranopia, protanopia; Viénot 1999), compared by lightness and colour (CIE Lab)
+const lin = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+const SIM = { deutan: [[0.29275, 0.70725, 0], [0.29275, 0.70725, 0], [-0.02234, 0.02234, 1]], protan: [[0.11238, 0.88762, 0], [0.11238, 0.88762, 0], [0.00401, -0.00401, 1]] };
+const lab = ([r, g, b]) => {
+  const f = (t) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+  const X = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047; const Y = 0.2126 * r + 0.7152 * g + 0.0722 * b; const Z = (0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883;
+  return [116 * f(Y) - 16, 500 * (f(X) - f(Y)), 200 * (f(Y) - f(Z))];
+};
+const seen = (hex, kind) => { const v = [1, 3, 5].map((i) => lin(parseInt(hex.slice(i, i + 2), 16) / 255)); return lab(SIM[kind].map((row) => Math.max(0, Math.min(1, row.reduce((a, m, j) => a + m * v[j], 0))))); };
+const apart = (a, b, kind) => Math.hypot(...seen(a, kind).map((x, i) => x - seen(b, kind)[i]));
+
+describe('colours that carry a meaning', () => {
+  for (const [mode, t] of [['light', light], ['dark', dark]]) {
+    it(`${mode}: no warning or data colour is orange (orange belongs to the Bitcoin logo)`, () => {
+      for (const k of ['critical', 'critical-ink', 'partial', 'warning', 'warning-ink', 'story-1', 'story-2', 'story-3', 'story-4']) {
+        const h = hue(t[k]);
+        expect(h !== null && h > 12 && h < 42, `${k} ${t[k]}: hue ${Math.round(h)}°`).toBe(false);
+      }
+    });
+    it(`${mode}: liquidated and margin call stay apart with red-green colour blindness`, () => {
+      for (const kind of ['deutan', 'protan']) expect(apart(t.critical, t.warning, kind), kind).toBeGreaterThanOrEqual(15);
+    });
+  }
+  it('partly liquidated is a half-filled dot: it differs by shape, not by another colour', () => {
+    expect(css).toMatch(/\.d-part \{[^}]*linear-gradient\(90deg, var\(--partial\) 50%, transparent 50%\)[^}]*box-shadow: inset/);
+  });
+  it('the logo is the orange coin with the ₿ sign: top bar, browser tab and the icon builder', () => {
+    for (const f of ['src/app/partials/header.html', 'src/app/partials/icon.html', 'tools/build-og.mjs']) {
+      expect(readFileSync(new URL(`../${f}`, import.meta.url), 'utf8'), f).toMatch(/F7931A/);
+    }
+  });
+});

@@ -95,7 +95,9 @@ function render() {
   const W = I.swings;
   block('swings', T.swings.title, T.swings.lead, t('insights.swings.take', { now: pct(W.now, 0), n: of100(W.calmerShare) }),
     `<p>${esc(t('insights.swings.range', { q50: pct(W.q50, 0), q10: pct(W.q10, 0), q90: pct(W.q90, 0) }))}</p><p>${esc(t('insights.swings.vsSim', { sim: pct(W.simVol, 0) }))}</p><div id="swings-chart"></div>` + hint(t('insights.swings.now', { now: pct(W.now, 0) })) + hint(T.swings.note));
-  lineChart($('#swings-chart'), { points: W.weekly, fmt: (v) => pct(v, 0), fmtDate: date, title: T.swings.chartTitle });
+  // the halvings: the new supply of BTC was cut in half (block heights 420,000, 630,000 and 840,000)
+  const HALVINGS = [Date.UTC(2016, 6, 9), Date.UTC(2020, 4, 11), Date.UTC(2024, 3, 20)].map((ms) => ({ t: ms / 1000, label: T.swings.halving }));
+  lineChart($('#swings-chart'), { points: W.weekly, fmt: (v) => pct(v, 0), fmtDate: date, title: T.swings.chartTitle, marks: HALVINGS });
 
   document.getElementById('top').classList.remove('boot'); // drawn: show it (nothing jumps on slow phones: go/no-go G2)
   document.body.dataset.ready = '1';

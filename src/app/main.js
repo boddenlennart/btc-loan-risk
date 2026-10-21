@@ -1243,8 +1243,9 @@ function renderLeverage() {
 // Real history first, then one sentence that connects it with the answer at the top
 function historyText() {
   const r = lastRisk; const rp = r.replay;
-  const partial = rp.partialShare >= 0.005 ? t('history.replayPartial', { m: of100(rp.partialShare) }) : '';
   const h = of100(rp.liquidatedShare); const n = shown(pSale(r.main)); const hAny = of100(rp.liquidatedShare + rp.partialShare);
+  // the partly liquidated are the rest of "Other methods: real history" (rounded on their own, it once said 49 here and 48 there)
+  const partial = hAny > h ? t('history.replayPartial', { m: hAny - h }) : '';
   if (!rp.starts) return `<p>${esc(texts().history.replayNone)}</p>`;
   let html = `<p class="big-line">${esc(t('history.replay', { n: h, partial }))}</p>`;
   if (rp.starts < 4 * 365) html += `<p>${esc(t('history.replayFew', { last: date(rp.lastStart) }))}</p>`; // fewer than 4 years of start days

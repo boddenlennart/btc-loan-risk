@@ -6,8 +6,6 @@ import { parse } from 'yaml';
 
 const text = readFileSync(new URL('../.github/workflows/update-data.yml', import.meta.url), 'utf8');
 const wf = parse(text);
-const steps = wf.jobs.update.steps;
-const run = (name) => steps.find((s) => s.name && s.name.startsWith(name));
 
 const tests = parse(readFileSync(new URL('../.github/workflows/tests.yml', import.meta.url), 'utf8'));
 
@@ -33,36 +31,52 @@ describe('test workflow for every other change', () => {
 });
 
 describe('data-update workflow', () => {
+  const job = (id) => wf.jobs[id];
+  const stepIn = (id, name) => job(id).steps.find((s) => s.name && s.name.startsWith(name));
   it('is valid YAML with a weekly schedule and a manual "Run workflow" button', () => {
     expect(wf.on.schedule[0].cron).toMatch(/^\d+ \d+ \* \* [0-6]$/);
     expect(wf.on).toHaveProperty('workflow_dispatch');
   });
-  it('runs the update, rebuilds the page, runs all tests and the browser tests, then opens a pull request — in that order', () => {
-    const names = steps.map((s) => s.name || '');
+  it('fetches, rebuilds and runs all unit tests, then the browser tests, then opens a pull request — in that order', () => {
+    const names = job('update').steps.map((s) => s.name || '');
     const i = (n) => names.findIndex((x) => x.startsWith(n));
     expect(i('Fetch, check and append')).toBeLessThan(i('Rebuild the page'));
     expect(i('Rebuild the page')).toBeLessThan(i('Run the full test suite'));
-    expect(i('Run the full test suite')).toBeLessThan(i('Test the finished page in a real browser'));
-    expect(i('Test the finished page in a real browser')).toBeLessThan(i('Open a pull request'));
-    expect(run('Test the finished page').run).toMatch(/npm run test:e2e/);
-    expect(run('Run the full test suite').run).toBe('npm test');
+    expect(i('Run the full test suite')).toBeLessThan(i('Save the update on its own branch'));
+    expect(stepIn('update', 'Run the full test suite').run).toBe('npm test');
+    expect(job('browser').needs).toBe('update');
+    expect(job('publish').needs).toEqual(['update', 'browser']); // the pull request only after every browser setup passed
+  });
+  it('the browser tests run in all five setups of playwright.config.js, side by side, as for every other change', () => {
+    const projects = job('browser').strategy.matrix.include.map((m) => m.project).sort();
+    const config = readFileSync(new URL('../playwright.config.js', import.meta.url), 'utf8');
+    expect(projects).toEqual([...config.matchAll(/name: '([a-z]+)'/g)].map((m) => m[1]).sort());
+    expect(job('browser').strategy['fail-fast']).toBe(false);
+    expect(stepIn('browser', 'Test the finished page').run).toMatch(/npx playwright test --project=\$\{\{ matrix\.project \}\}/);
+    expect(job('browser').steps[0].with.ref).toBe('${{ needs.update.outputs.branch }}'); // the updated data, not main
+  });
+  it('the pull request goes into the branch the run started from (main on Mondays; a test run on another branch never touches main)', () => {
+    expect(stepIn('publish', 'Open a pull request').run).toMatch(/gh pr create --base "\$\{GITHUB_REF_NAME\}"/);
   });
   it('the pull request is assigned to the owner and asks for their review (so GitHub notifies them)', () => {
-    expect(run('Open a pull request').run).toMatch(/--assignee "\$\{GITHUB_REPOSITORY_OWNER\}" --reviewer "\$\{GITHUB_REPOSITORY_OWNER\}"/);
+    expect(stepIn('publish', 'Open a pull request').run).toMatch(/--assignee "\$\{GITHUB_REPOSITORY_OWNER\}" --reviewer "\$\{GITHUB_REPOSITORY_OWNER\}"/);
   });
-  it('the passed tests show as a check mark on the pull request (commit status, after the tests)', () => {
-    const r = run('Open a pull request').run;
+  it('the passed tests show as a check mark on the pull request (commit status "test", after the tests)', () => {
+    const r = stepIn('publish', 'Open a pull request').run;
     expect(r).toMatch(/statuses\/\$\(git rev-parse HEAD\)/);
     expect(r).toMatch(/state=success/);
+    expect(r).toMatch(/"test"/);
     expect(wf.permissions.statuses).toBe('write');
   });
   it('never merges by itself', () => {
     expect(text).not.toMatch(/gh pr merge|auto-merge|--auto\b|enable-auto-merge|merge_method/i);
   });
-  it('tells the owner when something failed', () => {
-    const s = run('Tell the owner');
-    expect(s.if).toBe('failure()');
-    expect(s.run).toMatch(/gh issue (create|comment)/);
+  it('tells the owner when anything failed, and removes the unfinished branch', () => {
+    expect(job('notify').if).toBe('failure()');
+    expect(job('notify').needs).toEqual(['update', 'browser', 'publish']);
+    const r = stepIn('notify', 'Tell the owner').run;
+    expect(r).toMatch(/gh issue (create|comment)/);
+    expect(r).toMatch(/git\/refs\/heads\/\$BRANCH/);
   });
   it('uses no stored secrets (only the run\'s own short-lived token)', () => {
     expect(text).not.toMatch(/secrets\./);
