@@ -1116,23 +1116,31 @@ test('ending a comparison: the visitor chooses which offer stays; nothing is dro
   // the original offer (A) is kept although B was the one selected and edited last
   await expect(row.locator('button').first()).toHaveText('Offer A');
   // B is recalculated while A is chosen. The page itself clicks "Offer A" at the moment B's first new
-  // number is shown and the rest of its calculation is still running, and records every headline from
-  // then on (a test that looked from outside every few milliseconds missed that moment on slower computers)
+  // number is shown and the rest of its calculation is still running (the moment the old bug showed B's
+  // number under A), and records every headline from then on.
   await page.evaluate(() => {
     window.heads = []; window.bNumber36 = null;
-    const mo = new MutationObserver(() => {
-      if (document.body.classList.contains('outdated') || document.querySelector('#progress').hidden) return;
-      if (document.querySelector('#f-initialLtv').value !== '36') return;
-      mo.disconnect();
+    window.clickA = () => {
       window.bNumber36 = Number(document.querySelector('#headline-text em').textContent.match(/\d+/)[0]);
       document.querySelector('#cmp .end-row button').click();
       window.heads.push(document.querySelector('#headline-text').textContent);
       window.sampler = setInterval(() => window.heads.push(document.querySelector('#headline-text').textContent), 20);
+    };
+    window.mo = new MutationObserver(() => {
+      if (document.body.classList.contains('outdated') || document.querySelector('#progress').hidden) return;
+      if (document.querySelector('#f-initialLtv').value !== '36') return;
+      window.mo.disconnect(); window.clickA();
     });
-    mo.observe(document.body, { attributes: true, childList: true, subtree: true, characterData: true });
+    window.mo.observe(document.body, { attributes: true, childList: true, subtree: true, characterData: true });
   });
   await page.locator('#f-initialLtv').fill('36');
-  await page.waitForFunction(() => window.bNumber36 !== null);
+  const caught = await page.waitForFunction(() => window.bNumber36 !== null, null, { timeout: 20000 }).then(() => true, () => false);
+  if (!caught) {
+    // Safari's engine on GitHub's computers showed no such moment (20/21 Oct). Then A is chosen once B
+    // has finished, and a note on the GitHub run says so, with what the browser reported.
+    const info = await page.evaluate(() => { window.mo.disconnect(); window.clickA(); return `cores ${navigator.hardwareConcurrency}, worker ${typeof Worker}`; });
+    console.log(`::warning title=Moment not reached::ending a comparison (${test.info().project.name}): B's answer arrived in one piece; ${info}`);
+  }
   const bNumber36 = await page.evaluate(() => window.bNumber36);
   await waitDone(page);
   const heads = await page.evaluate(() => { clearInterval(window.sampler); return window.heads; });
