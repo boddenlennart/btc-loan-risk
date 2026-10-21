@@ -257,6 +257,7 @@ export default {
     futuresHelp: 'Die Simulation nimmt die echten täglichen Kursbewegungen von BTC seit 2014, schneidet sie in 30-Tage-Stücke und reiht zufällig gewählte Stücke zu einem neuen Verlauf über die Länge Ihres Kredits aneinander. Jeder Verlauf behält die echte Mischung aus ruhigen und wilden Wochen. Beispiel: Ein Verlauf kann mit einem Abschnitt aus dem Mai 2021 beginnen (ein Einbruch um 50 %), gefolgt von einem aus Ende 2023 (ein stetiger Anstieg).',
     futuresMarginNote: 'Manche ✕ liegen über der roten Linie: Dort wurde ein Margin Call (gelbe Linie) nicht rechtzeitig behoben, oder der Kreditgeber hat einen Teil der BTC verkauft.',
     showOthers: 'Die nächsten 20 Zukünfte zeigen (Satz {n} von {sets})',
+    futuresPicked: 'Die 100 Zukünfte der fünf Sätze sind zufällig aus allen simulierten Zukünften gewählt, so dass {n} davon mit einer Liquidation enden, wie in der Antwort.',
     questionsTitleExisting: '{n} Fragen an Ihren Kreditgeber',
     questionsTitle: 'Vor der Unterschrift: {n} Fragen an Ihren Kreditgeber',
     questionsPreview: 'Was nach einem Margin Call passiert, welcher Kurs zählt, wer Ihre BTC verwahrt …',

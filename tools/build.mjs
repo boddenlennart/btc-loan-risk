@@ -69,7 +69,7 @@ if (currencies.includes(EXAMPLE_FORM.currency)) {
   jobSetData(cur, b64(cur));
   const { terms, settings } = toTerms(exState);
   const res = await jobRun(0, terms, settings, garch[cur], () => {});
-  pageMeta.example = { key: exampleKey(exState), result: { ...res, main: { ...res.main, samplePaths: null } } };
+  pageMeta.example = { key: exampleKey(exState), result: { ...res, main: { ...res.main, samplePool: null } } };
 }
 
 // Donation QR code: made here at build time and stored in the page as an SVG picture.

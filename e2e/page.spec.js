@@ -46,6 +46,8 @@ async function open(page, { lang = 'en', hash = '', offline = false, width } = {
 const headlineNumber = async (page) => Number((await page.locator('#headline-text em').textContent()).match(/\d+/)[0]);
 // done = the full calculation for the current terms has arrived (also when the instant example was shown first)
 const waitDone = async (page) => { await expect(page.locator('#progress')).toBeHidden(); await expect(page.locator('body')).toHaveAttribute('data-ready', '1'); };
+// after typing: the answer is marked out of date at once; wait until the new one has fully arrived
+const waitFresh = async (page) => { await expect(page.locator('body')).not.toHaveClass(/outdated/); await waitDone(page); };
 
 test('loads, shows the answer, and the answer equals the engine run directly (same data, same inputs)', async ({ page }) => {
   const { hosts, errors } = await open(page);
@@ -997,6 +999,42 @@ test('"Show 20 other futures" goes through five different sets and says which on
   }
   expect(seen.size).toBe(5); // five different sets
   await expect(btn).toHaveText('Show the next 20 futures (set 2 of 5)'); // back to the first set
+});
+
+// The owner counted the ✕ in all five sets and got 13 while the answer said 15 (21 Oct 2026): the chart
+// showed the first 100 simulated futures, a random draw. Now they are picked to match the answer.
+test('"What happens when BTC falls": the five sets of 20 futures together have exactly the answer\'s number of liquidations', async ({ page }) => {
+  await open(page); await waitDone(page);
+  for (const ltv of ['30', '50']) {
+    await page.locator('#f-initialLtv').fill(ltv); await waitFresh(page);
+    const n = await headlineNumber(page);
+    const summary = page.locator('#sec-falls > summary');
+    if (!(await page.locator('#sec-falls').getAttribute('open') !== null)) await summary.click();
+    let total = 0;
+    for (let set = 0; set < 5; set++) {
+      await expect(page.locator('#futures-line')).toContainText('of these 20'); // drawn a moment after opening
+      total += Number((await page.locator('#futures-line').textContent()).match(/(\d+) of these 20/)[1]);
+      await page.locator('#other-paths').click();
+    }
+    expect(total, `starting LTV ${ltv}%`).toBe(n);
+    await expect(page.locator('#futures-line')).toContainText(`so that ${n} of them end in a liquidation, as in the answer`);
+  }
+});
+
+// The example showed "54 of 100" liquidated and "in 47 of 100 futures it is zero" (owner, 21 Oct 2026):
+// 53.5 and 46.5, each rounded up. The futures without a sale are now 100 minus the answer's number.
+test('cost of the risk: "zero in X of 100 futures" and the answer add up to 100, also on How it works', async ({ page }) => {
+  await open(page); await waitDone(page);
+  const example = await headlineNumber(page);
+  for (const ltv of ['50', '30', '62']) {
+    if (ltv !== '50') { await page.locator('#f-initialLtv').fill(ltv); await waitFresh(page); }
+    const n = await headlineNumber(page);
+    const none = Number((await page.locator('#risk-cost').textContent()).match(/In (\d+) of 100 futures it is zero/)[1]);
+    expect(none + n, `starting LTV ${ltv}%`).toBe(100);
+  }
+  await page.goto('/method/'); // How it works explains the example
+  const zero = Number((await page.locator('#risk-read').textContent()).match(/Zero in (\d+) of 100 futures/)[1]);
+  expect(zero + example).toBe(100);
 });
 
 test('questions to ask the lender: a folded checklist tile after "Make it safer"; the closed line says what is inside', async ({ page }) => {

@@ -1,6 +1,7 @@
 // The page: builds the form, reads it into loan terms, shows the answer first and
 // asks the worker for the risk results. No wording lives here: every visible word
 // comes from src/content/text.*.js via t().
+import { pickFutures } from './pick-futures.js';
 import { initLang, t, texts, rich, esc, pageHref } from './i18n.js';
 import { money, money0, pct, num, btc, date, dateTime, isoDate } from './format.js';
 import { futuresChart, storiesChart } from './charts.js';
@@ -1003,12 +1004,14 @@ function renderRiskCost() {
   const C = texts().cost; const cur = tm.currency;
   const s = loanSummary(costTerms(tm)); const rc = r.main.riskCost;
   const { total, rate } = riskTotal(tm, s, rc.value);
+  // the futures without a sale are those not counted in the answer: 100 minus its number, so the two add up
+  // to 100 (each rounded on its own gave 54 and 47 for the example: 53.5 and 46.5)
   const line = tm.mode === 'existing'
     ? t('cost.riskLineExisting', { total: money0(round10(total), cur), months: tm.durationMonths, interest: money(s.totalInterest, cur) }) // as in the line above it (€999.96, not €1,000)
     : t('cost.riskLine', { total: money0(round10(total), cur), rate: aprText(rate), apr: aprText(s.effectiveApr) });
   el.innerHTML = `<h4 tabindex="-1">${esc(C.riskTitle)}</h4><p class="big-line">${esc(line)}</p>
     <p>${esc(t('cost.riskPart', { risk: money0(round10(rc.value), cur) }))}</p>
-    <p class="hint">${esc(t('cost.riskNotFee', { none: Math.round(rc.noSale * 100) }))} ${esc(C.riskCompare)}</p>
+    <p class="hint">${esc(t('cost.riskNotFee', { none: 100 - shown(pSale(r.main)) }))} ${esc(C.riskCompare)}</p>
     <p class="hint"><a href="${pageHref('method/')}#risk-cost">${esc(C.riskLink)}</a></p>`;
 }
 
@@ -1020,6 +1023,13 @@ function dotsHtml(groups, label) {
 }
 function legendHtml(items) {
   return `<p class="legend">${items.filter(([n]) => n > 0).map(([n, cls, l]) => `<span><i class="${cls}"></i>${n} ${esc(l)}</span>`).join('')}</p>`;
+}
+function splitToN(parts, n) { // rounds shares of a whole so they add up to exactly n
+  const sum = parts.reduce((a, b) => a + Math.max(0, b), 0) || 1;
+  const raw = parts.map((p) => (Math.max(0, p) / sum) * n); const fl = raw.map(Math.floor);
+  let rest = n - fl.reduce((a, b) => a + b, 0);
+  raw.map((r, i) => [r - fl[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if (rest > 0) { fl[i]++; rest--; } });
+  return fl;
 }
 function splitTo100(parts) { // rounds shares so they add up to exactly 100
   const raw = parts.map((p) => Math.max(0, p) * 100); const fl = raw.map(Math.floor);
@@ -1207,7 +1217,10 @@ function renderLeverage() {
   let html = `<h4>${esc(texts().sections.leverage)}</h4><p>${esc(t(bm.refi ? 'cost.levIntroRefi' : 'cost.levIntro', { received: money0(bm.received, cur), bought: num(bought, 4) }))}</p>`;
   if (r && r.main && r.main.leverage) {
     const L = r.main.leverage;
-    const [more, lessKept, liq] = splitTo100([L.more, L.lessKept, L.liquidated]);
+    // "liquidated" is the same count as in the dots under the answer (rounded once, there); more and less
+    // share the rest (rounded on their own, it once said 53 here and 54 there)
+    const liq = heroSplit(r.main)[0]; // L.liquidated is the same share as r.main.pLiquidation (the same futures)
+    const [more, lessKept] = splitToN([L.more, L.lessKept], 100 - liq);
     const sentence = t(bm.refi ? 'cost.levHeadlineRefi' : 'cost.levHeadline', { more, less: lessKept + liq, liq });
     html += `<p class="big-line">${esc(sentence)}</p>${dotsHtml([[more, 'd-good'], [lessKept, 'd-none'], [liq, 'd-liq']], sentence)}
       ${legendHtml([[more, 'd-good', C.levLegendMore], [lessKept, 'd-none', C.levLegendLess], [liq, 'd-liq', C.levLegendLiq]])}`;
@@ -1256,20 +1269,21 @@ function chartCommon() {
 }
 function renderFutures() {
   const r = lastRisk;
-  if (!r || !r.main.samplePaths) { // the instant example has no sample paths: they arrive with the full calculation
+  if (!r || !r.main.samplePool) { // the instant example has no sample futures: they arrive with the full calculation
     $('#futures-chart').innerHTML = `<p class="progress">${esc(texts().ui.computingShort)}</p>`;
     return;
   }
-  const Fa = texts().falls; const paths = r.main.samplePaths;
+  // together the 100 futures have exactly the answer's number of forced sales
+  const Fa = texts().falls; const paths = pickFutures(r.main.samplePool, shown(pSale(r.main)));
   const sets = Math.max(1, Math.floor(paths.length / 20)); const set = pathSet % sets;
-  const shown = paths.slice(set * 20, set * 20 + 20);
+  const inSet = paths.slice(set * 20, set * 20 + 20);
   $('#other-paths').textContent = t('falls.showOthers', { n: ((set + 1) % sets) + 1, sets });
-  $('#futures-line').textContent = t('falls.futuresLine', { k: shown.filter((p) => p.event).length });
+  $('#futures-line').textContent = `${t('falls.futuresLine', { k: inSet.filter((p) => p.event).length })} ${t('falls.futuresPicked', { n: paths.filter((p) => p.event).length })}`;
   futuresChart($('#futures-chart'), {
-    ...chartCommon(), paths: shown,
+    ...chartCommon(), paths: inSet,
     labels: { title: Fa.futuresTitle, margin: Fa.ladderMargin, sale: Fa.ladderSale, tip: (mo, sold) => `${mo === 0 ? t('ui.today') : t('ui.monthN', { n: mo })}: ${sold} / 20 ✕` },
   });
-  $('#futures-note').hidden = !shown.some((p) => p.event && p.event.kind !== 'liquidationLtv');
+  $('#futures-note').hidden = !inSet.some((p) => p.event && p.event.kind !== 'liquidationLtv');
 }
 function renderStories() {
   const r = lastRisk; if (!r || !r.stories) return;

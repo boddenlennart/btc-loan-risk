@@ -33,7 +33,11 @@ describe.skipIf(!hasData('USD') || !hasData('EUR'))('reference loans on the newe
       expect(k.cumulativeByMonth.at(-1)).toBeCloseTo(k.pLiquidation + k.pPartial, 9); // the first forced sale, full or partial (UAT finding 1)
       expect(k.cumulativeByMonth).toHaveLength(loanTerms(ref).durationMonths);
       const f = k.fanLastMonth; expect(f.q05 <= f.q25 && f.q25 <= f.q50 && f.q50 <= f.q75 && f.q75 <= f.q95).toBe(true);
-      expect(k.samplePaths.count).toBe(100); // five sets of 20 for "show 20 other futures"
+      // the futures chart picks from up to 100 futures with a sale and 100 without (exactly one group each)
+      const nSold = Math.round((k.pLiquidation + k.pPartial) * k.samplePool.nPaths);
+      expect(k.samplePool.sold).toBe(Math.min(100, nSold));
+      expect(k.samplePool.safe).toBe(Math.min(100, k.samplePool.nPaths - nSold));
+      expect(k.samplePool.soldAllHaveEvent && k.samplePool.safeNoEvent).toBe(true);
       expect(k.replay.starts).toBeGreaterThan(1000);
       expect(k.stories.length).toBeGreaterThanOrEqual(3);
       // a lower starting LTV never helps less than 3 points of random noise allow

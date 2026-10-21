@@ -81,14 +81,14 @@ export async function resultsFor(ref, job, garch) {
   const res = await job.run(0, t, loanSettings(ref), garch, () => {});
   // every point a chart draws is a finite number, and the real years start at today's price
   // (a chart once started every line at infinity: ux/N-uat-report.md, finding 2)
-  const points = [...res.stories.flatMap((x) => x.weekly), ...(res.main.samplePaths || []).flatMap((x) => x.weekly), ...res.main.fanByMonth.flatMap((f) => [f.q05, f.q25, f.q50, f.q75, f.q95])];
+  const points = [...res.stories.flatMap((x) => x.weekly), ...[...res.main.samplePool.sold, ...res.main.samplePool.safe].flatMap((x) => x.weekly), ...res.main.fanByMonth.flatMap((f) => [f.q05, f.q25, f.q50, f.q75, f.q95])];
   if (points.some((x) => !Number.isFinite(x))) throw new Error(`${ref.id}: a chart point is not a finite number`);
   if (res.stories.some((x) => x.weekly[0] !== 1)) throw new Error(`${ref.id}: a real year does not start at today's price`);
   const m = res.main;
   const risk = {
     pLiquidation: m.pLiquidation, pPartial: m.pPartial, pMarginCall: m.pMarginCall, cumulativeByMonth: m.cumulativeByMonth,
     fanLastMonth: m.fanByMonth.at(-1), keptAfterSale: m.keptAfterSale ?? null, leverage: m.leverage ?? null, riskCost: m.riskCost ?? null,
-    samplePaths: { count: m.samplePaths.length, sold: m.samplePaths.filter((p) => p.event).length, firstEvent: m.samplePaths.find((p) => p.event)?.event ?? null },
+    samplePool: { sold: m.samplePool.sold.length, safe: m.samplePool.safe.length, nPaths: loanSettings(ref).nPaths, soldAllHaveEvent: m.samplePool.sold.every((p) => p.event), safeNoEvent: m.samplePool.safe.every((p) => !p.event), firstEvent: m.samplePool.sold[0]?.event ?? null },
     trends: res.trends,
     garch: { pLiquidation: res.garchMc.pLiquidation, pPartial: res.garchMc.pPartial },
     replay: { starts: res.replay.starts, liquidatedShare: res.replay.liquidatedShare, partialShare: res.replay.partialShare, marginCallShare: res.replay.marginCallShare, worst: res.replay.worst, reserve: res.replay.reserveBtcNeeded },

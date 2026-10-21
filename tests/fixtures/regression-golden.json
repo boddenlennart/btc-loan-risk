@@ -106,9 +106,12 @@
      "soldQ50": 663.316299719,
      "soldQ90": 8449.915978324
     },
-    "samplePaths": {
-     "count": 100,
-     "sold": 43,
+    "samplePool": {
+     "sold": 100,
+     "safe": 100,
+     "nPaths": 2000,
+     "soldAllHaveEvent": true,
+     "safeNoEvent": true,
      "firstEvent": {
       "day": 224,
       "kind": "liquidationLtv"
@@ -451,9 +454,12 @@
      "soldQ50": 552.002978735,
      "soldQ90": 8961.868432267
     },
-    "samplePaths": {
-     "count": 100,
-     "sold": 54,
+    "samplePool": {
+     "sold": 100,
+     "safe": 100,
+     "nPaths": 2000,
+     "soldAllHaveEvent": true,
+     "safeNoEvent": true,
      "firstEvent": {
       "day": 234,
       "kind": "cureExpired"
@@ -859,9 +865,12 @@
      "soldQ50": 348.270973348,
      "soldQ90": 11655.82750806
     },
-    "samplePaths": {
-     "count": 100,
-     "sold": 16,
+    "samplePool": {
+     "sold": 100,
+     "safe": 100,
+     "nPaths": 2000,
+     "soldAllHaveEvent": true,
+     "safeNoEvent": true,
      "firstEvent": {
       "day": 386,
       "kind": "liquidationLtv"
@@ -1204,9 +1213,12 @@
      "soldQ50": 651.405342607,
      "soldQ90": 8545.082202696
     },
-    "samplePaths": {
-     "count": 100,
-     "sold": 42,
+    "samplePool": {
+     "sold": 100,
+     "safe": 100,
+     "nPaths": 2000,
+     "soldAllHaveEvent": true,
+     "safeNoEvent": true,
      "firstEvent": {
       "day": 110,
       "kind": "liquidationLtv"
@@ -1549,9 +1561,12 @@
      "soldQ50": 612.107371425,
      "soldQ90": 7119.195478661
     },
-    "samplePaths": {
-     "count": 100,
-     "sold": 57,
+    "samplePool": {
+     "sold": 100,
+     "safe": 100,
+     "nPaths": 2000,
+     "soldAllHaveEvent": true,
+     "safeNoEvent": true,
      "firstEvent": {
       "day": 137,
       "kind": "partial"
@@ -1904,9 +1919,12 @@
      "soldQ50": 210.288510284,
      "soldQ90": 6178.017686408
     },
-    "samplePaths": {
-     "count": 100,
-     "sold": 48,
+    "samplePool": {
+     "sold": 100,
+     "safe": 100,
+     "nPaths": 2000,
+     "soldAllHaveEvent": true,
+     "safeNoEvent": true,
      "firstEvent": {
       "day": 93,
       "kind": "partial"
@@ -2252,9 +2270,12 @@
      "soldQ50": 659.672635352,
      "soldQ90": 9770.653783704
     },
-    "samplePaths": {
-     "count": 100,
-     "sold": 31,
+    "samplePool": {
+     "sold": 100,
+     "safe": 100,
+     "nPaths": 2000,
+     "soldAllHaveEvent": true,
+     "safeNoEvent": true,
      "firstEvent": {
       "day": 299,
       "kind": "liquidationLtv"
@@ -2612,9 +2633,12 @@
      "soldQ50": 654.025959836,
      "soldQ90": 8758.898634508
     },
-    "samplePaths": {
-     "count": 100,
-     "sold": 37,
+    "samplePool": {
+     "sold": 100,
+     "safe": 100,
+     "nPaths": 2000,
+     "soldAllHaveEvent": true,
+     "safeNoEvent": true,
      "firstEvent": {
       "day": 135,
       "kind": "cureExpired"
@@ -2967,9 +2991,12 @@
      "soldQ50": 626.895828973,
      "soldQ90": 13447.281469094
     },
-    "samplePaths": {
-     "count": 100,
-     "sold": 99,
+    "samplePool": {
+     "sold": 100,
+     "safe": 24,
+     "nPaths": 2000,
+     "soldAllHaveEvent": true,
+     "safeNoEvent": true,
      "firstEvent": {
       "day": 3,
       "kind": "cureExpired"
@@ -3324,9 +3351,12 @@
      "soldQ50": 667.844451292,
      "soldQ90": 8965.795074973
     },
-    "samplePaths": {
-     "count": 100,
-     "sold": 27,
+    "samplePool": {
+     "sold": 100,
+     "safe": 100,
+     "nPaths": 2000,
+     "soldAllHaveEvent": true,
+     "safeNoEvent": true,
      "firstEvent": {
       "day": 296,
       "kind": "liquidationLtv"
@@ -3707,9 +3737,12 @@
      "soldQ50": 564.084314754,
      "soldQ90": 9445.25555653
     },
-    "samplePaths": {
-     "count": 100,
-     "sold": 24,
+    "samplePool": {
+     "sold": 100,
+     "safe": 100,
+     "nPaths": 2000,
+     "soldAllHaveEvent": true,
+     "safeNoEvent": true,
      "firstEvent": {
       "day": 644,
       "kind": "liquidationLtv"
@@ -4040,9 +4073,12 @@
      "soldQ50": 697.547787551,
      "soldQ90": 7001.644509397
     },
-    "samplePaths": {
-     "count": 100,
-     "sold": 29,
+    "samplePool": {
+     "sold": 100,
+     "safe": 100,
+     "nPaths": 2000,
+     "soldAllHaveEvent": true,
+     "safeNoEvent": true,
      "firstEvent": {
       "day": 110,
       "kind": "liquidationLtv"

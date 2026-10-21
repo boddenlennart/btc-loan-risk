@@ -262,6 +262,7 @@ export default {
     futuresHelp: 'The simulation takes the real daily price moves of BTC since 2014 and cuts them into 30-day pieces. It joins randomly chosen pieces into a new path for the length of your loan. Each path keeps the real mix of calm and wild weeks. Example: one path may start with a stretch from May 2021 (a 50% fall) followed by one from late 2023 (a steady rise).',
     futuresMarginNote: 'Some ✕ sit above the red line: there, a margin call (amber line) was not fixed in time, or the lender sold part of the BTC.',
     showOthers: 'Show the next 20 futures (set {n} of {sets})',
+    futuresPicked: 'The 100 futures in the five sets are picked at random from all simulated futures, so that {n} of them end in a liquidation, as in the answer.',
     questionsTitleExisting: '{n} questions to ask your lender',
     questionsTitle: 'Before you sign: {n} questions to ask your lender',
     questionsPreview: 'What happens after a margin call, which price counts, who holds your BTC …',

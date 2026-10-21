@@ -87,7 +87,7 @@ function render() {
   $('#risk-table').innerHTML = `<thead><tr>${M.riskHead.map((h) => `<th scope="col">${esc(h)}</th>`).join('')}</tr></thead><tbody>
     <tr><th scope="row" class="wrap">${esc(t('method.riskRowFormula', { vol: pct(md.simVol, 0) }))}</th><td>${money0(rk.textbook, cur)}</td></tr>
     <tr class="us"><th scope="row" class="wrap">${esc(M.riskRowSim)}</th><td>${money0(rk.value, cur)}</td></tr></tbody>`;
-  $('#risk-read').innerHTML = M.riskRead.map((s) => `<li>${esc(s.replace('{none}', of100(rk.noSale)))}</li>`).join('');
+  $('#risk-read').innerHTML = M.riskRead.map((s) => `<li>${esc(s.replace('{none}', 100 - show(1 - rk.noSale)))}</li>`).join('');
   $('#risk-wrap').setAttribute('aria-label', M.riskHead[1]);
 
   // 6. three methods
