@@ -22,12 +22,12 @@
   --series-1: #1f4e79;
   --band-outer: rgba(31, 78, 121, 0.14);
   --band-inner: rgba(31, 78, 121, 0.30);
-  --critical: #b42318;   /* liquidated: 6.0:1 */
+  --critical: #c81e1e;   /* liquidated: a clear red, 5.7:1 on white (orange is the logo's colour only, owner 21 Oct 2026) */
   --critical-ink: #b42318;
   --critical-bg: #fbeceb;
-  --warning: #a16207;    /* margin call: 4.5:1 */
-  --warning-ink: #8a5300;
-  --partial: #c2410c;    /* partly sold */
+  --warning: #b08800;    /* margin call: gold, 3.3:1 on white (shapes); red and gold also differ for colour-blind eyes */
+  --warning-ink: #7a5c00; /* margin-call text: 6.3:1 */
+  --partial: #c81e1e;    /* partly sold: the same red, as a half-filled dot (.d-part): the shape says "part" */
   --good: #2e7d32;
   --neutral-fill: #8a877e;
   --path-kept: #a3a29a;
@@ -35,7 +35,7 @@
   --grid: #e9e6de;
   --focus: #1f4e79;
   --story-1: #b42318;
-  --story-2: #a14f00;
+  --story-2: #0f766e;
   --story-3: #6b3fa0;
   --story-4: #2e7d32;
 }
@@ -46,9 +46,9 @@
     --text: #f2f0ea; --text-2: #c9c6bd; --muted: #a29f96;
     --accent: #9cc0e8; --accent-ink: #9cc0e8; --fill-strong: #2c5f8f; --series-1: #6fa0d6; --focus: #9cc0e8;
     --band-outer: rgba(111, 160, 214, 0.18); --band-inner: rgba(111, 160, 214, 0.38);
-    --critical: #f07167; --critical-ink: #f07167; --critical-bg: #3a1e1e; --warning: #e0a43a; --warning-ink: #f0c060; --partial: #f09a5b; --good: #5cb860;
+    --critical: #f0474f; --critical-ink: #f25c63; --critical-bg: #3a1e1e; --warning: #f5c518; --warning-ink: #f5c518; --partial: #f0474f; --good: #5cb860;
     --neutral-fill: #77746b; --path-kept: #6b6a64; --warn-bg: #33290f; --grid: #2c2c2a;
-    --story-1: #f07167; --story-2: #e08a3a; --story-3: #b48be6; --story-4: #5cb860;
+    --story-1: #f0474f; --story-2: #2bb3a3; --story-3: #b48be6; --story-4: #5cb860;
   }
 }
 :root[data-theme="dark"] {
@@ -57,9 +57,9 @@
   --text: #f2f0ea; --text-2: #c9c6bd; --muted: #a29f96;
   --accent: #9cc0e8; --accent-ink: #9cc0e8; --fill-strong: #2c5f8f; --series-1: #6fa0d6; --focus: #9cc0e8;
   --band-outer: rgba(111, 160, 214, 0.18); --band-inner: rgba(111, 160, 214, 0.38);
-  --critical: #f07167; --critical-ink: #f07167; --critical-bg: #3a1e1e; --warning: #e0a43a; --warning-ink: #f0c060; --partial: #f09a5b; --good: #5cb860;
+  --critical: #f0474f; --critical-ink: #f25c63; --critical-bg: #3a1e1e; --warning: #f5c518; --warning-ink: #f5c518; --partial: #f0474f; --good: #5cb860;
   --neutral-fill: #77746b; --path-kept: #6b6a64; --warn-bg: #33290f; --grid: #2c2c2a;
-  --story-1: #f07167; --story-2: #e08a3a; --story-3: #b48be6; --story-4: #5cb860;
+  --story-1: #f0474f; --story-2: #2bb3a3; --story-3: #b48be6; --story-4: #5cb860;
 }
 
 /* Type scale: 7 sizes (hero 56/72, xl 26/32, lg 20, base 16, sm 14, xs 13, label 12). */
@@ -149,7 +149,7 @@ button.link.strong { font-weight: 600; text-decoration: none; }
 .dots { display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; margin: 12px 0 8px; max-width: 420px; }
 .dots i { aspect-ratio: 1; border-radius: 50%; display: block; }
 .d-liq { background: var(--critical); }
-.d-part { background: var(--partial); }
+.d-part { background: linear-gradient(90deg, var(--partial) 50%, transparent 50%); box-shadow: inset 0 0 0 1.5px var(--partial); } /* half filled: part sold */
 .d-margin { background: var(--warning); }
 .d-none { box-shadow: inset 0 0 0 1.5px var(--field); }
 .d-good { background: var(--good); }
@@ -419,6 +419,7 @@ dt, details, h3, #terms, .part { scroll-margin-top: 64px; }
 #privacy-body h3 { font-size: 16px; margin: 16px 0 4px; }
 /* tile labels break between words only, never inside one ("LIQUIDATED AT" on a narrow phone) */
 .tile .label { letter-spacing: 0.02em; overflow-wrap: break-word; word-break: normal; } /* a word too long for any line breaks instead of spilling out */
+.chart .line-mark { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 3 4; } /* e.g. the halvings */
 .chart .mark-now { fill: var(--series-1); stroke: var(--surface); stroke-width: 2; }
 
 /* "Insights": the takeaway first, then the table; the survival map shades each cell by its number */

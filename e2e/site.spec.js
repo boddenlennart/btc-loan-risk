@@ -473,3 +473,23 @@ test('"Where to find these numbers": the five words to look for, without a sampl
   await expect(page.locator('#where .sample')).toHaveCount(0);
   await expect(page.locator('#where ol li')).toHaveCount(5);
 });
+
+// Owner, 21 Oct 2026: more Bitcoin feel, still factual. The halvings are marked in the one chart with calendar dates.
+test('Insights: the price-swings chart marks the three halvings, each between its own years, in both languages', async ({ page }) => {
+  for (const [path, word] of [['/insights/', 'Dashed lines: the halvings of 2016, 2020 and 2024'], ['/de/insights/', 'Gestrichelte Linien: die Halvings 2016, 2020 und 2024']]) {
+    await visit(page, path);
+    const chart = page.locator('#swings-chart');
+    await expect(chart.locator('line.line-mark')).toHaveCount(3);
+    await expect(chart.locator('text', { hasText: /^Halving$/ })).toHaveCount(3);
+    await expect(page.locator('main')).toContainText(word);
+    // each marker sits between the year labels around it (2016 lies between "2015" and "2017")
+    const pos = await chart.evaluate((el) => ({
+      marks: [...el.querySelectorAll('line.line-mark')].map((l) => Number(l.getAttribute('x1'))),
+      years: Object.fromEntries([...el.querySelectorAll('text.axis')].filter((t) => /^20\d\d$/.test(t.textContent)).map((t) => [t.textContent, Number(t.getAttribute('x'))])),
+    }));
+    for (const [i, yr] of [[0, 2016], [1, 2020], [2, 2024]]) {
+      const before = pos.years[yr - 1] ?? pos.years[yr - 2]; const after = pos.years[yr + 1] ?? pos.years[yr + 2];
+      expect(pos.marks[i], `halving ${yr}`).toBeGreaterThan(before); expect(pos.marks[i], `halving ${yr}`).toBeLessThan(after);
+    }
+  }
+});
