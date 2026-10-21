@@ -49,6 +49,13 @@ jobs:
         if: steps.update.outputs.changed == 'true'
         run: node tools/build.mjs
 
+      - name: Rebuild the link-preview images (they show the example's answer, which new data can move)
+        if: steps.update.outputs.changed == 'true'
+        run: |
+          npx playwright install --with-deps chromium
+          node tools/build-og.mjs
+          node tools/build.mjs # again: the pages point to the images with a stamp made from them
+
       - name: Run the full test suite
         if: steps.update.outputs.changed == 'true'
         run: npm test
