@@ -555,6 +555,7 @@ export default {
     data: [
       'Kursdaten: stündliche Kurse der Börsen Bitstamp (USD seit 2014, EUR seit 2017) und Kraken (EUR 2014–2016), wie von den Börsen veröffentlicht. Bekannte Lücke: Bitstamp war vom 5. bis 9. Januar 2015 offline.',
       'Weitere Währungen (CHF, GBP, CAD, AUD, CZK, PLN): die Euro-Kurse, Stunde für Stunde mit dem täglichen Wechselkurs der Europäischen Zentralbank umgerechnet. Gegenüber echten Börsenkursen weicht die Hälfte aller Stunden um höchstens 0,2 % ab.',
+      'Die Simulation nutzt den BTC-Kurs in der Währung Ihres Kredits. Die Antwort kann deshalb zwischen Währungen um etwa einen Punkt abweichen.',
       'Aktueller Kurs: Bitstamp, dieselbe Börse wie die Kurshistorie; nur wenn sie nicht antwortet, Coinbase. Weitere Währungen: der Euro-Kurs × der neueste EZB-Kurs. Die Simulation und die echte Vergangenheit nutzen die Kurshistorie bis zur letzten wöchentlichen Aktualisierung, daher geben dieselben Bedingungen die ganze Woche dieselbe Zahl.',
       'Einmal pro Woche ergänzt ein automatischer Ablauf die neuesten Kurse und Wechselkurse. Er prüft sie zuerst (Lücken, unmögliche Kurse, Quellen, die sich widersprechen) und hält an, wenn etwas nicht stimmt. Alle Zahlen dieser Seite werden dann neu berechnet.',
     ],

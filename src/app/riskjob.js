@@ -120,7 +120,7 @@ function simulate(t, s, settings, { model = 'bootstrap', nPaths = settings.nPath
 function leverList(t) {
   const out = [];
   const add = (id, change, value) => out.push({ id, terms: { ...t, ...change }, value });
-  for (const pts of [0.1, 0.2]) {
+  for (const pts of [0.05, 0.1, 0.2]) { // 5 points too: the suggestion under the answer takes the smallest step that clearly helps
     const ltv = Math.round((t.initialLtv - pts) * 100) / 100;
     if (ltv >= 0.05) add('lowerLtv', { initialLtv: ltv, ...(t.marginCallLtv && t.marginCallLtv <= ltv ? { marginCallLtv: null } : {}) }, ltv);
   }

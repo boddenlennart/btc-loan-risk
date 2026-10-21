@@ -231,6 +231,11 @@
       "id": "reserve",
       "value": 3000,
       "p": 0.3635
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.45,
+      "p": 0.3725
      }
     ],
     "leverBase": 0.468,
@@ -579,6 +584,11 @@
       "id": "reserve",
       "value": 3000,
       "p": 0.4755
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.45,
+      "p": 0.4915
      },
      {
       "id": "warningOnly",
@@ -982,6 +992,11 @@
       "p": 0.0545
      },
      {
+      "id": "lowerLtv",
+      "value": 0.3,
+      "p": 0.0955
+     },
+     {
       "id": "reserve",
       "value": 3000,
       "p": 0.1045
@@ -1338,6 +1353,11 @@
       "id": "reserve",
       "value": 3000,
       "p": 0.3695
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.45,
+      "p": 0.3765
      }
     ],
     "leverBase": 0.472,
@@ -1693,6 +1713,11 @@
       "p": 0.471
      },
      {
+      "id": "lowerLtv",
+      "value": 0.45,
+      "p": 0.4975
+     },
+     {
       "id": "higherLiq",
       "value": 0.9,
       "p": 0.612
@@ -2046,6 +2071,11 @@
       "p": 0.4265
      },
      {
+      "id": "lowerLtv",
+      "value": 0.45,
+      "p": 0.4365
+     },
+     {
       "id": "warningOnly",
       "value": null,
       "p": 0.4715
@@ -2385,6 +2415,11 @@
       "id": "lowerLtv",
       "value": 0.4,
       "p": 0.18
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.45,
+      "p": 0.247
      }
     ],
     "leverBase": 0.3215,
@@ -2755,6 +2790,11 @@
       "p": 0.2745
      },
      {
+      "id": "lowerLtv",
+      "value": 0.45,
+      "p": 0.3295
+     },
+     {
       "id": "warningOnly",
       "value": null,
       "p": 0.3635
@@ -3109,6 +3149,11 @@
       "id": "reserve",
       "value": 3000,
       "p": 0.859
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.69,
+      "p": 0.9425
      },
      {
       "id": "shorter",
@@ -3466,6 +3511,11 @@
       "id": "lowerLtv",
       "value": 0.3,
       "p": 0.128
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.35,
+      "p": 0.2005
      },
      {
       "id": "higherLiq",
@@ -3854,6 +3904,11 @@
       "p": 0.1255
      },
      {
+      "id": "lowerLtv",
+      "value": 0.25,
+      "p": 0.201
+     },
+     {
       "id": "higherLiq",
       "value": 0.9,
       "p": 0.23
@@ -4198,6 +4253,11 @@
       "id": "higherLiq",
       "value": 0.9,
       "p": 0.194
+     },
+     {
+      "id": "lowerLtv",
+      "value": 0.45,
+      "p": 0.201
      }
     ],
     "leverBase": 0.294,

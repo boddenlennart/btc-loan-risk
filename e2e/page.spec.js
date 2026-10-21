@@ -353,11 +353,14 @@ test('"Make it safer" shows exactly the headline number for your own terms, and 
   const n = await headlineNumber(page);
   await expect(page.locator('#slider-line')).toContainText(`Starting LTV 50% → ${n} of 100`);
   await expect(page.locator('#safer .lv.base b')).toHaveText(String(n));
-  const best = (await page.locator('#best-lever').textContent()).match(/→ (\d+) of 100/);
+  const best = (await page.locator('#best-lever').textContent()).match(/One change lowers this: (.+) → (\d+) of 100/);
   expect(best).not.toBeNull();
-  expect(Number(best[1])).toBeLessThan(n);
-  // it is the first (lowest) option in "Make it safer"
-  await expect(page.locator('#safer .lv:not(.base) b').first()).toHaveText(best[1]);
+  expect(Number(best[2])).toBeLessThan(n);
+  // it is one of the options in "Make it safer", with the same number (the smallest step that clearly helps,
+  // not necessarily the lowest one: owner, 21 Oct 2026)
+  await expect(page.locator('#safer .lv:not(.base)').filter({ hasText: best[1] }).locator('b')).toHaveText(best[2]);
+  const all = (await page.locator('#safer .lv:not(.base) b').allTextContents()).map(Number);
+  expect(all).toEqual([...all].sort((a, b) => a - b)); // the list still goes from lowest to highest
   // fairness: the top-up assumption and the two other methods are shown with the answer
   await expect(page.locator('#assume-line')).toHaveText('Assumes you add no BTC or money after a margin call.');
   await expect(page.locator('#methods-line')).toContainText(/Other methods: real history since 2014 \d+ of 100, a volatility model \d+ of 100/);
@@ -1035,6 +1038,17 @@ test('cost of the risk: "zero in X of 100 futures" and the answer add up to 100,
   await page.goto('/method/'); // How it works explains the example
   const zero = Number((await page.locator('#risk-read').textContent()).match(/Zero in (\d+) of 100 futures/)[1]);
   expect(zero + example).toBe(100);
+});
+
+// Owner, 21 Oct 2026: a loan at 25% got "Starting LTV 5% → 0 of 100" (five times the BTC). Now the smallest step
+// that clearly helps is suggested; the slider below shows the rest.
+test('"One change lowers this": the smallest starting-LTV step that clearly helps, not the biggest', async ({ page }) => {
+  await open(page, { hash: encodeState({ ...EXAMPLE_FORM, isExample: false, currency: 'USD', initialLtv: 25 }) }); await waitDone(page);
+  await expect(page.locator('#best-lever')).toHaveText(/^One change lowers this: Starting LTV 20% → \d+ of 100\.$/);
+  const n = await headlineNumber(page);
+  const p = Number((await page.locator('#best-lever').textContent()).match(/→ (\d+) of 100/)[1]);
+  expect(p).toBeLessThanOrEqual(n - Math.max(1, Math.ceil(n / 4))); // clearly lower
+  await expect(page.locator('#safer .lv').filter({ hasText: 'Starting LTV 5%' })).toHaveCount(1); // the bigger steps stay in the list
 });
 
 test('questions to ask the lender: a folded checklist tile after "Make it safer"; the closed line says what is inside', async ({ page }) => {

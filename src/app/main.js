@@ -2,6 +2,7 @@
 // asks the worker for the risk results. No wording lives here: every visible word
 // comes from src/content/text.*.js via t().
 import { pickFutures } from './pick-futures.js';
+import { bestLever } from './best-lever.js';
 import { initLang, t, texts, rich, esc, pageHref } from './i18n.js';
 import { money, money0, pct, num, btc, date, dateTime, isoDate } from './format.js';
 import { futuresChart, storiesChart } from './charts.js';
@@ -1103,8 +1104,8 @@ const leverLabel = (l, tm) => t(`results.levers.${tm.mode === 'existing' && ['lo
 });
 // Under the answer: the one change from "Make it safer" that lowers the number most
 function bestLeverText(r) {
-  const best = r.levers && r.levers[0];
-  if (!best || shown(best.p) >= shown(pSale(r.main))) return '';
+  const best = bestLever(r.levers, shown(pSale(r.main)), shown);
+  if (!best) return '';
   return t('results.bestLever', { lever: leverLabel(best, riskTerms), p: shown(best.p) });
 }
 
