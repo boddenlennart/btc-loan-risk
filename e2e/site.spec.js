@@ -84,7 +84,7 @@ test('"How it works": three layers, every part, the charts and tables of the exa
 
 test('"How it works", the cost of the risk: one future worked through, the average, the scaling, the textbook cross-check, the same number as the check', async ({ page }) => {
   const errors = await visit(page, '/method/');
-  await expect(page.locator('#risk-one')).toContainText(/the example loan is liquidated on day \d+ at €[\d,]+\. 0\.\d{4} BTC repaid the loan, 0\.\d{4} BTC was the fee\./);
+  await expect(page.locator('#risk-one')).toContainText(/the example loan is liquidated on day \d+ at €[\d,]+\. 0\.\d{4} BTC repaid the loan, 0\.\d{4} BTC was the liquidation fee\. .* Liquidation fee: 0\.\d{4} × €[\d,]+ = €[\d,]+\./);
   await expect(page.locator('#risk-one')).toContainText(/In this future: €[\d,]+\./);
   await expect(page.locator('#risk-all')).toContainText(/In [\d,]+ futures nothing is sold, so their cost is €0\. In the other [\d,]+, it is €[\d,]+ on average/);
   // the average written out: the arithmetic on the page adds up
