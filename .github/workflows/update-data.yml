@@ -1,5 +1,11 @@
 # Weekly price-data update. Opens a pull request; never merges by itself.
 # See README → "How to update and check the data".
+#
+# 1. update:  fetch and check the new hours, rebuild the page, run all unit tests, save it on its own branch
+# 2. browser: the browser tests in five setups side by side (three computer browsers, an iPhone, an Android
+#             phone), as for every other change (tests.yml). One after the other they took about an hour.
+# 3. publish: only when everything passed: the check marks and the pull request for the owner
+# 4. notify:  when anything failed: an issue for the owner (and the unfinished branch is removed)
 name: Update price data
 
 on:
@@ -20,7 +26,10 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 90 # the browser tests run one setup after the other here
+    timeout-minutes: 30
+    outputs:
+      changed: ${{ steps.update.outputs.changed }}
+      branch: ${{ steps.save.outputs.branch }}
     steps:
       - uses: actions/checkout@v4
 
@@ -44,28 +53,73 @@ jobs:
         if: steps.update.outputs.changed == 'true'
         run: npm test
 
-      - name: Test the finished page in a real browser
-        if: steps.update.outputs.changed == 'true'
-        run: |
-          npx playwright install --with-deps chromium webkit firefox
-          npm run test:e2e
+      - name: Show what the data check found (on the run's page)
+        if: always()
+        run: if [ -f "$RUNNER_TEMP/summary.md" ]; then cat "$RUNNER_TEMP/summary.md" >> "$GITHUB_STEP_SUMMARY"; fi
 
-      - name: Open a pull request (never merged automatically)
+      - name: Save the update on its own branch (tested in the browsers next)
+        id: save
         if: steps.update.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           branch="data-update-$(date -u +%Y-%m-%d)"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$branch"
           git add data docs
-          git commit -m "Weekly price data update $(date -u +%Y-%m-%d)"
+          # the summary travels in the commit message, for the pull request
+          git commit -m "Weekly price data update $(date -u +%Y-%m-%d)" -m "$(cat "$RUNNER_TEMP/summary.md")"
           git push --force origin "$branch"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+
+  browser:
+    needs: update
+    if: needs.update.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { project: chromium, engine: chromium }
+          - { project: webkit, engine: webkit }
+          - { project: firefox, engine: firefox }
+          - { project: iphone, engine: webkit }
+          - { project: android, engine: chromium }
+    name: browser (${{ matrix.project }})
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.update.outputs.branch }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install tools
+        run: npm ci
+      - name: Test the finished page in a real browser
+        run: |
+          npx playwright install --with-deps ${{ matrix.engine }}
+          npx playwright test --project=${{ matrix.project }}
+
+  publish:
+    needs: [update, browser]
+    if: needs.update.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.update.outputs.branch }}
+
+      - name: Open a pull request (never merged automatically)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ needs.update.outputs.branch }}
+        run: |
           # Pull requests opened by a workflow do not start other checks (a GitHub rule), so the
           # result of the tests above is attached to the commit here: it shows as a check mark.
           # Reported twice: once readable, once as "test", the check the protected main branch requires
-          # (the same name as the job in tests.yml), so the data update can be merged.
+          # (the same name as the final job in tests.yml), so the data update can be merged.
           for context in "Weekly update: all tests and browser tests" "test"; do
             gh api "repos/${GITHUB_REPOSITORY}/statuses/$(git rev-parse HEAD)" \
               -f state=success -f context="$context" \
@@ -73,35 +127,43 @@ jobs:
               -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           done
           {
-            cat "$RUNNER_TEMP/summary.md"
+            git log -1 --format=%b
             echo
             echo "All tests passed in [this run](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})."
           } > "$RUNNER_TEMP/body.md"
+          # into the branch the run started from: main every Monday; another branch for a test run by hand
           # assigned to the owner and asking for their review: GitHub always notifies about that
-          gh pr create --base "${GITHUB_REF_NAME}" --head "$branch" --title "Weekly price data update $(date -u +%Y-%m-%d)" --body-file "$RUNNER_TEMP/body.md" \
+          gh pr create --base "${GITHUB_REF_NAME}" --head "$BRANCH" --title "Weekly price data update $(date -u +%Y-%m-%d)" --body-file "$RUNNER_TEMP/body.md" \
               --assignee "${GITHUB_REPOSITORY_OWNER}" --reviewer "${GITHUB_REPOSITORY_OWNER}" \
-            || gh pr edit "$branch" --body-file "$RUNNER_TEMP/body.md"
+            || gh pr edit "$BRANCH" --body-file "$RUNNER_TEMP/body.md"
           # an older, unmerged update is contained in this one: close it with a note
-          for old in $(gh pr list --state open --json number,headRefName --jq ".[] | select(.headRefName | startswith(\"data-update-\")) | select(.headRefName != \"$branch\") | .number"); do
+          for old in $(gh pr list --state open --json number,headRefName --jq ".[] | select(.headRefName | startswith(\"data-update-\")) | select(.headRefName != \"$BRANCH\") | .number"); do
             gh pr close "$old" --delete-branch --comment "Replaced by the newer data update from $(date -u +%Y-%m-%d), which contains these hours too."
           done
 
+  notify:
+    needs: [update, browser, publish]
+    if: failure()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
       - name: Tell the owner when something failed (opens an issue)
-        if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ needs.update.outputs.branch }}
         run: |
+          # an update that did not pass is not offered: its branch is removed
+          if [ -n "$BRANCH" ]; then gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/$BRANCH" || true; fi
           {
             echo "The weekly price-data update failed on $(date -u +%Y-%m-%d)."
             echo
-            if [ -f "$RUNNER_TEMP/summary.md" ]; then cat "$RUNNER_TEMP/summary.md"; echo; fi
-            echo "Details: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "Details (which step, which test): ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
             echo
             echo "What to do: see README → \"How to update and check the data\" → \"If the update fails\"."
           } > "$RUNNER_TEMP/issue.md"
-          open=$(gh issue list --state open --search "in:title Price data update failed" --json number --jq '.[0].number // empty')
+          open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "in:title Price data update failed" --json number --jq '.[0].number // empty')
           if [ -n "$open" ]; then
-            gh issue comment "$open" --body-file "$RUNNER_TEMP/issue.md"
+            gh issue comment "$open" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/issue.md"
           else
-            gh issue create --title "Price data update failed ($(date -u +%Y-%m-%d))" --body-file "$RUNNER_TEMP/issue.md" --assignee "${GITHUB_REPOSITORY_OWNER}"
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "Price data update failed ($(date -u +%Y-%m-%d))" --body-file "$RUNNER_TEMP/issue.md" --assignee "${GITHUB_REPOSITORY_OWNER}"
           fi
