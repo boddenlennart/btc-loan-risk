@@ -41,7 +41,9 @@ describe('data-update workflow', () => {
     const names = job('update').steps.map((s) => s.name || '');
     const i = (n) => names.findIndex((x) => x.startsWith(n));
     expect(i('Fetch, check and append')).toBeLessThan(i('Rebuild the page'));
-    expect(i('Rebuild the page')).toBeLessThan(i('Run the full test suite'));
+    expect(i('Rebuild the page')).toBeLessThan(i('Rebuild the link-preview images'));
+    expect(i('Rebuild the link-preview images')).toBeLessThan(i('Run the full test suite'));
+    expect(stepIn('update', 'Rebuild the link-preview images').run).toMatch(/node tools\/build-og\.mjs\s+node tools\/build\.mjs/); // images, then the pages with their stamp
     expect(i('Run the full test suite')).toBeLessThan(i('Save the update on its own branch'));
     expect(stepIn('update', 'Run the full test suite').run).toBe('npm test');
     expect(job('browser').needs).toBe('update');

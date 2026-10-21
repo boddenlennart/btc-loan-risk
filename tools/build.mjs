@@ -152,7 +152,7 @@ function head(lang, page) {
     `<meta property="og:title" content="${attr(ogTitle)}">`,
     `<meta property="og:description" content="${attr(description)}">`,
     `<meta property="og:url" content="${url}">`,
-    `<meta property="og:image" content="${BASE}og-${lang}.png">`,
+    `<meta property="og:image" content="${BASE}og-${lang}.png?v=${ogVersion(lang)}">`,
     '<meta property="og:image:width" content="1200">',
     '<meta property="og:image:height" content="630">',
     `<meta property="og:image:alt" content="${attr(ogTitle)}">`,
@@ -163,6 +163,12 @@ function head(lang, page) {
     '<meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">',
     '<meta name="theme-color" content="#121210" media="(prefers-color-scheme: dark)">',
   ].join('\n');
+}
+// The preview image's address carries a stamp made from the image itself: LinkedIn and messengers keep an image
+// by its address, so a new image needs a new address (they kept showing the old one after the logo changed, 21 Oct 2026).
+function ogVersion(lang) {
+  const f = new URL(`docs/og-${lang}.png`, root);
+  return existsSync(f) ? createHash('sha256').update(readFileSync(f)).digest('hex').slice(0, 8) : 'none';
 }
 mkdirSync(new URL(`${OUT}/de/`, root), { recursive: true });
 // Security headers for the hosting service (Cloudflare Pages reads docs/_headers).
