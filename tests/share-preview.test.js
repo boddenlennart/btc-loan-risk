@@ -1,6 +1,7 @@
 // Share preview (ux/D-share-preview.md): both language pages carry title, description and
 // preview tags; the preview images exist in the right size; texts fit the platforms' limits.
 import { describe, it, expect } from 'vitest';
+import { createHash } from 'node:crypto';
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import en from '../src/content/text.en.js';
 import de from '../src/content/text.de.js';
@@ -38,7 +39,10 @@ describe.skipIf(!existsSync(file('de/index.html')))('built pages', () => {
     it(`${lang}: preview tags for messengers and X`, () => {
       expect(unesc(tag(html, 'property', 'og:title'))).toBe(tx.ogTitle);
       expect(tag(html, 'property', 'og:url')).toBe(url);
-      expect(tag(html, 'property', 'og:image')).toBe(`https://bitcoinloancheck.com/og-${lang}.png`);
+      // the address carries a stamp from the image itself, so LinkedIn and messengers fetch a changed image anew
+      // (they kept the old one under the same address after the logo changed, 21 Oct 2026)
+      const stamp = createHash('sha256').update(readFileSync(new URL(`../docs/og-${lang}.png`, import.meta.url))).digest('hex').slice(0, 8);
+      expect(tag(html, 'property', 'og:image')).toBe(`https://bitcoinloancheck.com/og-${lang}.png?v=${stamp}`);
       expect(tag(html, 'property', 'og:image:width')).toBe('1200');
       expect(tag(html, 'property', 'og:image:height')).toBe('630');
       expect(tag(html, 'name', 'twitter:card')).toBe('summary_large_image');
