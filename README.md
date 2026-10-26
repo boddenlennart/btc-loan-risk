@@ -259,7 +259,7 @@ Public APIs can change their rules at any time; the page then falls back to the 
 
 ## Tests and how each was verified
 
-Run with `npm test` (429 tests) and `npm run test:e2e` (144 browser tests, each in Chrome's, Safari's and Firefox's engine; the phone tests also as an iPhone and an Android phone). Quality measurements: [ux/G-quality-report.md](ux/G-quality-report.md) (coverage, planted bugs, hostile input, browsers, speed, accessibility, security). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
+Run with `npm test` (435 tests) and `npm run test:e2e` (144 browser tests, each in Chrome's, Safari's and Firefox's engine; the phone tests also as an iPhone and an Android phone). Quality measurements: [ux/G-quality-report.md](ux/G-quality-report.md) (coverage, planted bugs, hostile input, browsers, speed, accessibility, security). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
 
 | # | Test | How it was verified |
 |---|---|---|
@@ -364,7 +364,10 @@ reference/               independent Python reference + spreadsheet
 tests/                   automated tests and their fixtures (incl. regression golden file)
 e2e/                     browser tests of the finished pages (page.spec.js: the check; site.spec.js: navigation, other pages, accessibility)
 tools/                   download, weekly data update, data build, page build, audit copy, local preview server
-.github/workflows/       the weekly data-update workflow
+.github/workflows/       tests on every push and pull request (tests.yml), the weekly data update (update-data.yml)
+CLAUDE.md                standing instructions for Claude sessions: how the owner works, workflow, rules, commands
+decisions/               decision records: why the project is the way it is (one file per decision)
+.claude/                 shared Claude Code skills (plan-feature, fix-with-test, weekly-data-review, release-check, live-numbers, handover) and the commit hook
 ux/                      UX redesign and review: decisions, profiles, critique, design spec, share preview, test plan, sketches, screenshots
 ```
 
