@@ -364,7 +364,10 @@ reference/               independent Python reference + spreadsheet
 tests/                   automated tests and their fixtures (incl. regression golden file)
 e2e/                     browser tests of the finished pages (page.spec.js: the check; site.spec.js: navigation, other pages, accessibility)
 tools/                   download, weekly data update, data build, page build, audit copy, local preview server
-.github/workflows/       the weekly data-update workflow
+.github/workflows/       tests on every push and pull request (tests.yml), the weekly data update (update-data.yml)
+CLAUDE.md                standing instructions for Claude sessions: how the owner works, workflow, rules, commands
+decisions/               decision records: why the project is the way it is (one file per decision)
+.claude/                 shared Claude Code skills (fix-with-test, weekly-data-review, release-check, live-numbers, handover) and the commit hook
 ux/                      UX redesign and review: decisions, profiles, critique, design spec, share preview, test plan, sketches, screenshots
 ```
 

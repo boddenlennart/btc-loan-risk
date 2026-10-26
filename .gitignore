@@ -8,7 +8,10 @@ ux/audit/
 *.log
 # editor / OS / local assistant settings
 .DS_Store
-.claude/
+# Claude Code: skills, hooks and project settings are shared (CLAUDE.md, decision 017); local files are not
+.claude/settings.local.json
+.claude/launch.json
+.claude/worktrees/
 .vscode/
 .idea/
 # never commit secrets
