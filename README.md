@@ -367,7 +367,7 @@ tools/                   download, weekly data update, data build, page build, a
 .github/workflows/       tests on every push and pull request (tests.yml), the weekly data update (update-data.yml)
 CLAUDE.md                standing instructions for Claude sessions: how the owner works, workflow, rules, commands
 decisions/               decision records: why the project is the way it is (one file per decision)
-.claude/                 shared Claude Code skills (fix-with-test, weekly-data-review, release-check, live-numbers, handover) and the commit hook
+.claude/                 shared Claude Code skills (plan-feature, fix-with-test, weekly-data-review, release-check, live-numbers, handover) and the commit hook
 ux/                      UX redesign and review: decisions, profiles, critique, design spec, share preview, test plan, sketches, screenshots
 ```
 

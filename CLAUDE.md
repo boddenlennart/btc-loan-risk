@@ -21,7 +21,7 @@ standing instructions: read it first in every session, then the task (a GitHub i
    (the owner sometimes commits or merges between sessions).
 2. Branch from an up-to-date `main` (`git fetch origin && git switch -c <short-name> origin/main`,
    then `git branch --unset-upstream`, so GitHub Desktop offers "Publish branch").
-3. Plan → owner's "yes" → tests → build → verify (see "Done" below).
+3. Plan (skill `plan-feature`) → owner's "yes" → tests → build → verify (see "Done" below).
 4. Commit with the repository's own git identity (`boddenlennart`, `217341961+boddenlennart@users.noreply.github.com`,
    already configured) and end every commit message with
    `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Commit only when all tests pass.
@@ -88,7 +88,7 @@ marketing plans or anything about the owner's book. Those live in the owner's pr
 - GitHub Issues: the backlog. Label `next` = scope of the next branch, `later` = parked.
 - `ux/`: specifications and reviews (A–P); `ux/J-launch-steps.md` and `ux/O-go-no-go.md` for operations.
 - `README.md`: for humans: hosting, the weekly data update, data sources, tests, project structure.
-- `.claude/skills/`: recurring workflows: `fix-with-test`, `weekly-data-review`, `release-check`, `live-numbers`, `handover`.
+- `.claude/skills/`: recurring workflows: `plan-feature`, `fix-with-test`, `weekly-data-review`, `release-check`, `live-numbers`, `handover`.
 - `.github/workflows/`: `tests.yml` (every push and pull request), `update-data.yml` (Mondays 05:17 UTC).
 - Weekly data: a pull request "Weekly price data update …" each Monday; check it with `weekly-data-review`,
   the owner merges. If Safari's engine times out while installing, "Re-run failed jobs"; if it keeps happening,
