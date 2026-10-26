@@ -96,6 +96,7 @@ for (const lang of ['en', 'de']) {
       const text = JSON.stringify(t.legal.privacy);
       for (const host of ['www.bitstamp.net', 'api.coinbase.com', 'Cloudflare', 'Google Ireland Limited', 'GitHub']) expect(text, host).toContain(host);
       expect(text, 'the old mail provider is gone').not.toContain('Proton');
+      expect(text, 'the AI that summarises feedback mails is named').toContain('Anthropic Ireland, Limited');
       expect(text, 'no placeholders left').not.toMatch(/«/);
       expect(text, 'every stored item is named').toMatch(/session storage|Session Storage/);
       expect(JSON.stringify(t.legal.privacy)).toMatch(/E-Mail|e-mail/); // section on feedback e-mails

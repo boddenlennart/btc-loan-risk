@@ -806,6 +806,7 @@ export default {
       { h: '7. Feedback and contact by e-mail', p: [
         '"Help improve this page" and "Your language is missing?" prepare an e-mail in your own mail program. Nothing is sent unless you send it yourself. Your loan terms are attached only if you tick that box.',
         'If you send an e-mail, we receive your e-mail address and your message. The mailbox is run by Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland. Google may also process the data in the USA.', 'Google LLC is certified under the EU-U.S. Data Privacy Framework, so an adequacy decision of the EU Commission applies to the USA (Art. 45 GDPR).',
+        'To sort and answer e-mails, we have new messages summarised once a day by the AI service Claude. Claude is provided by Anthropic Ireland, Limited, 6th Floor, South Bank House, Barrow Street, Dublin 4, D04 TR29, Ireland. Anthropic also processes the data in the USA, under EU standard contractual clauses (Art. 46 GDPR). Claude only reads: it sends, answers and deletes nothing. We have switched off the use of our conversations for training AI models.',
         'We use your message only to read it, answer it and improve the page, and delete it once it is no longer needed for that, at the latest after twelve months. Legal basis: Art. 6 (1) (f) GDPR; our legitimate interest is answering you and improving the page.',
       ] },
       { h: '8. Donations in bitcoin', p: [
