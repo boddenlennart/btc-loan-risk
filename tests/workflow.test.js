@@ -84,3 +84,27 @@ describe('data-update workflow', () => {
     expect(text).not.toMatch(/secrets\./);
   });
 });
+
+// 26 Oct 2026: on GitHub's newer Ubuntu ("ubuntu-latest" from 19 Oct), installing the browsers took up to
+// 30 minutes and Safari's engine hit the time limit. The computers are pinned; a move is a deliberate change.
+describe('GitHub\'s computers for both workflows', () => {
+  for (const [name, w] of [['tests.yml', tests], ['update-data.yml', wf]]) {
+    it(`${name}: every job runs on Ubuntu 24.04, never on "the newest" that can change underneath`, () => {
+      for (const [id, job] of Object.entries(w.jobs)) expect(job['runs-on'], `${name} › ${id}`).toBe('ubuntu-24.04');
+    });
+    it(`${name}: no action of an outdated generation (checkout and setup-node v4 ran on an old Node version)`, () => {
+      const uses = Object.values(w.jobs).flatMap((j) => j.steps.map((s) => s.uses).filter(Boolean));
+      expect(uses.filter((u) => /^actions\/(checkout|setup-node)@v[1-4]$/.test(u))).toEqual([]);
+    });
+    it(`${name}: installing the browser is its own step with its own time limit, before the tests; the browser is kept between runs`, () => {
+      const steps = w.jobs.browser.steps; const names = steps.map((s) => s.name || '');
+      const install = steps.find((s) => (s.name || '').startsWith('Install the browser'));
+      const test = steps.find((s) => /^(The finished page|Test the finished page)/.test(s.name || ''));
+      expect(install.run).toMatch(/npx playwright install --with-deps \$\{\{ matrix\.engine \}\}/);
+      expect(install['timeout-minutes']).toBeGreaterThan(0);
+      expect(test['timeout-minutes']).toBeGreaterThan(0);
+      expect(names.indexOf(install.name)).toBeLessThan(names.indexOf(test.name));
+      expect(steps.some((s) => (s.uses || '').startsWith('actions/cache@') && s.with.path === '~/.cache/ms-playwright')).toBe(true);
+    });
+  }
+});

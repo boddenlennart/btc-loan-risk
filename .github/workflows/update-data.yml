@@ -6,6 +6,8 @@
 #             phone), as for every other change (tests.yml). One after the other they took about an hour.
 # 3. publish: only when everything passed: the check marks and the pull request for the owner
 # 4. notify:  when anything failed: an issue for the owner (and the unfinished branch is removed)
+#
+# GitHub's computers are pinned to Ubuntu 24.04 (see tests.yml), and installed browsers are kept between runs.
 name: Update price data
 
 on:
@@ -25,15 +27,15 @@ concurrency:
 
 jobs:
   update:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     outputs:
       changed: ${{ steps.update.outputs.changed }}
       branch: ${{ steps.save.outputs.branch }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
@@ -81,8 +83,8 @@ jobs:
   browser:
     needs: update
     if: needs.update.outputs.changed == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 40
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
     strategy:
       fail-fast: false
       matrix:
@@ -94,27 +96,34 @@ jobs:
           - { project: android, engine: chromium }
     name: browser (${{ matrix.project }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ needs.update.outputs.branch }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
       - name: Install tools
         run: npm ci
+      - name: Keep the installed browser between runs
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ matrix.engine }}-${{ hashFiles('package-lock.json') }}
+      - name: Install the browser and what it needs from the system
+        timeout-minutes: 15
+        run: npx playwright install --with-deps ${{ matrix.engine }}
       - name: Test the finished page in a real browser
-        run: |
-          npx playwright install --with-deps ${{ matrix.engine }}
-          npx playwright test --project=${{ matrix.project }}
+        timeout-minutes: 30
+        run: npx playwright test --project=${{ matrix.project }}
 
   publish:
     needs: [update, browser]
     if: needs.update.outputs.changed == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ needs.update.outputs.branch }}
 
@@ -151,7 +160,7 @@ jobs:
   notify:
     needs: [update, browser, publish]
     if: failure()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Tell the owner when something failed (opens an issue)
