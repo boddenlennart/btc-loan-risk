@@ -397,7 +397,7 @@ The embedded price data is excluded from the pattern search because random base6
 | Found | Where | Assessment |
 |---|---|---|
 | No keys, tokens, passwords, private keys, IBANs, phone numbers or home paths | – | clean |
-| `boddenlennart@proton.me` | `src/content/site.js`, page | intended: feedback and Impressum contact |
+| `bitcoinloancheck@gmail.com` | `src/content/site.js`, page | intended: feedback and Impressum contact |
 | `bc1qvj6c…pnpj8ld` | `src/content/site.js`, page | intended: donation address (public by design) |
 | `boddenlennart@gmail.com` | author of the very first commit only (`d45cd11`, made on GitHub; metadata, not file content) | already public; not rewritten (that would need a force-push). All later commits use the GitHub no-reply address `217341961+boddenlennart@users.noreply.github.com` (repository git setting). |
 | Spreadsheet creator | `reference/loan-reference.xlsx` | "openpyxl" only, no personal data |

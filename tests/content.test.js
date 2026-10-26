@@ -94,7 +94,8 @@ for (const lang of ['en', 'de']) {
       for (const k of ['impressumTitle', 'privacyTitle', 'templateNote']) expect(t.legal[k], `legal.${k}`).toEqual(expect.any(String));
       expect(t.legal.impressum.length).toBeGreaterThan(2);
       const text = JSON.stringify(t.legal.privacy);
-      for (const host of ['www.bitstamp.net', 'api.coinbase.com', 'Cloudflare', 'Proton', 'GitHub']) expect(text, host).toContain(host);
+      for (const host of ['www.bitstamp.net', 'api.coinbase.com', 'Cloudflare', 'Google Ireland Limited', 'GitHub']) expect(text, host).toContain(host);
+      expect(text, 'the old mail provider is gone').not.toContain('Proton');
       expect(text, 'no placeholders left').not.toMatch(/«/);
       expect(text, 'every stored item is named').toMatch(/session storage|Session Storage/);
       expect(JSON.stringify(t.legal.privacy)).toMatch(/E-Mail|e-mail/); // section on feedback e-mails

@@ -800,7 +800,7 @@ export default {
       ] },
       { h: '7. Feedback und Kontakt per E-Mail', p: [
         '„Helfen Sie, diese Seite zu verbessern“ und „Ihre Sprache fehlt?“ bereiten eine E-Mail in Ihrem eigenen Mailprogramm vor. Es wird nichts gesendet, solange Sie nicht selbst senden. Ihre Kreditbedingungen werden nur angehängt, wenn Sie das ankreuzen.',
-        'Senden Sie eine E-Mail, erhalten wir Ihre E-Mail-Adresse und Ihre Nachricht. Das Postfach wird von Proton AG, Route de la Galaise 32, 1228 Plan-les-Ouates, Schweiz, betrieben; für die Schweiz besteht ein Angemessenheitsbeschluss der EU-Kommission.',
+        'Senden Sie eine E-Mail, erhalten wir Ihre E-Mail-Adresse und Ihre Nachricht. Das Postfach wird von Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland, betrieben. Google kann die Daten auch in den USA verarbeiten.', 'Google LLC ist unter dem EU-US Data Privacy Framework zertifiziert; für die USA besteht damit ein Angemessenheitsbeschluss der EU-Kommission (Art. 45 DSGVO).',
         'Wir nutzen Ihre Nachricht nur, um sie zu lesen, zu beantworten und die Seite zu verbessern, und löschen sie, sobald sie dafür nicht mehr nötig ist, spätestens nach zwölf Monaten. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO; unser berechtigtes Interesse ist die Beantwortung Ihrer Nachricht und die Verbesserung der Seite.',
       ] },
       { h: '8. Spenden in Bitcoin', p: [
@@ -818,7 +818,7 @@ export default {
         'Sie können sich bei einer Datenschutz-Aufsichtsbehörde beschweren, insbesondere in dem EU-Staat, in dem Sie wohnen oder arbeiten (Art. 77 DSGVO).',
         'Eine automatisierte Entscheidungsfindung oder ein Profiling findet nicht statt.',
       ] },
-      { h: '12. Stand', p: ['Stand dieser Datenschutzerklärung: 20. Oktober 2026. Ändert sich die Seite, passen wir diese Erklärung an.'] },
+      { h: '12. Stand', p: ['Stand dieser Datenschutzerklärung: 26. Oktober 2026. Ändert sich die Seite, passen wir diese Erklärung an.'] },
     ],
     links: 'Impressum · Datenschutzerklärung',
   },
