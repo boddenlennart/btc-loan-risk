@@ -21,3 +21,4 @@ Why the project is the way it is. Read the record before changing what it decide
 | 015 | [Entry timing: shown as history, not an input](015-entry-timing-as-history-not-input.md) | 2026-10-23 |
 | 016 | ["One change lowers this": the smallest step that clearly helps](016-suggested-change-smallest-clear-step.md) | 2026-10-21 |
 | 017 | [Repository workflow and backlog](017-repository-workflow.md) | 2026-10-20 / 2026-10-26 |
+| 018 | [GitHub's test computers pinned to Ubuntu 24.04](018-ci-runners-pinned.md) | 2026-10-26 |

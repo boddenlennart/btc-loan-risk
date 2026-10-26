@@ -91,5 +91,5 @@ marketing plans or anything about the owner's book. Those live in the owner's pr
 - `.claude/skills/`: recurring workflows: `plan-feature`, `fix-with-test`, `weekly-data-review`, `release-check`, `live-numbers`, `handover`.
 - `.github/workflows/`: `tests.yml` (every push and pull request), `update-data.yml` (Mondays 05:17 UTC).
 - Weekly data: a pull request "Weekly price data update …" each Monday; check it with `weekly-data-review`,
-  the owner merges. If Safari's engine times out while installing, "Re-run failed jobs"; if it keeps happening,
-  the issue "GitHub runners: slow browser install" describes the tested fix.
+  the owner merges. GitHub's computers are pinned to Ubuntu 24.04 (decision 018); if a setup still times out
+  while installing, "Re-run failed jobs" and look at issue #14.
