@@ -76,8 +76,10 @@ export function methodData({ hourly, terms, garch, settings, halfLifeYears }) {
   const risk = { value: rc.value, se: rc.se, noSale: rc.noSale, up: 1 / rc.scale - 1, one: riskOne, soldQ50: rc.soldQ50, soldQ90: rc.soldQ90, nPaths: settings.nPaths,
     textbook: riskCostTextbook({ s0: terms.btcPrice, debt: terms.loanAmount, liquidationPrice: liquidationPrices(terms).atStart, repaidShare: kRepaid, sigma: weighting.find((x) => x.current).vol, years: days / 365 }) };
 
-  // the margin-call deadline in whole days, and without any margin call
-  const deadline = [1, 2, 3].map((d) => ({ days: d, p: sim({ weights }, { cureDays: d }).pLiquidation }));
+  // if the lender sold everything when a margin call is not fixed in 1, 2 or 3 whole days, and without any margin call
+  // (the example's margin call is only a warning, decision 022, so the deadline is set here explicitly)
+  const withDeadline = loan({ ...terms, marginCallConsequence: 'liquidateAfterCure' });
+  const deadline = [1, 2, 3].map((d) => ({ days: d, p: sim({ weights }, { cureDays: d, loan: withDeadline }).pLiquidation }));
   const noMc = { ...terms, marginCallLtv: null };
   const noMarginCall = sim({ weights }, { loan: loan(noMc) }).pLiquidation;
 

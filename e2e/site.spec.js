@@ -66,6 +66,9 @@ test('"How it works": three layers, every part, the charts and tables of the exa
   await expect(page.locator('#rules-list li')).toHaveCount(5);
   await expect(page.locator('#rules-list')).toContainText(/the sale is counted at the lowest price of that hour, never above the liquidation price/);
   await expect(page.locator('#rules-changed')).toContainText('Changed on 27 October 2026');
+  // decision 022: the example's margin call is only a warning; the deadline figures say "if the lender sold after …"
+  await expect(page.locator('#rules-list')).toContainText(/If the lender sold everything when a margin call is not fixed within 1 day, the example would give \d+ of 100; within 2 days \d+, within 3 days \d+\. With only a warning, as in the example: \d+\./);
+  await expect(page.locator('#example-changed')).toContainText('Changed on 27 October 2026: the example\'s margin call is now only a warning');
   await expect(page.locator('#methods-table tbody tr')).toHaveCount(4);
   await expect(page.locator('#fan-chart path.band-outer')).toHaveCount(1);
   await expect(page.locator('#months-chart svg')).toHaveCount(1);

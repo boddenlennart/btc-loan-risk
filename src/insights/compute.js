@@ -15,7 +15,9 @@ export const WINDOWS = [30, 90, 180, 365];
 
 /** The reference loan in engine terms (fractions), with `over` changed. The start price and date are set per start day. */
 export function reference(over = {}) {
-  const t = { ...toTerms({ ...EXAMPLE_FORM, currency: 'USD', btcPrice: 1 }).terms, ...over };
+  // the example in US dollars, with the margin-call rule the Insights texts name: 48 hours to top up, then everything
+  // is sold (the check page's example has only a warning since 27 Oct 2026, decision 022)
+  const t = { ...toTerms({ ...EXAMPLE_FORM, currency: 'USD', btcPrice: 1, marginCallConsequence: 'liquidateAfterCure', curePeriodHours: 48 }).terms, ...over };
   // a margin call at or below the starting LTV would be hit at once: such a loan has none
   if (t.marginCallLtv && t.marginCallLtv <= t.initialLtv) t.marginCallLtv = null;
   return t;

@@ -361,8 +361,9 @@ test('"Make it safer" shows exactly the headline number for your own terms, and 
   await expect(page.locator('#safer .lv:not(.base)').filter({ hasText: best[1] }).locator('b')).toHaveText(best[2]);
   const all = (await page.locator('#safer .lv:not(.base) b').allTextContents()).map(Number);
   expect(all).toEqual([...all].sort((a, b) => a - b)); // the list still goes from lowest to highest
-  // fairness: the top-up assumption and the two other methods are shown with the answer
-  await expect(page.locator('#assume-line')).toHaveText('Assumes you add no BTC or money after a margin call.');
+  // fairness: the two other methods are shown with the answer; the example's margin call is only a warning
+  // (decision 022), so there is no top-up assumption to state (it shows with a deadline: the lender's-rules test)
+  await expect(page.locator('#assume-line')).toHaveText('');
   await expect(page.locator('#methods-line')).toContainText(/Other methods: real history since 2014 \d+ of 100, a volatility model \d+ of 100/);
   // what a sale leaves: not "everything lost"
   await expect(page.locator('#sold-line')).toContainText(/If liquidated: you get back at most 0\.\d{4} of your 0\.\d{4} BTC/);
@@ -1024,14 +1025,18 @@ test('the lender\'s rules (issue #11): their own folded part right under the liq
   // placed straight after the liquidation LTV, before the duration
   expect(await page.evaluate(() => { const r = document.querySelector('#form details[data-remember="rules"]'); return r.previousElementSibling && r.previousElementSibling.dataset.field; })).toBe('liquidationLtv');
   await expect(rules.locator('summary')).toContainText('What your lender does when BTC falls');
-  await expect(sum).toHaveText('Margin call at 70%: 48 hours to top up, otherwise everything is sold · At 80%: everything is sold · Fee 5% of the amount owed');
+  // the example's margin call is only a warning (decision 022)
+  await expect(sum).toHaveText('Margin call at 70%: a warning only · At 80%: everything is sold · Fee 5% of the amount owed');
   await expect(sum).toBeVisible(); // readable while folded
   await expect(rules).not.toHaveAttribute('open', '');
   await rules.locator('summary').click();
   await expect(rules).toHaveAttribute('open', '');
   await expect(rules.locator('#f-marginCallLtv')).toBeVisible();
   await expect(rules.locator('#f-liquidationFee')).toBeVisible();
-  // every change shows in the line at once
+  // every change shows in the line at once; a deadline brings the top-up assumption under the answer
+  await rules.locator('[data-k="marginCallConsequence"]').selectOption('liquidateAfterCure');
+  await expect(sum).toContainText('Margin call at 70%: 48 hours to top up, otherwise everything is sold');
+  await expect(page.locator('#assume-line')).toHaveText('Assumes you add no BTC or money after a margin call.');
   await rules.locator('[data-k="marginCallConsequence"]').selectOption('autoPartial');
   await expect(sum).toContainText('Margin call at 70%: part is sold at once');
   await rules.locator('[data-set="liquidationSale"][data-val="partial"]').click();
@@ -1048,7 +1053,7 @@ test('the lender\'s rules (issue #11), in German', async ({ page }) => {
   await open(page, { lang: 'de' }); await waitDone(page);
   const rules = page.locator('#form details[data-remember="rules"]');
   await expect(rules.locator('summary')).toContainText('Was Ihr Kreditgeber tut, wenn BTC fällt');
-  await expect(rules.locator('#rules-sum')).toHaveText(/^Margin Call bei 70\s%: 48 Stunden zum Nachschießen, sonst wird alles verkauft · Bei 80\s%: alles wird verkauft · Gebühr 5\s% des geschuldeten Betrags$/);
+  await expect(rules.locator('#rules-sum')).toHaveText(/^Margin Call bei 70\s%: nur eine Warnung · Bei 80\s%: alles wird verkauft · Gebühr 5\s% des geschuldeten Betrags$/);
 });
 
 test('a sale in a fast fall (issue #7), in German', async ({ page }) => {

@@ -23,7 +23,7 @@ export const EXAMPLE_FORM = {
   compounding: 'none',
   originationFee: { value: 1, type: 'percent' },
   marginCallLtv: 70,
-  marginCallConsequence: 'liquidateAfterCure',
+  marginCallConsequence: 'warningOnly', // a sale only at the liquidation LTV (decision 022); the time to top up below then has no effect
   curePeriodHours: 48,
   liquidationSale: 'all',
   cureTargetLtv: '',
