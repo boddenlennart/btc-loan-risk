@@ -817,11 +817,15 @@ function renderCompare() {
   $('#showing').textContent = t('compare.showing', { name: offerName(compare.active) });
 }
 
-// A partial sale at `price`: about how much BTC the lender sells (its fee included) and what is left.
+// A sale is never above the price that triggers it (decision 020), so the BTC sold at that price is the least
+// the lender sells and what is left the most you keep: shown rounded up or down so "at least" / "at most" hold.
+const atLeast4 = (x) => num(Math.ceil(x * 1e4 - 1e-9) / 1e4, 4);
+const atMost4 = (x) => num(Math.floor(x * 1e4 + 1e-9) / 1e4, 4);
+// A partial sale at `price`: at least how much BTC the lender sells (its fee included) and at most what is left.
 function partialAt(tm, price) {
   const rules = lenderRules(tm); const btc = collateralBtc(tm);
   const sold = partialSaleBtc(rules, tm.loanAmount, btc, price);
-  return { sold: num(sold, 4), left: num(btc - sold, 4), btc: num(btc, 4), target: pct(rules.target, 0) };
+  return { sold: atLeast4(sold), left: atMost4(btc - sold), btc: num(btc, 4), target: pct(rules.target, 0) };
 }
 
 // An existing loan whose LTV today is already at or above its margin call
@@ -871,7 +875,7 @@ function renderTiles(tm) {
   if (rules.liquidationSale === 'all') {
     const lq = costIfLiquidated(tm, { price: lp.atStart, debt: tm.loanAmount });
     $('#sold-line').textContent = lq.btcReturned < 0.00005 ? t('results.soldNothing', { btc: num(collateralBtc(tm), 4) })
-      : t('results.soldGetBack', { back: num(lq.btcReturned, 4), btc: num(collateralBtc(tm), 4) });
+      : t('results.soldGetBack', { back: atMost4(lq.btcReturned), btc: num(collateralBtc(tm), 4) });
   } else $('#sold-line').textContent = t('results.soldPartial', partialAt(tm, lp.atStart));
 }
 
@@ -927,8 +931,9 @@ function renderFallsText() {
   if (rules.liquidationSale === 'partial') html += `<p>${esc(t('falls.liquidationPartial', { price: money0(lp.atStart, cur), ...partialAt(tm, lp.atStart) }))}</p>`;
   else {
     const lq = costIfLiquidated(tm, { price: lp.atStart, debt: tm.loanAmount });
-    html += `<p>${esc(t('falls.liquidationAll', { price: money0(lp.atStart, cur), sold: num(lq.btcSold, 4), returned: num(lq.btcReturned, 4), returnedValue: money0(lq.valueReturned, cur) }))}</p>`;
+    html += `<p>${esc(t('falls.liquidationAll', { price: money0(lp.atStart, cur), sold: atLeast4(lq.btcSold) }))}</p>`;
   }
+  html += `<p class="hint" id="fast-fall">${esc(t('falls.fastFall'))}</p>`;
   $('#falls-text').innerHTML = html;
   layoutLadder();
 }
@@ -1012,6 +1017,7 @@ function renderRiskCost() {
     : t('cost.riskLine', { total: money0(round10(total), cur), rate: aprText(rate), apr: aprText(s.effectiveApr) });
   el.innerHTML = `<h4 tabindex="-1">${esc(C.riskTitle)}</h4><p class="big-line">${esc(line)}</p>
     <p>${esc(t('cost.riskPart', { risk: money0(round10(rc.value), cur) }))}</p>
+    <p class="hint" id="risk-fast-fall">${esc(C.riskFastFall)}</p>
     <p class="hint">${esc(t('cost.riskNotFee', { none: 100 - shown(pSale(r.main)) }))} ${esc(C.riskCompare)}</p>
     <p class="hint"><a href="${pageHref('method/')}#risk-cost">${esc(C.riskLink)}</a></p>`;
 }
@@ -1233,7 +1239,7 @@ function renderLeverage() {
   }
   if (!bm.refi && lenderRules(tm).liquidationSale === 'all') { // (a refinancing: compared with no extra cash, not with no loan)
     const lq = costIfLiquidated(tm, { price: liquidationPrices(tm).atStart, debt: tm.loanAmount });
-    html += `<p>${esc(t('cost.levLiquidated', { end: num(lq.btcReturned + bought, 4), start: num(c0, 4) }))}</p>`;
+    html += `<p>${esc(t('cost.levLiquidated', { end: atMost4(lq.btcReturned + bought), start: num(c0, 4) }))}</p>`;
   }
   html += `<p>${esc(t('cost.levBreakeven', { rise: pct(bm.payback / bm.received - 1, 1) }))}</p>`;
   if (tm.repayWith === 'cash') html += `<p>${esc(t('cost.levCash', { payback: money0(s.totalPayback, cur) }))}</p>`;

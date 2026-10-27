@@ -51,7 +51,7 @@
       null,
       113
      ],
-     "riskCost": 1205.3207323563265
+     "riskCost": 1326.1621504446825
     },
     "warning only": {
      "terms": {
@@ -92,7 +92,7 @@
       null,
       114
      ],
-     "riskCost": 1029.428919133015
+     "riskCost": 1205.275237788824
     },
     "no margin call": {
      "terms": {
@@ -133,7 +133,7 @@
       null,
       114
      ],
-     "riskCost": 1029.428919133015
+     "riskCost": 1205.275237788824
     },
     "partial after the deadline": {
      "terms": {
@@ -174,7 +174,7 @@
       null,
       null
      ],
-     "riskCost": 1049.8866902670304
+     "riskCost": 1178.3823695987744
     },
     "partial at once": {
      "terms": {
@@ -206,17 +206,17 @@
       "cureTargetLtv": 0.55
      },
      "s0": 72812.64,
-     "liquidated": 231,
-     "partial": 994,
+     "liquidated": 215,
+     "partial": 1010,
      "marginCall": 1225,
      "firstPathsLiquidationDay": [
       128,
-      37,
+      null,
       null,
       null,
       null
      ],
-     "riskCost": 1120.9551055126142
+     "riskCost": 1323.8035720644918
     },
     "partial at liquidation, fee on BTC sold": {
      "terms": {
@@ -247,17 +247,17 @@
       "startDate": "2026-01-15"
      },
      "s0": 72812.64,
-     "liquidated": 792,
-     "partial": 287,
+     "liquidated": 830,
+     "partial": 249,
      "marginCall": 1225,
      "firstPathsLiquidationDay": [
       null,
-      null,
+      178,
       null,
       null,
       113
      ],
-     "riskCost": 1013.9941454601039
+     "riskCost": 1164.8161542433368
     },
     "reserve, 72 h": {
      "terms": {
@@ -298,7 +298,7 @@
       null,
       140
      ],
-     "riskCost": 889.6603654036333
+     "riskCost": 1008.5274106183708
     },
     "interest added, compounding, 24 months": {
      "terms": {
@@ -339,7 +339,7 @@
       null,
       113
      ],
-     "riskCost": 2627.0536152175523
+     "riskCost": 2816.8937521737294
     },
     "equal payments, 36 months, act/365": {
      "terms": {
@@ -380,7 +380,7 @@
       null,
       130
      ],
-     "riskCost": 1663.0474983656813
+     "riskCost": 1778.1247390051958
     },
     "high LTV 65%, 6 months, 24 h": {
      "terms": {
@@ -421,7 +421,7 @@
       null,
       107
      ],
-     "riskCost": 1217.0341696040423
+     "riskCost": 1263.801953143084
     },
     "low LTV 25%, 12 months": {
      "terms": {
@@ -462,7 +462,7 @@
       null,
       null
      ],
-     "riskCost": 140.33583744042514
+     "riskCost": 163.84321191436
     },
     "variable rate": {
      "terms": {
@@ -512,7 +512,7 @@
       null,
       113
      ],
-     "riskCost": 1203.9094068404477
+     "riskCost": 1323.723875319192
     }
    }
   },
@@ -562,7 +562,7 @@
       null,
       111
      ],
-     "riskCost": 1146.702803419321
+     "riskCost": 1245.2667308583032
     },
     "warning only": {
      "terms": {
@@ -603,7 +603,7 @@
       null,
       111
      ],
-     "riskCost": 984.588282272737
+     "riskCost": 1146.6841197576027
     },
     "no margin call": {
      "terms": {
@@ -644,7 +644,7 @@
       null,
       111
      ],
-     "riskCost": 984.588282272737
+     "riskCost": 1146.6841197576027
     },
     "partial after the deadline": {
      "terms": {
@@ -685,7 +685,7 @@
       null,
       111
      ],
-     "riskCost": 981.939513063665
+     "riskCost": 1087.7205213033678
     },
     "partial at once": {
      "terms": {
@@ -717,8 +717,8 @@
       "cureTargetLtv": 0.55
      },
      "s0": 81574.32,
-     "liquidated": 232,
-     "partial": 986,
+     "liquidated": 229,
+     "partial": 989,
      "marginCall": 1218,
      "firstPathsLiquidationDay": [
       128,
@@ -727,7 +727,7 @@
       null,
       null
      ],
-     "riskCost": 1074.0490026265702
+     "riskCost": 1276.082325306607
     },
     "partial at liquidation, fee on BTC sold": {
      "terms": {
@@ -758,8 +758,8 @@
       "startDate": "2026-01-15"
      },
      "s0": 81574.32,
-     "liquidated": 782,
-     "partial": 279,
+     "liquidated": 800,
+     "partial": 261,
      "marginCall": 1218,
      "firstPathsLiquidationDay": [
       null,
@@ -768,7 +768,7 @@
       null,
       111
      ],
-     "riskCost": 968.8116549935711
+     "riskCost": 1086.730615914622
     },
     "reserve, 72 h": {
      "terms": {
@@ -809,7 +809,7 @@
       null,
       114
      ],
-     "riskCost": 827.8815809853171
+     "riskCost": 936.9466235264058
     },
     "interest added, compounding, 24 months": {
      "terms": {
@@ -850,7 +850,7 @@
       null,
       109
      ],
-     "riskCost": 2573.6287949654434
+     "riskCost": 2741.566674687625
     },
     "equal payments, 36 months, act/365": {
      "terms": {
@@ -891,7 +891,7 @@
       null,
       113
      ],
-     "riskCost": 1533.4995778053963
+     "riskCost": 1656.8302580683069
     },
     "high LTV 65%, 6 months, 24 h": {
      "terms": {
@@ -932,7 +932,7 @@
       null,
       88
      ],
-     "riskCost": 1206.2473704341585
+     "riskCost": 1258.0076990251653
     },
     "low LTV 25%, 12 months": {
      "terms": {
@@ -973,7 +973,7 @@
       null,
       307
      ],
-     "riskCost": 114.73121097465592
+     "riskCost": 132.75680528334317
     },
     "variable rate": {
      "terms": {
@@ -1023,7 +1023,7 @@
       null,
       111
      ],
-     "riskCost": 1154.5921020569735
+     "riskCost": 1252.316504792285
     }
    }
   }

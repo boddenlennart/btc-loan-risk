@@ -55,33 +55,33 @@ describe('result counted in BTC (borrow to buy more BTC)', () => {
     expect(r.leverage.endBtc.q50).toBeCloseTo(1.3, 12);
     expect(r.leverage.more).toBe(1);
   });
-  it('after an automatic partial sale (0.4 BTC sold, debt 50 → 21.43), repay by selling: 0.6 + 0.3 − 21.43/100 = 0.6857 BTC', () => {
+  it('after an automatic partial sale at the day\'s low 70 (30/70 BTC sold, debt 50 → 20), repay by selling: 0.5714 + 0.3 − 20/100 = 0.6714 BTC', () => {
     const r = run({ 5: 70 }, { marginCallConsequence: 'autoPartial' }, { leverage: { bought: 0.3, payback: 50, repay: 'sell' } });
-    expect(r.leverage.endBtc.q50).toBeCloseTo(0.6 + 0.3 - (50 * (21.4285714 / 50)) / 100, 6);
+    expect(r.leverage.endBtc.q50).toBeCloseTo(1 - 30 / 70 + 0.3 - 20 / 100, 10);
   });
-  it('liquidated at 62.50 (no fee): 0.8 BTC sold, 0.2 returned + 0.3 bought = 0.5 BTC', () => {
+  it('liquidation level 62.50, the day\'s low 55 (no fee): 50/55 BTC sold at 55, 0.0909 returned + 0.3 bought = 0.3909 BTC', () => {
     const r = run({ 10: 55 }, { marginCallConsequence: 'warningOnly' }, { leverage: { bought: 0.3, payback: 50, repay: 'sell' } });
     expect(r.leverage.liquidated).toBe(1);
-    expect(r.leverage.endBtc.q50).toBeCloseTo(0.5, 12);
+    expect(r.leverage.endBtc.q50).toBeCloseTo(1 - 50 / 55 + 0.3, 12);
   });
-  it('liquidated with a 4% fee on the debt: 52/62.5 = 0.832 BTC sold → 0.168 + 0.3 = 0.468 BTC', () => {
+  it('liquidated with a 4% fee on the debt: 52/55 = 0.9455 BTC sold at the day\'s low → 0.0545 + 0.3 = 0.3545 BTC', () => {
     const r = run({ 10: 55 }, { marginCallConsequence: 'warningOnly', liquidationFee: { value: 0.04, basis: 'debt' } }, { leverage: { bought: 0.3, payback: 50, repay: 'sell' } });
-    expect(r.leverage.endBtc.q50).toBeCloseTo(0.468, 12);
+    expect(r.leverage.endBtc.q50).toBeCloseTo(1 - 52 / 55 + 0.3, 12);
   });
-  it('how much: the middle value of each group, compared with keeping 1 BTC (by hand: −0.2, +0.3, −0.532)', () => {
+  it('how much: the middle value of each group, compared with keeping 1 BTC (by hand: −0.2, +0.3, −0.6455)', () => {
     const less = run({}, { marginCallConsequence: 'warningOnly' }, { leverage: { bought: 0.3, payback: 50, repay: 'sell' } }).leverage.middleDiff;
     expect(less.lessKept).toBeCloseTo(0.8 - 1, 12);
     expect([less.more, less.liquidated]).toEqual([null, null]); // empty groups have no middle value
     expect(run({}, {}, { leverage: { bought: 0.3, payback: 50, repay: 'cash' } }).leverage.middleDiff.more).toBeCloseTo(0.3, 12);
     const liq = run({ 10: 55 }, { marginCallConsequence: 'warningOnly', liquidationFee: { value: 0.04, basis: 'debt' } }, { leverage: { bought: 0.3, payback: 50, repay: 'sell' } }).leverage.middleDiff;
-    expect(liq.liquidated).toBeCloseTo(0.468 - 1, 12);
+    expect(liq.liquidated).toBeCloseTo(0.3 - 52 / 55, 12);
   });
 });
 
 describe('how much BTC you keep after forced sales', () => {
-  it('automatic partial sale of 0.4 BTC → 60% kept; full liquidation at 62.50 (no fee) → 20% kept', () => {
-    expect(run({ 5: 70 }, { marginCallConsequence: 'autoPartial' }).keptAfterSale.q50).toBeCloseTo(0.6, 12);
-    expect(run({ 10: 55 }, { marginCallConsequence: 'warningOnly' }).keptAfterSale.q50).toBeCloseTo(0.2, 12);
+  it('automatic partial sale at 70 → 57.1% kept; full liquidation at the day\'s low 55 (no fee) → 9.1% kept', () => {
+    expect(run({ 5: 70 }, { marginCallConsequence: 'autoPartial' }).keptAfterSale.q50).toBeCloseTo(1 - 30 / 70, 12);
+    expect(run({ 10: 55 }, { marginCallConsequence: 'warningOnly' }).keptAfterSale.q50).toBeCloseTo(1 - 50 / 55, 12);
   });
   it('no forced sale → nothing reported', () => {
     expect(run({}, {}).keptAfterSale).toBeUndefined();

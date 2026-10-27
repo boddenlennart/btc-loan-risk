@@ -86,7 +86,7 @@ export function methodData({ hourly, terms, garch, settings, halfLifeYears }) {
   for (let i = 0; i < hourly.time.length - (days + 2) * 24; i += 24 * 7) {
     if (hourly.time[i] % 86400) continue;
     const r = replayOne(hourly, { ...terms, btcPrice: 1 }, hourly.time[i]);
-    if (r.liquidation && r.liquidation.reason === 'liquidationLtv') gaps.push(1 - r.liquidation.low / r.liquidation.price);
+    if (r.liquidation && r.liquidation.reason === 'liquidationLtv') gaps.push(1 - r.liquidation.low / r.liquidation.level);
   }
   gaps.sort((a, b) => a - b);
   const q = (x) => (gaps.length ? gaps[Math.floor(x * (gaps.length - 1))] : null);

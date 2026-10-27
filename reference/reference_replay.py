@@ -108,7 +108,9 @@ def replay_rules(candles, scenario):
          (liquidateAfterCure) or only enough (partialAfterCure); otherwise the margin call is over.
       3. low <= debt / (BTC x margin LTV) (first time only for warningOnly): margin call. A reserve is added once
          as BTC at that price. If the LTV is still too high: start the cure deadline, or (autoPartial) sell enough
-         at that price.
+         at the hour's low.
+    Sale price (issue #7): a sale in 1., and the sale at once in 3., happens at the hour's LOW (the price fell
+    through the level before the lender sold); a sale in 2. at the hour's close.
     A sale of value S at price P repays k x S (k = 1/(1+fee) for a fee on the debt, 1 - fee for a fee on the BTC
     sold). Enough to reach target T: S = (debt - T x BTC x P) / (k - T). Later debt is scaled by (debt - kS) / debt.
     """
@@ -157,10 +159,10 @@ def replay_rules(candles, scenario):
             if low <= liq_price:
                 if first_margin is None and M:
                     first_margin = t
-                if tm.get("liquidationSale") == "partial" and sell_part(debt, liq_price, t, "liquidationLtv"):
+                if tm.get("liquidationSale") == "partial" and sell_part(debt, low, t, "liquidationLtv"):
                     deadline = None
                 else:
-                    liquidation = close_all(debt, liq_price, t, "liquidationLtv")
+                    liquidation = close_all(debt, low, t, "liquidationLtv")
                 t += 3600
                 continue
             if deadline is not None and t >= deadline:
@@ -182,7 +184,7 @@ def replay_rules(candles, scenario):
                         if beh in ("liquidateAfterCure", "partialAfterCure"):
                             deadline = t + cure
                         elif beh == "autoPartial":
-                            sell_part(debt, mc_price, t, "autoPartial")
+                            sell_part(debt, low, t, "autoPartial")
         t += 3600
     return dict(startPrice=open0, collateralBtc=btc0, marginCall=first_margin, liquidation=liquidation,
                 partialSales=partials, collateralAtEnd=liquidation["btcReturned"] if liquidation else btc)

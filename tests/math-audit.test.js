@@ -36,10 +36,49 @@ describe('answers known in advance', () => {
     for (const fee of [{ value: 0.02, basis: 'debt' }, { value: 0.03, basis: 'collateralSold' }]) {
       const rules = lenderRules({ initialLtv: 0.5, liquidationLtv: 0.8, marginCallLtv: null, liquidationSale: 'partial', liquidationFee: fee });
       const s = createLoanState(100);
-      stepLoan(s, rules, { time: 1, low: 60, close: 61, debt: 5000, cure: 0 }); // liquidation price 62.5
+      stepLoan(s, rules, { time: 1, low: 60, close: 61, debt: 5000, cure: 0 }); // liquidation price 62.5, sold at the low 60
       expect(s.partialSales.length).toBe(1);
-      expect((5000 * s.scale) / (s.c * 62.5)).toBeCloseTo(0.5, 10);
+      expect((5000 * s.scale) / (s.c * 60)).toBeCloseTo(0.5, 10);
     }
+  });
+});
+
+describe('a fall through the level: the lender sells at the lowest price of that step, never above the level (issue #7)', () => {
+  // 100 BTC, debt 5,000, liquidation at LTV 80% → liquidation price 62.50; the step's low is 55.
+  const rulesOf = (over = {}) => lenderRules({ initialLtv: 0.5, liquidationLtv: 0.8, marginCallLtv: null, liquidationFee: { value: 0.05, basis: 'debt' }, ...over });
+  it('full sale: sold at 55, not at 62.50; the trigger level is kept', () => {
+    const s = createLoanState(100);
+    stepLoan(s, rulesOf(), { time: 1, low: 55, close: 70, debt: 5000, cure: 0 });
+    expect(s.liquidation.price).toBe(55);
+    expect(s.liquidation.level).toBeCloseTo(62.5, 10);
+    expect(s.liquidation.btcSold).toBeCloseTo((5000 * 1.05) / 55, 10);
+    expect(s.liquidation.btcReturned).toBeCloseTo(100 - (5000 * 1.05) / 55, 10);
+  });
+  it('a low that only touches the level: sold exactly at the level, as before', () => {
+    const s = createLoanState(100);
+    stepLoan(s, rulesOf(), { time: 1, low: 62.5, close: 70, debt: 5000, cure: 0 });
+    expect(s.liquidation.price).toBe(62.5);
+  });
+  it('partial sale at the liquidation LTV: sold at 55, and the LTV at that price is back at the target', () => {
+    const s = createLoanState(100);
+    stepLoan(s, rulesOf({ liquidationSale: 'partial' }), { time: 1, low: 55, close: 70, debt: 5000, cure: 0 });
+    expect(s.partialSales[0].price).toBe(55);
+    expect(s.partialSales[0].level).toBeCloseTo(62.5, 10);
+    expect((5000 * s.scale) / (s.c * 55)).toBeCloseTo(0.5, 10);
+  });
+  it('sale at the margin call (autoPartial): sold at the low of 68, not at the margin-call price 71.43', () => {
+    const s = createLoanState(100);
+    stepLoan(s, rulesOf({ marginCallLtv: 0.7, marginCallConsequence: 'autoPartial', liquidationFee: { value: 0, basis: 'debt' } }), { time: 1, low: 68, close: 70, debt: 5000, cure: 0 });
+    expect(s.partialSales[0].price).toBe(68);
+    expect(s.partialSales[0].btc).toBeCloseTo((5000 - 0.5 * 100 * 68) / 0.5 / 68, 10);
+  });
+  it('simulation: a day whose low falls 45% sells at that day\'s low, and the cost of the risk uses that price', () => {
+    const steps = [[0, 0], [0, Math.log(0.55)], ...Array(60).fill([0, 0])]; // day 2 dips to 55 and closes at 100
+    const r = runMonteCarlo({ model: 'fixed', params: { steps }, s0: 100, days: 30, nPaths: 1, seed: 1, samplePaths: 1, riskCost: true,
+      loan: { debtByDay: flat(30), collateralBtc: 100, rules: rulesOf({ liquidationFee: { value: 0, basis: 'debt' } }) } });
+    expect(r.samplePaths[0].sales[0][1]).toBeCloseTo(55, 10);
+    // all BTC that repaid debt (5,000 / 55) misses the rise back to 100
+    expect(r.riskCost.value).toBeCloseTo((5000 / 55) * (100 - 55), 6);
   });
 });
 

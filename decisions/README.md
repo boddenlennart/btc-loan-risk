@@ -23,3 +23,4 @@ Why the project is the way it is. Read the record before changing what it decide
 | 017 | [Repository workflow and backlog](017-repository-workflow.md) | 2026-10-20 / 2026-10-26 |
 | 018 | [GitHub's test computers pinned to Ubuntu 24.04](018-ci-runners-pinned.md) | 2026-10-26 |
 | 019 | [Contact address: bitcoinloancheck@gmail.com](019-contact-address-gmail.md) | 2026-10-26 |
+| 020 | [Sale price in a fast fall: the step's lowest price](020-sale-price-in-a-fast-fall.md) | 2026-10-27 |

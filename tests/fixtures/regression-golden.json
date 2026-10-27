@@ -93,18 +93,18 @@
      "q95": 159119.266298852
     },
     "keptAfterSale": {
-     "q10": 0.16,
-     "q50": 0.16,
-     "q90": 0.16
+     "q10": 0.013416826,
+     "q50": 0.133084123,
+     "q90": 0.156341041
     },
     "leverage": null,
     "riskCost": {
-     "value": 1555.145273709,
-     "se": 124.870409677,
+     "value": 1856.707420211,
+     "se": 139.494693563,
      "noSale": 0.532,
      "scale": 0.848329852,
-     "soldQ50": 663.316299719,
-     "soldQ90": 8449.915978324
+     "soldQ50": 700.992311748,
+     "soldQ90": 10518.879652293
     },
     "samplePool": {
      "sold": 100,
@@ -174,7 +174,7 @@
        "day": 5,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.127111843,
       "endRel": 0.192202285
      },
      {
@@ -183,7 +183,7 @@
        "day": 58,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.158219469,
       "endRel": 0.298368707
      },
      {
@@ -192,7 +192,7 @@
        "day": 28,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.046597723,
       "endRel": 4.088378718
      },
      {
@@ -446,18 +446,18 @@
      "q95": 159119.266298852
     },
     "keptAfterSale": {
-     "q10": 0.1368,
+     "q10": 0.078016816,
      "q50": 0.244791129,
      "q90": 0.267991665
     },
     "leverage": null,
     "riskCost": {
-     "value": 1978.875906623,
-     "se": 137.814119687,
+     "value": 2130.297634757,
+     "se": 146.931807637,
      "noSale": 0.3995,
      "scale": 0.848329852,
-     "soldQ50": 552.002978735,
-     "soldQ90": 8961.868432267
+     "soldQ50": 559.286637986,
+     "soldQ90": 10058.144439138
     },
     "samplePool": {
      "sold": 100,
@@ -527,7 +527,7 @@
        "day": 5,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.1368,
+      "btcLeft": 0.135250988,
       "endRel": 0.192202285
      },
      {
@@ -545,7 +545,7 @@
        "day": 28,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.1368,
+      "btcLeft": 0.054547142,
       "endRel": 4.088378718
      },
      {
@@ -862,18 +862,18 @@
      "q95": 332473.549107367
     },
     "keptAfterSale": {
-     "q10": 0.16,
-     "q50": 0.16,
-     "q90": 0.16
+     "q10": 0.027994228,
+     "q50": 0.128278526,
+     "q90": 0.155165387
     },
     "leverage": null,
     "riskCost": {
-     "value": 757.914045251,
-     "se": 186.338346108,
+     "value": 835.773457291,
+     "se": 197.510265469,
      "noSale": 0.8515,
      "scale": 0.563478565,
-     "soldQ50": 348.270973348,
-     "soldQ90": 11655.82750806
+     "soldQ50": 360.580417896,
+     "soldQ90": 13581.965423918
     },
     "samplePool": {
      "sold": 100,
@@ -943,7 +943,7 @@
        "day": 47,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.147969349,
       "endRel": 1.188998415
      },
      {
@@ -952,7 +952,7 @@
        "day": 215,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.147068511,
       "endRel": 1.201656934
      },
      {
@@ -961,7 +961,7 @@
        "day": 29,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.154196543,
       "endRel": 2.105562202
      },
      {
@@ -1215,18 +1215,18 @@
      "q95": 165995.476253008
     },
     "keptAfterSale": {
-     "q10": 0.16,
-     "q50": 0.16,
-     "q90": 0.16
+     "q10": 0.020457145,
+     "q50": 0.132615142,
+     "q90": 0.156429507
     },
     "leverage": null,
     "riskCost": {
-     "value": 1630.434966178,
-     "se": 126.20900171,
+     "value": 1928.666429214,
+     "se": 141.86461489,
      "noSale": 0.528,
      "scale": 0.841620226,
-     "soldQ50": 651.405342607,
-     "soldQ90": 8545.082202696
+     "soldQ50": 695.069235685,
+     "soldQ90": 10323.982152085
     },
     "samplePool": {
      "sold": 100,
@@ -1296,7 +1296,7 @@
        "day": 6,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.096354163,
       "endRel": 0.182237341
      },
      {
@@ -1305,7 +1305,7 @@
        "day": 24,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.158342701,
       "endRel": 0.262235385
      },
      {
@@ -1314,7 +1314,7 @@
        "day": 28,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.083615822,
       "endRel": 4.563676105
      },
      {
@@ -1541,8 +1541,8 @@
     "breakeven": 0.111111111
    },
    "risk": {
-    "pLiquidation": 0.1025,
-    "pPartial": 0.5095,
+    "pLiquidation": 0.0935,
+    "pPartial": 0.5185,
     "pMarginCall": 0.612,
     "cumulativeByMonth": [
      0.078,
@@ -1568,18 +1568,18 @@
      "q95": 159119.266298852
     },
     "keptAfterSale": {
-     "q10": 0.16,
-     "q50": 0.311246537,
-     "q90": 0.557894737
+     "q10": 0.067936664,
+     "q50": 0.34711513,
+     "q90": 0.545155891
     },
     "leverage": null,
     "riskCost": {
-     "value": 1721.672224743,
-     "se": 117.365106928,
+     "value": 2048.739041763,
+     "se": 133.415698703,
      "noSale": 0.388,
      "scale": 0.848329852,
-     "soldQ50": 612.107371425,
-     "soldQ90": 7119.195478661
+     "soldQ50": 771.907407253,
+     "soldQ90": 8546.331392094
     },
     "samplePool": {
      "sold": 100,
@@ -1620,13 +1620,13 @@
      }
     ],
     "garch": {
-     "pLiquidation": 0.073,
-     "pPartial": 0.4875
+     "pLiquidation": 0.0735,
+     "pPartial": 0.487
     },
     "replay": {
      "starts": 4292,
-     "liquidatedShare": 0.027027027,
-     "partialShare": 0.452702703,
+     "liquidatedShare": 0.022600186,
+     "partialShare": 0.457129543,
      "marginCallShare": 0.47972973,
      "worst": {
       "startTime": 1513468800,
@@ -1649,7 +1649,7 @@
        "day": 5,
        "reason": "partial"
       },
-      "btcLeft": 0.054045722,
+      "btcLeft": 0.066185959,
       "endRel": 0.192202285
      },
      {
@@ -1658,7 +1658,7 @@
        "day": 24,
        "reason": "partial"
       },
-      "btcLeft": 0.173642805,
+      "btcLeft": 0.106722833,
       "endRel": 0.298368707
      },
      {
@@ -1667,7 +1667,7 @@
        "day": 29,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.089263158,
+      "btcLeft": 0.067599256,
       "endRel": 4.088378718
      },
      {
@@ -1904,8 +1904,8 @@
     "breakeven": 0.111111111
    },
    "risk": {
-    "pLiquidation": 0,
-    "pPartial": 0.5365,
+    "pLiquidation": 0.0235,
+    "pPartial": 0.513,
     "pMarginCall": 0.609,
     "cumulativeByMonth": [
      0.037,
@@ -1931,18 +1931,18 @@
      "q95": 165995.476253008
     },
     "keptAfterSale": {
-     "q10": 0.15034106,
-     "q50": 0.339622642,
+     "q10": 0.068272517,
+     "q50": 0.326382835,
      "q90": 0.51585449
     },
     "leverage": null,
     "riskCost": {
-     "value": 1240.654241734,
-     "se": 95.433444488,
+     "value": 1477.952116216,
+     "se": 114.792266025,
      "noSale": 0.4635,
      "scale": 0.841620226,
-     "soldQ50": 210.288510284,
-     "soldQ90": 6178.017686408
+     "soldQ50": 231.879206665,
+     "soldQ90": 7541.234363772
     },
     "samplePool": {
      "sold": 100,
@@ -1983,13 +1983,13 @@
      }
     ],
     "garch": {
-     "pLiquidation": 0,
-     "pPartial": 0.5075
+     "pLiquidation": 0.028,
+     "pPartial": 0.4795
     },
     "replay": {
      "starts": 4292,
-     "liquidatedShare": 0,
-     "partialShare": 0.405405405,
+     "liquidatedShare": 0.00722274,
+     "partialShare": 0.398182665,
      "marginCallShare": 0.4638863,
      "worst": {
       "startTime": 1513468800,
@@ -2012,7 +2012,7 @@
        "day": 6,
        "reason": "partial"
       },
-      "btcLeft": 0.039173277,
+      "btcLeft": 0.023978097,
       "endRel": 0.182237341
      },
      {
@@ -2021,7 +2021,7 @@
        "day": 24,
        "reason": "partial"
       },
-      "btcLeft": 0.115343539,
+      "btcLeft": 0.112632574,
       "endRel": 0.262235385
      },
      {
@@ -2030,7 +2030,7 @@
        "day": 28,
        "reason": "partial"
       },
-      "btcLeft": 0.339622642,
+      "btcLeft": 0.199239853,
       "endRel": 4.563676105
      },
      {
@@ -2287,18 +2287,18 @@
      "q95": 159119.266298852
     },
     "keptAfterSale": {
-     "q10": 0.0025,
-     "q50": 0.0025,
-     "q90": 0.0025
+     "q10": 0,
+     "q50": 0,
+     "q90": 0
     },
     "leverage": null,
     "riskCost": {
-     "value": 1159.333543862,
-     "se": 127.9391444,
+     "value": 1279.89910382,
+     "se": 131.821525318,
      "noSale": 0.6785,
      "scale": 0.848329852,
-     "soldQ50": 659.672635352,
-     "soldQ90": 9770.653783704
+     "soldQ50": 667.595343999,
+     "soldQ90": 10475.066143618
     },
     "samplePool": {
      "sold": 100,
@@ -2368,7 +2368,7 @@
        "day": 31,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.0025,
+      "btcLeft": 0,
       "endRel": 0.192202285
      },
      {
@@ -2377,7 +2377,7 @@
        "day": 73,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.0025,
+      "btcLeft": 0,
       "endRel": 0.298368707
      },
      {
@@ -2386,7 +2386,7 @@
        "day": 29,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.0025,
+      "btcLeft": 0,
       "endRel": 4.088378718
      },
      {
@@ -2655,18 +2655,18 @@
      "q95": 159119.266298852
     },
     "keptAfterSale": {
-     "q10": 0.16,
+     "q10": 0.022721947,
      "q50": 0.231255234,
      "q90": 0.29564547
     },
     "leverage": null,
     "riskCost": {
-     "value": 1388.587445966,
-     "se": 123.945639143,
+     "value": 1586.10945701,
+     "se": 137.119971122,
      "noSale": 0.5905,
      "scale": 0.848329852,
-     "soldQ50": 654.025959836,
-     "soldQ90": 8758.898634508
+     "soldQ50": 680.528016989,
+     "soldQ90": 10078.906355989
     },
     "samplePool": {
      "sold": 100,
@@ -2736,7 +2736,7 @@
        "day": 31,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.182369933,
+      "btcLeft": 0.1446176,
       "endRel": 0.192202285
      },
      {
@@ -2745,7 +2745,7 @@
        "day": 73,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.182251656,
+      "btcLeft": 0.166813602,
       "endRel": 0.298368707
      },
      {
@@ -2754,7 +2754,7 @@
        "day": 28,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.182240228,
+      "btcLeft": 0.148210825,
       "endRel": 4.088378718
      },
      {
@@ -3018,18 +3018,18 @@
      "q95": 159119.266298852
     },
     "keptAfterSale": {
-     "q10": 0.16,
+     "q10": 0.149238455,
      "q50": 0.224778906,
      "q90": 0.254367633
     },
     "leverage": null,
     "riskCost": {
-     "value": 4241.772562424,
-     "se": 186.589715245,
+     "value": 4325.561004963,
+     "se": 192.185765755,
      "noSale": 0.012,
      "scale": 0.848329852,
-     "soldQ50": 626.895828973,
-     "soldQ90": 13447.281469094
+     "soldQ50": 628.358680889,
+     "soldQ90": 13572.317686564
     },
     "samplePool": {
      "sold": 100,
@@ -3369,32 +3369,32 @@
      "q95": 165995.476253008
     },
     "keptAfterSale": {
-     "q10": 0.16,
-     "q50": 0.16,
-     "q90": 0.16
+     "q10": 0.040870868,
+     "q50": 0.135742511,
+     "q90": 0.157217055
     },
     "leverage": {
      "more": 0.394,
      "lessKept": 0.3275,
      "liquidated": 0.2785,
      "endBtc": {
-      "q05": 0.3475,
+      "q05": 0.296859396,
       "q50": 0.585403853,
       "q95": 0.772373846
      },
      "middleDiff": {
       "more": 0.080078232,
       "lessKept": -0.068858524,
-      "liquidated": -0.2775
+      "liquidated": -0.292660931
      }
     },
     "riskCost": {
-     "value": 920.735343609,
-     "se": 113.363980877,
+     "value": 1068.328895372,
+     "se": 123.622068529,
      "noSale": 0.7215,
      "scale": 0.841620226,
-     "soldQ50": 667.844451292,
-     "soldQ90": 8965.795074973
+     "soldQ50": 700.601333762,
+     "soldQ90": 10416.535093456
     },
     "samplePool": {
      "sold": 100,
@@ -3464,7 +3464,7 @@
        "day": 32,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.151698147,
       "endRel": 0.182237341
      },
      {
@@ -3473,7 +3473,7 @@
        "day": 75,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.151432243,
       "endRel": 0.262235385
      },
      {
@@ -3482,7 +3482,7 @@
        "day": 29,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.082722331,
       "endRel": 4.563676105
      },
      {
@@ -3760,32 +3760,32 @@
      "q95": 234286.865927301
     },
     "keptAfterSale": {
-     "q10": 0.16,
-     "q50": 0.16,
-     "q90": 0.16
+     "q10": 0.029430546,
+     "q50": 0.132631959,
+     "q90": 0.156100126
     },
     "leverage": {
      "more": 0.715,
      "lessKept": 0,
      "liquidated": 0.285,
      "endBtc": {
-      "q05": 0.380833333,
+      "q05": 0.305867801,
       "q50": 1.080833333,
       "q95": 1.080833333
      },
      "middleDiff": {
       "more": 0.2475,
       "lessKept": null,
-      "liquidated": -0.4525
+      "liquidated": -0.475306701
      }
     },
     "riskCost": {
-     "value": 999.785350879,
-     "se": 119.957466265,
+     "value": 1137.425867869,
+     "se": 132.445707439,
      "noSale": 0.715,
      "scale": 0.706887873,
-     "soldQ50": 564.084314754,
-     "soldQ90": 9445.25555653
+     "soldQ50": 593.333984446,
+     "soldQ90": 10682.795117502
     },
     "samplePool": {
      "sold": 100,
@@ -3855,7 +3855,7 @@
        "day": 48,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.150798161,
       "endRel": 0.368985471
      },
      {
@@ -3864,7 +3864,7 @@
        "day": 216,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.159141726,
       "endRel": 0.604628842
      },
      {
@@ -3873,7 +3873,7 @@
        "day": 29,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.093243691,
       "endRel": 3.877838291
      },
      {
@@ -4115,18 +4115,18 @@
      "q95": 124273.160495489
     },
     "keptAfterSale": {
-     "q10": 0.16,
-     "q50": 0.16,
-     "q90": 0.16
+     "q10": 0.009233338,
+     "q50": 0.130096804,
+     "q90": 0.156440194
     },
     "leverage": null,
     "riskCost": {
-     "value": 774.053898542,
-     "se": 63.076123105,
+     "value": 961.053400409,
+     "se": 74.231652808,
      "noSale": 0.706,
      "scale": 0.901766074,
-     "soldQ50": 697.547787551,
-     "soldQ90": 7001.644509397
+     "soldQ50": 743.144768511,
+     "soldQ90": 8761.599464531
     },
     "samplePool": {
      "sold": 100,
@@ -4196,7 +4196,7 @@
        "day": 6,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.096130149,
       "endRel": 0.336329164
      },
      {
@@ -4205,7 +4205,7 @@
        "day": 24,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.157165188,
       "endRel": 0.463180963
      },
      {
@@ -4214,7 +4214,7 @@
        "day": 28,
        "reason": "liquidationLtv"
       },
-      "btcLeft": 0.16,
+      "btcLeft": 0.081876978,
       "endRel": 1.139579738
      },
      {

@@ -122,7 +122,9 @@ class Loan:
     target); (2) a deadline that has passed: close still at or below the margin-call price -> sell all (or
     enough); otherwise the margin call is over; (3) low at or below the margin-call price -> margin call:
     a reserve is added once (as BTC at that price); if still too high: start the deadline, or (autoPartial)
-    sell enough at that price at once. warningOnly: only the first margin call counts, nothing is sold."""
+    sell enough at once. warningOnly: only the first margin call counts, nothing is sold.
+    Sale price (issue #7): a sale in (1), and the autoPartial sale in (3), happens at the step's low (the price
+    fell through the level before the lender sold); a sale in (2) at the step's close."""
 
     def __init__(self, btc, t):
         self.c, self.scale, self.deadline = btc, 1.0, None
@@ -165,11 +167,11 @@ class Loan:
         if low <= liq:
             if self.m:
                 self.first_margin = True
-            if self.t.get("liquidationSale") == "partial" and self.sell_enough(liq, debt, day):
+            if self.t.get("liquidationSale") == "partial" and self.sell_enough(low, debt, day):
                 self.deadline = None
                 return
             self.liquidated = (day, "liquidation")
-            self.sell_all(liq, debt)
+            self.sell_all(low, debt)
             if self.first_event is None:
                 self.first_event = day
             return
@@ -200,7 +202,7 @@ class Loan:
         if self.rule in ("liquidateAfterCure", "partialAfterCure"):
             self.deadline = day + cure
         elif self.rule == "autoPartial":
-            self.sell_enough(mc, debt, day)
+            self.sell_enough(low, debt, day)
 
 
 # ---------------------------------------------------------------- the simulation

@@ -365,7 +365,7 @@ test('"Make it safer" shows exactly the headline number for your own terms, and 
   await expect(page.locator('#assume-line')).toHaveText('Assumes you add no BTC or money after a margin call.');
   await expect(page.locator('#methods-line')).toContainText(/Other methods: real history since 2014 \d+ of 100, a volatility model \d+ of 100/);
   // what a sale leaves: not "everything lost"
-  await expect(page.locator('#sold-line')).toContainText(/If liquidated: you get back about 0\.\d{4} of your 0\.\d{4} BTC/);
+  await expect(page.locator('#sold-line')).toContainText(/If liquidated: you get back at most 0\.\d{4} of your 0\.\d{4} BTC/);
   await expect(page.locator('#tiles')).toContainText('Beats selling if');
   await expect(page.locator('#tiles')).toContainText('effective 11.6% a year');
 });
@@ -983,11 +983,30 @@ test('partial sales: how much BTC the lender sells and what you keep, in the ans
   await open(page); await waitDone(page);
   await page.locator('details.more[data-remember="more"] > summary').click();
   await page.locator('[data-set="liquidationSale"][data-val="partial"]').click();
-  await expect(page.locator('#sold-line')).toContainText(/the lender sells about 0\.\d{4} of your 0\.\d{4} BTC to bring the LTV back to \d+%\. You keep 0\.\d{4} BTC/);
+  await expect(page.locator('#sold-line')).toContainText(/the lender sells at least 0\.\d{4} of your 0\.\d{4} BTC to bring the LTV back to \d+%\. You keep at most 0\.\d{4} BTC/);
   const [sold, btc, left] = (await page.locator('#sold-line').textContent()).match(/0\.\d{4}/g).map(Number);
   expect(sold + left).toBeCloseTo(btc, 3); // sold + kept = all the BTC pledged
   await page.locator('#sec-falls > summary').click();
-  await expect(page.locator('#falls-text')).toContainText(/\(liquidation\): the lender sells about 0\.\d{4} BTC, just enough to bring the LTV back to \d+%\. You keep 0\.\d{4} of your 0\.\d{4} BTC/);
+  await expect(page.locator('#falls-text')).toContainText(/\(liquidation\): the lender sells at least 0\.\d{4} BTC, enough to bring the LTV back to \d+%\. You keep at most 0\.\d{4} of your 0\.\d{4} BTC/);
+});
+
+test('a sale in a fast fall (issue #7): the page says it counts the day\'s lowest price, and the what-if lines are limits', async ({ page }) => {
+  await open(page); await waitDone(page);
+  await expect(page.locator('#sold-line')).toContainText(/you get back at most 0\.\d{4} of your 0\.\d{4} BTC.*In a fast fall, less\./);
+  await page.locator('#sec-falls > summary').click();
+  await expect(page.locator('#falls-text')).toContainText(/\(liquidation\): the lender sells at least 0\.\d{4} BTC, including the fee/);
+  await expect(page.locator('#fast-fall')).toHaveText('If BTC falls through this price within a day, this page counts the sale at that day\'s lowest price.');
+  await page.locator('#sec-cost > summary').click();
+  await expect(page.locator('#risk-fast-fall')).toHaveText('Each forced sale is counted at the lowest price of that day: in a fast fall, below your liquidation price.');
+});
+
+test('a sale in a fast fall (issue #7), in German', async ({ page }) => {
+  await open(page, { lang: 'de' }); await waitDone(page);
+  await expect(page.locator('#sold-line')).toContainText(/erhalten Sie höchstens 0,\d{4} Ihrer 0,\d{4} BTC zurück/);
+  await page.locator('#sec-falls > summary').click();
+  await expect(page.locator('#fast-fall')).toHaveText('Fällt BTC innerhalb eines Tages durch diesen Kurs, zählt diese Seite den Verkauf zum tiefsten Kurs dieses Tages.');
+  await page.locator('#sec-cost > summary').click();
+  await expect(page.locator('#risk-fast-fall')).toContainText('Jeder Zwangsverkauf zählt zum tiefsten Kurs dieses Tages');
 });
 
 test('"Show 20 other futures" goes through five different sets and says which one is next', async ({ page }) => {

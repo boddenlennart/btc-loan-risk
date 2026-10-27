@@ -63,7 +63,9 @@ test('"How it works": three layers, every part, the charts and tables of the exa
   await expect(page.locator('#vol-table tbody tr')).toHaveCount(5);
   await expect(page.locator('#vol-table tr.us')).toContainText('Half-life 3 years (this page)');
   await expect(page.locator('#your-number .dots i')).toHaveCount(100);
-  await expect(page.locator('#rules-list li')).toHaveCount(4);
+  await expect(page.locator('#rules-list li')).toHaveCount(5);
+  await expect(page.locator('#rules-list')).toContainText(/the sale is counted at that day's lowest price, never above the liquidation price/);
+  await expect(page.locator('#rules-changed')).toContainText('Changed on 27 October 2026');
   await expect(page.locator('#methods-table tbody tr')).toHaveCount(4);
   await expect(page.locator('#fan-chart path.band-outer')).toHaveCount(1);
   await expect(page.locator('#months-chart svg')).toHaveCount(1);
@@ -451,7 +453,7 @@ test('whole-site review fixes: fixed model settings, no repeats, the volatility 
   await expect(page.locator('[data-k="simPaths"], [data-k="bootstrapBlockDays"]')).toHaveCount(0);
   // S2: "you get back" once (the answer), the falls section says what it adds
   await page.locator('#sec-falls > summary').click();
-  await expect(page.locator('#sold-line')).toContainText('If liquidated: you get back about');
+  await expect(page.locator('#sold-line')).toContainText('If liquidated: you get back at most');
   await expect(page.locator('#falls-text')).not.toContainText('get back');
   // S4, S5
   await expect(page.locator('#safer-body')).toContainText('Other options (liquidated, of 100)');

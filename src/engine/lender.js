@@ -17,6 +17,11 @@
 // reserveAmount: money the borrower adds as BTC at the first margin call (at the
 // margin-call price), before the lender acts.
 //
+// Sale price (issue #7, decision 020): a sale triggered by a price level (liquidation LTV, or the margin call
+// with autoPartial) happens at the lowest price of the step in which the level was reached, never above the
+// level: the price can fall through the level before the lender has sold (gaps, slippage). The level is kept
+// as `level`. A sale at the end of a top-up deadline uses that step's close, as before.
+//
 // A partial sale repays part of the debt. Interest is proportional to the debt, so
 // all later debt is scaled down by the same factor ("debt scale").
 
@@ -51,7 +56,7 @@ export const repaidShare = (rules) => (rules.feeBasis === 'collateralSold' ? 1 -
  * Sell just enough BTC at `price` to bring the LTV down to the target.
  * Returns false if that would need all the collateral (then the caller closes the loan).
  */
-function partialSale(s, rules, price, debt, time, reason) {
+function partialSale(s, rules, price, debt, time, reason, level = price) {
   const k = repaidShare(rules);
   const proceeds = (debt - rules.target * s.c * price) / (k - rules.target);
   if (proceeds <= 0) return true;
@@ -59,14 +64,14 @@ function partialSale(s, rules, price, debt, time, reason) {
   if (btc >= s.c) return false;
   s.c -= btc;
   s.scale *= (debt - k * proceeds) / debt;
-  s.partialSales.push({ time, reason, btc, price });
+  s.partialSales.push({ time, reason, btc, price, level });
   return true;
 }
 
-function closeLoan(s, rules, price, debt, time, reason, low) {
+function closeLoan(s, rules, price, debt, time, reason, low, level = price) {
   const soldValue = rules.feeBasis === 'collateralSold' ? debt / (1 - rules.feeValue) : debt * (1 + rules.feeValue);
   const btcSold = Math.min(s.c, soldValue / price);
-  s.liquidation = { time, low, price, reason, btcSold, btcReturned: s.c - btcSold };
+  s.liquidation = { time, low, price, level, reason, btcSold, btcReturned: s.c - btcSold };
 }
 
 /**
@@ -80,8 +85,8 @@ export function stepLoan(s, rules, { time, low, close, debt, cure }) {
   const liqPrice = d / (s.c * rules.lLtv);
   if (low <= liqPrice) {
     if (!s.firstMargin && rules.mLtv) { s.firstMargin = { time, low }; s.marginCalls++; }
-    if (rules.liquidationSale === 'partial' && partialSale(s, rules, liqPrice, d, time, 'liquidationLtv')) { s.deadline = null; return; }
-    closeLoan(s, rules, liqPrice, d, time, 'liquidationLtv', low);
+    if (rules.liquidationSale === 'partial' && partialSale(s, rules, low, d, time, 'liquidationLtv', liqPrice)) { s.deadline = null; return; }
+    closeLoan(s, rules, low, d, time, 'liquidationLtv', low, liqPrice);
     return;
   }
   if (s.deadline !== null && time >= s.deadline) {
@@ -105,7 +110,7 @@ export function stepLoan(s, rules, { time, low, close, debt, cure }) {
   }
   if (d / (s.c * mcPrice) < rules.mLtv - 1e-12) return; // the top-up fixed it
   if (rules.afterCure) s.deadline = time + cure;
-  else if (rules.behaviour === 'autoPartial') partialSale(s, rules, mcPrice, d, time, 'autoPartial');
+  else if (rules.behaviour === 'autoPartial') partialSale(s, rules, low, d, time, 'autoPartial', mcPrice);
 }
 
 /** Price below which this step needs a closer look (any rule could act). */
