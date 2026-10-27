@@ -58,26 +58,27 @@ def hourly(currency, until):
 
 
 def daily(hours):
-    """UTC days: open of the first hour, lowest hourly low, close of the last hour."""
+    """UTC days: open of the first hour, lowest hourly low, close of the last hour, and the lows of all its hours."""
     days = []
     for t, o, lo, c in hours:
         day = t // 86400
         if days and days[-1][0] == day:
             d = days[-1]
-            days[-1] = (day, d[1], min(d[2], lo), c)
+            days[-1] = (day, d[1], min(d[2], lo), c, d[4] + [lo])
         else:
-            days.append((day, o, lo, c))
+            days.append((day, o, lo, c, [lo]))
     return days
 
 
 def moves(days):
-    """r_t = ln(C_t / C_t-1), l_t = ln(min(L_t, C_t) / C_t-1)."""
-    r, l = [], []
+    """r_t = ln(C_t / C_t-1), l_t = ln(min(L_t, C_t) / C_t-1), and h_t = the day's hourly lows as ln(low / C_t-1)."""
+    r, l, h = [], [], []
     for k in range(1, len(days)):
         prev = days[k - 1][3]
         r.append(math.log(days[k][3] / prev))
         l.append(math.log(min(days[k][2], days[k][3]) / prev))
-    return r, l
+        h.append([math.log(x / prev) for x in days[k][4]])
+    return r, l, h
 
 
 # ---------------------------------------------------------------- random numbers (same generator as the page)
@@ -122,7 +123,10 @@ class Loan:
     target); (2) a deadline that has passed: close still at or below the margin-call price -> sell all (or
     enough); otherwise the margin call is over; (3) low at or below the margin-call price -> margin call:
     a reserve is added once (as BTC at that price); if still too high: start the deadline, or (autoPartial)
-    sell enough at that price at once. warningOnly: only the first margin call counts, nothing is sold."""
+    sell enough at once. warningOnly: only the first margin call counts, nothing is sold.
+    Sale price (issue #7, decision 020): a sale in (1), and the autoPartial sale in (3), happens at the low of the
+    day's first hour whose low is at or below the level (the price fell through the level before the lender sold);
+    if no hour is (the day's low can come from the previous close), at the day's low. A sale in (2) at the close."""
 
     def __init__(self, btc, t):
         self.c, self.scale, self.deadline = btc, 1.0, None
@@ -157,19 +161,26 @@ class Loan:
         # the debt plus the fee, at most all the BTC: the fee is a share of the debt or of the sale
         self.sales.append((min(self.c, debt / self.k / price), price))
 
-    def step(self, day, low, close, scheduled_debt, cure):
+    def step(self, day, low, close, scheduled_debt, cure, hour_lows=()):
         if self.liquidated:
             return
+
+        def sale_price(level):
+            for p in hour_lows:
+                if p <= level:
+                    return max(p, low)
+            return low
+
         debt = scheduled_debt * self.scale
         liq = debt / (self.c * self.t["liquidationLtv"])
         if low <= liq:
             if self.m:
                 self.first_margin = True
-            if self.t.get("liquidationSale") == "partial" and self.sell_enough(liq, debt, day):
+            if self.t.get("liquidationSale") == "partial" and self.sell_enough(sale_price(liq), debt, day):
                 self.deadline = None
                 return
             self.liquidated = (day, "liquidation")
-            self.sell_all(liq, debt)
+            self.sell_all(sale_price(liq), debt)
             if self.first_event is None:
                 self.first_event = day
             return
@@ -200,11 +211,11 @@ class Loan:
         if self.rule in ("liquidateAfterCure", "partialAfterCure"):
             self.deadline = day + cure
         elif self.rule == "autoPartial":
-            self.sell_enough(mc, debt, day)
+            self.sell_enough(sale_price(mc), debt, day)
 
 
 # ---------------------------------------------------------------- the simulation
-def simulate(r, l, t, s0, n_paths, seed, weights):
+def simulate(r, l, h, t, s0, n_paths, seed, weights):
     n = len(r)
     w_sum = 0.0
     rw = 0.0
@@ -247,11 +258,12 @@ def simulate(r, l, t, s0, n_paths, seed, weights):
                         lo = mid + 1
                 pos, left = lo, BLOCK
             ret, low_rel = rs[pos], min(ls[pos], 0.0, rs[pos])
+            hour_lows = [math.exp(log_s + x + shift) for x in h[pos]]  # the hours move with the day
             pos += 1
             left -= 1
             low = math.exp(log_s + low_rel)
             log_s += ret
-            loan.step(d, low, math.exp(log_s), debts[d - 1], cure)
+            loan.step(d, low, math.exp(log_s), debts[d - 1], cure, hour_lows)
         ends.append(math.exp(log_s))
         path_sales.append(loan.sales)
         if loan.liquidated:
@@ -305,13 +317,13 @@ def main():
     out = dict(until=until, nPaths=2000, seed=20240101, halfLifeDays=HALF_LIFE_DAYS, block=BLOCK, currencies={})
     for cur in ["EUR", "USD"]:
         days = daily(hourly(cur, until))
-        r, l = moves(days)
+        r, l, h = moves(days)
         n = len(r)
         weights = [2 ** (-(n - 1 - i) / HALF_LIFE_DAYS) for i in range(n)]
         s0 = days[-1][3]
         res = {}
         for name, t in CASES:
-            res[name] = dict(terms=t, s0=s0, **simulate(r, l, t, s0, out["nPaths"], out["seed"], weights))
+            res[name] = dict(terms=t, s0=s0, **simulate(r, l, h, t, s0, out["nPaths"], out["seed"], weights))
             print(cur, name, res[name]["liquidated"], res[name]["partial"], res[name]["marginCall"], flush=True)
         out["currencies"][cur] = dict(days=len(days), firstDay=days[0][0] * 86400, lastClose=s0,
                                       sumR=sum(r), sumL=sum(l), cases=res)

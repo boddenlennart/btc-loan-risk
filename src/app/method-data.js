@@ -2,7 +2,7 @@
 // embedded history, so every figure on that page is current after each weekly data update.
 // Uses exactly the page's own calculation (runMonteCarlo, the lender rules, the replay).
 import { runMonteCarlo } from '../engine/montecarlo.js';
-import { dailyFromHourly, dailyReturns, recencyWeights } from '../engine/history.js';
+import { dailyFromHourly, dailyReturns, recencyWeights, volatilityAnchors } from '../engine/history.js';
 import { debtByDay, collateralBtc, loanDays, liquidationPrices, marginCallPrices } from '../engine/loan.js';
 import { lenderRules, repaidShare } from '../engine/lender.js';
 import { riskCostTextbook } from '../engine/barrier.js';
@@ -21,13 +21,13 @@ const volOf = (r, w) => {
  */
 export function methodData({ hourly, terms, garch, settings, halfLifeYears }) {
   const daily = dailyFromHourly(hourly);
-  const { returns, lowRel } = dailyReturns(daily);
+  const { returns, lowRel, hourLows } = dailyReturns(daily, hourly);
   const n = returns.length; const H = halfLifeYears * 365;
   const weights = recencyWeights(n, H);
   const W = weights.reduce((a, b) => a + b, 0);
   const days = loanDays(terms);
   const loan = (t = terms) => ({ debtByDay: debtByDay(t), collateralBtc: collateralBtc(t), rules: lenderRules(t) });
-  const sim = (params, o = {}) => runMonteCarlo({ model: 'bootstrap', params: { returns, lowRel, blockDays: settings.blockDays, ...params }, s0: terms.btcPrice, days, nPaths: settings.nPaths,
+  const sim = (params, o = {}) => runMonteCarlo({ model: 'bootstrap', params: { returns, lowRel, hourLows, blockDays: settings.blockDays, ...params }, s0: terms.btcPrice, days, nPaths: settings.nPaths,
     seed: 20240101, logDriftPerDay: 0, loan: loan(), cureDays: Math.max(1, Math.ceil((terms.curePeriodHours ?? 0) / 24)), ...o });
 
   // volatility per calendar year, and how much each year counts in the draws
@@ -36,11 +36,12 @@ export function methodData({ hourly, terms, garch, settings, halfLifeYears }) {
   const volByYear = [...byYear].map(([y, b]) => ({ year: y, vol: volOf(b.r), weight: b.w / W, days: b.r.length }));
 
   // the same loan with the years weighted differently (the page uses halfLifeYears)
-  const since2022 = daily.time.findIndex((t) => t >= Date.UTC(2022, 0, 1) / 1000) - 1;
-  const recent = { returns: returns.slice(since2022), lowRel: lowRel.slice(since2022) };
+  const sinceYear = (y) => { const k = daily.time.findIndex((t) => t >= Date.UTC(y, 0, 1) / 1000) - 1; return { returns: returns.slice(k), lowRel: lowRel.slice(k), hourLows: hourLows.slice(k) }; };
+  const recent = sinceYear(2022); const since2020 = sinceYear(2020); // 2020: a visitor's suggestion (27 Oct 2026)
   const weighting = [
     { id: 'equal', vol: volOf(returns), p: sim({}).pLiquidation },
     ...[4, 3, 2].map((y) => { const w = recencyWeights(n, y * 365); return { id: `half${y}`, halfLifeYears: y, current: y === halfLifeYears, vol: volOf(returns, w), p: sim({ weights: w }).pLiquidation }; }),
+    { id: 'since2020', vol: volOf(since2020.returns), p: sim(since2020).pLiquidation },
     { id: 'since2022', vol: volOf(recent.returns), p: sim(recent).pLiquidation },
   ];
   const main = weighting.find((x) => x.current);
@@ -76,8 +77,10 @@ export function methodData({ hourly, terms, garch, settings, halfLifeYears }) {
   const risk = { value: rc.value, se: rc.se, noSale: rc.noSale, up: 1 / rc.scale - 1, one: riskOne, soldQ50: rc.soldQ50, soldQ90: rc.soldQ90, nPaths: settings.nPaths,
     textbook: riskCostTextbook({ s0: terms.btcPrice, debt: terms.loanAmount, liquidationPrice: liquidationPrices(terms).atStart, repaidShare: kRepaid, sigma: weighting.find((x) => x.current).vol, years: days / 365 }) };
 
-  // the margin-call deadline in whole days, and without any margin call
-  const deadline = [1, 2, 3].map((d) => ({ days: d, p: sim({ weights }, { cureDays: d }).pLiquidation }));
+  // if the lender sold everything when a margin call is not fixed in 1, 2 or 3 whole days, and without any margin call
+  // (the example's margin call is only a warning, decision 022, so the deadline is set here explicitly)
+  const withDeadline = loan({ ...terms, marginCallConsequence: 'liquidateAfterCure' });
+  const deadline = [1, 2, 3].map((d) => ({ days: d, p: sim({ weights }, { cureDays: d, loan: withDeadline }).pLiquidation }));
   const noMc = { ...terms, marginCallLtv: null };
   const noMarginCall = sim({ weights }, { loan: loan(noMc) }).pLiquidation;
 
@@ -86,7 +89,7 @@ export function methodData({ hourly, terms, garch, settings, halfLifeYears }) {
   for (let i = 0; i < hourly.time.length - (days + 2) * 24; i += 24 * 7) {
     if (hourly.time[i] % 86400) continue;
     const r = replayOne(hourly, { ...terms, btcPrice: 1 }, hourly.time[i]);
-    if (r.liquidation && r.liquidation.reason === 'liquidationLtv') gaps.push(1 - r.liquidation.low / r.liquidation.price);
+    if (r.liquidation && r.liquidation.reason === 'liquidationLtv') gaps.push(1 - r.liquidation.low / r.liquidation.level);
   }
   gaps.sort((a, b) => a - b);
   const q = (x) => (gaps.length ? gaps[Math.floor(x * (gaps.length - 1))] : null);
@@ -102,6 +105,6 @@ export function methodData({ hourly, terms, garch, settings, halfLifeYears }) {
     volByYear, simVol: main.vol, allVol: weighting[0].vol, sharePre2019: pre2019,
     garch: { alpha: garch.alpha, beta: garch.beta, nu: garch.nu, todayVol: Math.sqrt(garch.hLast * 365) },
     weighting, p: main.p, se: Math.sqrt((main.p * (1 - main.p)) / settings.nPaths),
-    onePath, deadline, noMarginCall, risk, gap: { n: gaps.length, median: q(0.5), p90: q(0.9), worst: q(1) },
+    anchors: volatilityAnchors(daily, returns), onePath, deadline, noMarginCall, risk, gap: { n: gaps.length, median: q(0.5), p90: q(0.9), worst: q(1) },
   };
 }

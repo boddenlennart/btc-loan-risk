@@ -23,8 +23,9 @@ describe.skipIf(!ref)('simulation = independent Python reference (same random dr
       const data = () => {
         if (s) return s;
         const daily = dailyFromHourly(sliceHourly(loadHourly(cur), ref.until + 1));
-        const { returns, lowRel } = dailyReturns(daily);
-        s = { daily, returns, lowRel, weights: recencyWeights(returns.length, ref.halfLifeDays) };
+        const hourly = sliceHourly(loadHourly(cur), ref.until + 1);
+        const { returns, lowRel, hourLows } = dailyReturns(daily, hourly);
+        s = { daily, returns, lowRel, hourLows, weights: recencyWeights(returns.length, ref.halfLifeDays) };
         return s;
       };
       it('the same daily series: number of days, first day, last close, sum of all moves and lows', () => {
@@ -37,10 +38,10 @@ describe.skipIf(!ref)('simulation = independent Python reference (same random dr
       });
       for (const [name, c] of Object.entries(R ? R.cases : {})) {
         it(`${name}: liquidated, partly liquidated, margin calls and the cost of the risk agree exactly`, () => {
-          const { returns, lowRel, weights } = data();
+          const { returns, lowRel, hourLows, weights } = data();
           const t = { ...c.terms, btcPrice: c.s0 };
           const res = runMonteCarlo({
-            model: 'bootstrap', params: { returns, lowRel, weights, blockDays: ref.block }, s0: c.s0,
+            model: 'bootstrap', params: { returns, lowRel, hourLows, weights, blockDays: ref.block }, s0: c.s0,
             days: debtByDay(t).length - 1, nPaths: ref.nPaths, seed: ref.seed, logDriftPerDay: 0,
             loan: { debtByDay: debtByDay(t), collateralBtc: collateralBtc(t), rules: lenderRules(t) },
             cureDays: Math.max(1, Math.ceil((t.curePeriodHours ?? 0) / 24)), samplePaths: 5, riskCost: true,

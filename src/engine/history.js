@@ -18,14 +18,42 @@ export function dailyFromHourly(hourly) {
   return { time, open, low, close };
 }
 
-/** Daily log returns close-to-close, and each day's low relative to the previous close (both as logs). */
-export function dailyReturns(daily) {
+/** Daily log returns close-to-close, and each day's low relative to the previous close (both as logs).
+ *  With the hourly candles the days were made from: hourLows, per day the lows of its hours in order,
+ *  relative to the previous close (logs), so a sale can be priced in the hour the level is reached (decision 020). */
+export function dailyReturns(daily, hourly = null) {
   const returns = []; const lowRel = [];
   for (let i = 1; i < daily.close.length; i++) {
     returns.push(Math.log(daily.close[i] / daily.close[i - 1]));
     lowRel.push(Math.log(Math.min(daily.low[i], daily.close[i]) / daily.close[i - 1]));
   }
-  return { returns, lowRel };
+  if (!hourly) return { returns, lowRel };
+  const byDay = []; let day = -1;
+  for (let i = 0; i < hourly.time.length; i++) {
+    const d = Math.floor(hourly.time[i] / 86400);
+    if (d !== day) { day = d; byDay.push([]); }
+    byDay[byDay.length - 1].push(hourly.low[i]);
+  }
+  const hourLows = returns.map((_, i) => Float64Array.from(byDay[i + 1], (low) => Math.log(low / daily.close[i])));
+  return { returns, lowRel, hourLows };
+}
+
+/**
+ * Two measured anchors for calmer and wilder swings (decision 021), in yearly terms (standard deviation of the
+ * daily log moves × √365): calm, the calmest `window` consecutive days so far (vol, end = time of its last day);
+ * wild, all days in 2017–2021. `returns` as from dailyReturns(daily).
+ */
+export function volatilityAnchors(daily, returns, { window = 365 } = {}) {
+  const sd = (s, s2, n) => Math.sqrt(Math.max(0, s2 / n - (s / n) ** 2) * 365);
+  let s = 0; let s2 = 0; let calm = null;
+  for (let i = 0; i < returns.length; i++) {
+    s += returns[i]; s2 += returns[i] ** 2;
+    if (i >= window) { s -= returns[i - window]; s2 -= returns[i - window] ** 2; }
+    if (i >= window - 1) { const v = sd(s, s2, window); if (!calm || v < calm.vol) calm = { vol: v, end: daily.time[i + 1] }; }
+  }
+  let w = 0; let w2 = 0; let n = 0;
+  returns.forEach((r, i) => { const y = new Date(daily.time[i + 1] * 1000).getUTCFullYear(); if (y >= 2017 && y <= 2021) { w += r; w2 += r * r; n++; } });
+  return { calm, wild: { vol: n ? sd(w, w2, n) : null, from: 2017, to: 2021 } };
 }
 
 /** The largest fall in the whole history: from the highest hourly close so far to a later hourly low (0.84 = −84%). */

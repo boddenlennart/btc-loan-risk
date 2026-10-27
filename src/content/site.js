@@ -1,9 +1,11 @@
 // Owner settings: change these to your own details. Used for the feedback e-mail,
-// the donation box, the Impressum contact line, the maker line in the footer and the "open code" link.
+// the donation box, the Impressum contact lines, the maker line in the footer and the "open code" link.
 export const SITE = {
   feedbackEmail: 'bitcoinloancheck@gmail.com',
   donationAddress: 'bc1qvj6cdm0mjea5pllsf8y3ezga0g8kq0cxuq3ufl0yx3ae9f27qj4snpj8ld',
   codeUrl: 'https://github.com/boddenlennart/btc-loan-risk',
   maker: 'Lennart Bodden',
+  makerUrl: 'https://linkedin.com/in/lennart-bodden', // the maker's LinkedIn page (decided 23 Oct 2026, issue #9)
+  contactFormUrl: 'https://mein.online-impressum.de/bitcoinloancheck/', // second contact route (decision 014)
   domain: 'bitcoinloancheck.com',
 };

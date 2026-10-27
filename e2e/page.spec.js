@@ -361,11 +361,12 @@ test('"Make it safer" shows exactly the headline number for your own terms, and 
   await expect(page.locator('#safer .lv:not(.base)').filter({ hasText: best[1] }).locator('b')).toHaveText(best[2]);
   const all = (await page.locator('#safer .lv:not(.base) b').allTextContents()).map(Number);
   expect(all).toEqual([...all].sort((a, b) => a - b)); // the list still goes from lowest to highest
-  // fairness: the top-up assumption and the two other methods are shown with the answer
-  await expect(page.locator('#assume-line')).toHaveText('Assumes you add no BTC or money after a margin call.');
+  // fairness: the two other methods are shown with the answer; the example's margin call is only a warning
+  // (decision 022), so there is no top-up assumption to state (it shows with a deadline: the lender's-rules test)
+  await expect(page.locator('#assume-line')).toHaveText('');
   await expect(page.locator('#methods-line')).toContainText(/Other methods: real history since 2014 \d+ of 100, a volatility model \d+ of 100/);
   // what a sale leaves: not "everything lost"
-  await expect(page.locator('#sold-line')).toContainText(/If liquidated: you get back about 0\.\d{4} of your 0\.\d{4} BTC/);
+  await expect(page.locator('#sold-line')).toContainText(/If liquidated: you get back at most 0\.\d{4} of your 0\.\d{4} BTC/);
   await expect(page.locator('#tiles')).toContainText('Beats selling if');
   await expect(page.locator('#tiles')).toContainText('effective 11.6% a year');
 });
@@ -703,10 +704,11 @@ test('edge cases: one month, a very long loan, too little BTC, a higher tax toda
   await expect(page.locator('#breakeven-line')).toContainText('BTC may be up to 33.3% lower at the end');
   await page.locator('#cost-body [data-k="taxRateNow"]').fill('0');
   // a liquidation fee that leaves nothing; an absurd origination fee
-  await page.locator('#form details[data-remember="more"] summary').click();
+  await page.locator('#form details[data-remember="rules"] summary').click();
   await page.locator('#form [data-k="liquidationFeeBasis"]').selectOption('collateralSold');
   await page.locator('#f-liquidationFee').fill('20');
   await expect(page.locator('#sold-line')).toContainText('you get nothing back');
+  await page.locator('#form details[data-remember="more"] summary').click(); // the origination fee is with the other terms (issue #11)
   await page.locator('#f-originationFee').fill('99');
   await expect(page.locator('#tiles')).toContainText('effective > 1,000% a year');
   expect(errors).toEqual([]);
@@ -981,13 +983,111 @@ test('security rule: a script smuggled into the page is refused; normal use caus
 
 test('partial sales: how much BTC the lender sells and what you keep, in the answer and in "What happens when BTC falls"', async ({ page }) => {
   await open(page); await waitDone(page);
-  await page.locator('details.more[data-remember="more"] > summary').click();
+  await page.locator('details.more[data-remember="rules"] > summary').click();
   await page.locator('[data-set="liquidationSale"][data-val="partial"]').click();
-  await expect(page.locator('#sold-line')).toContainText(/the lender sells about 0\.\d{4} of your 0\.\d{4} BTC to bring the LTV back to \d+%\. You keep 0\.\d{4} BTC/);
+  await expect(page.locator('#sold-line')).toContainText(/the lender sells at least 0\.\d{4} of your 0\.\d{4} BTC to bring the LTV back to \d+%\. You keep at most 0\.\d{4} BTC/);
   const [sold, btc, left] = (await page.locator('#sold-line').textContent()).match(/0\.\d{4}/g).map(Number);
   expect(sold + left).toBeCloseTo(btc, 3); // sold + kept = all the BTC pledged
   await page.locator('#sec-falls > summary').click();
-  await expect(page.locator('#falls-text')).toContainText(/\(liquidation\): the lender sells about 0\.\d{4} BTC, just enough to bring the LTV back to \d+%\. You keep 0\.\d{4} of your 0\.\d{4} BTC/);
+  await expect(page.locator('#falls-text')).toContainText(/\(liquidation\): the lender sells at least 0\.\d{4} BTC, enough to bring the LTV back to \d+%\. You keep at most 0\.\d{4} of your 0\.\d{4} BTC/);
+});
+
+test('a sale in a fast fall (issue #7): the page says it counts the lowest price of the hour, and the what-if lines are limits', async ({ page }) => {
+  await open(page); await waitDone(page);
+  await expect(page.locator('#sold-line')).toContainText(/you get back at most 0\.\d{4} of your 0\.\d{4} BTC.*In a fast fall, less\./);
+  await page.locator('#sec-falls > summary').click();
+  await expect(page.locator('#falls-text')).toContainText(/\(liquidation\): the lender sells at least 0\.\d{4} BTC, including the fee/);
+  await expect(page.locator('#fast-fall')).toHaveText('If BTC falls through this price, this page counts the sale at the lowest price of the hour in which it is reached.');
+  await page.locator('#sec-cost > summary').click();
+  await expect(page.locator('#risk-fast-fall')).toHaveText('Each forced sale is counted at the lowest price of the hour in which BTC reaches your liquidation price: in a fast fall, below it.');
+});
+
+test('calmer and wilder swings (issue #10): one line under the answer, the answer itself unchanged', async ({ page }) => {
+  await open(page); await waitDone(page);
+  const n = Number(await page.locator('#headline-text em').textContent());
+  expect(n).toBe(exampleAnswer());
+  const line = page.locator('#stress-line');
+  await expect(line).toHaveText(/^Assumes swings of \d+% a year\. As calm as BTC's calmest 12 months so far \(\d+%\): \d+ of 100\. As wild as 2017–2021 \(\d+%\): \d+ of 100\.$/);
+  const [, calm, wild] = (await line.textContent()).match(/: (\d+) of 100\. .*: (\d+) of 100/).map(Number);
+  expect(calm).toBeLessThan(n); expect(wild).toBeGreaterThan(n);
+});
+
+test('calmer and wilder swings (issue #10), in German', async ({ page }) => {
+  await open(page, { lang: 'de' }); await waitDone(page);
+  await expect(page.locator('#stress-line')).toHaveText(/^Rechnet mit Schwankungen von \d+\s%\s?im Jahr\. So ruhig wie die ruhigsten 12 Monate von BTC bisher \(\d+\s%\): \d+ von 100\. So wild wie 2017–2021 \(\d+\s%\): \d+ von 100\.$/);
+});
+
+test('the lender\'s rules (issue #11): their own folded part right under the liquidation LTV; its title line spells them out and follows every change', { tag: '@phone' }, async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.locator('#own-terms-link').click();
+  const rules = page.locator('#form details[data-remember="rules"]');
+  const sum = rules.locator('#rules-sum');
+  // placed straight after the liquidation LTV, before the duration
+  expect(await page.evaluate(() => { const r = document.querySelector('#form details[data-remember="rules"]'); return r.previousElementSibling && r.previousElementSibling.dataset.field; })).toBe('liquidationLtv');
+  await expect(rules.locator('summary')).toContainText('What your lender does when BTC falls');
+  // the example's margin call is only a warning (decision 022)
+  await expect(sum).toHaveText('Margin call at 70%: a warning only · At 80%: everything is sold · Fee 5% of the amount owed');
+  await expect(sum).toBeVisible(); // readable while folded
+  await expect(rules).not.toHaveAttribute('open', '');
+  await rules.locator('summary').click();
+  await expect(rules).toHaveAttribute('open', '');
+  await expect(rules.locator('#f-marginCallLtv')).toBeVisible();
+  await expect(rules.locator('#f-liquidationFee')).toBeVisible();
+  // every change shows in the line at once; a deadline brings the top-up assumption under the answer
+  await rules.locator('[data-k="marginCallConsequence"]').selectOption('liquidateAfterCure');
+  await expect(sum).toContainText('Margin call at 70%: 48 hours to top up, otherwise everything is sold');
+  await expect(page.locator('#assume-line')).toHaveText('Assumes you add no BTC or money after a margin call.');
+  await rules.locator('[data-k="marginCallConsequence"]').selectOption('autoPartial');
+  await expect(sum).toContainText('Margin call at 70%: part is sold at once');
+  await rules.locator('[data-set="liquidationSale"][data-val="partial"]').click();
+  await expect(sum).toContainText('At 80%: only enough is sold');
+  await rules.locator('#f-marginCallLtv').fill('');
+  await expect(sum).toHaveText(/^No margin call · At 80%: only enough is sold · Fee 5% of the amount owed$/);
+  // the other terms stay in "More terms from your offer", without the rules
+  const more = page.locator('#form details[data-remember="more"]');
+  await expect(more.locator('#f-marginCallLtv, #f-liquidationFee')).toHaveCount(0);
+  await expect(more.locator('summary')).not.toContainText('Margin call');
+});
+
+test('the lender\'s rules (issue #11), in German', async ({ page }) => {
+  await open(page, { lang: 'de' }); await waitDone(page);
+  const rules = page.locator('#form details[data-remember="rules"]');
+  await expect(rules.locator('summary')).toContainText('Was Ihr Kreditgeber tut, wenn BTC fällt');
+  await expect(rules.locator('#rules-sum')).toHaveText(/^Margin Call bei 70\s%: nur eine Warnung · Bei 80\s%: alles wird verkauft · Gebühr 5\s% des geschuldeten Betrags$/);
+});
+
+test('entry timing (issue #12): the history section shows the loan by what BTC did in the 90 days before the start; the last row is the line above it', { tag: '@phone' }, async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.locator('#sec-history > summary').click();
+  const tbl = page.locator('#entry-table');
+  await expect(page.locator('#entry-h')).toHaveText('Your loan, by what BTC did in the 90 days before it started');
+  await expect(tbl.locator('tbody th')).toHaveText(['Fell more than 10%', 'Roughly flat (−10% to +10%)', 'Rose 10–50%', 'Rose 50–100%', 'More than doubled', 'First 90 days of the data (no earlier prices)']);
+  const h = Number((await page.locator('#history-text .big-line').textContent()).match(/liquidated (\d+) times in 100/)[1]);
+  await expect(tbl.locator('tfoot th')).toHaveText('All start days');
+  await expect(tbl.locator('tfoot td').nth(1)).toHaveText(String(h));
+  const starts = (await tbl.locator('tbody td:nth-child(2)').allTextContents()).map((s) => Number(s.replace(/,/g, '')));
+  expect(starts.reduce((a, b) => a + b, 0)).toBe(Number((await tbl.locator('tfoot td').first().textContent()).replace(/,/g, '')));
+  await expect(page.locator('#history-text .hint')).toContainText('History, not a forecast.');
+  // the same loan on start days since 2020 only, next to the line for all start days (Reddit suggestion, 27 Oct 2026)
+  await expect(page.locator('#history-since')).toHaveText(/^Started only on days since 1 January 2020 \(\d{1,3}(,\d{3})* start days\): liquidated \d+ times in 100(, and in \d+ more, part of the BTC would have been liquidated)?\.$/);
+  await expect(page.locator('#history-text a[href$="insights/#i-entry"]')).toBeVisible();
+});
+
+test('entry timing (issue #12), in German', async ({ page }) => {
+  await open(page, { lang: 'de' }); await waitDone(page);
+  await page.locator('#sec-history > summary').click();
+  await expect(page.locator('#entry-h')).toHaveText('Ihr Kredit, nach dem, was BTC in den 90 Tagen vor dem Start tat');
+  await expect(page.locator('#entry-table tfoot th')).toHaveText('Alle Starttage');
+  await expect(page.locator('#history-since')).toContainText('Nur an Tagen seit dem 1. Januar 2020 gestartet');
+});
+
+test('a sale in a fast fall (issue #7), in German', async ({ page }) => {
+  await open(page, { lang: 'de' }); await waitDone(page);
+  await expect(page.locator('#sold-line')).toContainText(/erhalten Sie höchstens 0,\d{4} Ihrer 0,\d{4} BTC zurück/);
+  await page.locator('#sec-falls > summary').click();
+  await expect(page.locator('#fast-fall')).toHaveText('Fällt BTC durch diesen Kurs, zählt diese Seite den Verkauf zum tiefsten Kurs der Stunde, in der er erreicht wird.');
+  await page.locator('#sec-cost > summary').click();
+  await expect(page.locator('#risk-fast-fall')).toContainText('Jeder Zwangsverkauf zählt zum tiefsten Kurs der Stunde');
 });
 
 test('"Show 20 other futures" goes through five different sets and says which one is next', async ({ page }) => {
@@ -1225,8 +1325,8 @@ test('typing into a field that changes the form (margin call empty → 70): the 
     await page.setViewportSize({ width, height: 800 });
     await open(page); await waitDone(page);
     if (width < 1024) await page.locator('#own-terms-link').click();
-    await page.locator('details.more[data-remember="more"] > summary').click();
-    await expect(page.locator('details.more[data-remember="more"]')).toHaveAttribute('open', '');
+    await page.locator('details.more[data-remember="rules"] > summary').click();
+    await expect(page.locator('details.more[data-remember="rules"]')).toHaveAttribute('open', '');
     await page.waitForTimeout(100); // as a person: the section is open before typing starts
     const f = page.locator('#f-marginCallLtv');
     await f.fill(''); // the margin-call options disappear: the form is rebuilt

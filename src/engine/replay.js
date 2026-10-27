@@ -152,3 +152,36 @@ export function replayAll(hourly, terms, { firstStart = -Infinity } = {}) {
     perStart,
   };
 }
+
+/** Groups of BTC's move in the 90 days before a start (decision 015, issue #12): [id, from, to), as fractions. */
+export const ENTRY_GROUPS = [['fell', -Infinity, -0.1], ['flat', -0.1, 0.1], ['rose', 0.1, 0.5], ['roseStrongly', 0.5, 1], ['doubled', 1, Infinity]];
+
+/**
+ * Entry timing: the start days of a replay grouped by BTC's move in the `days` days before each start (the last
+ * hourly close before the start against the last close `days` days earlier); start days without that earlier price
+ * form their own group 'early'. perStart from replayAll. Returns { rows: [{ id, starts, liquidated, partial }], total }.
+ * History, not an input: it is shown, never used to change the answer.
+ */
+export function entryTiming(hourly, perStart, { days = 90 } = {}) {
+  const { time, close } = hourly;
+  const closeAt = (t) => { let lo = 0; let hi = time.length - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (time[m] <= t) lo = m; else hi = m - 1; } return close[lo]; };
+  const rows = [...ENTRY_GROUPS.map(([id]) => id), 'early'].map((id) => ({ id, starts: 0, liquidated: 0, partial: 0 }));
+  const total = { starts: 0, liquidated: 0, partial: 0 };
+  perStart.time.forEach((t0, i) => {
+    const before = t0 - 3600; const earlier = before - days * 86400;
+    let row = rows.at(-1);
+    if (earlier >= time[0]) {
+      const move = closeAt(before) / closeAt(earlier) - 1;
+      row = rows[ENTRY_GROUPS.findIndex(([, from, to]) => move >= from && move < to)];
+    }
+    for (const r of [row, total]) { r.starts++; if (perStart.liquidated[i]) r.liquidated++; else if (perStart.partial[i]) r.partial++; }
+  });
+  return { rows, total };
+}
+
+/** Real history from start days at or after `from` (unix seconds) only: { starts, liquidatedShare, partialShare } (null shares if none). */
+export function replaySince(perStart, from) {
+  let n = 0; let liq = 0; let part = 0;
+  perStart.time.forEach((t, i) => { if (t < from) return; n++; if (perStart.liquidated[i]) liq++; else if (perStart.partial[i]) part++; });
+  return { starts: n, liquidatedShare: n ? liq / n : null, partialShare: n ? part / n : null };
+}

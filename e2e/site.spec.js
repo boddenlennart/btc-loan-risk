@@ -60,10 +60,16 @@ test('"How it works": three layers, every part, the charts and tables of the exa
   // volatility per year: one bar per year since 2014, and the weighting table with this page's row marked
   const years = new Date().getUTCFullYear() - 2014 + 1;
   await expect(page.locator('#vol-chart rect.bar')).toHaveCount(years);
-  await expect(page.locator('#vol-table tbody tr')).toHaveCount(5);
+  await expect(page.locator('#vol-table tbody tr')).toHaveCount(6);
+  await expect(page.locator('#vol-table tbody')).toContainText('Only 2020 onwards');
   await expect(page.locator('#vol-table tr.us')).toContainText('Half-life 3 years (this page)');
   await expect(page.locator('#your-number .dots i')).toHaveCount(100);
-  await expect(page.locator('#rules-list li')).toHaveCount(4);
+  await expect(page.locator('#rules-list li')).toHaveCount(5);
+  await expect(page.locator('#rules-list')).toContainText(/the sale is counted at the lowest price of that hour, never above the liquidation price/);
+  await expect(page.locator('#rules-changed')).toContainText('Changed on 27 October 2026');
+  // decision 022: the example's margin call is only a warning; the deadline figures say "if the lender sold after …"
+  await expect(page.locator('#rules-list')).toContainText(/If the lender sold everything when a margin call is not fixed within 1 day, the example would give \d+ of 100; within 2 days \d+, within 3 days \d+\. With only a warning, as in the example: \d+\./);
+  await expect(page.locator('#example-changed')).toContainText('Changed on 27 October 2026: the example\'s margin call is now only a warning');
   await expect(page.locator('#methods-table tbody tr')).toHaveCount(4);
   await expect(page.locator('#fan-chart path.band-outer')).toHaveCount(1);
   await expect(page.locator('#months-chart svg')).toHaveCount(1);
@@ -329,22 +335,29 @@ test('links to other websites open in a new tab and say so to screen readers; th
       expect(l.hint.trim(), `${path} ${l.href}`).toMatch(path.startsWith('/de/') ? /neuen Tab/ : /new tab/);
     }
   }
+  // issue #9: the maker's LinkedIn page and the Impressum's contact form, both in a new tab
+  for (const path of ['/', '/de/']) {
+    await visit(page, path);
+    await expect(page.locator('#maker a[href="https://linkedin.com/in/lennart-bodden"]')).toContainText('LinkedIn');
+    await page.locator('#impressum > summary').click();
+    await expect(page.locator('#impressum-body a[href="https://mein.online-impressum.de/bitcoinloancheck/"]')).toBeVisible();
+  }
   await visit(page, '/');
   const [tab] = await Promise.all([context.waitForEvent('page'), page.locator('#code-link').click()]);
   expect(tab).toBeTruthy();
   expect(new URL(page.url()).pathname).toBe('/'); // the check page did not navigate away
 });
 
-test('"Insights": all 11, each with what was measured and a table or chart; the line under the answer leads to the first group', async ({ page }) => {
+test('"Insights": all 12, each with what was measured and a table or chart; the line under the answer leads to the first group', async ({ page }) => {
   const errors = await visit(page, '/insights/');
   await expect(page).toHaveTitle('Insights · Bitcoin Loan Check');
   await expect(page.locator('.toc li')).toHaveCount(5);
-  const ids = ['survival', 'falls', 'speed', 'levers', 'reserve', 'partial', 'cost', 'measure', 'buy', 'spend', 'swings'];
+  const ids = ['survival', 'falls', 'speed', 'levers', 'reserve', 'partial', 'cost', 'measure', 'buy', 'spend', 'swings', 'entry'];
   for (const id of ids) {
     await expect(page.locator(`#i-${id} h3`)).toBeVisible();
     await expect(page.locator(`#i-${id} table, #i-${id} .levers, #i-${id} svg`).first()).toBeVisible();
   }
-  await expect(page.locator('.ins .take')).toHaveCount(10); // every insight except the lever list states its result in one sentence
+  await expect(page.locator('.ins .take')).toHaveCount(11); // every insight except the lever list states its result in one sentence
   await expect(page.locator('#i-survival td.heat')).toHaveCount(24);
   await expect(page.locator('#basis')).toContainText('US dollars');
   await expect(page.locator('#swings-chart svg')).toHaveCount(1);
@@ -451,7 +464,7 @@ test('whole-site review fixes: fixed model settings, no repeats, the volatility 
   await expect(page.locator('[data-k="simPaths"], [data-k="bootstrapBlockDays"]')).toHaveCount(0);
   // S2: "you get back" once (the answer), the falls section says what it adds
   await page.locator('#sec-falls > summary').click();
-  await expect(page.locator('#sold-line')).toContainText('If liquidated: you get back about');
+  await expect(page.locator('#sold-line')).toContainText('If liquidated: you get back at most');
   await expect(page.locator('#falls-text')).not.toContainText('get back');
   // S4, S5
   await expect(page.locator('#safer-body')).toContainText('Other options (liquidated, of 100)');

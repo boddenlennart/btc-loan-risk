@@ -15,25 +15,27 @@ describe('answers known in advance', () => {
     const r = fixed([[0, 0]], loanOf(100));
     expect(r.riskCost).toMatchObject({ value: 0, se: 0, noSale: 1 });
   });
-  it('a sale at the liquidation price: the BTC that repaid the loan misses the rise back to the (scaled) end price', () => {
-    // a steady fall of 2% a day reaches the liquidation price 62.5 on day 24; every future is the same, so the
-    // scaled end price is today's price 100. 5,000 of debt is repaid with 80 BTC, which miss 100 − 62.5.
+  // a steady fall of 2% a day passes the liquidation price 62.5 on day 24, whose low is 100 × 0.98^24 = 61.58:
+  // the sale happens there (issue #7). Every future is the same, so the scaled end price is today's price 100.
+  const p24 = 100 * 0.98 ** 24;
+  it('a sale where the price fell through the liquidation price: the BTC that repaid the loan misses the rise back to the (scaled) end price', () => {
+    // 5,000 of debt is repaid with 5,000 / 61.58 BTC, which miss 100 − 61.58.
     const r = fixed([[Math.log(0.98), Math.log(0.98)]], loanOf(100));
-    expect(r.riskCost.value).toBeCloseTo(80 * (100 - 62.5), 9);
+    expect(r.riskCost.value).toBeCloseTo((5000 / p24) * (100 - p24), 9);
     expect(r.riskCost.noSale).toBe(0);
   });
-  it('the fee: 5% on the amount owed takes 4 more BTC, lost whole (worth the end price)', () => {
+  it('the fee: 5% on the amount owed takes 250 / 61.58 more BTC, lost whole (worth the end price)', () => {
     const r = fixed([[Math.log(0.98), Math.log(0.98)]], loanOf(100, { liquidationFee: { value: 0.05, basis: 'debt' } }));
-    expect(r.riskCost.value).toBeCloseTo(80 * 37.5 + 4 * 100, 9);
+    expect(r.riskCost.value).toBeCloseTo((5000 / p24) * (100 - p24) + (250 / p24) * 100, 9);
   });
   it('a partial sale with a fee on the BTC sold: the repaid part misses the rise, the fee part is lost whole', () => {
     const over = { liquidationSale: 'partial', liquidationFee: { value: 0.03, basis: 'collateralSold' } };
     const steps = [[0, 0], [Math.log(0.6), Math.log(0.6)], ...Array(60).fill([0, 0])]; // day 2: down 40% and stays
     const r = fixed(steps, loanOf(100, over));
     const rules = lenderRules({ initialLtv: 0.5, liquidationLtv: 0.8, marginCallLtv: null, ...over });
-    const b = partialSaleBtc(rules, 5000, 100, 62.5); // sold at the liquidation price
+    const b = partialSaleBtc(rules, 5000, 100, 60); // sold at the day's low 60, below the liquidation price 62.5
     expect(r.pPartial).toBe(1);
-    expect(r.riskCost.value).toBeCloseTo(0.97 * b * (100 - 62.5) + 0.03 * b * 100, 6);
+    expect(r.riskCost.value).toBeCloseTo(0.97 * b * (100 - 60) + 0.03 * b * 100, 6);
   });
 });
 

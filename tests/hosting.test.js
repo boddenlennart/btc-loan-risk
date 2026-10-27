@@ -9,7 +9,7 @@ import { createHash } from 'node:crypto';
 const PAGES = { 'index.html': 'prices', 'de/index.html': 'prices', 'insights/index.html': 'none', 'de/insights/index.html': 'none', 'method/index.html': 'none', 'de/method/index.html': 'none' };
 const ALLOWED_HOSTS = ['www.bitstamp.net', 'api.coinbase.com'];
 // Plain text links and the site's own address in the preview tags (read by link previews, not loaded by the page):
-const TEXT_LINKS = ['docs.github.com', 'github.com', 'bitcoinloancheck.com', 'www.cloudflare.com'];
+const TEXT_LINKS = ['docs.github.com', 'github.com', 'bitcoinloancheck.com', 'www.cloudflare.com', 'linkedin.com', 'mein.online-impressum.de']; // the last two: issue #9, named in the privacy notice
 
 for (const [name, connects] of Object.entries(PAGES)) {
 const page = new URL(`../docs/${name}`, import.meta.url);

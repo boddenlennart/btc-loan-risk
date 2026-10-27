@@ -2,7 +2,7 @@
 // Computed by the build (tools/build.mjs) on the real hourly history, never on the simulation,
 // so every number is "what happened", not a forecast. Refreshed by the weekly data update.
 // One reference loan (the page's example rules) unless a table varies a term on purpose.
-import { replayAll } from '../engine/replay.js';
+import { replayAll, entryTiming } from '../engine/replay.js';
 import { loanSummary, breakevenReturn } from '../engine/loan.js';
 import { dailyFromHourly, recencyWeights } from '../engine/history.js';
 import { toTerms } from '../app/terms.js';
@@ -15,7 +15,9 @@ export const WINDOWS = [30, 90, 180, 365];
 
 /** The reference loan in engine terms (fractions), with `over` changed. The start price and date are set per start day. */
 export function reference(over = {}) {
-  const t = { ...toTerms({ ...EXAMPLE_FORM, currency: 'USD', btcPrice: 1 }).terms, ...over };
+  // the example in US dollars, with the margin-call rule the Insights texts name: 48 hours to top up, then everything
+  // is sold (the check page's example has only a warning since 27 Oct 2026, decision 022)
+  const t = { ...toTerms({ ...EXAMPLE_FORM, currency: 'USD', btcPrice: 1, marginCallConsequence: 'liquidateAfterCure', curePeriodHours: 48 }).terms, ...over };
   // a margin call at or below the starting LTV would be hit at once: such a loan has none
   if (t.marginCallLtv && t.marginCallLtv <= t.initialLtv) t.marginCallLtv = null;
   return t;
@@ -215,6 +217,7 @@ export function computeInsights(hourly, { currency = 'USD', halfLifeYears = 3 } 
   return {
     currency, from: hourly.time[0], to: hourly.time[hourly.time.length - 1],
     survival: survivalMap(hourly), falls: worstFalls(hourly), speed: crashSpeed(hourly), levers: leverRanking(hourly), reserve: reserveSizing(hourly),
+    entry: entryTiming(hourly, replayAll(hourly, reference()).perStart), // 12. entry timing (issue #12, decision 015)
     partial: partialVsFull(hourly), cost: expectedCost(hourly), measure: priceMeasure(hourly), buy: buyMore(hourly), spend: borrowOrSell(hourly), swings: swingsToday(hourly, halfLifeYears),
   };
 }

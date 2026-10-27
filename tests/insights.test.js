@@ -7,6 +7,13 @@ import { dailyFromHourly } from '../src/engine/history.js';
 import { loanSummary } from '../src/engine/loan.js';
 import { loadHourly, hasData } from './helpers/history.js';
 
+describe('the Insights reference loan keeps the rule its story names (decision 022)', () => {
+  it('margin call at 70% with 48 hours to top up, then everything is sold, even though the check page example has only a warning', () => {
+    const t = reference();
+    expect([t.marginCallLtv, t.marginCallConsequence, t.curePeriodHours, t.liquidationLtv]).toEqual([0.7, 'liquidateAfterCure', 48, 0.8]);
+  });
+});
+
 describe.skipIf(!hasData('USD'))('insights on the real US-dollar history', () => {
   let h; let I; let d;
   beforeAll(() => { h = loadHourly('USD'); d = dailyFromHourly(h); I = computeInsights(h); }, 180000);

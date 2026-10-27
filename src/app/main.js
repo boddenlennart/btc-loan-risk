@@ -207,6 +207,9 @@ function keepFocus(rebuild) {
 function renderForm() { keepFocus(buildForm); }
 
 function buildForm() {
+  // which folded parts are open, read now: the browser reports an opened part a moment later, and a quick
+  // change right after opening (e.g. picking a margin-call rule) redraws the form before that (Android, issue #11)
+  for (const d of document.querySelectorAll('#form details[data-remember]')) { if (d.open) openDetails.add(d.dataset.remember); else openDetails.delete(d.dataset.remember); }
   const f = F(); const fm = texts().form; const existing = state.mode === 'existing';
   const cur = state.currency;
   const currencySel = `<select class="cur" data-k="currency" aria-label="${esc(f.currency.label)}">${Object.keys(META.prices).map((c) => `<option${c === cur ? ' selected' : ''}>${c}</option>`).join('')}</select>`;
@@ -233,10 +236,8 @@ function buildForm() {
   const afterCure = ['liquidateAfterCure', 'partialAfterCure'].includes(state.marginCallConsequence);
   const anyPartial = state.marginCallConsequence === 'partialAfterCure' || state.marginCallConsequence === 'autoPartial' || state.liquidationSale === 'partial';
   const feeSel = (key, opts) => `<select data-k="${key}" aria-label="${esc(f[key === 'liquidationFeeBasis' ? 'liquidationFee' : 'originationFee'].label)}">${opts.map(([v, l]) => `<option value="${v}"${(key === 'originationFee.type' ? state.originationFee.type : state[key]) === v ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
-  const more = `
-    ${seg('repayment', ['interestOnly', 'bullet', 'amortizing'].map((v) => [v, f.repayment[v]]), f.repayment.label, { help: fm.help.repayment })}
-    ${state.repayment === 'bullet' ? seg('compounding', ['none', 'monthly'].map((v) => [v, f.compounding[v]]), f.compounding.label) : ''}
-    ${existing ? '' : `<div class="field" data-field="originationFee"><label for="f-originationFee">${esc(f.originationFee.label)}</label><div class="pair"><input id="f-originationFee" data-k="originationFee.value" type="number" step="any" min="0" inputmode="decimal" value="${esc(state.originationFee.value)}">${feeSel('originationFee.type', [['percent', f.originationFee.percent], ['fixed', f.originationFee.fixed]])}</div><p class="err" role="alert" hidden></p></div>`}
+  // what the lender does when BTC falls: its own folded part under the liquidation LTV (issue #11)
+  const rules = `
     <fieldset class="sub-group" data-field="marginCall"><legend><span class="label">${esc(f.marginCall.label)}</span>${helpBtn('marginCall', f.marginCall.label)}</legend>${helpBox('marginCall', fm.help.marginCall)}
       ${numField('marginCallLtv', f.marginCallLtv.label, '%', { hint: f.marginCallLtv.hint })}
       ${mc ? select('marginCallConsequence', ['warningOnly', 'liquidateAfterCure', 'partialAfterCure', 'autoPartial'].map((v) => [v, f.marginCallConsequence[v]]), f.marginCallConsequence.label) : ''}
@@ -244,7 +245,11 @@ function buildForm() {
       ${seg('liquidationSale', ['all', 'partial'].map((v) => [v, f.liquidationSale[v]]), f.liquidationSale.label)}
       ${(mc || anyPartial) ? numField('cureTargetLtv', f.cureTargetLtv.label, '%', { hint: existing ? '' : f.cureTargetLtv.hint }) : ''}
     </fieldset>
-    <div class="field" data-field="liquidationFee"><label for="f-liquidationFee">${esc(f.liquidationFee.label)}</label><div class="pair"><input id="f-liquidationFee" data-k="liquidationFee" type="number" step="any" min="0" inputmode="decimal" value="${esc(state.liquidationFee)}">${feeSel('liquidationFeeBasis', [['debt', f.liquidationFee.debt], ['collateralSold', f.liquidationFee.collateralSold]])}</div><p class="err" role="alert" hidden></p></div>
+    <div class="field" data-field="liquidationFee"><label for="f-liquidationFee">${esc(f.liquidationFee.label)}</label><div class="pair"><input id="f-liquidationFee" data-k="liquidationFee" type="number" step="any" min="0" inputmode="decimal" value="${esc(state.liquidationFee)}">${feeSel('liquidationFeeBasis', [['debt', f.liquidationFee.debt], ['collateralSold', f.liquidationFee.collateralSold]])}</div><p class="err" role="alert" hidden></p></div>`;
+  const more = `
+    ${seg('repayment', ['interestOnly', 'bullet', 'amortizing'].map((v) => [v, f.repayment[v]]), f.repayment.label, { help: fm.help.repayment })}
+    ${state.repayment === 'bullet' ? seg('compounding', ['none', 'monthly'].map((v) => [v, f.compounding[v]]), f.compounding.label) : ''}
+    ${existing ? '' : `<div class="field" data-field="originationFee"><label for="f-originationFee">${esc(f.originationFee.label)}</label><div class="pair"><input id="f-originationFee" data-k="originationFee.value" type="number" step="any" min="0" inputmode="decimal" value="${esc(state.originationFee.value)}">${feeSel('originationFee.type', [['percent', f.originationFee.percent], ['fixed', f.originationFee.fixed]])}</div><p class="err" role="alert" hidden></p></div>`}
     ${state.purpose === 'buy' && !existing && (!state.refi || state.refi.change === 'more') ? seg('repayWith', ['sell', 'cash'].map((v) => [v, f.repayWith[v]]), f.repayWith.label) : ''}`;
   const expert = `
     ${existing ? '' : `<div class="field" data-field="startDate"><label for="f-startDate">${esc(f.startDate.label)}</label><input id="f-startDate" type="date" data-k="startDate" value="${esc(state.startDate || today())}"><p class="hint">${esc(f.startDate.hint)}</p></div>`}
@@ -279,6 +284,7 @@ function buildForm() {
     ${nameField}
     ${top}
     ${numField('liquidationLtv', f.liquidationLtv.label, '%', { help: fm.help.liquidationLtv })}
+    <details class="more rules" data-remember="rules"><summary>${esc(fm.rulesTitle)}<span class="sum rules-sum" id="rules-sum"></span></summary>${rules}</details>
     <div class="field" data-field="durationMonths"><span class="label" id="l-dur">${esc(existing ? f.durationMonths.labelExisting : f.durationMonths.label)}</span>
       <div class="chips" role="group" aria-labelledby="l-dur">${durChips}<span class="with-unit other"><input type="number" step="1" min="1" inputmode="numeric" data-k="durationMonths" aria-label="${esc(fm.otherDuration)}" placeholder="${esc(fm.otherDuration)}" value="${other ? esc(state.durationMonths) : ''}"><span class="unit">${esc(t('ui.months'))}</span></span></div>${existing ? '' : `<p class="hint">${esc(f.durationMonths.hint)}</p>`}<p class="err" role="alert" hidden></p></div>
     ${rate}
@@ -300,12 +306,27 @@ function whereHtml() {
     <ol>${w.items.map((i) => `<li><b>${esc(i.field)}</b>: ${esc(i.words)}</li>`).join('')}</ol><p class="hint">${esc(w.others)}</p>`;
 }
 
+// a percentage as typed: 5% stays 5%, 1.5% stays 1.5%
+const pctTyped = (x) => pct(x, Math.abs(x * 100 - Math.round(x * 100)) < 1e-9 ? 0 : 1);
 function moreSummary(terms) {
   const f = F();
   const parts = [f.repayment[terms.repayment]];
-  if (terms.marginCallLtv) parts.push(`${f.marginCallLtv.label} ${pct(terms.marginCallLtv, 0)}`);
-  parts.push(`${f.liquidationFee.label} ${pct(terms.liquidationFee.value, 1)}`);
+  const o = terms.originationFee;
+  if (terms.mode !== 'existing' && o.value > 0) parts.push(`${f.originationFee.label} ${o.type === 'fixed' ? money0(o.value, terms.currency) : pctTyped(o.value)}`);
   const el = $('#more-sum'); if (el) el.textContent = `· ${parts.join(' · ')}`;
+  rulesSummary(terms);
+}
+
+// The title line of "What your lender does when BTC falls": the rules in words, readable while folded
+function rulesSummary(terms) {
+  const el = $('#rules-sum'); if (!el) return;
+  const S = F().rulesSum; const r = lenderRules(terms);
+  const vars = { mc: pct(terms.marginCallLtv || 0, 0), liq: pct(terms.liquidationLtv, 0), fee: pctTyped(r.feeValue),
+    hours: terms.curePeriodHours === 1 ? S.hour : t('form.fields.rulesSum.hours', { n: terms.curePeriodHours }) };
+  const margin = !r.mLtv ? 'noMargin' : r.behaviour === 'autoPartial' ? 'auto' : !r.afterCure ? 'warning' : r.cureSale === 'partial' ? 'curePartial' : 'cure';
+  const fee = r.feeValue > 0 ? (r.feeBasis === 'collateralSold' ? 'feeSold' : 'feeDebt') : 'noFee';
+  // one rule per line, easy to scan on a phone; the separators stay in the text for copying and screen readers
+  el.innerHTML = [margin, r.liquidationSale === 'partial' ? 'partial' : 'all', fee].map((k) => `<span class="rule">${esc(t(`form.fields.rulesSum.${k}`, vars))}</span>`).join('<span class="sep"> · </span>');
 }
 
 function renderPriceLine() {
@@ -817,11 +838,15 @@ function renderCompare() {
   $('#showing').textContent = t('compare.showing', { name: offerName(compare.active) });
 }
 
-// A partial sale at `price`: about how much BTC the lender sells (its fee included) and what is left.
+// A sale is never above the price that triggers it (decision 020), so the BTC sold at that price is the least
+// the lender sells and what is left the most you keep: shown rounded up or down so "at least" / "at most" hold.
+const atLeast4 = (x) => num(Math.ceil(x * 1e4 - 1e-9) / 1e4, 4);
+const atMost4 = (x) => num(Math.floor(x * 1e4 + 1e-9) / 1e4, 4);
+// A partial sale at `price`: at least how much BTC the lender sells (its fee included) and at most what is left.
 function partialAt(tm, price) {
   const rules = lenderRules(tm); const btc = collateralBtc(tm);
   const sold = partialSaleBtc(rules, tm.loanAmount, btc, price);
-  return { sold: num(sold, 4), left: num(btc - sold, 4), btc: num(btc, 4), target: pct(rules.target, 0) };
+  return { sold: atLeast4(sold), left: atMost4(btc - sold), btc: num(btc, 4), target: pct(rules.target, 0) };
 }
 
 // An existing loan whose LTV today is already at or above its margin call
@@ -871,7 +896,7 @@ function renderTiles(tm) {
   if (rules.liquidationSale === 'all') {
     const lq = costIfLiquidated(tm, { price: lp.atStart, debt: tm.loanAmount });
     $('#sold-line').textContent = lq.btcReturned < 0.00005 ? t('results.soldNothing', { btc: num(collateralBtc(tm), 4) })
-      : t('results.soldGetBack', { back: num(lq.btcReturned, 4), btc: num(collateralBtc(tm), 4) });
+      : t('results.soldGetBack', { back: atMost4(lq.btcReturned), btc: num(collateralBtc(tm), 4) });
   } else $('#sold-line').textContent = t('results.soldPartial', partialAt(tm, lp.atStart));
 }
 
@@ -927,8 +952,9 @@ function renderFallsText() {
   if (rules.liquidationSale === 'partial') html += `<p>${esc(t('falls.liquidationPartial', { price: money0(lp.atStart, cur), ...partialAt(tm, lp.atStart) }))}</p>`;
   else {
     const lq = costIfLiquidated(tm, { price: lp.atStart, debt: tm.loanAmount });
-    html += `<p>${esc(t('falls.liquidationAll', { price: money0(lp.atStart, cur), sold: num(lq.btcSold, 4), returned: num(lq.btcReturned, 4), returnedValue: money0(lq.valueReturned, cur) }))}</p>`;
+    html += `<p>${esc(t('falls.liquidationAll', { price: money0(lp.atStart, cur), sold: atLeast4(lq.btcSold) }))}</p>`;
   }
+  html += `<p class="hint" id="fast-fall">${esc(t('falls.fastFall'))}</p>`;
   $('#falls-text').innerHTML = html;
   layoutLadder();
 }
@@ -1012,6 +1038,7 @@ function renderRiskCost() {
     : t('cost.riskLine', { total: money0(round10(total), cur), rate: aprText(rate), apr: aprText(s.effectiveApr) });
   el.innerHTML = `<h4 tabindex="-1">${esc(C.riskTitle)}</h4><p class="big-line">${esc(line)}</p>
     <p>${esc(t('cost.riskPart', { risk: money0(round10(rc.value), cur) }))}</p>
+    <p class="hint" id="risk-fast-fall">${esc(C.riskFastFall)}</p>
     <p class="hint">${esc(t('cost.riskNotFee', { none: 100 - shown(pSale(r.main)) }))} ${esc(C.riskCompare)}</p>
     <p class="hint"><a href="${pageHref('method/')}#risk-cost">${esc(C.riskLink)}</a></p>`;
 }
@@ -1070,6 +1097,9 @@ function renderRisk() {
   $('#assume-line').textContent = !rules.afterCure ? '' : tm.reserveAmount > 0 ? t('results.assumeReserve', { reserve: money0(tm.reserveAmount, cur) }) : texts().results.assumeNoTopUp;
   // "the simulation is the most cautious" only where it is true for this loan
   const h = of100(r.replay.liquidatedShare + r.replay.partialShare); const g = of100(pSale(r.garchMc)); const n = shown(pSale(m));
+  // the swings the number assumes, and the same futures calmer and wilder (decision 021); the number itself stays (decision 004)
+  const st = r.stress;
+  $('#stress-line').textContent = !st ? '' : t('results.stressLine', { vol: pct(st.vol, 0), calmVol: pct(st.calm.vol, 0), calm: shown(st.calm.p), wildVol: pct(st.wild.vol, 0), wild: shown(st.wild.p) });
   const hasHistory = r.replay.starts > 0; // none for a loan longer than the real prices allow
   $('#methods-line').textContent = `${hasHistory ? t('results.otherMethods', { h, g }) : t('results.otherMethodNoHistory', { g })}${n >= g && (!hasHistory || n >= h) ? R.mostCautious : ''} · `;
   // the whole period the results are based on, and when the stored data was last updated
@@ -1233,7 +1263,7 @@ function renderLeverage() {
   }
   if (!bm.refi && lenderRules(tm).liquidationSale === 'all') { // (a refinancing: compared with no extra cash, not with no loan)
     const lq = costIfLiquidated(tm, { price: liquidationPrices(tm).atStart, debt: tm.loanAmount });
-    html += `<p>${esc(t('cost.levLiquidated', { end: num(lq.btcReturned + bought, 4), start: num(c0, 4) }))}</p>`;
+    html += `<p>${esc(t('cost.levLiquidated', { end: atMost4(lq.btcReturned + bought), start: num(c0, 4) }))}</p>`;
   }
   html += `<p>${esc(t('cost.levBreakeven', { rise: pct(bm.payback / bm.received - 1, 1) }))}</p>`;
   if (tm.repayWith === 'cash') html += `<p>${esc(t('cost.levCash', { payback: money0(s.totalPayback, cur) }))}</p>`;
@@ -1248,9 +1278,27 @@ function historyText() {
   const partial = hAny > h ? t('history.replayPartial', { m: hAny - h }) : '';
   if (!rp.starts) return `<p>${esc(texts().history.replayNone)}</p>`;
   let html = `<p class="big-line">${esc(t('history.replay', { n: h, partial }))}</p>`;
+  const s = rp.since2020; // the same loan on start days since 2020 only: fixed, from real data, no switch
+  if (s && s.starts) {
+    const sh = of100(s.liquidatedShare); const sAny = of100(s.liquidatedShare + s.partialShare);
+    html += `<p id="history-since">${esc(t('history.replaySince', { starts: num(s.starts, 0), n: sh, partial: sAny > sh ? t('history.replayPartial', { m: sAny - sh }) : '' }))}</p>`;
+  }
   if (rp.starts < 4 * 365) html += `<p>${esc(t('history.replayFew', { last: date(rp.lastStart) }))}</p>`; // fewer than 4 years of start days
   if (hAny !== n) html += `<p>${esc(t(hAny < n ? 'history.bridgeLower' : 'history.bridgeOther', { n }))}</p>`;
-  return html;
+  return html + entryTable(r.entry, { h, m: hAny - h });
+}
+
+// Your loan by what BTC did in the 90 days before the start: history, not an input (decision 015, issue #12).
+// The last row repeats the line above it ({ h, m }), so it is not rounded again.
+function entryTable(e, { h, m }) {
+  if (!e) return '';
+  const E = texts().history.entry; const partly = e.total.partial > 0;
+  const row = (label, x, liq, part) => `<tr><th scope="row">${esc(label)}</th><td>${num(x.starts, 0)}</td><td>${liq}</td>${partly ? `<td>${part}</td>` : ''}</tr>`;
+  const rows = e.rows.filter((x) => x.starts > 0).map((x) => row(E.rows[x.id], x, of100(x.liquidated / x.starts), of100(x.partial / x.starts))).join('');
+  return `<h4 id="entry-h">${esc(E.title)}</h4><div class="table-wrap" tabindex="0" role="region" aria-labelledby="entry-h"><table class="itable entry" id="entry-table">
+    <thead><tr>${[E.head[0], E.head[1], E.head[2], ...(partly ? [E.headPartly] : [])].map((x) => `<th scope="col">${esc(x)}</th>`).join('')}</tr></thead>
+    <tbody>${rows}</tbody><tfoot>${row(E.total, e.total, h, m)}</tfoot></table></div>
+    <p class="hint">${esc(E.note)} <a href="${pageHref('insights/')}#i-entry">${esc(E.link)} →</a></p>`;
 }
 // When the simulated liquidations happen: shown in "What happens when BTC falls"
 function fallsMonthText() {

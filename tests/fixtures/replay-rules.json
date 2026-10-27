@@ -36,28 +36,22 @@
      "time": 1638594000,
      "iso": "2021-12-04T05:00Z",
      "reason": "autoPartial",
-     "btc": 0.12949157722035964
+     "btc": 0.19254356940913933
     },
     {
-     "time": 1642845600,
-     "iso": "2022-01-22T10:00Z",
+     "time": 1652140800,
+     "iso": "2022-05-10T00:00Z",
      "reason": "autoPartial",
-     "btc": 0.07337856042487052
+     "btc": 0.04738847218239211
     },
     {
-     "time": 1655107200,
-     "iso": "2022-06-13T08:00Z",
+     "time": 1655168400,
+     "iso": "2022-06-14T01:00Z",
      "reason": "autoPartial",
-     "btc": 0.04158118424075995
-    },
-    {
-     "time": 1667934000,
-     "iso": "2022-11-08T19:00Z",
-     "reason": "autoPartial",
-     "btc": 0.02356267106976398
+     "btc": 0.02727258570151064
     }
    ],
-   "collateralAtEnd": 0.030812723706614448
+   "collateralAtEnd": 0.031622089369326464
   }
  },
  {
@@ -92,10 +86,10 @@
     "time": 1513951200,
     "iso": "2017-12-22T14:00Z",
     "reason": "liquidationLtv",
-    "btcReturned": 0.20846601326469238
+    "btcReturned": 0.14626709818656536
    },
    "partialSales": [],
-   "collateralAtEnd": 0.20846601326469238
+   "collateralAtEnd": 0.14626709818656536
   }
  },
  {
@@ -134,10 +128,10 @@
     "time": 1513951200,
     "iso": "2017-12-22T14:00Z",
     "reason": "liquidationLtv",
-    "btcReturned": 0.191448379528799
+    "btcReturned": 0.1279800988368327
    },
    "partialSales": [],
-   "collateralAtEnd": 0.191448379528799
+   "collateralAtEnd": 0.1279800988368327
   }
  },
  {
@@ -174,16 +168,10 @@
      "time": 1584007200,
      "iso": "2020-03-12T10:00Z",
      "reason": "liquidationLtv",
-     "btc": 1.1595569719329237
-    },
-    {
-     "time": 1584061200,
-     "iso": "2020-03-13T01:00Z",
-     "reason": "liquidationLtv",
-     "btc": 0.4638227887731692
+     "btc": 1.4201620188365847
     }
    ],
-   "collateralAtEnd": 0.30921519251544605
+   "collateralAtEnd": 0.5124329343849543
   }
  },
  {
@@ -219,10 +207,10 @@
     "time": 1642845600,
     "iso": "2022-01-22T10:00Z",
     "reason": "liquidationLtv",
-    "btcReturned": 0.07231606543229319
+    "btcReturned": 0.06746268010264239
    },
    "partialSales": [],
-   "collateralAtEnd": 0.07231606543229319
+   "collateralAtEnd": 0.06746268010264239
   }
  },
  {
@@ -258,7 +246,7 @@
     "time": 1584057600,
     "iso": "2020-03-13T00:00Z",
     "reason": "liquidationLtv",
-    "btcReturned": 0.33235924986844456
+    "btcReturned": 0.2638406216143381
    },
    "partialSales": [
     {
@@ -268,7 +256,7 @@
      "btc": 0.796413340662276
     }
    ],
-   "collateralAtEnd": 0.33235924986844456
+   "collateralAtEnd": 0.2638406216143381
   }
  },
  {
@@ -308,22 +296,22 @@
      "time": 1638594000,
      "iso": "2021-12-04T05:00Z",
      "reason": "autoPartial",
-     "btc": 0.14998330282038405
+     "btc": 0.20439210936140734
     },
     {
-     "time": 1643018400,
-     "iso": "2022-01-24T10:00Z",
+     "time": 1652302800,
+     "iso": "2022-05-11T21:00Z",
      "reason": "autoPartial",
-     "btc": 0.08499053826488434
+     "btc": 0.06400925139197182
     },
     {
-     "time": 1655161200,
-     "iso": "2022-06-13T23:00Z",
+     "time": 1655532000,
+     "iso": "2022-06-18T06:00Z",
      "reason": "autoPartial",
-     "btc": 0.048161305016767776
+     "btc": 0.03759693025961583
     }
    ],
-   "collateralAtEnd": 0.06298016809885021
+   "collateralAtEnd": 0.040117023187891385
   }
  },
  {
@@ -358,10 +346,10 @@
     "time": 1513926000,
     "iso": "2017-12-22T07:00Z",
     "reason": "liquidationLtv",
-    "btcReturned": 0.2483546504408296
+    "btcReturned": 0.2108454171526013
    },
    "partialSales": [],
-   "collateralAtEnd": 0.2483546504408296
+   "collateralAtEnd": 0.2108454171526013
   }
  },
  {
@@ -400,10 +388,10 @@
     "time": 1513926000,
     "iso": "2017-12-22T07:00Z",
     "reason": "liquidationLtv",
-    "btcReturned": 0.22808080142525156
+    "btcReturned": 0.18980607358012058
    },
    "partialSales": [],
-   "collateralAtEnd": 0.22808080142525156
+   "collateralAtEnd": 0.18980607358012058
   }
  },
  {
@@ -440,16 +428,10 @@
      "time": 1584007200,
      "iso": "2020-03-12T10:00Z",
      "reason": "liquidationLtv",
-     "btc": 1.2568077084206117
-    },
-    {
-     "time": 1584064800,
-     "iso": "2020-03-13T02:00Z",
-     "reason": "liquidationLtv",
-     "btc": 0.5027230833682446
+     "btc": 1.6789053916260248
     }
    ],
-   "collateralAtEnd": 0.3351487222454963
+   "collateralAtEnd": 0.4157741224083278
   }
  },
  {
@@ -524,7 +506,7 @@
     "time": 1584057600,
     "iso": "2020-03-13T00:00Z",
     "reason": "liquidationLtv",
-    "btcReturned": 0.36878954739841463
+    "btcReturned": 0.348746688906018
    },
    "partialSales": [
     {
@@ -534,7 +516,7 @@
      "btc": 0.9452491359143367
     }
    ],
-   "collateralAtEnd": 0.36878954739841463
+   "collateralAtEnd": 0.348746688906018
   }
  }
 ]

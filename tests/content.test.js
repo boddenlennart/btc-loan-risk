@@ -101,6 +101,17 @@ for (const lang of ['en', 'de']) {
       expect(text, 'every stored item is named').toMatch(/session storage|Session Storage/);
       expect(JSON.stringify(t.legal.privacy)).toMatch(/E-Mail|e-mail/); // section on feedback e-mails
     });
+    it('issue #9: the footer names the maker with a LinkedIn link; the Impressum gives the contact form as second route; the privacy notice names both links', async () => {
+      const t = await load(lang);
+      expect(t.footer.maker).toContain('{name}');
+      expect(t.footer.maker).toContain('{linkedin}');
+      const imp = t.legal.impressum.join(' ');
+      expect(imp).toContain('{email}');
+      expect(imp).toContain('{form}');
+      const links = t.legal.privacy.find((sec) => sec.h.startsWith('9.')).p.join(' ');
+      for (const name of ['GitHub', 'LinkedIn', 'Online-Impressum']) expect(links, name).toContain(name);
+      expect(JSON.stringify(t.legal.privacy.at(-1))).toMatch(/27 October 2026|27\. Oktober 2026/);
+    });
     it('no "typical / market" value claims without a [source: ...]', async () => {
       const t = await load(lang);
       for (const [path, s] of allStrings(t)) {

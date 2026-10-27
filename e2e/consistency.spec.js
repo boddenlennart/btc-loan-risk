@@ -90,7 +90,8 @@ async function readPage(page) {
         tiles: [...document.querySelectorAll('#tiles .tile')].map((t) => t.textContent.replace(/\s+/g, ' ').trim()), tileRisk: txt('#tiles a.tile-risk'),
         cost: txt('#sec-cost'), riskCost: txt('#risk-cost'),
         safer: rows('#safer'), slider: txt('#slider-line'), sliderShown: !!document.querySelector('#safer .slider:not([hidden])'), best: txt('#best-lever'),
-        trend: rows('#trend-body'), methods: txt('#methods-line'), history: txt('#history-text'),
+        trend: rows('#trend-body'), methods: txt('#methods-line'), history: txt('#history-text'), stress: txt('#stress-line'),
+        entryTotal: [...document.querySelectorAll('#entry-table tfoot td')].map((c) => c.textContent.trim()),
         leverage: txt('#leverage'), levLegend: legend('#leverage'), levDots: dots('#leverage'),
         ownLtv: (() => { const f = document.querySelector('#f-initialLtv'); return f && f.offsetParent && f.value !== '' ? Number(f.value) : null; })(), // typed as an LTV (not as BTC)
       };
@@ -160,6 +161,20 @@ function checkRules(d, label) {
     const price = one(liqTile, /at\s*((?:[A-Z]{2,3} )?[^\s\d]*[\d,]+)/, 'liquidation tile')[1];
     expect(d.falls, at('liquidation price: tile = "What happens when BTC falls"')).toContain(price);
   }
+  // 12. entry timing (issue #12): the table's last row repeats the history line above it (full and partly liquidated)
+  if (hr && d.entryTotal.length) {
+    expect(Number(d.entryTotal[1]), at('entry table "All start days" = history line')).toBe(Number(hr[1]));
+    if (d.entryTotal[2] !== undefined) expect(Number(d.entryTotal[2]), at('entry table "partly" = history line')).toBe(Number(hr[2] || 0));
+  }
+  // 11. calmer and wilder swings (decision 021): on the same futures, calmer never more than the big number, wilder never less.
+  // Not for a loan already past its margin call: there calmer swings make a recovery less likely (98 vs 97 of 100, found 27 Oct 2026).
+  const sl = one(d.stress, /^Assumes swings of (\d+)% a year\. As calm as BTC's calmest 12 months so far \((\d+)%\): (\d+) of 100\. As wild as 2017–2021 \((\d+)%\): (\d+) of 100\.$/, 'stress line');
+  expect(Number(sl[2]), at('calm anchor below the simulation\'s swings')).toBeLessThan(Number(sl[1]));
+  expect(Number(sl[4]), at('wild anchor above the simulation\'s swings')).toBeGreaterThan(Number(sl[1]));
+  if (!label.includes('past its margin call')) {
+    expect(Number(sl[3]), at('calmer swings: at most the big number')).toBeLessThanOrEqual(n);
+    expect(Number(sl[5]), at('wilder swings: at least the big number')).toBeGreaterThanOrEqual(n);
+  }
 }
 
 for (const [label, form] of LOANS) {
@@ -211,7 +226,11 @@ test('numbers agree with each other: How it works uses exactly the example\'s nu
   const [h, g] = one(d.methods, /real history since 2014 (\d+) of 100, a volatility model (\d+) of 100/, 'other methods').slice(1).map(Number);
   const checkTotal = money(one(d.riskCost, /about (€[\d,]+)/, 'risk line')[1]);
   const checkRisk = money(one(d.riskCost, /(€[\d,]+) of it is the cost of the risk/, 'risk part')[1]);
+  const [vol, calmVol, wildVol] = one(d.stress, /swings of (\d+%) a year\. .*\((\d+%)\): \d+ of 100\. .*\((\d+%)\): \d+ of 100/, 'stress line').slice(1);
   await page.goto('/method/');
+  await expect(page.locator('#vol-stress')).toContainText(`(${calmVol}, up to `);
+  await expect(page.locator('#vol-stress')).toContainText(`2017–2021 (${wildVol})`);
+  await expect(page.locator('#vol-chart')).toContainText(`what the simulation uses: ${vol}`);
   const m = await page.evaluate(() => ({
     red: document.querySelectorAll('#num-dots i.d-liq').length,
     methods: [...document.querySelectorAll('#methods-table tbody tr')].map((r) => r.lastElementChild.textContent.trim()),
@@ -247,5 +266,41 @@ test('numbers agree with each other: the same loans in German show the same numb
     const de = await grab();
     en.forEach((x, i) => expect(numbers(de[i], true), `German = English: ${['answer', 'legend', 'tiles', 'cost of the risk', 'Make it safer'][i]}`).toEqual(numbers(x, false)));
     await page.locator('#lang-btn').click(); await page.locator('[data-lang="en"]').click();
+  }
+});
+
+// Insights: each sentence above a table repeats numbers from that table; they must be the same numbers
+// (27 Oct 2026: "27 of 100 margin calls" above a table that showed 28, rounded two ways).
+test('numbers agree with each other: Insights, every sentence = the table under it, in English and German', async ({ page }) => {
+  const digits = (s) => (s.match(/\d[\d.,]*\d|\d/g) || []).map((x) => x.replace(/[.,]/g, ''));
+  const n = (s) => digits(s)[0];
+  for (const path of ['/insights/', '/de/insights/']) {
+    await page.goto(path); await expect(page.locator('#i-speed table')).toBeVisible();
+    const d = await page.evaluate(() => {
+      const text = (sel) => document.querySelector(sel)?.textContent || '';
+      const rows = (sel) => [...document.querySelectorAll(`${sel} tbody tr`)].map((tr) => [...tr.children].map((c) => c.textContent.trim()));
+      const ids = ['survival', 'falls', 'speed', 'reserve', 'cost', 'measure', 'buy', 'spend'];
+      return {
+        take: Object.fromEntries(ids.map((id) => [id, text(`#i-${id} .take`)])),
+        table: Object.fromEntries(ids.map((id) => [id, rows(`#i-${id} .table-wrap`)])),
+        leversLead: text('#i-levers .sub'), leversBase: text('#i-levers .lv.base b'),
+      };
+    });
+    const row = (id, label) => d.table[id].find((r) => n(r[0]) === label);
+    const has = (id, cell, what) => expect(digits(d.take[id]), `${path} ${what}: sentence "${d.take[id]}" = table ${cell}`).toContain(n(cell));
+    // survival: either "no loan at LTV x or lower" (all 0 in the 12-month column) or "at LTV 20%, n of 100"
+    const some = n(row('survival', '20')[2]) === '0';
+    if (some) for (const r of d.table.survival.filter((r) => Number(n(r[0])) <= Number(digits(d.take.survival)[0]))) expect(n(r[2]), `${path} survival: no liquidation at ${r[0]}`).toBe('0');
+    else has('survival', row('survival', '20')[2], 'survival, LTV 20%, 12 months');
+    const year = d.table.falls.find((r) => n(r[0]) === '365');
+    has('falls', year[2], 'falls, one year, 10 of 100'); has('falls', year[4], 'falls, one year, worst');
+    has('speed', d.table.speed[0][1], 'speed, within 24 hours');
+    has('reserve', row('reserve', '50')[2], 'reserve, 50%, 90 of 100'); has('reserve', row('reserve', '50')[4], 'reserve, 50%, worst');
+    const offers = d.table.cost.slice(0, 4); // the first table: offer A and offer B
+    has('cost', offers[3][1], 'cost, offer A'); has('cost', offers[3][2], 'cost, offer B');
+    has('measure', String(Math.max(...d.table.measure.map((r) => Math.abs(Number(n(r[1])) - Number(n(r[2])))))), 'measure, largest difference');
+    has('buy', row('buy', '20')[2], 'buy, 20%, 12 months'); has('buy', row('buy', '50')[2], 'buy, 50%, 12 months');
+    has('spend', row('spend', '30')[1], 'spend, 30%, no tax');
+    expect(digits(d.leversLead), `${path} levers: lead = the reference loan's bar`).toContain(n(d.leversBase));
   }
 });

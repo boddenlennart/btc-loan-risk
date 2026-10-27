@@ -3,7 +3,7 @@
 import { describe, it, expect } from 'vitest';
 import { runMonteCarlo } from '../src/engine/montecarlo.js';
 import { makeRng, mixSeed } from '../src/engine/random.js';
-import { recencyWeights } from '../src/engine/history.js';
+import { recencyWeights, dailyFromHourly, dailyReturns, volatilityAnchors } from '../src/engine/history.js';
 import { createLoanState, stepLoan, lenderRules } from '../src/engine/lender.js';
 
 const flat = (n) => new Float64Array(n + 1).fill(5000); // debt 5,000 every day, no interest
@@ -36,10 +36,131 @@ describe('answers known in advance', () => {
     for (const fee of [{ value: 0.02, basis: 'debt' }, { value: 0.03, basis: 'collateralSold' }]) {
       const rules = lenderRules({ initialLtv: 0.5, liquidationLtv: 0.8, marginCallLtv: null, liquidationSale: 'partial', liquidationFee: fee });
       const s = createLoanState(100);
-      stepLoan(s, rules, { time: 1, low: 60, close: 61, debt: 5000, cure: 0 }); // liquidation price 62.5
+      stepLoan(s, rules, { time: 1, low: 60, close: 61, debt: 5000, cure: 0 }); // liquidation price 62.5, sold at the low 60
       expect(s.partialSales.length).toBe(1);
-      expect((5000 * s.scale) / (s.c * 62.5)).toBeCloseTo(0.5, 10);
+      expect((5000 * s.scale) / (s.c * 60)).toBeCloseTo(0.5, 10);
     }
+  });
+});
+
+describe('a fall through the level: the lender sells at the lowest price of that step, never above the level (issue #7)', () => {
+  // 100 BTC, debt 5,000, liquidation at LTV 80% → liquidation price 62.50; the step's low is 55.
+  const rulesOf = (over = {}) => lenderRules({ initialLtv: 0.5, liquidationLtv: 0.8, marginCallLtv: null, liquidationFee: { value: 0.05, basis: 'debt' }, ...over });
+  it('full sale: sold at 55, not at 62.50; the trigger level is kept', () => {
+    const s = createLoanState(100);
+    stepLoan(s, rulesOf(), { time: 1, low: 55, close: 70, debt: 5000, cure: 0 });
+    expect(s.liquidation.price).toBe(55);
+    expect(s.liquidation.level).toBeCloseTo(62.5, 10);
+    expect(s.liquidation.btcSold).toBeCloseTo((5000 * 1.05) / 55, 10);
+    expect(s.liquidation.btcReturned).toBeCloseTo(100 - (5000 * 1.05) / 55, 10);
+  });
+  it('a low that only touches the level: sold exactly at the level, as before', () => {
+    const s = createLoanState(100);
+    stepLoan(s, rulesOf(), { time: 1, low: 62.5, close: 70, debt: 5000, cure: 0 });
+    expect(s.liquidation.price).toBe(62.5);
+  });
+  it('partial sale at the liquidation LTV: sold at 55, and the LTV at that price is back at the target', () => {
+    const s = createLoanState(100);
+    stepLoan(s, rulesOf({ liquidationSale: 'partial' }), { time: 1, low: 55, close: 70, debt: 5000, cure: 0 });
+    expect(s.partialSales[0].price).toBe(55);
+    expect(s.partialSales[0].level).toBeCloseTo(62.5, 10);
+    expect((5000 * s.scale) / (s.c * 55)).toBeCloseTo(0.5, 10);
+  });
+  it('sale at the margin call (autoPartial): sold at the low of 68, not at the margin-call price 71.43', () => {
+    const s = createLoanState(100);
+    stepLoan(s, rulesOf({ marginCallLtv: 0.7, marginCallConsequence: 'autoPartial', liquidationFee: { value: 0, basis: 'debt' } }), { time: 1, low: 68, close: 70, debt: 5000, cure: 0 });
+    expect(s.partialSales[0].price).toBe(68);
+    expect(s.partialSales[0].btc).toBeCloseTo((5000 - 0.5 * 100 * 68) / 0.5 / 68, 10);
+  });
+  it('with the step\'s hours known: sold at the low of the first hour that reaches the level, not at the step\'s low', () => {
+    const s = createLoanState(100);
+    const hours = [90, 70, 60, 58, 55]; // the level 62.50 is first reached in the 3rd hour (low 60); the day goes on to 55
+    const firstLow = (level) => hours.find((p) => p <= level) ?? null;
+    stepLoan(s, rulesOf(), { time: 1, low: 55, close: 70, debt: 5000, cure: 0, firstLow });
+    expect(s.liquidation.price).toBe(60);
+    expect(s.liquidation.btcSold).toBeCloseTo((5000 * 1.05) / 60, 10);
+  });
+  it('simulation with real hours: the day dips to 55, but the level 62.50 is crossed at 60 in its 3rd hour, so the sale is at 60', () => {
+    const hours = [0.9, 0.7, 0.6, 0.58, 0.55].map(Math.log); // hourly lows relative to the previous close
+    const steps = [[0, 0], [0, Math.log(0.55), hours], ...Array(60).fill([0, 0])];
+    const r = runMonteCarlo({ model: 'fixed', params: { steps }, s0: 100, days: 30, nPaths: 1, seed: 1, samplePaths: 1,
+      loan: { debtByDay: flat(30), collateralBtc: 100, rules: rulesOf() } });
+    expect(r.samplePaths[0].sales[0][1]).toBeCloseTo(60, 10);
+  });
+  it('bootstrap of real days with their hours: every drawn day crosses the level in its 2nd hour (low 61), the day\'s low is 50', () => {
+    const n = 40; const hourLows = Array.from({ length: n }, () => Float64Array.from([0.8, 0.61, 0.5].map(Math.log)));
+    const params = { returns: Array(n).fill(0), lowRel: Array(n).fill(Math.log(0.5)), hourLows, blockDays: 5 };
+    const r = runMonteCarlo({ model: 'bootstrap', params, s0: 100, days: 30, nPaths: 3, seed: 1, samplePaths: 3,
+      loan: { debtByDay: flat(30), collateralBtc: 100, rules: rulesOf() } });
+    expect(r.samplePaths.map((p) => p.sales[0][1])).toEqual([61, 61, 61].map((x) => expect.closeTo(x, 9)));
+    // with a trend removed or added, the hours move with the day (same shift as the day's low)
+    const t = runMonteCarlo({ model: 'bootstrap', params, s0: 100, days: 30, nPaths: 1, seed: 1, samplePaths: 1, logDriftPerDay: 0.01,
+      loan: { debtByDay: flat(30), collateralBtc: 100, rules: rulesOf() } });
+    expect(t.samplePaths[0].sales[0][1]).toBeCloseTo(61 * Math.exp(0.01), 9);
+  });
+  it('simulation: a day whose low falls 45% sells at that day\'s low, and the cost of the risk uses that price', () => {
+    const steps = [[0, 0], [0, Math.log(0.55)], ...Array(60).fill([0, 0])]; // day 2 dips to 55 and closes at 100
+    const r = runMonteCarlo({ model: 'fixed', params: { steps }, s0: 100, days: 30, nPaths: 1, seed: 1, samplePaths: 1, riskCost: true,
+      loan: { debtByDay: flat(30), collateralBtc: 100, rules: rulesOf({ liquidationFee: { value: 0, basis: 'debt' } }) } });
+    expect(r.samplePaths[0].sales[0][1]).toBeCloseTo(55, 10);
+    // all BTC that repaid debt (5,000 / 55) misses the rise back to 100
+    expect(r.riskCost.value).toBeCloseTo((5000 / 55) * (100 - 55), 6);
+  });
+});
+
+describe('the daily series keeps each day\'s hourly lows, relative to the previous close (issue #7)', () => {
+  it('two days of 3 hours: day 2\'s hours, in order, against day 1\'s close; the day\'s low is their lowest', () => {
+    const t0 = 86400 * 20000;
+    const hourly = { time: [0, 1, 2, 86400, 86401, 86402].map((x) => t0 + (x % 86400) * 3600 + Math.floor(x / 86400) * 86400),
+      open: [100, 100, 100, 100, 95, 90], low: [99, 98, 97, 95, 80, 88], close: [100, 99, 100, 96, 90, 92] };
+    const { lowRel, hourLows } = dailyReturns(dailyFromHourly(hourly), hourly);
+    expect(hourLows).toHaveLength(1);
+    expect([...hourLows[0]].map(Math.exp)).toEqual([0.95, 0.8, 0.88].map((x) => expect.closeTo(x, 12)));
+    expect(Math.exp(lowRel[0])).toBeCloseTo(0.8, 12);
+  });
+});
+
+describe('calmer or wilder swings (issue #10, decision 021): the same days, every move scaled', () => {
+  const rules = lenderRules({ initialLtv: 0.5, liquidationLtv: 0.8, marginCallLtv: null, liquidationFee: { value: 0, basis: 'debt' } });
+  const loan = { debtByDay: flat(60), collateralBtc: 100, rules };
+  it('a steady fall of 2% a day, twice as wild: each day falls 3.96%, so the 62.5% level is reached on day 12, not day 24', () => {
+    const r = run([[Math.log(0.98), Math.log(0.98)]], loan, { volScale: 2 });
+    expect(r.samplePaths[0].event.day).toBe(Math.ceil(Math.log(0.625) / (2 * Math.log(0.98))));
+  });
+  it('a factor of 1 gives exactly the result without it', () => {
+    const steps = [[0.01, -0.02], [-0.05, -0.08], [0.02, -0.01], [-0.12, -0.2]];
+    expect(run(steps, loan, { volScale: 1 })).toEqual(run(steps, loan));
+  });
+  it('the hours of a day are scaled with it: lows 0.8 / 0.61 / 0.5 of the previous close, 1.2 times as wild, cross 62.5 at 0.61^1.2', () => {
+    const n = 40; const hourLows = Array.from({ length: n }, () => Float64Array.from([0.8, 0.61, 0.5].map(Math.log)));
+    const params = { returns: Array(n).fill(0), lowRel: Array(n).fill(Math.log(0.5)), hourLows, blockDays: 5 };
+    const r = runMonteCarlo({ model: 'bootstrap', params, s0: 100, days: 30, nPaths: 1, seed: 1, samplePaths: 1, volScale: 1.2, loan });
+    expect(r.samplePaths[0].sales[0][1]).toBeCloseTo(100 * 0.61 ** 1.2, 9);
+  });
+  it('on the same random draws, wilder swings never give fewer liquidations and calmer never more (real-like days, 3 loans)', () => {
+    const rng = makeRng(7); const n = 2000;
+    const returns = Array.from({ length: n }, () => 0.035 * rng.normal()); const lowRel = returns.map((r) => Math.min(0, r) - Math.abs(0.02 * rng.normal()));
+    for (const lLtv of [0.65, 0.8, 0.9]) {
+      const l = { debtByDay: flat(365), collateralBtc: 1, rules: lenderRules({ initialLtv: 0.5, liquidationLtv: lLtv, marginCallLtv: null, liquidationFee: { value: 0, basis: 'debt' } }) };
+      const p = (k) => runMonteCarlo({ model: 'bootstrap', params: { returns, lowRel, blockDays: 30 }, s0: 10000, days: 365, nPaths: 2000, seed: 3, logDriftPerDay: 0, loan: { ...l, debtByDay: new Float64Array(366).fill(5000) }, volScale: k, countOnly: true }).pLiquidation;
+      const [calm, mid, wild] = [0.7, 1, 1.4].map(p);
+      expect(calm, `liquidation ${lLtv}`).toBeLessThanOrEqual(mid);
+      expect(mid, `liquidation ${lLtv}`).toBeLessThanOrEqual(wild);
+      expect(wild).toBeGreaterThan(calm);
+    }
+  });
+  it('the anchors: the calmest run of whole windows of days, and the volatility of the days in 2017–2021, both in yearly terms', () => {
+    // 3-day windows on made-up days: moves ±1% except a calm stretch of ±0.1%, and ±5% in 2018
+    const t0 = Date.UTC(2016, 11, 25) / 1000; const moves = [];
+    for (let i = 0; i < 40; i++) { const y = new Date((t0 + (i + 1) * 86400) * 1000).getUTCFullYear(); const a = i >= 10 && i < 13 ? 0.001 : y === 2018 ? 0.05 : 0.01; moves.push(i % 2 ? a : -a); }
+    const close = [100]; for (const m of moves) close.push(close.at(-1) * Math.exp(m));
+    const daily = { time: close.map((_, i) => t0 + i * 86400), close };
+    const a = volatilityAnchors(daily, moves, { window: 3 });
+    const sd = (xs) => { const m = xs.reduce((u, v) => u + v, 0) / xs.length; return Math.sqrt(xs.reduce((u, v) => u + (v - m) ** 2, 0) / xs.length * 365); };
+    expect(a.calm.vol).toBeCloseTo(sd(moves.slice(10, 13)), 12);
+    expect(a.calm.end).toBe(daily.time[13]);
+    const in1721 = moves.filter((_, i) => { const y = new Date(daily.time[i + 1] * 1000).getUTCFullYear(); return y >= 2017 && y <= 2021; });
+    expect(a.wild.vol).toBeCloseTo(sd(in1721), 12);
   });
 });
 

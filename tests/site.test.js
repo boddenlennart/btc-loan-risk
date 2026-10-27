@@ -77,7 +77,11 @@ describe('"How it works": the built figures agree with each other and with the c
     const { result: r, method: md, terms } = meta.example;
     expect(md.p).toBe(r.bootstrap); // the same answer as the check page's example
     expect(md.weighting.find((w) => w.current).p).toBe(md.p);
-    expect(md.deadline.find((d) => d.days === Math.ceil(terms.curePeriodHours / 24)).p).toBe(md.p);
+    // the example's margin call is only a warning (decision 022): "with only a warning" is the answer itself, and a
+    // deadline after which everything is sold can only add liquidations
+    expect(terms.marginCallConsequence).toBe('warningOnly');
+    expect(md.noMarginCall).toBe(md.p);
+    for (const d of md.deadline) expect(d.p).toBeGreaterThanOrEqual(md.p);
     expect(Math.abs(md.shown - md.p * 100)).toBeLessThanOrEqual(1);
     expect(md.volByYear.reduce((a, y) => a + y.weight, 0)).toBeCloseTo(1, 9);
     expect(md.onePath.pieces.length).toBe(Math.ceil(md.onePath.days / md.blockDays));
