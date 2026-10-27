@@ -325,7 +325,7 @@ test('language menu: shows the current language, lists both with a tick, offers 
   await expect(btn).toHaveAttribute('aria-expanded', 'true');
   await expect(page.locator('[data-lang="en"]')).toHaveAttribute('aria-current', 'true');
   await expect(page.locator('[data-lang="de"]')).toHaveAttribute('aria-current', 'false');
-  await expect(page.locator('#lang-missing')).toHaveAttribute('href', /^mailto:boddenlennart@proton\.me\?subject=Language%20request/);
+  await expect(page.locator('#lang-missing')).toHaveAttribute('href', /^mailto:bitcoinloancheck@gmail\.com\?subject=Language%20request/);
   await page.keyboard.press('Escape');
   await expect(page.locator('#lang-list')).toBeHidden();
   await expect(btn).toBeFocused();
