@@ -3,7 +3,7 @@
 // that reads the same raw exchange candles. Both must agree to the hour.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { replayOne, replayAll, entryTiming } from '../src/engine/replay.js';
+import { replayOne, replayAll, entryTiming, replaySince } from '../src/engine/replay.js';
 import { loadHourly, hasData } from './helpers/history.js';
 
 const fixtures = JSON.parse(readFileSync(new URL('./fixtures/replay-crashes.json', import.meta.url)));
@@ -268,5 +268,15 @@ describe('entry timing (issue #12, decision 015): start days grouped by BTC\'s m
     expect(e.total.liquidated / e.total.starts).toBeCloseTo(r.liquidatedShare, 12);
     expect(e.total.partial / e.total.starts).toBeCloseTo(r.partialShare, 12);
     expect(e.rows.reduce((a, x) => a + x.starts, 0)).toBe(r.starts);
+  });
+});
+
+describe('real history from a given start date only (Reddit suggestion, 27 Oct 2026)', () => {
+  it('counts only start days from that date on: full and partial sales as shares of those start days', () => {
+    const t0 = Date.parse('2019-12-29T00:00Z') / 1000;
+    const perStart = { time: [0, 1, 2, 3, 4, 5].map((d) => t0 + d * 86400), liquidated: [true, true, true, false, false, true], partial: [false, false, false, true, false, false] };
+    // 29, 30, 31 Dec 2019 left out; 1, 2, 3 Jan 2020 counted: one full, one partial, one nothing
+    expect(replaySince(perStart, Date.UTC(2020, 0, 1) / 1000)).toEqual({ starts: 3, liquidatedShare: 1 / 3, partialShare: 1 / 3 });
+    expect(replaySince(perStart, Date.UTC(2021, 0, 1) / 1000)).toEqual({ starts: 0, liquidatedShare: null, partialShare: null });
   });
 });

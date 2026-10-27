@@ -9,7 +9,7 @@ import { dailyFromHourly, dailyReturns, fastestFall, largestFall, recencyWeights
 import { fitGarchT } from '../engine/garch.js';
 import { runMonteCarlo } from '../engine/montecarlo.js';
 import { gbmBarrierHitProbability } from '../engine/barrier.js';
-import { replayAll, replayOne, entryTiming } from '../engine/replay.js';
+import { replayAll, replayOne, entryTiming, replaySince } from '../engine/replay.js';
 import { lenderRules } from '../engine/lender.js';
 import { collateralBtc, liquidationPrices, debtByDay, loanDays, loanSummary, addMonths, daysBetween } from '../engine/loan.js';
 
@@ -260,7 +260,8 @@ async function run(id, terms, settings, garch, post = postMessage) {
   }
   { // the per-start-day lists are not sent to the page; only the entry-timing table made from them (issue #12)
     const { perStart, ...replay } = replayAll(s.hourly, terms);
-    result.replay = { ...replay, lastStart: perStart.time.at(-1) ?? null };
+    // and on start days since 2020 only, shown next to it (a visitor's suggestion, 27 Oct 2026)
+    result.replay = { ...replay, lastStart: perStart.time.at(-1) ?? null, since2020: replaySince(perStart, Date.UTC(2020, 0, 1) / 1000) };
     result.entry = replay.starts ? entryTiming(s.hourly, perStart) : null;
   } await tick();
   result.stories = STORIES.map((iso) => story(s, terms, iso)).filter(Boolean);

@@ -1068,6 +1068,8 @@ test('entry timing (issue #12): the history section shows the loan by what BTC d
   const starts = (await tbl.locator('tbody td:nth-child(2)').allTextContents()).map((s) => Number(s.replace(/,/g, '')));
   expect(starts.reduce((a, b) => a + b, 0)).toBe(Number((await tbl.locator('tfoot td').first().textContent()).replace(/,/g, '')));
   await expect(page.locator('#history-text .hint')).toContainText('History, not a forecast.');
+  // the same loan on start days since 2020 only, next to the line for all start days (Reddit suggestion, 27 Oct 2026)
+  await expect(page.locator('#history-since')).toHaveText(/^Started only on days since 1 January 2020 \(\d{1,3}(,\d{3})* start days\): liquidated \d+ times in 100(, and in \d+ more, part of the BTC would have been liquidated)?\.$/);
   await expect(page.locator('#history-text a[href$="insights/#i-entry"]')).toBeVisible();
 });
 
@@ -1076,6 +1078,7 @@ test('entry timing (issue #12), in German', async ({ page }) => {
   await page.locator('#sec-history > summary').click();
   await expect(page.locator('#entry-h')).toHaveText('Ihr Kredit, nach dem, was BTC in den 90 Tagen vor dem Start tat');
   await expect(page.locator('#entry-table tfoot th')).toHaveText('Alle Starttage');
+  await expect(page.locator('#history-since')).toContainText('Nur an Tagen seit dem 1. Januar 2020 gestartet');
 });
 
 test('a sale in a fast fall (issue #7), in German', async ({ page }) => {

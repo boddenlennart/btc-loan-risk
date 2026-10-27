@@ -1278,6 +1278,11 @@ function historyText() {
   const partial = hAny > h ? t('history.replayPartial', { m: hAny - h }) : '';
   if (!rp.starts) return `<p>${esc(texts().history.replayNone)}</p>`;
   let html = `<p class="big-line">${esc(t('history.replay', { n: h, partial }))}</p>`;
+  const s = rp.since2020; // the same loan on start days since 2020 only: fixed, from real data, no switch
+  if (s && s.starts) {
+    const sh = of100(s.liquidatedShare); const sAny = of100(s.liquidatedShare + s.partialShare);
+    html += `<p id="history-since">${esc(t('history.replaySince', { starts: num(s.starts, 0), n: sh, partial: sAny > sh ? t('history.replayPartial', { m: sAny - sh }) : '' }))}</p>`;
+  }
   if (rp.starts < 4 * 365) html += `<p>${esc(t('history.replayFew', { last: date(rp.lastStart) }))}</p>`; // fewer than 4 years of start days
   if (hAny !== n) html += `<p>${esc(t(hAny < n ? 'history.bridgeLower' : 'history.bridgeOther', { n }))}</p>`;
   return html + entryTable(r.entry, { h, m: hAny - h });

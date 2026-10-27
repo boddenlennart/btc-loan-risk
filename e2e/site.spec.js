@@ -60,7 +60,8 @@ test('"How it works": three layers, every part, the charts and tables of the exa
   // volatility per year: one bar per year since 2014, and the weighting table with this page's row marked
   const years = new Date().getUTCFullYear() - 2014 + 1;
   await expect(page.locator('#vol-chart rect.bar')).toHaveCount(years);
-  await expect(page.locator('#vol-table tbody tr')).toHaveCount(5);
+  await expect(page.locator('#vol-table tbody tr')).toHaveCount(6);
+  await expect(page.locator('#vol-table tbody')).toContainText('Only 2020 onwards');
   await expect(page.locator('#vol-table tr.us')).toContainText('Half-life 3 years (this page)');
   await expect(page.locator('#your-number .dots i')).toHaveCount(100);
   await expect(page.locator('#rules-list li')).toHaveCount(5);

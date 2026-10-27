@@ -178,3 +178,10 @@ export function entryTiming(hourly, perStart, { days = 90 } = {}) {
   });
   return { rows, total };
 }
+
+/** Real history from start days at or after `from` (unix seconds) only: { starts, liquidatedShare, partialShare } (null shares if none). */
+export function replaySince(perStart, from) {
+  let n = 0; let liq = 0; let part = 0;
+  perStart.time.forEach((t, i) => { if (t < from) return; n++; if (perStart.liquidated[i]) liq++; else if (perStart.partial[i]) part++; });
+  return { starts: n, liquidatedShare: n ? liq / n : null, partialShare: n ? part / n : null };
+}

@@ -36,11 +36,12 @@ export function methodData({ hourly, terms, garch, settings, halfLifeYears }) {
   const volByYear = [...byYear].map(([y, b]) => ({ year: y, vol: volOf(b.r), weight: b.w / W, days: b.r.length }));
 
   // the same loan with the years weighted differently (the page uses halfLifeYears)
-  const since2022 = daily.time.findIndex((t) => t >= Date.UTC(2022, 0, 1) / 1000) - 1;
-  const recent = { returns: returns.slice(since2022), lowRel: lowRel.slice(since2022), hourLows: hourLows.slice(since2022) };
+  const sinceYear = (y) => { const k = daily.time.findIndex((t) => t >= Date.UTC(y, 0, 1) / 1000) - 1; return { returns: returns.slice(k), lowRel: lowRel.slice(k), hourLows: hourLows.slice(k) }; };
+  const recent = sinceYear(2022); const since2020 = sinceYear(2020); // 2020: a visitor's suggestion (27 Oct 2026)
   const weighting = [
     { id: 'equal', vol: volOf(returns), p: sim({}).pLiquidation },
     ...[4, 3, 2].map((y) => { const w = recencyWeights(n, y * 365); return { id: `half${y}`, halfLifeYears: y, current: y === halfLifeYears, vol: volOf(returns, w), p: sim({ weights: w }).pLiquidation }; }),
+    { id: 'since2020', vol: volOf(since2020.returns), p: sim(since2020).pLiquidation },
     { id: 'since2022', vol: volOf(recent.returns), p: sim(recent).pLiquidation },
   ];
   const main = weighting.find((x) => x.current);
