@@ -346,6 +346,14 @@ export default {
     bridgeOther: 'Die Antwort oben nennt {n}. Vergangenheit und Simulation müssen nicht übereinstimmen: siehe „So funktioniert es“ (Link oben).',
     trendUncertainty: 'Seit 2014 wuchs BTC um etwa {estimate} pro Jahr. Die Schwankungen sind aber so groß, dass dieser Wert nur irgendwo zwischen {low} und {high} liegt. Der frühere Trend ist zu unsicher, um darauf zu bauen.',
     trendPast: 'Das jährliche Wachstum von BTC (mit Zinseszinseffekt) über 4-Jahres-Zeiträume seit 2014 lag zwischen {worst} (schwächster) und {best} (stärkster), mittlerer Wert {median}. Es hat mit der Zeit abgenommen: {firstFrom}–{firstTo} {firstRate} pro Jahr, {lastFrom}–{lastTo} {lastRate} pro Jahr.',
+    entry: {
+      title: 'Ihr Kredit, nach dem, was BTC in den 90 Tagen vor dem Start tat',
+      head: ['BTC in den 90 Tagen vor dem Start', 'Starttage', 'Liquidiert, von 100'], headPartly: 'Teilweise, von 100',
+      rows: { fell: 'Mehr als 10 % gefallen', flat: 'Etwa gleich (−10 % bis +10 %)', rose: '10–50 % gestiegen', roseStrongly: '50–100 % gestiegen', doubled: 'Mehr als verdoppelt', early: 'Erste 90 Tage der Daten (keine früheren Kurse)' },
+      total: 'Alle Starttage',
+      note: 'Vergangenheit, keine Vorhersage. Benachbarte Starttage teilen dieselben Einbrüche, jede Zeile beruht also auf wenigen getrennten Zeiträumen.',
+      link: 'Hintergrund unter Erkenntnisse',
+    },
     trendSwings: 'In {deep} von {years} Kalenderjahren seit 2014 fiel BTC innerhalb desselben Jahres um mindestens 50 % von einem Hoch. Ein Kredit muss diese Einbrüche überstehen, egal wohin der langfristige Weg führt.',
   },
 
@@ -365,7 +373,7 @@ export default {
       levers: 'Welche Bedingungen zählten am meisten?',
       offers: 'Angebote fair vergleichen',
       goal: 'Nach Ziel',
-      today: 'Die heutigen Kursschwankungen',
+      today: 'Der heutige Markt im Vergleich zur Vergangenheit',
     },
     survival: {
       title: 'Liquidierte Kredite nach Start-LTV und Laufzeit',
@@ -464,6 +472,12 @@ export default {
       head: ['Start-LTV', 'Ohne Steuer', 'Verkauf jetzt mit 25 % besteuert, später steuerfrei'],
       take: 'Ohne Steuer ließ Leihen bei LTV 30 % an {n} von 100 Starttagen mehr BTC übrig.',
       note: 'Steuerregeln unterscheiden sich je nach Land und Person. Die 25 % sind nur ein Beispiel.',
+    },
+    entry: {
+      title: 'Was BTC vor dem Start tat',
+      lead: 'Der Referenzkredit an jedem Starttag seit 2014, gruppiert nach der Kursbewegung von BTC in den 90 Tagen vor dem Start.',
+      take: 'Nachdem BTC in 90 Tagen um mehr als 10 % gefallen war, wurde der Referenzkredit an {fell} von 100 Starttagen liquidiert; nach einer Verdopplung an {doubled}; insgesamt an {all}.',
+      note: 'Vergangenheit, keine Vorhersage: Wenige Einbrüche und Hausse-Phasen füllen jede Zeile, und benachbarte Starttage teilen sie. Die Prüfseite zeigt diese Tabelle für Ihren eigenen Kredit.',
     },
     swings: {
       title: 'Die heutigen Kursschwankungen im Vergleich zur Vergangenheit',

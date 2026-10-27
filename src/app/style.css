@@ -436,6 +436,7 @@ table.itable { width: 100%; border-collapse: collapse; font-size: 14px; margin: 
 table.itable th, table.itable td { padding: 8px 6px; text-align: right; border-bottom: 1px solid var(--border); vertical-align: top; }
 table.itable th:first-child, table.itable td:first-child { text-align: left; }
 table.itable thead th { font: 600 12px/1.3 var(--sans); color: var(--muted); }
+table.entry tfoot th, table.entry tfoot td { font-weight: 600; border-bottom: 0; }
 table.itable th { white-space: normal; } /* headers may wrap on phones; the numbers stay on one line */
 table.itable td { white-space: nowrap; }
 table.itable td.heat { background: color-mix(in srgb, var(--critical) var(--heat), transparent); font-weight: 600; }

@@ -44,6 +44,7 @@ The check opens 30 very different loans, two comparisons, How it works and three
 | 8 | The real-history number in "Other methods" equals the history section's count (full plus partial). |
 | 9 | **Buy more BTC:** more plus less equals 100. "Liquidated" there equals "liquidated" under the answer. |
 | 10 | **Liquidation price:** the tile's price is the one in "What happens when BTC falls". |
+| 12 | **Entry timing** (issue #12): the table's "All start days" row repeats the history line above it, full and partly liquidated. |
 | 11 | **Calmer and wilder swings** (decision 021): the calm anchor is below the simulation's swings, the wild one above; calmer gives at most the answer's number, wilder at least (not for a loan already past its margin call, where calmer swings make a recovery less likely). The three volatilities equal those on How it works. |
 
 **Comparing loans**

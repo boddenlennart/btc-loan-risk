@@ -3,7 +3,7 @@
 // that reads the same raw exchange candles. Both must agree to the hour.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { replayOne, replayAll } from '../src/engine/replay.js';
+import { replayOne, replayAll, entryTiming } from '../src/engine/replay.js';
 import { loadHourly, hasData } from './helpers/history.js';
 
 const fixtures = JSON.parse(readFileSync(new URL('./fixtures/replay-crashes.json', import.meta.url)));
@@ -228,4 +228,45 @@ describe('real crashes with margin-call rules: same result as the independent re
       expect(r.collateralAtEnd).toBeCloseTo(e.collateralAtEnd, 9);
     });
   }
+});
+
+describe('entry timing (issue #12, decision 015): start days grouped by BTC\'s move in the 90 days before', () => {
+  // made-up daily prices, held for every hour of the day: 100 until day 119, 85 from day 120, 210 from day 170
+  const t0 = Date.parse('2024-01-01T00:00Z') / 1000; const days = 200;
+  const price = (d) => (d < 120 ? 100 : d < 170 ? 85 : 210);
+  const time = []; const close = [];
+  for (let d = 0; d < days; d++) for (let h = 0; h < 24; h++) { time.push(t0 + d * 86400 + h * 3600); close.push(price(d)); }
+  const hourly = { time, open: close, high: close, low: close, close };
+  // one start per day at 00:00; liquidated on even days, partly on days divisible by 3 (not even)
+  const starts = Array.from({ length: days }, (_, d) => d);
+  const perStart = { time: starts.map((d) => t0 + d * 86400), liquidated: starts.map((d) => d % 2 === 0), partial: starts.map((d) => d % 2 !== 0 && d % 3 === 0) };
+  const count = (from, to) => { const ds = starts.filter((d) => d >= from && d <= to); return { starts: ds.length, liquidated: ds.filter((d) => d % 2 === 0).length, partial: ds.filter((d) => d % 2 !== 0 && d % 3 === 0).length }; };
+  it('the move is the last close before the start against the close 90 days earlier; each start day in exactly one group', () => {
+    const e = entryTiming(hourly, perStart);
+    const row = (id) => { const r = e.rows.find((x) => x.id === id); return { starts: r.starts, liquidated: r.liquidated, partial: r.partial }; };
+    expect(row('early')).toEqual(count(0, 90)); // no close 90 days before the start
+    expect(row('flat')).toEqual(count(91, 120)); // 100 → 100 (day 120 starts after day 119's close)
+    expect(row('fell')).toEqual(count(121, 170)); // 100 → 85: −15%
+    expect(row('doubled')).toEqual(count(171, 199)); // 100 → 210: +110%
+    expect(row('rose')).toEqual({ starts: 0, liquidated: 0, partial: 0 });
+    expect(row('roseStrongly')).toEqual({ starts: 0, liquidated: 0, partial: 0 });
+    expect(e.total).toEqual(count(0, 199));
+    expect(e.rows.map((r) => r.id)).toEqual(['fell', 'flat', 'rose', 'roseStrongly', 'doubled', 'early']);
+  });
+  it('the limits: −10% counts as roughly flat, +10% as rose, +50% as rose strongly, +100% as more than doubled', () => {
+    for (const [p, id] of [[89.99, 'fell'], [90, 'flat'], [109.99, 'flat'], [110, 'rose'], [149.99, 'rose'], [150, 'roseStrongly'], [199.99, 'roseStrongly'], [200, 'doubled']]) {
+      const c = [...close]; for (let k = 99 * 24; k < 100 * 24; k++) c[k] = p; // the day before a start on day 100
+      const e = entryTiming({ ...hourly, close: c }, { time: [t0 + 100 * 86400], liquidated: [true], partial: [false] });
+      expect(e.rows.find((r) => r.starts === 1).id, `${p}`).toBe(id);
+    }
+  });
+  it('real history: the table adds up to what the replay reports', () => {
+    if (!hasData('EUR')) return;
+    const h = loadHourly('EUR'); const t = { ...loan, loanAmount: 10000, durationMonths: 12, liquidationLtv: 0.8, marginCallConsequence: 'warningOnly', curePeriodHours: 48 };
+    const r = replayAll(h, t); const e = entryTiming(h, r.perStart);
+    expect(e.total.starts).toBe(r.starts);
+    expect(e.total.liquidated / e.total.starts).toBeCloseTo(r.liquidatedShare, 12);
+    expect(e.total.partial / e.total.starts).toBeCloseTo(r.partialShare, 12);
+    expect(e.rows.reduce((a, x) => a + x.starts, 0)).toBe(r.starts);
+  });
 });

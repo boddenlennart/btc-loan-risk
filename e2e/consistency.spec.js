@@ -91,6 +91,7 @@ async function readPage(page) {
         cost: txt('#sec-cost'), riskCost: txt('#risk-cost'),
         safer: rows('#safer'), slider: txt('#slider-line'), sliderShown: !!document.querySelector('#safer .slider:not([hidden])'), best: txt('#best-lever'),
         trend: rows('#trend-body'), methods: txt('#methods-line'), history: txt('#history-text'), stress: txt('#stress-line'),
+        entryTotal: [...document.querySelectorAll('#entry-table tfoot td')].map((c) => c.textContent.trim()),
         leverage: txt('#leverage'), levLegend: legend('#leverage'), levDots: dots('#leverage'),
         ownLtv: (() => { const f = document.querySelector('#f-initialLtv'); return f && f.offsetParent && f.value !== '' ? Number(f.value) : null; })(), // typed as an LTV (not as BTC)
       };
@@ -159,6 +160,11 @@ function checkRules(d, label) {
   if (liqTile && d.falls) {
     const price = one(liqTile, /at\s*((?:[A-Z]{2,3} )?[^\s\d]*[\d,]+)/, 'liquidation tile')[1];
     expect(d.falls, at('liquidation price: tile = "What happens when BTC falls"')).toContain(price);
+  }
+  // 12. entry timing (issue #12): the table's last row repeats the history line above it (full and partly liquidated)
+  if (hr && d.entryTotal.length) {
+    expect(Number(d.entryTotal[1]), at('entry table "All start days" = history line')).toBe(Number(hr[1]));
+    if (d.entryTotal[2] !== undefined) expect(Number(d.entryTotal[2]), at('entry table "partly" = history line')).toBe(Number(hr[2] || 0));
   }
   // 11. calmer and wilder swings (decision 021): on the same futures, calmer never more than the big number, wilder never less.
   // Not for a loan already past its margin call: there calmer swings make a recovery less likely (98 vs 97 of 100, found 27 Oct 2026).

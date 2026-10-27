@@ -1280,7 +1280,20 @@ function historyText() {
   let html = `<p class="big-line">${esc(t('history.replay', { n: h, partial }))}</p>`;
   if (rp.starts < 4 * 365) html += `<p>${esc(t('history.replayFew', { last: date(rp.lastStart) }))}</p>`; // fewer than 4 years of start days
   if (hAny !== n) html += `<p>${esc(t(hAny < n ? 'history.bridgeLower' : 'history.bridgeOther', { n }))}</p>`;
-  return html;
+  return html + entryTable(r.entry, { h, m: hAny - h });
+}
+
+// Your loan by what BTC did in the 90 days before the start: history, not an input (decision 015, issue #12).
+// The last row repeats the line above it ({ h, m }), so it is not rounded again.
+function entryTable(e, { h, m }) {
+  if (!e) return '';
+  const E = texts().history.entry; const partly = e.total.partial > 0;
+  const row = (label, x, liq, part) => `<tr><th scope="row">${esc(label)}</th><td>${num(x.starts, 0)}</td><td>${liq}</td>${partly ? `<td>${part}</td>` : ''}</tr>`;
+  const rows = e.rows.filter((x) => x.starts > 0).map((x) => row(E.rows[x.id], x, of100(x.liquidated / x.starts), of100(x.partial / x.starts))).join('');
+  return `<h4 id="entry-h">${esc(E.title)}</h4><div class="table-wrap" tabindex="0" role="region" aria-labelledby="entry-h"><table class="itable entry" id="entry-table">
+    <thead><tr>${[E.head[0], E.head[1], E.head[2], ...(partly ? [E.headPartly] : [])].map((x) => `<th scope="col">${esc(x)}</th>`).join('')}</tr></thead>
+    <tbody>${rows}</tbody><tfoot>${row(E.total, e.total, h, m)}</tfoot></table></div>
+    <p class="hint">${esc(E.note)} <a href="${pageHref('insights/')}#i-entry">${esc(E.link)} →</a></p>`;
 }
 // When the simulated liquidations happen: shown in "What happens when BTC falls"
 function fallsMonthText() {

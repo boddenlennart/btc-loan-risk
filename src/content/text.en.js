@@ -351,6 +351,14 @@ export default {
     bridgeOther: 'The answer at the top says {n}. History and simulation do not have to match: see "How it works" (link above).',
     trendUncertainty: 'Since 2014, BTC grew by about {estimate} a year. But the swings are so large that this is only known to lie between {low} and {high}. The past trend is too uncertain to build on.',
     trendPast: 'BTC\'s yearly growth (compounded) over 4-year periods since 2014: weakest {worst}, middle {median}, strongest {best}. It has fallen over time: {firstFrom}–{firstTo} {firstRate} a year, {lastFrom}–{lastTo} {lastRate} a year.',
+    entry: {
+      title: 'Your loan, by what BTC did in the 90 days before it started',
+      head: ['BTC in the 90 days before the start', 'Start days', 'Liquidated, of 100'], headPartly: 'Partly, of 100',
+      rows: { fell: 'Fell more than 10%', flat: 'Roughly flat (−10% to +10%)', rose: 'Rose 10–50%', roseStrongly: 'Rose 50–100%', doubled: 'More than doubled', early: 'First 90 days of the data (no earlier prices)' },
+      total: 'All start days',
+      note: 'History, not a forecast. Neighbouring start days share the same crashes, so each row rests on a few separate periods.',
+      link: 'Background on Insights',
+    },
     trendSwings: 'In {deep} of {years} calendar years since 2014, BTC fell at least 50% from a high within the same year. A loan has to survive these falls, whatever the long-term direction.',
   },
 
@@ -370,7 +378,7 @@ export default {
       levers: 'Which terms mattered most?',
       offers: 'Comparing offers fairly',
       goal: 'By goal',
-      today: 'Today\'s price swings',
+      today: 'Today\'s market compared with history',
     },
     survival: {
       title: 'Liquidated loans by starting LTV and duration',
@@ -469,6 +477,12 @@ export default {
       head: ['Starting LTV', 'No tax', 'Selling now taxed at 25%, later tax-free'],
       take: 'Without tax, borrowing at LTV 30% left more BTC on {n} of 100 start days.',
       note: 'Tax rules differ by country and person. The 25% is an example only.',
+    },
+    entry: {
+      title: 'What BTC did before the start',
+      lead: 'The reference loan on every start day since 2014, grouped by BTC\'s move in the 90 days before the start.',
+      take: 'After BTC fell more than 10% in 90 days, the reference loan was liquidated on {fell} of 100 start days; after a doubling, on {doubled}; overall, on {all}.',
+      note: 'History, not a forecast: a few crashes and bull markets fill each row, and neighbouring start days share them. The check page shows this table for your own loan.',
     },
     swings: {
       title: 'Today\'s price swings compared with history',

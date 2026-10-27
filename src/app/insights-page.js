@@ -92,6 +92,12 @@ function render() {
   block('spend', T.spend.title, T.spend.lead, t('insights.spend.take', { n: won(0.3, 'none') }),
     table(T.spend.title, T.spend.head, [0.3, 0.5].map((ltv) => [pct(ltv, 0), won(ltv, 'none'), won(ltv, 'sellNowTaxed')])) + hint(T.spend.note));
 
+  // 12. entry timing: the reference loan by what BTC did in the 90 days before the start (decision 015)
+  { const E = I.entry; const H = texts().history.entry; const share = (id) => { const x = E.rows.find((r) => r.id === id); return of100(x.liquidated / x.starts); };
+    block('entry', T.entry.title, T.entry.lead, t('insights.entry.take', { fell: share('fell'), doubled: share('doubled'), all: of100(E.total.liquidated / E.total.starts) }),
+      table(T.entry.title, [H.head[0], H.head[1], H.head[2]], [...E.rows.filter((x) => x.starts > 0).map((x) => [H.rows[x.id], num(x.starts, 0), String(of100(x.liquidated / x.starts))]),
+        [H.total, num(E.total.starts, 0), String(of100(E.total.liquidated / E.total.starts))]]) + hint(T.entry.note)); }
+
   // 11. today's price swings
   const W = I.swings;
   block('swings', T.swings.title, T.swings.lead, t('insights.swings.take', { now: pct(W.now, 0), n: of100(W.calmerShare) }),

@@ -12,7 +12,7 @@ It is market state, not a loan term; as an input it would turn the headline into
 An expert "what if" setting (rejected by the owner).
 
 ## Consequences
-The table's total must equal the history number above it and use the loan's currency.
+The table's total must equal the history number above it and use the loan's currency. Built 27 Oct 2026 (issue #12): five groups of BTC's move in the 90 days before the start (fell more than 10%, roughly flat ±10%, rose 10–50%, rose 50–100%, more than doubled) plus the first 90 days of the data; start days per row and a note that neighbouring start days share the same crashes; the same groups on Insights (reference loan).
 
 ## Sources
 Owner 2026-10-23; backlog issue "Entry timing".

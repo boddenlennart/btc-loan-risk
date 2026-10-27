@@ -347,16 +347,16 @@ test('links to other websites open in a new tab and say so to screen readers; th
   expect(new URL(page.url()).pathname).toBe('/'); // the check page did not navigate away
 });
 
-test('"Insights": all 11, each with what was measured and a table or chart; the line under the answer leads to the first group', async ({ page }) => {
+test('"Insights": all 12, each with what was measured and a table or chart; the line under the answer leads to the first group', async ({ page }) => {
   const errors = await visit(page, '/insights/');
   await expect(page).toHaveTitle('Insights · Bitcoin Loan Check');
   await expect(page.locator('.toc li')).toHaveCount(5);
-  const ids = ['survival', 'falls', 'speed', 'levers', 'reserve', 'partial', 'cost', 'measure', 'buy', 'spend', 'swings'];
+  const ids = ['survival', 'falls', 'speed', 'levers', 'reserve', 'partial', 'cost', 'measure', 'buy', 'spend', 'swings', 'entry'];
   for (const id of ids) {
     await expect(page.locator(`#i-${id} h3`)).toBeVisible();
     await expect(page.locator(`#i-${id} table, #i-${id} .levers, #i-${id} svg`).first()).toBeVisible();
   }
-  await expect(page.locator('.ins .take')).toHaveCount(10); // every insight except the lever list states its result in one sentence
+  await expect(page.locator('.ins .take')).toHaveCount(11); // every insight except the lever list states its result in one sentence
   await expect(page.locator('#i-survival td.heat')).toHaveCount(24);
   await expect(page.locator('#basis')).toContainText('US dollars');
   await expect(page.locator('#swings-chart svg')).toHaveCount(1);

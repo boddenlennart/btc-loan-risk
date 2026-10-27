@@ -9,7 +9,7 @@ import { dailyFromHourly, dailyReturns, fastestFall, largestFall, recencyWeights
 import { fitGarchT } from '../engine/garch.js';
 import { runMonteCarlo } from '../engine/montecarlo.js';
 import { gbmBarrierHitProbability } from '../engine/barrier.js';
-import { replayAll, replayOne } from '../engine/replay.js';
+import { replayAll, replayOne, entryTiming } from '../engine/replay.js';
 import { lenderRules } from '../engine/lender.js';
 import { collateralBtc, liquidationPrices, debtByDay, loanDays, loanSummary, addMonths, daysBetween } from '../engine/loan.js';
 
@@ -258,7 +258,11 @@ async function run(id, terms, settings, garch, post = postMessage) {
     result.stress[key] = { ...a, p: pSale(simulate(terms, s, settings, { countOnly: true, volScale: a.vol / s.sigma })) };
     await tick();
   }
-  { const { perStart, ...replay } = replayAll(s.hourly, terms); result.replay = { ...replay, lastStart: perStart.time.at(-1) ?? null }; } await tick(); // the per-start-day lists are not shown on the page
+  { // the per-start-day lists are not sent to the page; only the entry-timing table made from them (issue #12)
+    const { perStart, ...replay } = replayAll(s.hourly, terms);
+    result.replay = { ...replay, lastStart: perStart.time.at(-1) ?? null };
+    result.entry = replay.starts ? entryTiming(s.hourly, perStart) : null;
+  } await tick();
   result.stories = STORIES.map((iso) => story(s, terms, iso)).filter(Boolean);
   const lp = liquidationPrices(terms);
   // under the answer: how fast BTC fell as far as this loan's sale price at its fastest since 2014

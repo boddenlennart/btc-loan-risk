@@ -1056,6 +1056,28 @@ test('the lender\'s rules (issue #11), in German', async ({ page }) => {
   await expect(rules.locator('#rules-sum')).toHaveText(/^Margin Call bei 70\s%: nur eine Warnung · Bei 80\s%: alles wird verkauft · Gebühr 5\s% des geschuldeten Betrags$/);
 });
 
+test('entry timing (issue #12): the history section shows the loan by what BTC did in the 90 days before the start; the last row is the line above it', { tag: '@phone' }, async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.locator('#sec-history > summary').click();
+  const tbl = page.locator('#entry-table');
+  await expect(page.locator('#entry-h')).toHaveText('Your loan, by what BTC did in the 90 days before it started');
+  await expect(tbl.locator('tbody th')).toHaveText(['Fell more than 10%', 'Roughly flat (−10% to +10%)', 'Rose 10–50%', 'Rose 50–100%', 'More than doubled', 'First 90 days of the data (no earlier prices)']);
+  const h = Number((await page.locator('#history-text .big-line').textContent()).match(/liquidated (\d+) times in 100/)[1]);
+  await expect(tbl.locator('tfoot th')).toHaveText('All start days');
+  await expect(tbl.locator('tfoot td').nth(1)).toHaveText(String(h));
+  const starts = (await tbl.locator('tbody td:nth-child(2)').allTextContents()).map((s) => Number(s.replace(/,/g, '')));
+  expect(starts.reduce((a, b) => a + b, 0)).toBe(Number((await tbl.locator('tfoot td').first().textContent()).replace(/,/g, '')));
+  await expect(page.locator('#history-text .hint')).toContainText('History, not a forecast.');
+  await expect(page.locator('#history-text a[href$="insights/#i-entry"]')).toBeVisible();
+});
+
+test('entry timing (issue #12), in German', async ({ page }) => {
+  await open(page, { lang: 'de' }); await waitDone(page);
+  await page.locator('#sec-history > summary').click();
+  await expect(page.locator('#entry-h')).toHaveText('Ihr Kredit, nach dem, was BTC in den 90 Tagen vor dem Start tat');
+  await expect(page.locator('#entry-table tfoot th')).toHaveText('Alle Starttage');
+});
+
 test('a sale in a fast fall (issue #7), in German', async ({ page }) => {
   await open(page, { lang: 'de' }); await waitDone(page);
   await expect(page.locator('#sold-line')).toContainText(/erhalten Sie höchstens 0,\d{4} Ihrer 0,\d{4} BTC zurück/);
