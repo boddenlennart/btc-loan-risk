@@ -2,7 +2,7 @@
 // embedded history, so every figure on that page is current after each weekly data update.
 // Uses exactly the page's own calculation (runMonteCarlo, the lender rules, the replay).
 import { runMonteCarlo } from '../engine/montecarlo.js';
-import { dailyFromHourly, dailyReturns, recencyWeights } from '../engine/history.js';
+import { dailyFromHourly, dailyReturns, recencyWeights, volatilityAnchors } from '../engine/history.js';
 import { debtByDay, collateralBtc, loanDays, liquidationPrices, marginCallPrices } from '../engine/loan.js';
 import { lenderRules, repaidShare } from '../engine/lender.js';
 import { riskCostTextbook } from '../engine/barrier.js';
@@ -102,6 +102,6 @@ export function methodData({ hourly, terms, garch, settings, halfLifeYears }) {
     volByYear, simVol: main.vol, allVol: weighting[0].vol, sharePre2019: pre2019,
     garch: { alpha: garch.alpha, beta: garch.beta, nu: garch.nu, todayVol: Math.sqrt(garch.hLast * 365) },
     weighting, p: main.p, se: Math.sqrt((main.p * (1 - main.p)) / settings.nPaths),
-    onePath, deadline, noMarginCall, risk, gap: { n: gaps.length, median: q(0.5), p90: q(0.9), worst: q(1) },
+    anchors: volatilityAnchors(daily, returns), onePath, deadline, noMarginCall, risk, gap: { n: gaps.length, median: q(0.5), p90: q(0.9), worst: q(1) },
   };
 }

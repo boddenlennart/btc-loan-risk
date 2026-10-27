@@ -9,6 +9,9 @@
 //   model 'garch'     : GARCH(1,1)-t, params from garch.fitGarchT
 // Within a day, gbm and garch draw the day's low from a Brownian bridge (a sale there is at the day's low);
 // bootstrap uses the real day's low, and its real hours for the sale price.
+// Calmer or wilder (opts.volScale, bootstrap and fixed only; decision 021): every daily move, the day's low and
+// its hours are multiplied by the factor (as logs), so the same real days swing less or more; the trend is
+// removed afterwards as usual.
 // Trend: by default the models keep the average trend of the data they learned
 // from. With logDriftPerDay set, that trend is removed and replaced by the given
 // one (the page uses this for the visible "assumed yearly price trend" input).
@@ -32,6 +35,14 @@ function quantile(sorted, q) {
   const lo = Math.floor(pos);
   const hi = Math.ceil(pos);
   return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
+}
+
+/** Scales the swings of the real days (bootstrap) or of the given steps (fixed) by k. */
+function withVolScale(model, params, k) {
+  if (k === undefined || k === 1) return params;
+  if (model === 'bootstrap') return { ...params, returns: params.returns.map((r) => r * k), lowRel: params.lowRel.map((l) => l * k), hourScale: k };
+  if (model === 'fixed') return { ...params, steps: params.steps.map(([r, l, h]) => [r * k, l * k, h ? h.map((x) => x * k) : h]) };
+  throw new Error(`volScale is not available for model ${model}`);
 }
 
 /** Applies an assumed trend (log drift per day) to the model parameters, if one is given. */
@@ -153,7 +164,7 @@ function makeStepper(model, params, rng) {
  */
 export function runMonteCarlo(opts) {
   const { model, s0, days, nPaths, seed = 1, collectMinRatios = false } = opts;
-  const params = withDrift(model, opts.params, opts.logDriftPerDay);
+  const params = withDrift(model, withVolScale(model, opts.params, opts.volScale), opts.logDriftPerDay);
   let loan = opts.loan;
   if (!loan) {
     const liq = barrierFn(opts.liquidationBarrier);
@@ -197,10 +208,10 @@ export function runMonteCarlo(opts) {
   const risk = opts.riskCost ? { end: new Float64Array(nPaths), fee: new Float64Array(nPaths), q: [], price: [], path: [] } : null;
   const k = repaidShare(rules);
   // the sale price in the hour the level is reached: the step's hours, relative to the previous close
-  const hourShift = params.hourShift ?? 0;
+  const hourShift = params.hourShift ?? 0; const hourScale = params.hourScale ?? 1;
   let hours = null; let baseLog = 0;
   const firstLow = (level) => {
-    for (let h = 0; h < hours.length; h++) { const p = Math.exp(baseLog + hours[h] + hourShift); if (p <= level) return p; }
+    for (let h = 0; h < hours.length; h++) { const p = Math.exp(baseLog + hours[h] * hourScale + hourShift); if (p <= level) return p; }
     return null;
   };
   let liquidated = 0; let partial = 0; let marginCalls = 0;

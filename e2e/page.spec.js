@@ -1000,6 +1000,21 @@ test('a sale in a fast fall (issue #7): the page says it counts the lowest price
   await expect(page.locator('#risk-fast-fall')).toHaveText('Each forced sale is counted at the lowest price of the hour in which BTC reaches your liquidation price: in a fast fall, below it.');
 });
 
+test('calmer and wilder swings (issue #10): one line under the answer, the answer itself unchanged', async ({ page }) => {
+  await open(page); await waitDone(page);
+  const n = Number(await page.locator('#headline-text em').textContent());
+  expect(n).toBe(exampleAnswer());
+  const line = page.locator('#stress-line');
+  await expect(line).toHaveText(/^Assumes swings of \d+% a year\. As calm as BTC's calmest 12 months so far \(\d+%\): \d+ of 100\. As wild as 2017–2021 \(\d+%\): \d+ of 100\.$/);
+  const [, calm, wild] = (await line.textContent()).match(/: (\d+) of 100\. .*: (\d+) of 100/).map(Number);
+  expect(calm).toBeLessThan(n); expect(wild).toBeGreaterThan(n);
+});
+
+test('calmer and wilder swings (issue #10), in German', async ({ page }) => {
+  await open(page, { lang: 'de' }); await waitDone(page);
+  await expect(page.locator('#stress-line')).toHaveText(/^Rechnet mit Schwankungen von \d+\s%\s?im Jahr\. So ruhig wie die ruhigsten 12 Monate von BTC bisher \(\d+\s%\): \d+ von 100\. So wild wie 2017–2021 \(\d+\s%\): \d+ von 100\.$/);
+});
+
 test('a sale in a fast fall (issue #7), in German', async ({ page }) => {
   await open(page, { lang: 'de' }); await waitDone(page);
   await expect(page.locator('#sold-line')).toContainText(/erhalten Sie höchstens 0,\d{4} Ihrer 0,\d{4} BTC zurück/);

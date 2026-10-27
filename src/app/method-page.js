@@ -54,6 +54,7 @@ function render() {
   const rowName = (w) => (w.id === 'equal' ? M.volRows.equal : w.id === 'since2022' ? M.volRows.since2022 : `${t('method.volRows.half', { n: w.halfLifeYears })}${w.current ? ` ${M.volRows.current}` : ''}`);
   $('#vol-table').innerHTML = `<thead><tr>${M.volHead.map((h) => `<th scope="col">${esc(h)}</th>`).join('')}</tr></thead><tbody>${md.weighting.map((w) => `<tr${w.current ? ' class="us"' : ''}><th scope="row">${esc(rowName(w))}</th><td>${pct(w.vol, 0)}</td><td>${show(w.p)}</td></tr>`).join('')}</tbody>`;
   $('#vol-limit').textContent = M.volLimit;
+  $('#vol-stress').textContent = t('method.volStress', { calm: pct(md.anchors.calm.vol, 0), calmEnd: monthYear(md.anchors.calm.end), wild: pct(md.anchors.wild.vol, 0) });
   $('#vol-wrap').setAttribute('aria-label', M.volHead[0]); $('#methods-wrap').setAttribute('aria-label', M.methodsHead[0]); // unique names for the scrollable tables
 
   // 3. from 10,000 futures to the number

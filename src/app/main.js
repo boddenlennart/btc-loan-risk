@@ -1076,6 +1076,9 @@ function renderRisk() {
   $('#assume-line').textContent = !rules.afterCure ? '' : tm.reserveAmount > 0 ? t('results.assumeReserve', { reserve: money0(tm.reserveAmount, cur) }) : texts().results.assumeNoTopUp;
   // "the simulation is the most cautious" only where it is true for this loan
   const h = of100(r.replay.liquidatedShare + r.replay.partialShare); const g = of100(pSale(r.garchMc)); const n = shown(pSale(m));
+  // the swings the number assumes, and the same futures calmer and wilder (decision 021); the number itself stays (decision 004)
+  const st = r.stress;
+  $('#stress-line').textContent = !st ? '' : t('results.stressLine', { vol: pct(st.vol, 0), calmVol: pct(st.calm.vol, 0), calm: shown(st.calm.p), wildVol: pct(st.wild.vol, 0), wild: shown(st.wild.p) });
   const hasHistory = r.replay.starts > 0; // none for a loan longer than the real prices allow
   $('#methods-line').textContent = `${hasHistory ? t('results.otherMethods', { h, g }) : t('results.otherMethodNoHistory', { g })}${n >= g && (!hasHistory || n >= h) ? R.mostCautious : ''} · `;
   // the whole period the results are based on, and when the stored data was last updated

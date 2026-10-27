@@ -3,7 +3,7 @@
 import { describe, it, expect } from 'vitest';
 import { runMonteCarlo } from '../src/engine/montecarlo.js';
 import { makeRng, mixSeed } from '../src/engine/random.js';
-import { recencyWeights, dailyFromHourly, dailyReturns } from '../src/engine/history.js';
+import { recencyWeights, dailyFromHourly, dailyReturns, volatilityAnchors } from '../src/engine/history.js';
 import { createLoanState, stepLoan, lenderRules } from '../src/engine/lender.js';
 
 const flat = (n) => new Float64Array(n + 1).fill(5000); // debt 5,000 every day, no interest
@@ -117,6 +117,50 @@ describe('the daily series keeps each day\'s hourly lows, relative to the previo
     expect(hourLows).toHaveLength(1);
     expect([...hourLows[0]].map(Math.exp)).toEqual([0.95, 0.8, 0.88].map((x) => expect.closeTo(x, 12)));
     expect(Math.exp(lowRel[0])).toBeCloseTo(0.8, 12);
+  });
+});
+
+describe('calmer or wilder swings (issue #10, decision 021): the same days, every move scaled', () => {
+  const rules = lenderRules({ initialLtv: 0.5, liquidationLtv: 0.8, marginCallLtv: null, liquidationFee: { value: 0, basis: 'debt' } });
+  const loan = { debtByDay: flat(60), collateralBtc: 100, rules };
+  it('a steady fall of 2% a day, twice as wild: each day falls 3.96%, so the 62.5% level is reached on day 12, not day 24', () => {
+    const r = run([[Math.log(0.98), Math.log(0.98)]], loan, { volScale: 2 });
+    expect(r.samplePaths[0].event.day).toBe(Math.ceil(Math.log(0.625) / (2 * Math.log(0.98))));
+  });
+  it('a factor of 1 gives exactly the result without it', () => {
+    const steps = [[0.01, -0.02], [-0.05, -0.08], [0.02, -0.01], [-0.12, -0.2]];
+    expect(run(steps, loan, { volScale: 1 })).toEqual(run(steps, loan));
+  });
+  it('the hours of a day are scaled with it: lows 0.8 / 0.61 / 0.5 of the previous close, 1.2 times as wild, cross 62.5 at 0.61^1.2', () => {
+    const n = 40; const hourLows = Array.from({ length: n }, () => Float64Array.from([0.8, 0.61, 0.5].map(Math.log)));
+    const params = { returns: Array(n).fill(0), lowRel: Array(n).fill(Math.log(0.5)), hourLows, blockDays: 5 };
+    const r = runMonteCarlo({ model: 'bootstrap', params, s0: 100, days: 30, nPaths: 1, seed: 1, samplePaths: 1, volScale: 1.2, loan });
+    expect(r.samplePaths[0].sales[0][1]).toBeCloseTo(100 * 0.61 ** 1.2, 9);
+  });
+  it('on the same random draws, wilder swings never give fewer liquidations and calmer never more (real-like days, 3 loans)', () => {
+    const rng = makeRng(7); const n = 2000;
+    const returns = Array.from({ length: n }, () => 0.035 * rng.normal()); const lowRel = returns.map((r) => Math.min(0, r) - Math.abs(0.02 * rng.normal()));
+    for (const lLtv of [0.65, 0.8, 0.9]) {
+      const l = { debtByDay: flat(365), collateralBtc: 1, rules: lenderRules({ initialLtv: 0.5, liquidationLtv: lLtv, marginCallLtv: null, liquidationFee: { value: 0, basis: 'debt' } }) };
+      const p = (k) => runMonteCarlo({ model: 'bootstrap', params: { returns, lowRel, blockDays: 30 }, s0: 10000, days: 365, nPaths: 2000, seed: 3, logDriftPerDay: 0, loan: { ...l, debtByDay: new Float64Array(366).fill(5000) }, volScale: k, countOnly: true }).pLiquidation;
+      const [calm, mid, wild] = [0.7, 1, 1.4].map(p);
+      expect(calm, `liquidation ${lLtv}`).toBeLessThanOrEqual(mid);
+      expect(mid, `liquidation ${lLtv}`).toBeLessThanOrEqual(wild);
+      expect(wild).toBeGreaterThan(calm);
+    }
+  });
+  it('the anchors: the calmest run of whole windows of days, and the volatility of the days in 2017–2021, both in yearly terms', () => {
+    // 3-day windows on made-up days: moves ±1% except a calm stretch of ±0.1%, and ±5% in 2018
+    const t0 = Date.UTC(2016, 11, 25) / 1000; const moves = [];
+    for (let i = 0; i < 40; i++) { const y = new Date((t0 + (i + 1) * 86400) * 1000).getUTCFullYear(); const a = i >= 10 && i < 13 ? 0.001 : y === 2018 ? 0.05 : 0.01; moves.push(i % 2 ? a : -a); }
+    const close = [100]; for (const m of moves) close.push(close.at(-1) * Math.exp(m));
+    const daily = { time: close.map((_, i) => t0 + i * 86400), close };
+    const a = volatilityAnchors(daily, moves, { window: 3 });
+    const sd = (xs) => { const m = xs.reduce((u, v) => u + v, 0) / xs.length; return Math.sqrt(xs.reduce((u, v) => u + (v - m) ** 2, 0) / xs.length * 365); };
+    expect(a.calm.vol).toBeCloseTo(sd(moves.slice(10, 13)), 12);
+    expect(a.calm.end).toBe(daily.time[13]);
+    const in1721 = moves.filter((_, i) => { const y = new Date(daily.time[i + 1] * 1000).getUTCFullYear(); return y >= 2017 && y <= 2021; });
+    expect(a.wild.vol).toBeCloseTo(sd(in1721), 12);
   });
 });
 

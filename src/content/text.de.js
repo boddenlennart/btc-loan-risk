@@ -186,6 +186,7 @@ export default {
     otherMethodNoHistory: 'Andere Methode: ein Volatilitätsmodell {g} von 100 (der Kredit ist länger, als die echten Kurse seit 2014 erlauben)',
     otherMethods: 'Andere Methoden: echte Vergangenheit seit 2014 {h} von 100, ein Volatilitätsmodell {g} von 100',
     mostCautious: '; die Simulation ist die vorsichtigste',
+    stressLine: 'Rechnet mit Schwankungen von {vol} im Jahr. So ruhig wie die ruhigsten 12 Monate von BTC bisher ({calmVol}): {calm} von 100. So wild wie 2017–2021 ({wildVol}): {wild} von 100.',
     assumeNoTopUp: 'Angenommen: Sie schießen nach einem Margin Call weder BTC noch Geld nach.',
     assumeReserve: 'Angenommen: Sie schießen beim ersten Margin Call einmal {reserve} nach, danach nichts mehr.',
     soldNothing: 'Bei einer Liquidation erhalten Sie nichts zurück; alle {btc} BTC gehen in Kredit und Gebühr.',
@@ -497,6 +498,7 @@ export default {
     volHead: ['Wie die Jahre zählen', 'Genutzte Volatilität', 'Beispielkredit: liquidiert, von 100'],
     volRows: { equal: 'Alle Jahre gleich', half: 'Halbwertszeit {n} Jahre', current: '(diese Seite)', since2022: 'Nur ab 2022' },
     volLimit: 'Ehrliche Grenze: Der Test an der Vergangenheit kann diese Gewichtungen nicht unterscheiden; alle bestanden ihn und blieben vorsichtig. Die Gewichtung ist eine Abwägung, gestützt auf die sinkende Volatilität. Würde BTC wieder so wild wie 2017, läge das wahre Risiko näher an der ersten Zeile.',
+    volStress: 'Unter der Antwort zeigt der Check denselben Kredit auch mit ruhigeren und wilderen Schwankungen. Er behält dieselben echten Tage und skaliert jede Bewegung: auf die ruhigsten 12 Monate von BTC bisher ({calm}, bis {calmEnd}) oder auf 2017–2021 ({wild}). Dabei werden auch die schlimmsten einzelnen Tage im selben Verhältnis kleiner oder größer.',
     numTitle: 'Von 10.000 Zukünften zu Ihrer Zahl',
     num: [
       'Gezählt: {k} der {n} Zukünfte enden mit liquidiertem Beispielkredit. Das sind {p} von 100, angezeigt als {shown}. Jeder Punkt steht für 100 Zukünfte.',
@@ -573,7 +575,7 @@ export default {
       'Es kennt nur Kursbewegungen, die es seit 2014 gab. Ein Einbruch neuer Art ist nicht enthalten.',
       'Die Gewichtung jüngerer Jahre ist eine Abwägung. Würde BTC wieder so wild wie 2017, wäre das wahre Risiko höher.',
       'Es rechnet Tag für Tag: Fristen zählen in ganzen Tagen, und zwei Einbrüche an einem Tag zählen als einer.',
-      'Es reiht 30-Tage-Stücke zufällig aneinander, längere Phasen mit steigenden oder fallenden Kursen werden also vermischt.',
+      'Es reiht 30-Tage-Stücke zufällig aneinander, längere Phasen mit steigenden oder fallenden Kursen werden also vermischt. Häufungen von Einbrüchen über mehr als 30 Tage bleiben nur teilweise erhalten; das daneben gezeigte Volatilitätsmodell berücksichtigt sie.',
       'Es nimmt keinen Kurstrend an. Steigt BTC stark, fallen echte Ergebnisse besser aus; fällt BTC über Jahre, schlechter.',
     ],
     mathsTitle: 'Die Mathematik',
@@ -601,6 +603,7 @@ export default {
       'Eine unabhängige zweite Version der Simulation, in Python aus den rohen Börsendaten geschrieben, stimmt für 12 Kredite in Euro und US-Dollar exakt mit dieser Seite überein. Das Volatilitätsmodell stimmt mit einem Standard-Statistikpaket überein. Einzelheiten: die Mathematik-Prüfung ({audit}).',
       'Die Tests rechnen 12 Referenzkredite auf 9 Nachkommastellen nach. Sie prüfen außerdem jede Regel des Kreditgeber-Modells und bauen absichtlich Fehler in den Code ein, um zu sehen, dass die Tests sie bemerken.',
       'Eine Zahl von Hand prüfen: Nehmen Sie den Liquidationskurs aus Ihrer Antwort und schauen Sie in den Kursdaten nach, wie oft BTC innerhalb Ihrer Laufzeit so weit fiel. Das ist ungefähr die Zahl „echte Vergangenheit“.',
+      'Menschen, die bei Kreditgebern arbeiten, haben die Methode kommentiert. Niemand hat für die Ergebnisse bezahlt oder sie beeinflusst.',
     ],
   },
 

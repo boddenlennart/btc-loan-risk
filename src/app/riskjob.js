@@ -5,7 +5,7 @@
 import { gunzipSync } from 'fflate';
 import { decodeHourly } from '../data/codec.js';
 import { convertHourly } from '../data/fx.js';
-import { dailyFromHourly, dailyReturns, fastestFall, largestFall, recencyWeights } from '../engine/history.js';
+import { dailyFromHourly, dailyReturns, fastestFall, largestFall, recencyWeights, volatilityAnchors } from '../engine/history.js';
 import { fitGarchT } from '../engine/garch.js';
 import { runMonteCarlo } from '../engine/montecarlo.js';
 import { gbmBarrierHitProbability } from '../engine/barrier.js';
@@ -96,19 +96,19 @@ function setData(currency, base64, appended, fx) {
   const W = weights.reduce((a, b) => a + b, 0);
   const mean = returns.reduce((a, r, i) => a + r * weights[i], 0) / W;
   const sigma = Math.sqrt((returns.reduce((a, r, i) => a + weights[i] * (r - mean) ** 2, 0) / W) * 365);
-  store[currency] = { hourly, daily, returns, lowRel, hourLows, weights, sigma, garch: null, facts: historyFacts(daily, hourly) };
+  store[currency] = { hourly, daily, returns, lowRel, hourLows, weights, sigma, anchors: volatilityAnchors(daily, returns), garch: null, facts: historyFacts(daily, hourly) };
 }
 
 const monthEndsFor = (t) => Array.from({ length: t.durationMonths }, (_, m) => daysBetween(t.startDate, addMonths(t.startDate, m + 1)));
 
 /** One simulation of the loan `t`. */
-function simulate(t, s, settings, { model = 'bootstrap', nPaths = settings.nPaths, trend = 0, samplePaths = 0, samplePool = 0, leverage = false, riskCost = false, countOnly = false, seed = 20240101 } = {}) {
+function simulate(t, s, settings, { model = 'bootstrap', nPaths = settings.nPaths, trend = 0, samplePaths = 0, samplePool = 0, leverage = false, riskCost = false, countOnly = false, seed = 20240101, volScale = 1 } = {}) {
   const sum = loanSummary(t);
   // leverage: true = the whole loan buys BTC; an object = given as is (a refinancing's extra cash, see run())
   const lev = !leverage ? null : typeof leverage === 'object' ? leverage : { bought: sum.amountReceived / t.btcPrice, payback: sum.totalPayback, repay: t.repayWith === 'cash' ? 'cash' : 'sell' };
   return runMonteCarlo({
     model, params: model === 'bootstrap' ? { returns: s.returns, lowRel: s.lowRel, hourLows: s.hourLows, weights: s.weights, blockDays: settings.blockDays } : s.garch,
-    s0: t.btcPrice, days: loanDays(t), nPaths, seed, monthEnds: monthEndsFor(t), samplePaths, samplePool, riskCost, countOnly,
+    s0: t.btcPrice, days: loanDays(t), nPaths, seed, monthEnds: monthEndsFor(t), samplePaths, samplePool, riskCost, countOnly, volScale,
     logDriftPerDay: Math.log(1 + trend) / 365,
     loan: { debtByDay: debtByDay(t), collateralBtc: collateralBtc(t), rules: lenderRules(t) },
     cureDays: Math.max(1, Math.ceil((t.curePeriodHours ?? 0) / 24)),
@@ -192,7 +192,7 @@ async function run(id, terms, settings, garch, post = postMessage) {
   // with several cores (UAT finding 7): 'main' (the answer), 'levers' ("Make it safer"), 'extras' (slider, trends).
   // Every part uses the same fixed futures, so the results are identical to one run of 'all'.
   const part = settings.part || 'all';
-  const nMain = 4 + others.filter(Boolean).length; const nLevers = levers.length + 1; const nExtras = ltvGrid.length + TRENDS.length;
+  const nMain = 6 + others.filter(Boolean).length; const nLevers = levers.length + 1; const nExtras = ltvGrid.length + TRENDS.length;
   const total = part === 'main' ? nMain : part === 'levers' ? nLevers : part === 'extras' ? nExtras : nMain + levers.length + ltvGrid.length + TRENDS.length;
   let done = 0;
   // after each step: report progress and give the page a moment to repaint
@@ -251,6 +251,13 @@ async function run(id, terms, settings, garch, post = postMessage) {
     }
   }
   result.garchMc = simulate(terms, s, settings, { model: 'garch', countOnly: true }); await tick();
+  // under the answer: the same futures with calmer and wilder swings, scaled to two measured anchors (decision 021);
+  // the answer itself stays on the simulation's own swings (decision 004)
+  result.stress = { vol: s.sigma };
+  for (const [key, a] of [['calm', s.anchors.calm], ['wild', s.anchors.wild]]) {
+    result.stress[key] = { ...a, p: pSale(simulate(terms, s, settings, { countOnly: true, volScale: a.vol / s.sigma })) };
+    await tick();
+  }
   { const { perStart, ...replay } = replayAll(s.hourly, terms); result.replay = { ...replay, lastStart: perStart.time.at(-1) ?? null }; } await tick(); // the per-start-day lists are not shown on the page
   result.stories = STORIES.map((iso) => story(s, terms, iso)).filter(Boolean);
   const lp = liquidationPrices(terms);

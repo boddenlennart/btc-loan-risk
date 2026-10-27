@@ -191,6 +191,7 @@ export default {
     otherMethodNoHistory: 'Other method: a volatility model {g} of 100 (this loan is longer than the real prices since 2014 allow)',
     otherMethods: 'Other methods: real history since 2014 {h} of 100, a volatility model {g} of 100',
     mostCautious: '; the simulation is the most cautious',
+    stressLine: 'Assumes swings of {vol} a year. As calm as BTC\'s calmest 12 months so far ({calmVol}): {calm} of 100. As wild as 2017–2021 ({wildVol}): {wild} of 100.',
     assumeNoTopUp: 'Assumes you add no BTC or money after a margin call.',
     assumeReserve: 'Assumes you add {reserve} once at the first margin call, and nothing more.',
     soldNothing: 'If liquidated: you get nothing back; all {btc} BTC go to repaying the loan and the fee.',
@@ -502,6 +503,7 @@ export default {
     volHead: ['How the years count', 'Volatility used', 'Example loan: liquidated, of 100'],
     volRows: { equal: 'All years equally', half: 'Half-life {n} years', current: '(this page)', since2022: 'Only 2022 onwards' },
     volLimit: 'Honest limit: the test against history cannot tell these weightings apart; all of them passed and stayed cautious. The weighting is a judgement, backed by the falling volatility. If BTC became as wild as in 2017 again, the true risk would be closer to the first row.',
+    volStress: 'Under the answer, the check also shows the same loan with calmer and wilder swings. It keeps the same real days and scales every move: to BTC\'s calmest 12 months so far ({calm}, up to {calmEnd}) or to 2017–2021 ({wild}). Scaling also makes the single worst days smaller or bigger in the same proportion.',
     numTitle: 'From 10,000 futures to your number',
     num: [
       'Counted: {k} of the {n} futures end with the example loan liquidated. That is {p} of 100, shown as {shown}. Each dot stands for 100 futures.',
@@ -578,7 +580,7 @@ export default {
       'It only knows price moves that happened since 2014. A crash of a new kind is not in it.',
       'The weighting of recent years is a judgement. If BTC became as wild as in 2017 again, the true risk would be higher.',
       'It steps day by day: the time to top up counts in whole days, and two dips on one day count as one.',
-      'It joins 30-day pieces at random, so longer rising or falling phases are mixed up.',
+      'It joins 30-day pieces at random, so longer rising or falling phases are mixed up. Crash clusters longer than 30 days are only partly kept; the volatility model shown next to it takes them into account.',
       'It assumes no price trend. If BTC rises strongly, real outcomes are better; if it falls for years, they are worse.',
     ],
     mathsTitle: 'The maths',
@@ -606,6 +608,7 @@ export default {
       'An independent second version of the simulation, written in Python from the raw exchange data, agrees exactly with this page for 12 loans in euros and US dollars. The volatility model matches a standard statistics package. Details: the maths audit ({audit}).',
       'The tests recompute 12 reference loans to 9 decimal places. They also check every rule of the lender model, and break the code on purpose to see that the tests notice.',
       'Check one number by hand: take the liquidation price from your answer and look up in the price data how often BTC fell that far within your loan\'s duration. That is roughly the "real history" number.',
+      'People working at lenders have commented on the method. No one has paid for or influenced the results.',
     ],
   },
 

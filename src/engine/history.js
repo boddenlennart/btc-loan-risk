@@ -38,6 +38,24 @@ export function dailyReturns(daily, hourly = null) {
   return { returns, lowRel, hourLows };
 }
 
+/**
+ * Two measured anchors for calmer and wilder swings (decision 021), in yearly terms (standard deviation of the
+ * daily log moves × √365): calm, the calmest `window` consecutive days so far (vol, end = time of its last day);
+ * wild, all days in 2017–2021. `returns` as from dailyReturns(daily).
+ */
+export function volatilityAnchors(daily, returns, { window = 365 } = {}) {
+  const sd = (s, s2, n) => Math.sqrt(Math.max(0, s2 / n - (s / n) ** 2) * 365);
+  let s = 0; let s2 = 0; let calm = null;
+  for (let i = 0; i < returns.length; i++) {
+    s += returns[i]; s2 += returns[i] ** 2;
+    if (i >= window) { s -= returns[i - window]; s2 -= returns[i - window] ** 2; }
+    if (i >= window - 1) { const v = sd(s, s2, window); if (!calm || v < calm.vol) calm = { vol: v, end: daily.time[i + 1] }; }
+  }
+  let w = 0; let w2 = 0; let n = 0;
+  returns.forEach((r, i) => { const y = new Date(daily.time[i + 1] * 1000).getUTCFullYear(); if (y >= 2017 && y <= 2021) { w += r; w2 += r * r; n++; } });
+  return { calm, wild: { vol: n ? sd(w, w2, n) : null, from: 2017, to: 2021 } };
+}
+
 /** The largest fall in the whole history: from the highest hourly close so far to a later hourly low (0.84 = −84%). */
 export function largestFall(hourly) {
   let peak = 0; let worst = 0;

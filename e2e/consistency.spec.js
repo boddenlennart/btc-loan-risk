@@ -90,7 +90,7 @@ async function readPage(page) {
         tiles: [...document.querySelectorAll('#tiles .tile')].map((t) => t.textContent.replace(/\s+/g, ' ').trim()), tileRisk: txt('#tiles a.tile-risk'),
         cost: txt('#sec-cost'), riskCost: txt('#risk-cost'),
         safer: rows('#safer'), slider: txt('#slider-line'), sliderShown: !!document.querySelector('#safer .slider:not([hidden])'), best: txt('#best-lever'),
-        trend: rows('#trend-body'), methods: txt('#methods-line'), history: txt('#history-text'),
+        trend: rows('#trend-body'), methods: txt('#methods-line'), history: txt('#history-text'), stress: txt('#stress-line'),
         leverage: txt('#leverage'), levLegend: legend('#leverage'), levDots: dots('#leverage'),
         ownLtv: (() => { const f = document.querySelector('#f-initialLtv'); return f && f.offsetParent && f.value !== '' ? Number(f.value) : null; })(), // typed as an LTV (not as BTC)
       };
@@ -160,6 +160,15 @@ function checkRules(d, label) {
     const price = one(liqTile, /at\s*((?:[A-Z]{2,3} )?[^\s\d]*[\d,]+)/, 'liquidation tile')[1];
     expect(d.falls, at('liquidation price: tile = "What happens when BTC falls"')).toContain(price);
   }
+  // 11. calmer and wilder swings (decision 021): on the same futures, calmer never more than the big number, wilder never less.
+  // Not for a loan already past its margin call: there calmer swings make a recovery less likely (98 vs 97 of 100, found 27 Oct 2026).
+  const sl = one(d.stress, /^Assumes swings of (\d+)% a year\. As calm as BTC's calmest 12 months so far \((\d+)%\): (\d+) of 100\. As wild as 2017–2021 \((\d+)%\): (\d+) of 100\.$/, 'stress line');
+  expect(Number(sl[2]), at('calm anchor below the simulation\'s swings')).toBeLessThan(Number(sl[1]));
+  expect(Number(sl[4]), at('wild anchor above the simulation\'s swings')).toBeGreaterThan(Number(sl[1]));
+  if (!label.includes('past its margin call')) {
+    expect(Number(sl[3]), at('calmer swings: at most the big number')).toBeLessThanOrEqual(n);
+    expect(Number(sl[5]), at('wilder swings: at least the big number')).toBeGreaterThanOrEqual(n);
+  }
 }
 
 for (const [label, form] of LOANS) {
@@ -211,7 +220,11 @@ test('numbers agree with each other: How it works uses exactly the example\'s nu
   const [h, g] = one(d.methods, /real history since 2014 (\d+) of 100, a volatility model (\d+) of 100/, 'other methods').slice(1).map(Number);
   const checkTotal = money(one(d.riskCost, /about (€[\d,]+)/, 'risk line')[1]);
   const checkRisk = money(one(d.riskCost, /(€[\d,]+) of it is the cost of the risk/, 'risk part')[1]);
+  const [vol, calmVol, wildVol] = one(d.stress, /swings of (\d+%) a year\. .*\((\d+%)\): \d+ of 100\. .*\((\d+%)\): \d+ of 100/, 'stress line').slice(1);
   await page.goto('/method/');
+  await expect(page.locator('#vol-stress')).toContainText(`(${calmVol}, up to `);
+  await expect(page.locator('#vol-stress')).toContainText(`2017–2021 (${wildVol})`);
+  await expect(page.locator('#vol-chart')).toContainText(`what the simulation uses: ${vol}`);
   const m = await page.evaluate(() => ({
     red: document.querySelectorAll('#num-dots i.d-liq').length,
     methods: [...document.querySelectorAll('#methods-table tbody tr')].map((r) => r.lastElementChild.textContent.trim()),
