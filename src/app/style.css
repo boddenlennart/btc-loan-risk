@@ -266,6 +266,10 @@ textarea { resize: vertical; }
 details.more { border-top: 1px solid var(--border); padding: 4px 0; }
 details.more > summary { cursor: pointer; font-weight: 600; padding: 10px 0; min-height: 44px; color: var(--accent-ink); }
 details.more > summary .sum { font-weight: 400; color: var(--muted); font-size: 13px; }
+/* the lender's rules: their own line under the title, readable while folded (issue #11) */
+details.more > summary .rules-sum { display: block; margin-top: 4px; font-size: 14px; line-height: 1.4; color: var(--text); }
+details.more > summary .rules-sum .rule { display: block; }
+details.more > summary .rules-sum .sep { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .sub-group { border: 1px solid var(--border); border-radius: 6px; padding: 4px 12px; margin: 12px 0; }
 .sub-group legend { display: flex; align-items: center; padding: 0 4px; }
 .err { color: var(--critical-ink); font-weight: 600; font-size: 14px; margin: 6px 0 0; }

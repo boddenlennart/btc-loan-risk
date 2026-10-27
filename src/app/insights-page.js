@@ -45,10 +45,11 @@ function render() {
     table(T.falls.title, T.falls.head, I.falls.map((f) => [t('insights.falls.days', { n: f.days }), `−${pct(f.q50, 0)}`, `−${pct(f.q90, 0)}`, `−${pct(f.q95, 0)}`, `−${pct(f.worst, 0)}`])) + hint(T.falls.unit) + hint(T.falls.bridge));
 
   // 3. speed of crashes
-  const sp = I.speed;
-  block('speed', T.speed.title, T.speed.lead, t('insights.speed.take', { a: of100(sp.within24) }),
+  // the sentence repeats the table's first row, so both are rounded once, the same way
+  const sp = I.speed; const spShares = to100([sp.within24, sp.within48 - sp.within24, sp.within72 - sp.within48, sp.liquidatedLater - sp.within72, 1 - sp.liquidatedLater]);
+  block('speed', T.speed.title, T.speed.lead, t('insights.speed.take', { a: spShares[0] }),
     table(T.speed.title, T.speed.head, [T.speed.within, t('insights.speed.between', { a: 24, b: 48 }), t('insights.speed.between', { a: 48, b: 72 }), T.speed.later, T.speed.never]
-      .map((label, k) => [label, String(to100([sp.within24, sp.within48 - sp.within24, sp.within72 - sp.within48, sp.liquidatedLater - sp.within72, 1 - sp.liquidatedLater])[k])])) + `<p>${esc(t('insights.speed.night', { n: of100(sp.outsideOfficeHours) }))}</p>` + hint(T.speed.note));
+      .map((label, k) => [label, String(spShares[k])])) + `<p>${esc(t('insights.speed.night', { n: of100(sp.outsideOfficeHours) }))}</p>` + hint(T.speed.note));
 
   // 4. one change at a time
   const L = I.levers;

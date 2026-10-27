@@ -262,3 +262,39 @@ test('numbers agree with each other: the same loans in German show the same numb
     await page.locator('#lang-btn').click(); await page.locator('[data-lang="en"]').click();
   }
 });
+
+// Insights: each sentence above a table repeats numbers from that table; they must be the same numbers
+// (27 Oct 2026: "27 of 100 margin calls" above a table that showed 28, rounded two ways).
+test('numbers agree with each other: Insights, every sentence = the table under it, in English and German', async ({ page }) => {
+  const digits = (s) => (s.match(/\d[\d.,]*\d|\d/g) || []).map((x) => x.replace(/[.,]/g, ''));
+  const n = (s) => digits(s)[0];
+  for (const path of ['/insights/', '/de/insights/']) {
+    await page.goto(path); await expect(page.locator('#i-speed table')).toBeVisible();
+    const d = await page.evaluate(() => {
+      const text = (sel) => document.querySelector(sel)?.textContent || '';
+      const rows = (sel) => [...document.querySelectorAll(`${sel} tbody tr`)].map((tr) => [...tr.children].map((c) => c.textContent.trim()));
+      const ids = ['survival', 'falls', 'speed', 'reserve', 'cost', 'measure', 'buy', 'spend'];
+      return {
+        take: Object.fromEntries(ids.map((id) => [id, text(`#i-${id} .take`)])),
+        table: Object.fromEntries(ids.map((id) => [id, rows(`#i-${id} .table-wrap`)])),
+        leversLead: text('#i-levers .sub'), leversBase: text('#i-levers .lv.base b'),
+      };
+    });
+    const row = (id, label) => d.table[id].find((r) => n(r[0]) === label);
+    const has = (id, cell, what) => expect(digits(d.take[id]), `${path} ${what}: sentence "${d.take[id]}" = table ${cell}`).toContain(n(cell));
+    // survival: either "no loan at LTV x or lower" (all 0 in the 12-month column) or "at LTV 20%, n of 100"
+    const some = n(row('survival', '20')[2]) === '0';
+    if (some) for (const r of d.table.survival.filter((r) => Number(n(r[0])) <= Number(digits(d.take.survival)[0]))) expect(n(r[2]), `${path} survival: no liquidation at ${r[0]}`).toBe('0');
+    else has('survival', row('survival', '20')[2], 'survival, LTV 20%, 12 months');
+    const year = d.table.falls.find((r) => n(r[0]) === '365');
+    has('falls', year[2], 'falls, one year, 10 of 100'); has('falls', year[4], 'falls, one year, worst');
+    has('speed', d.table.speed[0][1], 'speed, within 24 hours');
+    has('reserve', row('reserve', '50')[2], 'reserve, 50%, 90 of 100'); has('reserve', row('reserve', '50')[4], 'reserve, 50%, worst');
+    const offers = d.table.cost.slice(0, 4); // the first table: offer A and offer B
+    has('cost', offers[3][1], 'cost, offer A'); has('cost', offers[3][2], 'cost, offer B');
+    has('measure', String(Math.max(...d.table.measure.map((r) => Math.abs(Number(n(r[1])) - Number(n(r[2])))))), 'measure, largest difference');
+    has('buy', row('buy', '20')[2], 'buy, 20%, 12 months'); has('buy', row('buy', '50')[2], 'buy, 50%, 12 months');
+    has('spend', row('spend', '30')[1], 'spend, 30%, no tax');
+    expect(digits(d.leversLead), `${path} levers: lead = the reference loan's bar`).toContain(n(d.leversBase));
+  }
+});
