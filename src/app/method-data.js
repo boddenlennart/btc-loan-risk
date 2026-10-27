@@ -21,13 +21,13 @@ const volOf = (r, w) => {
  */
 export function methodData({ hourly, terms, garch, settings, halfLifeYears }) {
   const daily = dailyFromHourly(hourly);
-  const { returns, lowRel } = dailyReturns(daily);
+  const { returns, lowRel, hourLows } = dailyReturns(daily, hourly);
   const n = returns.length; const H = halfLifeYears * 365;
   const weights = recencyWeights(n, H);
   const W = weights.reduce((a, b) => a + b, 0);
   const days = loanDays(terms);
   const loan = (t = terms) => ({ debtByDay: debtByDay(t), collateralBtc: collateralBtc(t), rules: lenderRules(t) });
-  const sim = (params, o = {}) => runMonteCarlo({ model: 'bootstrap', params: { returns, lowRel, blockDays: settings.blockDays, ...params }, s0: terms.btcPrice, days, nPaths: settings.nPaths,
+  const sim = (params, o = {}) => runMonteCarlo({ model: 'bootstrap', params: { returns, lowRel, hourLows, blockDays: settings.blockDays, ...params }, s0: terms.btcPrice, days, nPaths: settings.nPaths,
     seed: 20240101, logDriftPerDay: 0, loan: loan(), cureDays: Math.max(1, Math.ceil((terms.curePeriodHours ?? 0) / 24)), ...o });
 
   // volatility per calendar year, and how much each year counts in the draws
@@ -37,7 +37,7 @@ export function methodData({ hourly, terms, garch, settings, halfLifeYears }) {
 
   // the same loan with the years weighted differently (the page uses halfLifeYears)
   const since2022 = daily.time.findIndex((t) => t >= Date.UTC(2022, 0, 1) / 1000) - 1;
-  const recent = { returns: returns.slice(since2022), lowRel: lowRel.slice(since2022) };
+  const recent = { returns: returns.slice(since2022), lowRel: lowRel.slice(since2022), hourLows: hourLows.slice(since2022) };
   const weighting = [
     { id: 'equal', vol: volOf(returns), p: sim({}).pLiquidation },
     ...[4, 3, 2].map((y) => { const w = recencyWeights(n, y * 365); return { id: `half${y}`, halfLifeYears: y, current: y === halfLifeYears, vol: volOf(returns, w), p: sim({ weights: w }).pLiquidation }; }),

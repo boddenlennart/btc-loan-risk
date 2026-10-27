@@ -18,14 +18,24 @@ export function dailyFromHourly(hourly) {
   return { time, open, low, close };
 }
 
-/** Daily log returns close-to-close, and each day's low relative to the previous close (both as logs). */
-export function dailyReturns(daily) {
+/** Daily log returns close-to-close, and each day's low relative to the previous close (both as logs).
+ *  With the hourly candles the days were made from: hourLows, per day the lows of its hours in order,
+ *  relative to the previous close (logs), so a sale can be priced in the hour the level is reached (decision 020). */
+export function dailyReturns(daily, hourly = null) {
   const returns = []; const lowRel = [];
   for (let i = 1; i < daily.close.length; i++) {
     returns.push(Math.log(daily.close[i] / daily.close[i - 1]));
     lowRel.push(Math.log(Math.min(daily.low[i], daily.close[i]) / daily.close[i - 1]));
   }
-  return { returns, lowRel };
+  if (!hourly) return { returns, lowRel };
+  const byDay = []; let day = -1;
+  for (let i = 0; i < hourly.time.length; i++) {
+    const d = Math.floor(hourly.time[i] / 86400);
+    if (d !== day) { day = d; byDay.push([]); }
+    byDay[byDay.length - 1].push(hourly.low[i]);
+  }
+  const hourLows = returns.map((_, i) => Float64Array.from(byDay[i + 1], (low) => Math.log(low / daily.close[i])));
+  return { returns, lowRel, hourLows };
 }
 
 /** The largest fall in the whole history: from the highest hourly close so far to a later hourly low (0.84 = −84%). */

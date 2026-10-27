@@ -990,23 +990,23 @@ test('partial sales: how much BTC the lender sells and what you keep, in the ans
   await expect(page.locator('#falls-text')).toContainText(/\(liquidation\): the lender sells at least 0\.\d{4} BTC, enough to bring the LTV back to \d+%\. You keep at most 0\.\d{4} of your 0\.\d{4} BTC/);
 });
 
-test('a sale in a fast fall (issue #7): the page says it counts the day\'s lowest price, and the what-if lines are limits', async ({ page }) => {
+test('a sale in a fast fall (issue #7): the page says it counts the lowest price of the hour, and the what-if lines are limits', async ({ page }) => {
   await open(page); await waitDone(page);
   await expect(page.locator('#sold-line')).toContainText(/you get back at most 0\.\d{4} of your 0\.\d{4} BTC.*In a fast fall, less\./);
   await page.locator('#sec-falls > summary').click();
   await expect(page.locator('#falls-text')).toContainText(/\(liquidation\): the lender sells at least 0\.\d{4} BTC, including the fee/);
-  await expect(page.locator('#fast-fall')).toHaveText('If BTC falls through this price within a day, this page counts the sale at that day\'s lowest price.');
+  await expect(page.locator('#fast-fall')).toHaveText('If BTC falls through this price, this page counts the sale at the lowest price of the hour in which it is reached.');
   await page.locator('#sec-cost > summary').click();
-  await expect(page.locator('#risk-fast-fall')).toHaveText('Each forced sale is counted at the lowest price of that day: in a fast fall, below your liquidation price.');
+  await expect(page.locator('#risk-fast-fall')).toHaveText('Each forced sale is counted at the lowest price of the hour in which BTC reaches your liquidation price: in a fast fall, below it.');
 });
 
 test('a sale in a fast fall (issue #7), in German', async ({ page }) => {
   await open(page, { lang: 'de' }); await waitDone(page);
   await expect(page.locator('#sold-line')).toContainText(/erhalten Sie höchstens 0,\d{4} Ihrer 0,\d{4} BTC zurück/);
   await page.locator('#sec-falls > summary').click();
-  await expect(page.locator('#fast-fall')).toHaveText('Fällt BTC innerhalb eines Tages durch diesen Kurs, zählt diese Seite den Verkauf zum tiefsten Kurs dieses Tages.');
+  await expect(page.locator('#fast-fall')).toHaveText('Fällt BTC durch diesen Kurs, zählt diese Seite den Verkauf zum tiefsten Kurs der Stunde, in der er erreicht wird.');
   await page.locator('#sec-cost > summary').click();
-  await expect(page.locator('#risk-fast-fall')).toContainText('Jeder Zwangsverkauf zählt zum tiefsten Kurs dieses Tages');
+  await expect(page.locator('#risk-fast-fall')).toContainText('Jeder Zwangsverkauf zählt zum tiefsten Kurs der Stunde');
 });
 
 test('"Show 20 other futures" goes through five different sets and says which one is next', async ({ page }) => {

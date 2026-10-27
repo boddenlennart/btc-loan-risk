@@ -64,7 +64,7 @@ test('"How it works": three layers, every part, the charts and tables of the exa
   await expect(page.locator('#vol-table tr.us')).toContainText('Half-life 3 years (this page)');
   await expect(page.locator('#your-number .dots i')).toHaveCount(100);
   await expect(page.locator('#rules-list li')).toHaveCount(5);
-  await expect(page.locator('#rules-list')).toContainText(/the sale is counted at that day's lowest price, never above the liquidation price/);
+  await expect(page.locator('#rules-list')).toContainText(/the sale is counted at the lowest price of that hour, never above the liquidation price/);
   await expect(page.locator('#rules-changed')).toContainText('Changed on 27 October 2026');
   await expect(page.locator('#methods-table tbody tr')).toHaveCount(4);
   await expect(page.locator('#fan-chart path.band-outer')).toHaveCount(1);

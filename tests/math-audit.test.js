@@ -3,7 +3,7 @@
 import { describe, it, expect } from 'vitest';
 import { runMonteCarlo } from '../src/engine/montecarlo.js';
 import { makeRng, mixSeed } from '../src/engine/random.js';
-import { recencyWeights } from '../src/engine/history.js';
+import { recencyWeights, dailyFromHourly, dailyReturns } from '../src/engine/history.js';
 import { createLoanState, stepLoan, lenderRules } from '../src/engine/lender.js';
 
 const flat = (n) => new Float64Array(n + 1).fill(5000); // debt 5,000 every day, no interest
@@ -72,6 +72,32 @@ describe('a fall through the level: the lender sells at the lowest price of that
     expect(s.partialSales[0].price).toBe(68);
     expect(s.partialSales[0].btc).toBeCloseTo((5000 - 0.5 * 100 * 68) / 0.5 / 68, 10);
   });
+  it('with the step\'s hours known: sold at the low of the first hour that reaches the level, not at the step\'s low', () => {
+    const s = createLoanState(100);
+    const hours = [90, 70, 60, 58, 55]; // the level 62.50 is first reached in the 3rd hour (low 60); the day goes on to 55
+    const firstLow = (level) => hours.find((p) => p <= level) ?? null;
+    stepLoan(s, rulesOf(), { time: 1, low: 55, close: 70, debt: 5000, cure: 0, firstLow });
+    expect(s.liquidation.price).toBe(60);
+    expect(s.liquidation.btcSold).toBeCloseTo((5000 * 1.05) / 60, 10);
+  });
+  it('simulation with real hours: the day dips to 55, but the level 62.50 is crossed at 60 in its 3rd hour, so the sale is at 60', () => {
+    const hours = [0.9, 0.7, 0.6, 0.58, 0.55].map(Math.log); // hourly lows relative to the previous close
+    const steps = [[0, 0], [0, Math.log(0.55), hours], ...Array(60).fill([0, 0])];
+    const r = runMonteCarlo({ model: 'fixed', params: { steps }, s0: 100, days: 30, nPaths: 1, seed: 1, samplePaths: 1,
+      loan: { debtByDay: flat(30), collateralBtc: 100, rules: rulesOf() } });
+    expect(r.samplePaths[0].sales[0][1]).toBeCloseTo(60, 10);
+  });
+  it('bootstrap of real days with their hours: every drawn day crosses the level in its 2nd hour (low 61), the day\'s low is 50', () => {
+    const n = 40; const hourLows = Array.from({ length: n }, () => Float64Array.from([0.8, 0.61, 0.5].map(Math.log)));
+    const params = { returns: Array(n).fill(0), lowRel: Array(n).fill(Math.log(0.5)), hourLows, blockDays: 5 };
+    const r = runMonteCarlo({ model: 'bootstrap', params, s0: 100, days: 30, nPaths: 3, seed: 1, samplePaths: 3,
+      loan: { debtByDay: flat(30), collateralBtc: 100, rules: rulesOf() } });
+    expect(r.samplePaths.map((p) => p.sales[0][1])).toEqual([61, 61, 61].map((x) => expect.closeTo(x, 9)));
+    // with a trend removed or added, the hours move with the day (same shift as the day's low)
+    const t = runMonteCarlo({ model: 'bootstrap', params, s0: 100, days: 30, nPaths: 1, seed: 1, samplePaths: 1, logDriftPerDay: 0.01,
+      loan: { debtByDay: flat(30), collateralBtc: 100, rules: rulesOf() } });
+    expect(t.samplePaths[0].sales[0][1]).toBeCloseTo(61 * Math.exp(0.01), 9);
+  });
   it('simulation: a day whose low falls 45% sells at that day\'s low, and the cost of the risk uses that price', () => {
     const steps = [[0, 0], [0, Math.log(0.55)], ...Array(60).fill([0, 0])]; // day 2 dips to 55 and closes at 100
     const r = runMonteCarlo({ model: 'fixed', params: { steps }, s0: 100, days: 30, nPaths: 1, seed: 1, samplePaths: 1, riskCost: true,
@@ -79,6 +105,18 @@ describe('a fall through the level: the lender sells at the lowest price of that
     expect(r.samplePaths[0].sales[0][1]).toBeCloseTo(55, 10);
     // all BTC that repaid debt (5,000 / 55) misses the rise back to 100
     expect(r.riskCost.value).toBeCloseTo((5000 / 55) * (100 - 55), 6);
+  });
+});
+
+describe('the daily series keeps each day\'s hourly lows, relative to the previous close (issue #7)', () => {
+  it('two days of 3 hours: day 2\'s hours, in order, against day 1\'s close; the day\'s low is their lowest', () => {
+    const t0 = 86400 * 20000;
+    const hourly = { time: [0, 1, 2, 86400, 86401, 86402].map((x) => t0 + (x % 86400) * 3600 + Math.floor(x / 86400) * 86400),
+      open: [100, 100, 100, 100, 95, 90], low: [99, 98, 97, 95, 80, 88], close: [100, 99, 100, 96, 90, 92] };
+    const { lowRel, hourLows } = dailyReturns(dailyFromHourly(hourly), hourly);
+    expect(hourLows).toHaveLength(1);
+    expect([...hourLows[0]].map(Math.exp)).toEqual([0.95, 0.8, 0.88].map((x) => expect.closeTo(x, 12)));
+    expect(Math.exp(lowRel[0])).toBeCloseTo(0.8, 12);
   });
 });
 

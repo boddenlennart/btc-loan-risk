@@ -89,14 +89,14 @@ function setData(currency, base64, appended, fx) {
     };
   }
   const daily = dailyFromHourly(hourly);
-  const { returns, lowRel } = dailyReturns(daily);
+  const { returns, lowRel, hourLows } = dailyReturns(daily, hourly);
   // the volatility the simulation effectively uses (recent days weighted more), in yearly terms; the
   // textbook formula uses the same, so all methods rest on the same assumption
   const weights = recencyWeights(returns.length, HALF_LIFE_YEARS * 365);
   const W = weights.reduce((a, b) => a + b, 0);
   const mean = returns.reduce((a, r, i) => a + r * weights[i], 0) / W;
   const sigma = Math.sqrt((returns.reduce((a, r, i) => a + weights[i] * (r - mean) ** 2, 0) / W) * 365);
-  store[currency] = { hourly, daily, returns, lowRel, weights, sigma, garch: null, facts: historyFacts(daily, hourly) };
+  store[currency] = { hourly, daily, returns, lowRel, hourLows, weights, sigma, garch: null, facts: historyFacts(daily, hourly) };
 }
 
 const monthEndsFor = (t) => Array.from({ length: t.durationMonths }, (_, m) => daysBetween(t.startDate, addMonths(t.startDate, m + 1)));
@@ -107,7 +107,7 @@ function simulate(t, s, settings, { model = 'bootstrap', nPaths = settings.nPath
   // leverage: true = the whole loan buys BTC; an object = given as is (a refinancing's extra cash, see run())
   const lev = !leverage ? null : typeof leverage === 'object' ? leverage : { bought: sum.amountReceived / t.btcPrice, payback: sum.totalPayback, repay: t.repayWith === 'cash' ? 'cash' : 'sell' };
   return runMonteCarlo({
-    model, params: model === 'bootstrap' ? { returns: s.returns, lowRel: s.lowRel, weights: s.weights, blockDays: settings.blockDays } : s.garch,
+    model, params: model === 'bootstrap' ? { returns: s.returns, lowRel: s.lowRel, hourLows: s.hourLows, weights: s.weights, blockDays: settings.blockDays } : s.garch,
     s0: t.btcPrice, days: loanDays(t), nPaths, seed, monthEnds: monthEndsFor(t), samplePaths, samplePool, riskCost, countOnly,
     logDriftPerDay: Math.log(1 + trend) / 365,
     loan: { debtByDay: debtByDay(t), collateralBtc: collateralBtc(t), rules: lenderRules(t) },

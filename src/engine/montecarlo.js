@@ -2,12 +2,13 @@
 // change day by day (because unpaid interest makes the debt grow).
 //   model 'gbm'       : textbook model, params { mu, sigma } (yearly, same convention as barrier.js)
 //   model 'bootstrap' : glues together random blocks of real past days,
-//                       params { returns, lowRel, blockDays, weights?, trace? } from history.dailyReturns;
+//                       params { returns, lowRel, hourLows?, blockDays, weights?, trace? } from history.dailyReturns;
+//                       hourLows (each day's hourly lows) price a sale in the hour the level is reached;
 //                       weights (history.recencyWeights) make recent blocks more likely; trace (an
 //                       array) collects where each drawn block starts (for the "one future" chart)
 //   model 'garch'     : GARCH(1,1)-t, params from garch.fitGarchT
-// Within a day, gbm and garch draw the day's low from a Brownian bridge;
-// bootstrap uses the real day's low.
+// Within a day, gbm and garch draw the day's low from a Brownian bridge (a sale there is at the day's low);
+// bootstrap uses the real day's low, and its real hours for the sale price.
 // Trend: by default the models keep the average trend of the data they learned
 // from. With logDriftPerDay set, that trend is removed and replaced by the given
 // one (the page uses this for the visible "assumed yearly price trend" input).
@@ -43,7 +44,8 @@ function withDrift(model, params, logDriftPerDay) {
     const mean = w ? params.returns.reduce((a, r, i) => a + r * w[i], 0) / w.reduce((a, b) => a + b, 0)
       : params.returns.reduce((a, b) => a + b, 0) / params.returns.length;
     const shift = logDriftPerDay - mean;
-    return { ...params, returns: params.returns.map((r) => r + shift), lowRel: params.lowRel.map((l) => l + shift) };
+    // the hours of a day move with it (added when used, so the big hourly series is not copied)
+    return { ...params, returns: params.returns.map((r) => r + shift), lowRel: params.lowRel.map((l) => l + shift), hourShift: shift };
   }
   if (model === 'garch') return { ...params, mu: logDriftPerDay };
   if (model === 'gbm') return { ...params, mu: logDriftPerDay * 365 + (params.sigma ** 2) / 2 };
@@ -70,7 +72,7 @@ function blockPicker(params, n, block, rng) {
   };
 }
 
-/** Makes a stepper: step() -> [logReturn, logLowRelativeToPreviousClose]. */
+/** Makes a stepper: step() -> [logReturn, logLowRelativeToPreviousClose, hourly lows relative to it (logs)?]. */
 function makeStepper(model, params, rng) {
   if (model === 'gbm') {
     const dt = 1 / 365;
@@ -83,14 +85,14 @@ function makeStepper(model, params, rng) {
     };
   }
   if (model === 'bootstrap') {
-    const { returns, lowRel } = params;
+    const { returns, lowRel, hourLows } = params;
     const block = Math.max(1, Math.min(params.blockDays ?? 30, returns.length));
     const pick = blockPicker(params, returns.length, block, rng);
     let pos = 0;
     let left = 0;
     return () => {
       if (left === 0) { pos = pick(); left = block; if (params.trace) params.trace.push(pos); }
-      const out = [returns[pos], Math.min(lowRel[pos], 0, returns[pos])];
+      const out = [returns[pos], Math.min(lowRel[pos], 0, returns[pos]), hourLows ? hourLows[pos] : null];
       pos++; left--;
       return out;
     };
@@ -106,7 +108,7 @@ function makeStepper(model, params, rng) {
       return [x1, low];
     };
   }
-  if (model === 'fixed') { // for tests: every path follows the same given daily steps [[logReturn, logLowRel], ...]
+  if (model === 'fixed') { // for tests: every path follows the same given daily steps [[logReturn, logLowRel, hourLows?], ...]
     let k = 0;
     return () => params.steps[Math.min(k++, params.steps.length - 1)];
   }
@@ -194,6 +196,13 @@ export function runMonteCarlo(opts) {
   // cost of the risk: per path its end price and the BTC paid as fees; per sale the BTC that repaid debt and the price
   const risk = opts.riskCost ? { end: new Float64Array(nPaths), fee: new Float64Array(nPaths), q: [], price: [], path: [] } : null;
   const k = repaidShare(rules);
+  // the sale price in the hour the level is reached: the step's hours, relative to the previous close
+  const hourShift = params.hourShift ?? 0;
+  let hours = null; let baseLog = 0;
+  const firstLow = (level) => {
+    for (let h = 0; h < hours.length; h++) { const p = Math.exp(baseLog + hours[h] + hourShift); if (p <= level) return p; }
+    return null;
+  };
   let liquidated = 0; let partial = 0; let marginCalls = 0;
   let levMore = 0; let levLessKept = 0;
 
@@ -206,13 +215,14 @@ export function runMonteCarlo(opts) {
     const weekly = p < nSample || (pool && (pool.sold.length < nPool || pool.safe.length < nPool)) ? [s0] : null;
     let event = null; let anySale = false;
     for (let d = 1; d <= days; d++) {
-      const [ret, lowRel] = step();
+      const [ret, lowRel, hourLows] = step();
       const lowLog = logS + lowRel;
+      hours = hourLows || null; baseLog = logS;
       logS += ret;
       if (lowLog < minLog) minLog = lowLog;
       if (!st.liquidation) {
         const nPartial = st.partialSales.length;
-        stepLoan(st, rules, { time: d, low: Math.exp(lowLog), close: Math.exp(logS), debt: debtByDay[d - 1], cure });
+        stepLoan(st, rules, { time: d, low: Math.exp(lowLog), close: Math.exp(logS), debt: debtByDay[d - 1], cure, firstLow: hours ? firstLow : null });
         const sold = st.liquidation || st.partialSales.length > nPartial;
         if (sold && !anySale) { anySale = true; hitsByMonth[firstMonthForDay[d]]++; } // the first forced sale of any kind
         if (st.liquidation) {
