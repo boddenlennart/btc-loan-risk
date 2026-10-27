@@ -708,7 +708,7 @@ export default {
   },
 
   footer: {
-    maker: 'Independent project by {name}. No lender pays for or influences this page.',
+    maker: 'Independent project by {name} ({linkedin}). No lender pays for or influences this page.',
     license: 'Open source under the MIT licence. Provided "as is", without warranty of any kind: use it at your own risk.',
     notAdvice: 'This page is not financial, investment or tax advice. It is a calculator with a model of past price moves. It cannot know your situation or the future. Check every number against your lender\'s documents.',
   },
@@ -769,6 +769,7 @@ export default {
       'Lennart Bodden',
       'c/o Online-Impressum 11950, Europaring 90, 53757 Sankt Augustin, Germany',
       'E-mail: {email}',
+      'Contact form: {form}',
       'Responsible for the content under § 18 (2) MStV: Lennart Bodden, address as above',
       'This page ("Bitcoin Loan Check", bitcoinloancheck.com) is a free, private and independent project. It does not offer loans, does not arrange loans, and has no business relationship with any lender. It is not financial, investment or tax advice.',
       'Sources: BTC prices from Bitstamp and Kraken, exchange rates from the European Central Bank. The code is under the MIT licence; the embedded font Source Serif 4 under the SIL Open Font License.',
@@ -818,6 +819,7 @@ export default {
       ] },
       { h: '9. Links to other sites', p: [
         'Links to the source code and the licence lead to GitHub (GitHub, Inc., USA). Only when you open such a link does GitHub process data under its own privacy notice.',
+        'The links to LinkedIn and to the contact form of Online-Impressum also lead to other sites with their own privacy rules. Nothing from them loads until you click.',
       ] },
       { h: '10. Security', p: [
         'The page is delivered only over an encrypted connection (HTTPS). It loads no scripts, fonts or styles from other servers, and a strict security rule allows only its own scripts.',
@@ -828,7 +830,7 @@ export default {
         'You can lodge a complaint with a data protection supervisory authority, in particular in the EU country where you live or work (Art. 77 GDPR).',
         'There is no automated decision-making and no profiling.',
       ] },
-      { h: '12. Version', p: ['Version of this privacy notice: 26 October 2026. If the page changes, we update this notice. The German version is the original.'] },
+      { h: '12. Version', p: ['Version of this privacy notice: 27 October 2026. If the page changes, we update this notice. The German version is the original.'] },
     ],
     links: 'Impressum · Privacy notice',
   },

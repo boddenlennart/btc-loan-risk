@@ -703,7 +703,7 @@ export default {
   },
 
   footer: {
-    maker: 'Unabhängiges Projekt von {name}. Kein Kreditgeber bezahlt oder beeinflusst diese Seite.',
+    maker: 'Unabhängiges Projekt von {name} ({linkedin}). Kein Kreditgeber bezahlt oder beeinflusst diese Seite.',
     license: 'Open Source unter der MIT-Lizenz. Bereitgestellt "wie besehen" ("as is"), ohne jede Gewährleistung: Nutzung auf eigenes Risiko.',
     notAdvice: 'Diese Seite ist keine Finanz-, Anlage- oder Steuerberatung. Sie ist ein Rechner mit einem Modell früherer Kursbewegungen. Sie kennt weder Ihre Lage noch die Zukunft. Prüfen Sie jede Zahl anhand der Unterlagen Ihres Kreditgebers.',
   },
@@ -764,6 +764,7 @@ export default {
       'Lennart Bodden',
       'c/o Online-Impressum 11950, Europaring 90, 53757 Sankt Augustin, Deutschland',
       'E-Mail: {email}',
+      'Kontaktformular: {form}',
       'Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV: Lennart Bodden, Anschrift wie oben',
       'Diese Seite („Bitcoin-Kredit-Check“, bitcoinloancheck.com) ist ein kostenloses, privates und unabhängiges Projekt. Sie bietet keine Kredite an, vermittelt keine Kredite und steht in keiner Geschäftsbeziehung zu einem Kreditgeber. Sie ist keine Finanz-, Anlage- oder Steuerberatung.',
       'Quellen: BTC-Kurse von Bitstamp und Kraken, Wechselkurse der Europäischen Zentralbank. Der Code steht unter der MIT-Lizenz; die eingebettete Schrift Source Serif 4 unter der SIL Open Font License.',
@@ -813,6 +814,7 @@ export default {
       ] },
       { h: '9. Links zu anderen Seiten', p: [
         'Links zum Quellcode und zur Lizenz führen zu GitHub (GitHub, Inc., USA). Erst wenn Sie einen solchen Link öffnen, verarbeitet GitHub Daten nach seinen eigenen Datenschutzhinweisen.',
+        'Auch die Links zu LinkedIn und zum Kontaktformular von Online-Impressum führen zu anderen Seiten mit eigenen Datenschutzregeln. Von dort wird nichts geladen, bevor Sie klicken.',
       ] },
       { h: '10. Sicherheit', p: [
         'Die Seite wird nur verschlüsselt (HTTPS) ausgeliefert. Sie lädt keine Skripte, Schriften oder Stile von anderen Servern, und eine strenge Sicherheitsregel erlaubt nur ihre eigenen Skripte.',
@@ -823,7 +825,7 @@ export default {
         'Sie können sich bei einer Datenschutz-Aufsichtsbehörde beschweren, insbesondere in dem EU-Staat, in dem Sie wohnen oder arbeiten (Art. 77 DSGVO).',
         'Eine automatisierte Entscheidungsfindung oder ein Profiling findet nicht statt.',
       ] },
-      { h: '12. Stand', p: ['Stand dieser Datenschutzerklärung: 26. Oktober 2026. Ändert sich die Seite, passen wir diese Erklärung an.'] },
+      { h: '12. Stand', p: ['Stand dieser Datenschutzerklärung: 27. Oktober 2026. Ändert sich die Seite, passen wir diese Erklärung an.'] },
     ],
     links: 'Impressum · Datenschutzerklärung',
   },

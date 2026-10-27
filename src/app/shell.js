@@ -18,14 +18,16 @@ export function renderShell() {
     a.href = pageHref(a.dataset.page);
     if (a.closest('.site-nav')) { if (a.dataset.page === here) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); }
   }
-  $('#maker').textContent = t('footer.maker', { name: SITE.maker });
+  const ext = (href, text) => `<a href="${href}" target="_blank" rel="noopener noreferrer">${esc(text)} ↗<span class="visually-hidden">${esc(tx.ui.newTab)}</span></a>`;
+  $('#maker').innerHTML = esc(t('footer.maker', { name: SITE.maker })).replace('{linkedin}', ext(SITE.makerUrl, 'LinkedIn'));
   $('#lang-missing').textContent = tx.feedback.languageMissing;
   $('#lang-missing').href = mailtoLink(SITE.feedbackEmail, tx.feedback.languageSubject, `${tx.feedback.language}\n\n`);
   $('#lang-code').textContent = getLang().toUpperCase();
   $('#lang-btn').setAttribute('aria-label', `${getLang().toUpperCase()}, ${tx.ui.languageSwitch}: ${tx.ui.languageName}`); // starts with the visible text
   for (const b of document.querySelectorAll('[data-lang]')) b.setAttribute('aria-current', String(b.dataset.lang === getLang()));
   $('#glossary-list').innerHTML = Object.entries(tx.glossary.terms).map(([id, g]) => `<dt id="g-${id}">${esc(g.term)}</dt><dd>${rich(g.text)}</dd>`).join('');
-  const em = (s) => esc(s).replace('{email}', `<a href="mailto:${SITE.feedbackEmail}">${SITE.feedbackEmail}</a>`);
+  const em = (s) => esc(s).replace('{email}', `<a href="mailto:${SITE.feedbackEmail}">${SITE.feedbackEmail}</a>`)
+    .replace('{form}', ext(SITE.contactFormUrl, SITE.contactFormUrl.replace(/^https:\/\//, '').replace(/\/$/, '')));
   $('#impressum-body').innerHTML = tx.legal.impressum.map((x) => `<p>${em(x)}</p>`).join('');
   $('#privacy-body').innerHTML = tx.legal.privacy.map((sec) => `<h3>${esc(sec.h)}</h3>${sec.p.map((x) => `<p>${em(x)}</p>`).join('')}`).join('');
   for (const n of document.querySelectorAll('.template-note')) n.hidden = !JSON.stringify(tx.legal).includes('«');

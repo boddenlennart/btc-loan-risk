@@ -331,6 +331,13 @@ test('links to other websites open in a new tab and say so to screen readers; th
       expect(l.hint.trim(), `${path} ${l.href}`).toMatch(path.startsWith('/de/') ? /neuen Tab/ : /new tab/);
     }
   }
+  // issue #9: the maker's LinkedIn page and the Impressum's contact form, both in a new tab
+  for (const path of ['/', '/de/']) {
+    await visit(page, path);
+    await expect(page.locator('#maker a[href="https://linkedin.com/in/lennart-bodden"]')).toContainText('LinkedIn');
+    await page.locator('#impressum > summary').click();
+    await expect(page.locator('#impressum-body a[href="https://mein.online-impressum.de/bitcoinloancheck/"]')).toBeVisible();
+  }
   await visit(page, '/');
   const [tab] = await Promise.all([context.waitForEvent('page'), page.locator('#code-link').click()]);
   expect(tab).toBeTruthy();
