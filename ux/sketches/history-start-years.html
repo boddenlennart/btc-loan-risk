@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Real history mock-up</title>
+<style>
+/* Mock-up of the redesigned history section on the check page (forum wish, 29 Oct 2026).
+   Numbers are real: the example loan (EUR, 50% LTV, liquidation 80%, margin call only a warning), data to 27 Oct 2026. */
+:root { --paper:#f6f5f1; --surface:#fff; --tile:#efede6; --rule:#e2dfd6; --ink:#15140f; --ink2:#46443e; --muted:#65635c; --brand:#1f4e79; --liq:#b42318;
+  --serif:"Source Serif 4",Charter,Georgia,serif; --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+* { box-sizing:border-box; }
+body { margin:0; background:#d9d7d0; font:16px/1.5 var(--sans); color:var(--ink); }
+.board { max-width:1240px; margin:0 auto; padding:24px 16px 64px; }
+.board > h1 { font:600 26px/1.2 var(--serif); margin:0 0 6px; }
+.lead { margin:0 0 8px; max-width:860px; color:#3a3934; }
+.key { display:flex; gap:14px; flex-wrap:wrap; font-size:13px; margin:0 0 22px; color:#3a3934; }
+.cols { display:grid; grid-template-columns:repeat(auto-fit, minmax(375px, 1fr)); gap:28px; align-items:start; }
+.col > h2 { font:600 15px var(--sans); text-transform:uppercase; letter-spacing:.06em; color:#3a3934; margin:0 0 10px; }
+.phone { width:375px; max-width:100%; background:var(--paper); border-radius:22px; padding:18px 16px 26px; box-shadow:0 10px 30px #0002; margin:0 auto 22px; }
+.state { font:600 11px var(--sans); text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin:0 0 8px; }
+.meta { font-size:13px; color:var(--muted); margin:6px 0 14px; }
+.meta a { color:var(--brand); }
+details { border-top:1px solid var(--rule); padding:2px 0; }
+summary { cursor:pointer; padding:14px 0; list-style-position:inside; }
+summary::marker { color:var(--brand); }
+summary h3 { display:inline; font:600 18px/1.3 var(--serif); }
+.sum { display:block; margin:4px 0 0 18px; font-size:14px; color:var(--ink); }
+.sum b { font-weight:600; }
+h4 { font:600 16px/1.3 var(--serif); margin:18px 0 6px; }
+p { margin:8px 0; }
+.big { font:600 17px/1.4 var(--serif); }
+.hint { font-size:14px; color:var(--muted); }
+.hint a { color:var(--brand); }
+table { width:100%; border-collapse:collapse; font-size:14px; margin:6px 0; }
+th, td { padding:8px 6px; text-align:right; border-bottom:1px solid var(--rule); vertical-align:top; }
+th:first-child, td:first-child { text-align:left; }
+thead th { font:600 12px/1.3 var(--sans); color:var(--muted); }
+tbody th { font-weight:600; }
+tr.all th, tr.all td { font-weight:700; }
+.bar { display:inline-block; height:8px; border-radius:4px; background:var(--liq); vertical-align:middle; margin-left:6px; }
+.chart { height:120px; border-radius:8px; background:repeating-linear-gradient(90deg, #e9e6dd 0 1px, transparent 1px 46px), var(--surface); border:1px solid var(--rule); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; }
+.more { color:var(--brand); font-size:14px; padding:10px 0; border-top:1px solid var(--rule); margin-top:12px; }
+.other { opacity:.55; }
+/* change marks */
+.tag { font:600 10px var(--sans); color:#fff; padding:1px 6px; border-radius:4px; margin-right:6px; vertical-align:2px; white-space:nowrap; }
+.new { background:#2e7d32; } .moved { background:#1f4e79; } .changed { background:#a16207; } .gone { background:#9b1c1c; }
+.removed { text-decoration:line-through; text-decoration-color:#9b1c1c; color:#7b776d; }
+.box { outline:2px dashed #2e7d32; outline-offset:4px; border-radius:6px; }
+.notes { background:var(--surface); border-radius:12px; padding:14px 18px; max-width:860px; box-shadow:0 4px 14px #0001; }
+.notes li { margin:6px 0; }
+</style>
+</head>
+<body>
+<div class="board">
+  <h1>Real history: easier to find, start years at a glance</h1>
+  <p class="lead">Check page, phone width (375 px). Left: today. Right: the proposal. The two sentences "since 2014" and "since 2020" give way to one small table of start years. Everything else in the section stays, in the same order.</p>
+  <p class="key"><span><span class="tag new">new</span>added</span><span><span class="tag changed">changed</span>reworded or restyled</span><span><span class="tag moved">moved</span>new place</span><span><span class="tag gone">removed</span>taken out</span></p>
+
+  <div class="cols">
+    <!-- TODAY -->
+    <div class="col">
+      <h2>Today</h2>
+      <div class="phone">
+        <p class="state">Under the answer</p>
+        <p class="meta">Other methods: real history since 2014 40 of 100, a volatility model 43 of 100; the simulation is the most cautious · <a>How to check this</a></p>
+        <p class="state">Sections, folded (the last one)</p>
+        <details><summary><h3>What happens when BTC falls</h3></summary></details>
+        <details><summary><h3>What it costs</h3></summary></details>
+        <details><summary><h3>Borrow or sell?</h3></summary></details>
+        <details><summary><h3>Your loan in every crash since 2014</h3></summary></details>
+      </div>
+      <div class="phone">
+        <p class="state">The section, opened</p>
+        <details open><summary><h3>Your loan in every crash since 2014</h3></summary>
+          <p class="big">Started on any day since 2014, this exact loan would have been liquidated 40 times in 100.</p>
+          <p>Started only on days since 1 January 2020 (2,126 start days): liquidated 35 times in 100.</p>
+          <p>The answer at the top says 46. The difference: real history includes BTC's strong rise since 2014; the simulation keeps the swings but leaves the rise out, because nobody knows if it will continue.</p>
+          <h4>Your loan, by what BTC did in the 90 days before it started</h4>
+          <table><thead><tr><th>BTC in the 90 days before the start</th><th>Start days</th><th>Liquidated, of 100</th></tr></thead>
+            <tbody><tr><th>Fell more than 10%</th><td>1,198</td><td>52</td></tr><tr><th>Roughly flat (−10% to +10%)</th><td>1,021</td><td>36</td></tr><tr><th>Rose 10–50%</th><td>1,091</td><td>32</td></tr><tr><th>Rose 50–100%</th><td>612</td><td>18</td></tr><tr><th>More than doubled</th><td>304</td><td>57</td></tr><tr><th>First 90 days of the data</th><td>91</td><td>100</td></tr><tr class="all"><th>All start days</th><td>4,317</td><td>40</td></tr></tbody></table>
+          <p class="hint">History, not a forecast. Neighbouring start days share the same crashes, so each row rests on a few separate periods. <a>Background on Insights →</a></p>
+          <h4>If one of these real years started today</h4>
+          <div class="chart">chart: four real start dates</div>
+          <p class="more">Does the price trend matter?</p>
+        </details>
+      </div>
+    </div>
+
+    <!-- PROPOSAL -->
+    <div class="col">
+      <h2>Proposal</h2>
+      <div class="phone">
+        <p class="state">Under the answer</p>
+        <p class="meta">Other methods: <a><span class="tag changed">changed</span>real history since 2014 40 of 100</a>, a volatility model 43 of 100; the simulation is the most cautious · <a>How to check this</a></p>
+        <p class="hint" style="margin-top:-6px">"real history …" becomes a link: it opens the section below and jumps to it.</p>
+        <p class="state">Sections, folded</p>
+        <details><summary><h3>What happens when BTC falls</h3></summary></details>
+        <details class="box"><summary><h3><span class="tag moved">moved</span><span class="tag changed">changed</span>Your loan in real history</h3>
+          <span class="sum"><span class="tag new">new</span>Liquidated <b>40 of 100</b> on start days since 2014 · <b>35</b> since 2020</span></summary></details>
+        <details><summary><h3>What it costs</h3></summary></details>
+        <details><summary><h3>Borrow or sell?</h3></summary></details>
+      </div>
+      <div class="phone">
+        <p class="state">The section, opened</p>
+        <details open><summary><h3>Your loan in real history</h3><span class="sum">Liquidated <b>40 of 100</b> on start days since 2014 · <b>35</b> since 2020</span></summary>
+          <p class="removed"><span class="tag gone">removed</span>Started on any day since 2014, this exact loan would have been liquidated 40 times in 100.</p>
+          <p class="removed"><span class="tag gone">removed</span>Started only on days since 1 January 2020 (2,126 start days): liquidated 35 times in 100.</p>
+          <div class="box">
+            <h4><span class="tag new">new</span>This loan, started on any day from …</h4>
+            <table><thead><tr><th>Start days from</th><th>Start days</th><th>Liquidated, of 100</th></tr></thead>
+              <tbody>
+                <tr class="all"><th>1 Jan 2014 (all)</th><td>4,317</td><td>40 <span class="bar" style="width:40px"></span></td></tr>
+                <tr><th>1 Jan 2018</th><td>2,856</td><td>45 <span class="bar" style="width:45px"></span></td></tr>
+                <tr><th>1 Jan 2020</th><td>2,126</td><td>35 <span class="bar" style="width:35px"></span></td></tr>
+                <tr><th>1 Jan 2022</th><td>1,395</td><td>27 <span class="bar" style="width:27px"></span></td></tr>
+              </tbody></table>
+            <p class="hint">Each row counts every start day from that date until the last one with enough prices. Later rows have fewer start days and fewer crashes behind them. History, not a forecast.</p>
+          </div>
+          <p><span class="tag changed">changed</span>The answer at the top says 46: the simulation keeps BTC's swings but leaves out its rise since 2014, because nobody knows if it will continue.</p>
+          <h4>Your loan, by what BTC did in the 90 days before it started</h4>
+          <table><thead><tr><th>BTC in the 90 days before the start</th><th>Start days</th><th>Liquidated, of 100</th></tr></thead>
+            <tbody><tr><th>Fell more than 10%</th><td>1,198</td><td>52</td></tr><tr><th>Roughly flat (−10% to +10%)</th><td>1,021</td><td>36</td></tr><tr><th>Rose 10–50%</th><td>1,091</td><td>32</td></tr><tr><th>Rose 50–100%</th><td>612</td><td>18</td></tr><tr><th>More than doubled</th><td>304</td><td>57</td></tr><tr><th>First 90 days of the data</th><td>91</td><td>100</td></tr><tr class="all"><th>All start days</th><td>4,317</td><td>40</td></tr></tbody></table>
+          <p class="hint">History, not a forecast. Neighbouring start days share the same crashes, so each row rests on a few separate periods. <a>Background on Insights →</a></p>
+          <h4>If one of these real years started today</h4>
+          <div class="chart">chart: four real start dates (unchanged)</div>
+          <p class="more">Does the price trend matter?</p>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <b>What changes, in short</b>
+    <ul>
+      <li><b>Findable:</b> the section moves up to second place, right after "What happens when BTC falls". Its title line shows the key numbers while folded. "real history since 2014" under the answer becomes a link that opens it.</li>
+      <li><b>Title:</b> "Your loan in every crash since 2014" becomes "Your loan in real history" (the table now starts in other years too).</li>
+      <li><b>Start years:</b> one small table replaces the two sentences: 2014 (all), 2018, 2020, 2022, with start days per row and a short bar. Fixed years, no picker.</li>
+      <li><b>Kept:</b> the comparison with the answer at the top (shortened), the 90-day table, the four real years chart, the trend question.</li>
+      <li><b>Rules:</b> the 2014 row equals "real history since 2014" under the answer and the 90-day table's "All start days" row. A year with no start days (very long loans) is left out.</li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>

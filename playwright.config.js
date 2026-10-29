@@ -20,8 +20,10 @@ export default defineConfig({
     // The same tests as a real phone: touch screen, phone browser, phone screen. Desktop windows made
     // narrow missed a slider that did nothing on iPhones (Oct 2026). Runs the tests tagged @phone and
     // the touch sweep (e2e/phone.spec.js).
-    { name: 'iphone', use: { ...devices['iPhone 13'] }, grep: /@phone/ },
-    { name: 'android', use: { ...devices['Pixel 7'] }, grep: /@phone/ },
+    // Phones get more time: on GitHub's computers a phone calculation can take a minute or more while two
+    // other phone tests run beside it (29 Oct 2026: three tests ran out of time, the page was fine).
+    { name: 'iphone', use: { ...devices['iPhone 13'] }, grep: /@phone/, timeout: 180_000, expect: { timeout: 90_000 } },
+    { name: 'android', use: { ...devices['Pixel 7'] }, grep: /@phone/, timeout: 180_000, expect: { timeout: 90_000 } },
   ],
   webServer: { command: `node tools/serve.mjs ${process.env.E2E_PORT || 8799} ${process.env.E2E_DIR || 'docs'}`, url: `http://127.0.0.1:${process.env.E2E_PORT || 8799}/`, reuseExistingServer: true },
 });

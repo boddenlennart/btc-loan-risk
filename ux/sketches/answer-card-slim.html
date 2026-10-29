@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Answer card mock-up</title>
+<style>
+/* Mock-up of a slimmer answer card on the check page, with the redesigned real-history section (29 Oct 2026).
+   Texts and numbers are the live example loan's (data to 26 Oct 2026). Nothing is deleted: every line keeps a place. */
+:root { --paper:#f6f5f1; --surface:#fff; --tile:#efede6; --rule:#e2dfd6; --ink:#15140f; --ink2:#46443e; --muted:#65635c; --brand:#1f4e79; --liq:#b42318; --mc:#b8952a;
+  --serif:"Source Serif 4",Charter,Georgia,serif; --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+* { box-sizing:border-box; }
+body { margin:0; background:#d9d7d0; font:16px/1.5 var(--sans); color:var(--ink); }
+.board { max-width:1240px; margin:0 auto; padding:24px 16px 64px; }
+.board > h1 { font:600 26px/1.2 var(--serif); margin:0 0 6px; }
+.lead { margin:0 0 8px; max-width:880px; color:#3a3934; }
+.key { display:flex; gap:14px; flex-wrap:wrap; font-size:13px; margin:0 0 22px; color:#3a3934; }
+.cols { display:grid; grid-template-columns:repeat(auto-fit, minmax(375px, 1fr)); gap:28px; align-items:start; }
+.col > h2 { font:600 15px var(--sans); text-transform:uppercase; letter-spacing:.06em; color:#3a3934; margin:0 0 4px; }
+.count { font-size:13px; color:#3a3934; margin:0 0 10px; }
+.phone { width:375px; max-width:100%; background:var(--paper); border-radius:22px; padding:16px 14px 24px; box-shadow:0 10px 30px #0002; margin:0 auto 22px; }
+.state { font:600 11px var(--sans); text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin:0 0 8px; }
+.card { background:var(--surface); border:1px solid var(--rule); border-radius:14px; padding:14px 14px 10px; }
+.top { display:flex; justify-content:space-between; font:600 11px var(--sans); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+.top a { color:var(--brand); text-transform:none; letter-spacing:0; font-size:14px; }
+.story { font-size:14px; color:var(--ink2); margin:6px 0 4px; }
+.hero { display:flex; align-items:baseline; gap:6px; margin:4px 0 0; }
+.hero b { font:600 56px/1 var(--serif); }
+.hero span { font:600 20px var(--serif); color:var(--ink2); }
+.sent { margin:2px 0 8px; }
+.dots { display:grid; grid-template-columns:repeat(20, 1fr); gap:3px; margin:6px 0; }
+.dots i { aspect-ratio:1; border-radius:50%; border:1.5px solid #9a978d; }
+.dots i.l { background:var(--liq); border-color:var(--liq); } .dots i.m { background:var(--mc); border-color:var(--mc); }
+.legend { font-size:13px; color:var(--ink2); display:flex; gap:10px; flex-wrap:wrap; margin:2px 0 8px; }
+.small { font-size:13px; color:var(--muted); margin:6px 0; }
+.lever { background:var(--tile); border-radius:10px; padding:10px 12px; font-size:15px; margin:10px 0; }
+.tiles { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:8px 0; }
+.tile { background:var(--tile); border-radius:10px; padding:10px; font-size:13px; color:var(--ink2); }
+.tile b { display:block; font:600 18px var(--serif); color:var(--ink); }
+.tile .k { font:600 10px var(--sans); letter-spacing:.07em; text-transform:uppercase; color:var(--muted); }
+.tile u { text-decoration-style:dotted; }
+.acts { display:flex; gap:8px; margin:10px 0 6px; }
+.acts span { border:1.5px solid var(--brand); color:var(--brand); border-radius:999px; padding:6px 12px; font-size:14px; font-weight:600; }
+.line { font-size:14px; margin:8px 0; }
+.line a, .small a { color:var(--brand); }
+details.behind { border:1px solid var(--rule); border-radius:10px; padding:0 12px; margin:10px 0 6px; background:#fbfaf7; }
+details.behind > summary { cursor:pointer; padding:10px 0; font-weight:600; color:var(--brand); }
+details.behind > summary .s { display:block; font-weight:400; font-size:13px; color:var(--muted); }
+details.behind .item { border-top:1px solid var(--rule); padding:8px 0; font-size:14px; }
+details.behind .item b { display:block; font:600 11px var(--sans); text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:2px; }
+details.sec { border-top:1px solid var(--rule); }
+details.sec > summary { cursor:pointer; padding:12px 0; list-style-position:inside; }
+details.sec > summary::marker { color:var(--brand); }
+details.sec > summary h3 { display:inline; font:600 17px/1.3 var(--serif); }
+details.sec > summary .s { display:block; margin:2px 0 0 18px; font-size:14px; }
+.tag { font:600 10px var(--sans); color:#fff; padding:1px 6px; border-radius:4px; margin-right:5px; vertical-align:2px; white-space:nowrap; }
+.new { background:#2e7d32; } .moved { background:#1f4e79; } .changed { background:#a16207; } .gone { background:#9b1c1c; }
+.hl { outline:2px dashed #2e7d32; outline-offset:3px; border-radius:6px; }
+.notes { background:var(--surface); border-radius:12px; padding:14px 18px; max-width:880px; box-shadow:0 4px 14px #0001; }
+.notes li { margin:6px 0; }
+.notes table { border-collapse:collapse; font-size:14px; margin:6px 0 10px; }
+.notes th, .notes td { padding:6px 10px; border-bottom:1px solid var(--rule); text-align:right; }
+.notes th:first-child, .notes td:first-child { text-align:left; }
+</style>
+</head>
+<body>
+<div class="board">
+  <h1>The answer card: one answer, one next step, the rest one tap away</h1>
+  <p class="lead">Check page at phone width (375 px), the live example loan. Left: today. Right: the proposal, with the real-history redesign (separate mock-up: <a href="history-start-years.html">history-start-years.html</a>). Nothing is deleted: every line keeps a place, most of them behind one fold called "Behind this number".</p>
+  <p class="key"><span><span class="tag new">new</span>added</span><span><span class="tag changed">changed</span>reworded or merged</span><span><span class="tag moved">moved</span>new place</span></p>
+
+  <div class="cols">
+    <!-- TODAY -->
+    <div class="col">
+      <h2>Today</h2>
+      <p class="count">About 220 words and 47 figures on the card (counting every number, including the example story, legend and dates)</p>
+      <div class="phone">
+        <div class="card">
+          <div class="top"><span>Example</span><a>Use your own terms →</a></div>
+          <p class="story">Borrow €10,000 for 12 months against BTC worth €20,000 (LTV 50%). Liquidated at LTV 80%.</p>
+          <div class="hero"><b>46</b><span>of 100</span></div>
+          <p class="sent">simulated futures end with this loan liquidated within 12 months.</p>
+          <div class="dots" id="d1"></div>
+          <div class="legend"><span>● 46 liquidated</span><span>● 14 margin call, nothing sold</span><span>○ 40 nothing happened</span></div>
+          <p class="small">Assumes swings of 57% a year. As calm as BTC's calmest 12 months so far (40%): 30 of 100. As wild as 2017–2021 (81%): 60 of 100.</p>
+          <div class="lever">One change lowers this: Starting LTV 40% → 28 of 100.</div>
+          <div class="tiles">
+            <div class="tile"><span class="k">Liquidated at</span><b>€45,751</b>−38% from today</div>
+            <div class="tile"><span class="k">Full cost</span><b>€1,100</b>effective 11.6% a year<br><u>with the liquidation risk: about €2,090 · 21.6% a year</u></div>
+            <div class="tile"><span class="k">Beats selling if</span><b>BTC +11%</b>by the end</div>
+          </div>
+          <p class="line">If liquidated: you get back at most 0.0437 of your 0.2732 BTC; the rest repays the loan and the fee. In a fast fall, less.</p>
+          <p class="line" style="border-left:3px solid var(--brand);padding-left:8px">At its fastest since 2014, BTC fell this far (−38%) within 7 hours. <a>How much buffer loans needed →</a></p>
+          <div class="acts"><span>+ Compare an offer</span><span>Share</span></div>
+          <p class="small">Other methods: real history since 2014 40 of 100, a volatility model 43 of 100; the simulation is the most cautious · <a>How to check this number</a></p>
+          <p class="small">No price trend assumed · not a forecast · Price data: 1 Jan 2014 to 26 Oct 2026 · last updated 26 Oct 2026</p>
+          <p class="small">The lender itself can fail or lose your BTC. That risk is not in this number.</p>
+        </div>
+        <p class="state" style="margin-top:14px">Sections</p>
+        <details class="sec"><summary><h3>What happens when BTC falls</h3></summary></details>
+        <details class="sec"><summary><h3>What it costs · Borrow or sell?</h3></summary></details>
+        <details class="sec"><summary><h3>Your loan in every crash since 2014</h3></summary></details>
+        <details class="sec"><summary><h3>What this does not include</h3></summary></details>
+      </div>
+    </div>
+
+    <!-- PROPOSAL -->
+    <div class="col">
+      <h2>Proposal</h2>
+      <p class="count">About 124 words and 23 figures on the card, before the first tap</p>
+      <div class="phone">
+        <div class="card">
+          <div class="top"><span>Example</span><a>Use your own terms →</a></div>
+          <p class="story">Borrow €10,000 for 12 months against BTC worth €20,000 (LTV 50%). Liquidated at LTV 80%.</p>
+          <div class="hero"><b>46</b><span>of 100</span></div>
+          <p class="sent">simulated futures end with this loan liquidated within 12 months.</p>
+          <div class="dots" id="d2"></div>
+          <div class="legend"><span>● 46 liquidated</span><span>● 14 margin call, nothing sold</span><span>○ 40 nothing happened</span></div>
+          <div class="tiles">
+            <div class="tile"><span class="k">Liquidated at</span><b>€45,751</b>−38% from today</div>
+            <div class="tile"><span class="k">Full cost</span><b>€1,100</b>effective 11.6% a year<br><u>with the liquidation risk: about €2,090 · 21.6% a year</u></div>
+            <div class="tile"><span class="k">Beats selling if</span><b>BTC +11%</b>by the end</div>
+          </div>
+          <div class="lever"><span class="tag moved">moved</span>One change lowers this: Starting LTV 40% → 28 of 100.</div>
+          <div class="acts"><span>+ Compare an offer</span><span>Share</span></div>
+          <details class="behind hl"><summary><span class="tag new">new</span>Behind this number<span class="s">Calmer or wilder swings · other methods · what a sale leaves you · the fastest fall</span></summary></details>
+          <p class="small"><span class="tag changed">changed</span>Not a forecast · the lender's own risk is not included · data to 26 Oct 2026 · <a>How to check this number</a></p>
+        </div>
+        <p class="state" style="margin-top:14px">Sections, in the order visitors ask</p>
+        <details class="sec"><summary><h3>What happens when BTC falls</h3></summary></details>
+        <details class="sec hl"><summary><h3><span class="tag moved">moved</span>Your loan in real history</h3><span class="s">Liquidated <b>40 of 100</b> on start days since 2014 · <b>35</b> since 2020</span></summary></details>
+        <details class="sec"><summary><h3>What it costs · Borrow or sell?</h3></summary></details>
+        <details class="sec"><summary><h3>What this does not include</h3></summary></details>
+      </div>
+
+      <div class="phone">
+        <p class="state">"Behind this number", opened</p>
+        <details class="behind" open><summary>Behind this number<span class="s">Calmer or wilder swings · other methods · what a sale leaves you · the fastest fall</span></summary>
+          <div class="item"><b>Calmer or wilder swings</b>Assumes swings of 57% a year. As calm as BTC's calmest 12 months so far (40%): 30 of 100. As wild as 2017–2021 (81%): 60 of 100.</div>
+          <div class="item"><b>Other methods</b>Real history since 2014: <a>40 of 100</a>. A volatility model: 43 of 100. The simulation is the most cautious.</div>
+          <div class="item"><b>What a sale leaves you</b>If liquidated: you get back at most 0.0437 of your 0.2732 BTC; the rest repays the loan and the fee. In a fast fall, less.</div>
+          <div class="item"><b>The fastest fall</b>At its fastest since 2014, BTC fell this far (−38%) within 7 hours. <a>How much buffer loans needed →</a></div>
+          <div class="item"><b>The data</b>No price trend assumed. Price data: 1 Jan 2014 to 26 Oct 2026, last updated 26 Oct 2026.</div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <b>Where every line goes</b>
+    <table>
+      <tr><th>Today on the card</th><th>Proposal</th></tr>
+      <tr><td>Example story, big number, sentence, dots and legend, three tiles</td><td>stay on the card</td></tr>
+      <tr><td>"One change lowers this"</td><td>stays, moves below the tiles: the one next step</td></tr>
+      <tr><td>Compare an offer, Share</td><td>stay</td></tr>
+      <tr><td>Calmer / wilder swings</td><td>Behind this number</td></tr>
+      <tr><td>What a sale leaves you (BTC back)</td><td>Behind this number</td></tr>
+      <tr><td>Fastest fall since 2014</td><td>Behind this number</td></tr>
+      <tr><td>Other methods (history 40, volatility model 43)</td><td>Behind this number; "40" links to real history</td></tr>
+      <tr><td>Two lines: no trend · not a forecast · data dates; lender can fail</td><td>one short line under the card; the dates in full behind the fold</td></tr>
+      <tr><td>"Assumes you add no BTC…" (only with a top-up deadline)</td><td>stays on the card when it applies: it changes how the number reads</td></tr>
+    </table>
+    <ul>
+      <li><b>First screen:</b> how risky (46 of 100), what it costs (tiles), what to change (one step). Data nerds are one tap from everything they have today.</li>
+      <li><b>Numbers rules</b> stay as they are; the fold only moves where lines sit. A rule for the fold: its title line names what is inside, in the same order.</li>
+      <li><b>Accessibility:</b> "Behind this number" is a normal folded part (keyboard and screen readers), remembered when open, like the others.</li>
+      <li><b>Worth testing with 5 people</b> before and after: "How risky is this loan?", "What would you change?", "Where would you look for more detail?"</li>
+    </ul>
+  </div>
+</div>
+<script>
+// the dots: 46 liquidated, 14 margin call, 40 nothing (as on the page)
+for (const id of ['d1', 'd2']) document.getElementById(id).innerHTML = Array.from({ length: 100 }, (_, i) => `<i class="${i < 46 ? 'l' : i < 60 ? 'm' : ''}"></i>`).join('');
+</script>
+</body>
+</html>

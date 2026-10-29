@@ -235,8 +235,8 @@ test('history section: real history first, a sentence linking it to the answer, 
   await open(page); await waitDone(page);
   const n = await headlineNumber(page);
   await page.locator('#sec-history > summary').click();
-  await expect(page.locator('#history-text')).toContainText(/Started on any day since 2014, this exact loan would have been liquidated \d+ times in 100/);
-  await expect(page.locator('#history-text')).toContainText(`The answer at the top says ${n}. The difference: real history includes BTC's strong rise`);
+  await expect(page.locator('#years-table tbody th').first()).toHaveText('1 Jan 2014 (all)');
+  await expect(page.locator('#history-text')).toContainText(`The answer at the top says ${n}: the simulation keeps BTC's swings but leaves out its rise since 2014`);
   await expect(page.locator('#trend-body')).toBeHidden(); // folded, one level deeper
   await page.locator('#trend-details > summary').click();
   await expect(page.locator('#trend-body .lv')).toHaveCount(5);
@@ -264,7 +264,7 @@ test('partial sales count as liquidated: the big number counts every forced sale
   const dots = await page.locator('#dots .dots i.d-liq').count() + await page.locator('#dots .dots i.d-part').count();
   expect(big).toBe(dots);
   expect(big).toBeGreaterThan(30);
-  await expect(page.locator('#methods-line')).not.toContainText('real history since 2014 0 of 100');
+  await expect(page.locator('#methods-line')).not.toContainText('Real history since 2014 0 of 100');
   // the same number in a comparison and in "Make it safer" (your terms as they are)
   await expect(page.locator('#safer .lv.base b')).toHaveText(String(big));
   await page.locator('#compare-btn').click(); await waitDone(page);
@@ -364,7 +364,7 @@ test('"Make it safer" shows exactly the headline number for your own terms, and 
   // fairness: the two other methods are shown with the answer; the example's margin call is only a warning
   // (decision 022), so there is no top-up assumption to state (it shows with a deadline: the lender's-rules test)
   await expect(page.locator('#assume-line')).toHaveText('');
-  await expect(page.locator('#methods-line')).toContainText(/Other methods: real history since 2014 \d+ of 100, a volatility model \d+ of 100/);
+  await expect(page.locator('#methods-line')).toContainText(/^Real history since 2014 \d+ of 100, a volatility model \d+ of 100/);
   // what a sale leaves: not "everything lost"
   await expect(page.locator('#sold-line')).toContainText(/If liquidated: you get back at most 0\.\d{4} of your 0\.\d{4} BTC/);
   await expect(page.locator('#tiles')).toContainText('Beats selling if');
@@ -687,7 +687,7 @@ test('edge cases: one month, a very long loan, too little BTC, a higher tax toda
   await page.locator('[data-field="durationMonths"] input').fill('200'); // longer than all the data
   await expect(page.locator('#progress')).toBeHidden({ timeout: 180_000 });
   await expect(page.locator('#history-text')).toContainText('cannot be replayed on them');
-  await expect(page.locator('#methods-line')).toContainText('Other method: a volatility model');
+  await expect(page.locator('#methods-line')).toContainText('A volatility model:');
   await page.locator('[data-set="durationMonths"][data-val="12"]').click();
   await waitDone(page);
   // too little BTC: the real reason, once
@@ -1062,14 +1062,12 @@ test('entry timing (issue #12): the history section shows the loan by what BTC d
   const tbl = page.locator('#entry-table');
   await expect(page.locator('#entry-h')).toHaveText('Your loan, by what BTC did in the 90 days before it started');
   await expect(tbl.locator('tbody th')).toHaveText(['Fell more than 10%', 'Roughly flat (−10% to +10%)', 'Rose 10–50%', 'Rose 50–100%', 'More than doubled', 'First 90 days of the data (no earlier prices)']);
-  const h = Number((await page.locator('#history-text .big-line').textContent()).match(/liquidated (\d+) times in 100/)[1]);
+  const h = Number(await page.locator('#years-table tbody tr').first().locator('td').nth(1).textContent()); // the 2014 row: all start days
   await expect(tbl.locator('tfoot th')).toHaveText('All start days');
   await expect(tbl.locator('tfoot td').nth(1)).toHaveText(String(h));
   const starts = (await tbl.locator('tbody td:nth-child(2)').allTextContents()).map((s) => Number(s.replace(/,/g, '')));
   expect(starts.reduce((a, b) => a + b, 0)).toBe(Number((await tbl.locator('tfoot td').first().textContent()).replace(/,/g, '')));
-  await expect(page.locator('#history-text .hint')).toContainText('History, not a forecast.');
-  // the same loan on start days since 2020 only, next to the line for all start days (Reddit suggestion, 27 Oct 2026)
-  await expect(page.locator('#history-since')).toHaveText(/^Started only on days since 1 January 2020 \(\d{1,3}(,\d{3})* start days\): liquidated \d+ times in 100(, and in \d+ more, part of the BTC would have been liquidated)?\.$/);
+  await expect(page.locator('#history-text .hint').last()).toContainText('History, not a forecast. Neighbouring start days'); // the 90-day table's note
   await expect(page.locator('#history-text a[href$="insights/#i-entry"]')).toBeVisible();
 });
 
@@ -1078,7 +1076,50 @@ test('entry timing (issue #12), in German', async ({ page }) => {
   await page.locator('#sec-history > summary').click();
   await expect(page.locator('#entry-h')).toHaveText('Ihr Kredit, nach dem, was BTC in den 90 Tagen vor dem Start tat');
   await expect(page.locator('#entry-table tfoot th')).toHaveText('Alle Starttage');
-  await expect(page.locator('#history-since')).toContainText('Nur an Tagen seit dem 1. Januar 2020 gestartet');
+  await expect(page.locator('#history-sum')).toHaveText(/^An Starttagen seit 2014 \d+-mal von 100 liquidiert · seit 2020 \d+$/);
+  await expect(page.locator('#years-table tbody th').first()).toContainText('2014 (alle)');
+});
+
+test('answer card (owner, 29 Oct 2026): the answer, the tiles and one next step; the rest one tap away under "Behind this number"', { tag: '@phone' }, async ({ page }) => {
+  await open(page); await waitDone(page);
+  // order on the card: tiles, then the one next step
+  expect(await page.evaluate(() => document.querySelector('#tiles').compareDocumentPosition(document.querySelector('#best-lever')) & Node.DOCUMENT_POSITION_FOLLOWING)).toBeTruthy();
+  const behind = page.locator('#behind');
+  await expect(behind).not.toHaveAttribute('open', '');
+  await expect(behind.locator('summary')).toHaveText('Behind this number Calmer or wilder swings · other methods · what a sale leaves you · the data');
+  for (const id of ['#stress-line', '#sold-line', '#methods-line', '#data-period']) await expect(page.locator(id)).toBeHidden();
+  await expect(page.locator('#meta-short')).toHaveText(/^Not a forecast · the lender's own risk is not included · data to \d+ \w+ 20\d\d · How to check this number$/);
+  await behind.locator('summary').click();
+  await expect(behind).toHaveAttribute('open', '');
+  for (const id of ['#stress-line', '#sold-line', '#methods-line', '#data-period']) await expect(page.locator(id)).toBeVisible();
+  await expect(behind).toContainText('The lender itself can fail or lose your BTC. That risk is not in this number.');
+  await expect(behind.locator('.bh-item > b')).toContainText(['Calmer or wilder swings', 'Other methods', 'What a sale leaves you']);
+});
+
+test('real history (owner, 29 Oct 2026): second section, its numbers in the title line, start years in one table; "real history" under the answer opens it', { tag: '@phone' }, async ({ page }) => {
+  await open(page); await waitDone(page);
+  expect(await page.locator('details.section').evaluateAll((ds) => ds.map((d) => d.id))).toEqual(['sec-falls', 'sec-history', 'sec-cost', 'sec-limits']);
+  await expect(page.locator('#sec-history > summary h3')).toHaveText('Your loan in real history');
+  const sum = (await page.locator('#history-sum').textContent()).match(/^Liquidated (\d+) of 100 on start days since 2014 · (\d+) since 2020$/);
+  expect(sum).not.toBeNull();
+  // the link in "Other methods" opens the section
+  await page.locator('#behind > summary').click();
+  await page.locator('#methods-line a[data-open-history]').click();
+  await expect(page.locator('#sec-history')).toHaveAttribute('open', '');
+  await expect(page.locator('#sec-history > summary')).toBeInViewport();
+  const rows = page.locator('#years-table tbody tr');
+  // every year from 2014 to the last start day's, none skipped (owner, 29 Oct 2026); the example's 12 months reach 2025 at least
+  const labels = await rows.locator('th').allTextContents();
+  expect(labels[0]).toBe('1 Jan 2014 (all)');
+  expect(labels.slice(1)).toEqual(labels.slice(1).map((_, i) => `1 Jan ${2015 + i}`));
+  expect(labels.length).toBeGreaterThanOrEqual(2025 - 2014 + 1);
+  const cell = async (r, c) => Number((await rows.nth(r).locator('td').nth(c).textContent()).replace(/,/g, ''));
+  expect(await cell(0, 1)).toBe(Number(sum[1])); // the title line = the table
+  expect(await cell(2020 - 2014, 1)).toBe(Number(sum[2]));
+  expect(await cell(0, 0)).toBe(Number((await page.locator('#entry-table tfoot td').first().textContent()).replace(/,/g, ''))); // 2014 = all start days
+  for (let r = 1; r < labels.length; r++) expect(await cell(r, 0)).toBeLessThan(await cell(r - 1, 0)); // later years, fewer start days
+  await expect(page.locator('#history-text')).not.toContainText('Started on any day since 2014');
+  await expect(page.locator('#history-text')).toContainText('History, not a forecast.');
 });
 
 test('a sale in a fast fall (issue #7), in German', async ({ page }) => {

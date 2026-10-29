@@ -41,17 +41,20 @@
     <div id="dots"></div>
     <p class="refi-note err" id="now-note" role="status" hidden></p>
     <p class="assume" id="assume-line"></p>
-    <p class="assume" id="stress-line"></p>
-    <p class="best-lever" id="best-lever"></p>
     <div class="tiles" id="tiles" role="list"></div>
-    <p class="sold-line" id="sold-line"></p>
-    <p class="sub" id="kept-line"></p>
-    <p class="hook" id="fall-hook" hidden></p>
+    <p class="best-lever" id="best-lever"></p>
     <p class="actions"><button type="button" class="secondary" data-compare-start id="compare-btn"></button><button type="button" class="secondary" data-share id="share-btn"></button></p>
     <p class="hint" id="link-copied" data-t="ui.linkCopied" hidden></p>
-    <p class="meta"><span id="methods-line"></span><a id="method-link" data-t="results.howToCheck"></a></p>
-    <p class="meta"><span id="basis-line"></span> · <span id="data-period"></span></p>
-    <p class="meta" data-t="results.counterpartyLine"></p>
+    <!-- the answer, the tiles and one next step on the card; the rest one tap away (owner, 29 Oct 2026) -->
+    <details class="behind" id="behind">
+      <summary><span data-t="results.behindTitle"></span> <span class="sum" data-t="results.behindSum"></span></summary>
+      <div class="bh-item"><b data-t="results.behind.stress"></b><p class="assume" id="stress-line"></p></div>
+      <div class="bh-item"><b data-t="results.behind.methods"></b><p id="methods-line"></p></div>
+      <div class="bh-item"><b data-t="results.behind.sale"></b><p class="sold-line" id="sold-line"></p><p class="sub" id="kept-line"></p></div>
+      <div class="bh-item"><b data-t="results.behind.fall"></b><p class="hook" id="fall-hook" hidden></p></div>
+      <div class="bh-item"><b data-t="results.behind.data"></b><p><span id="basis-line"></span> · <span id="data-period"></span></p><p data-t="results.counterpartyLine"></p></div>
+    </details>
+    <p class="meta" id="meta-short"><span id="meta-short-text"></span> · <a id="method-link" data-t="results.howToCheck"></a></p>
   </section>
 
   <aside id="terms" class="terms closed" aria-labelledby="terms-h">
@@ -87,13 +90,8 @@
     <p><button type="button" class="link" data-other-paths id="other-paths"></button></p>
   </details>
 
-  <details class="section" id="sec-cost">
-    <summary><h3 id="sec-cost-title"></h3></summary>
-    <div id="cost-body"></div>
-  </details>
-
   <details class="section" id="sec-history">
-    <summary><h3 data-t="sections.history"></h3></summary>
+    <summary><h3 data-t="sections.history"></h3><span class="sum" id="history-sum"></span></summary>
     <div id="history-text"></div>
     <h4 data-t="history.storiesTitle"></h4>
     <p class="sub" data-t="history.storiesLine"></p>
@@ -101,6 +99,12 @@
     <ul class="story-legend" id="stories-legend"></ul>
     <details class="sub-details" id="trend-details"><summary data-t="history.trendTitle"></summary><div id="trend-body"></div></details>
   </details>
+
+  <details class="section" id="sec-cost">
+    <summary><h3 id="sec-cost-title"></h3></summary>
+    <div id="cost-body"></div>
+  </details>
+
 
   <details class="section" id="sec-limits">
     <summary><h3 data-t="results.limitsTitle"></h3></summary>

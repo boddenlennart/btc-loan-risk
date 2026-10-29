@@ -90,7 +90,8 @@ async function readPage(page) {
         tiles: [...document.querySelectorAll('#tiles .tile')].map((t) => t.textContent.replace(/\s+/g, ' ').trim()), tileRisk: txt('#tiles a.tile-risk'),
         cost: txt('#sec-cost'), riskCost: txt('#risk-cost'),
         safer: rows('#safer'), slider: txt('#slider-line'), sliderShown: !!document.querySelector('#safer .slider:not([hidden])'), best: txt('#best-lever'),
-        trend: rows('#trend-body'), methods: txt('#methods-line'), history: txt('#history-text'), stress: txt('#stress-line'),
+        trend: rows('#trend-body'), methods: txt('#methods-line'), history: txt('#history-text'), stress: txt('#stress-line'), historySum: txt('#history-sum'),
+        years: [...document.querySelectorAll('#years-table tbody tr')].map((r) => [...r.cells].map((c) => c.textContent.trim())),
         entryTotal: [...document.querySelectorAll('#entry-table tfoot td')].map((c) => c.textContent.trim()),
         leverage: txt('#leverage'), levLegend: legend('#leverage'), levDots: dots('#leverage'),
         ownLtv: (() => { const f = document.querySelector('#f-initialLtv'); return f && f.offsetParent && f.value !== '' ? Number(f.value) : null; })(), // typed as an LTV (not as BTC)
@@ -144,8 +145,10 @@ function checkRules(d, label) {
   const none = d.trend.find((r) => r[0].startsWith('No trend'));
   if (none) expect(int(none[1]), at('trend "No trend" row = the big number')).toBe(n);
   // 8. real history: the number in "Other methods" = what the history section says (full + partial)
-  const hm = d.methods.match(/real history since 2014 (\d+) of 100/);
-  const hr = d.history.match(/liquidated (\d+) times in 100(?:, and in (\d+) more, part)?/);
+  const hm = d.methods.match(/Real history since 2014 (\d+) of 100/);
+  // the start-years table's first row (2014 = all start days): [label, start days, liquidated, partly?]
+  const y0 = d.years[0];
+  const hr = y0 ? [null, y0[2], y0[3]] : null;
   if (hm && hr) expect(Number(hr[1]) + Number(hr[2] || 0), at('"Other methods" history = history section (full + partial)')).toBe(Number(hm[1]));
   // 9. buy more BTC: more + less = 100; liquidated there = liquidated under the answer
   if (d.levLegend.length) {
@@ -161,12 +164,20 @@ function checkRules(d, label) {
     const price = one(liqTile, /at\s*((?:[A-Z]{2,3} )?[^\s\d]*[\d,]+)/, 'liquidation tile')[1];
     expect(d.falls, at('liquidation price: tile = "What happens when BTC falls"')).toContain(price);
   }
-  // 12. entry timing (issue #12): the table's last row repeats the history line above it (full and partly liquidated)
+  // 16. entry timing (issue #12): the table's last row repeats the history line above it (full and partly liquidated)
   if (hr && d.entryTotal.length) {
     expect(Number(d.entryTotal[1]), at('entry table "All start days" = history line')).toBe(Number(hr[1]));
     if (d.entryTotal[2] !== undefined) expect(Number(d.entryTotal[2]), at('entry table "partly" = history line')).toBe(Number(hr[2] || 0));
   }
-  // 11. calmer and wilder swings (decision 021): on the same futures, calmer never more than the big number, wilder never less.
+  // 17. real history (owner, 29 Oct 2026): the section's title line repeats the start-years table (2014 and 2020 rows)
+  const hs = d.historySum.match(/^Liquidated (\d+) of 100 on start days since 2014(?: · (\d+) since 2020)?$/);
+  if (d.years.length) {
+    expect(hs, at('history title line')).not.toBeNull();
+    expect(Number(hs[1]), at('title line 2014 = table 2014 row')).toBe(Number(d.years[0][2]));
+    const y20 = d.years.find((r) => r[0].includes('2020'));
+    if (y20) expect(Number(hs[2]), at('title line 2020 = table 2020 row')).toBe(Number(y20[2]));
+  }
+  // 15. calmer and wilder swings (decision 021): on the same futures, calmer never more than the big number, wilder never less.
   // Not for a loan already past its margin call: there calmer swings make a recovery less likely (98 vs 97 of 100, found 27 Oct 2026).
   const sl = one(d.stress, /^Assumes swings of (\d+)% a year\. As calm as BTC's calmest 12 months so far \((\d+)%\): (\d+) of 100\. As wild as 2017–2021 \((\d+)%\): (\d+) of 100\.$/, 'stress line');
   expect(Number(sl[2]), at('calm anchor below the simulation\'s swings')).toBeLessThan(Number(sl[1]));
@@ -223,7 +234,7 @@ test('numbers agree with each other: How it works uses exactly the example\'s nu
   await open(page, EXAMPLE_FORM);
   const d = await readPage(page);
   const n = Number(d.n);
-  const [h, g] = one(d.methods, /real history since 2014 (\d+) of 100, a volatility model (\d+) of 100/, 'other methods').slice(1).map(Number);
+  const [h, g] = one(d.methods, /Real history since 2014 (\d+) of 100, a volatility model (\d+) of 100/, 'other methods').slice(1).map(Number);
   const checkTotal = money(one(d.riskCost, /about (€[\d,]+)/, 'risk line')[1]);
   const checkRisk = money(one(d.riskCost, /(€[\d,]+) of it is the cost of the risk/, 'risk part')[1]);
   const [vol, calmVol, wildVol] = one(d.stress, /swings of (\d+%) a year\. .*\((\d+%)\): \d+ of 100\. .*\((\d+%)\): \d+ of 100/, 'stress line').slice(1);
