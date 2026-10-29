@@ -101,6 +101,9 @@ function setData(currency, base64, appended, fx) {
 
 const monthEndsFor = (t) => Array.from({ length: t.durationMonths }, (_, m) => daysBetween(t.startDate, addMonths(t.startDate, m + 1)));
 
+/** First start years for the real-history table (fixed: no picker, decision 021). */
+const START_YEARS = [2014, 2018, 2020, 2022];
+
 /** One simulation of the loan `t`. */
 function simulate(t, s, settings, { model = 'bootstrap', nPaths = settings.nPaths, trend = 0, samplePaths = 0, samplePool = 0, leverage = false, riskCost = false, countOnly = false, seed = 20240101, volScale = 1 } = {}) {
   const sum = loanSummary(t);
@@ -260,8 +263,9 @@ async function run(id, terms, settings, garch, post = postMessage) {
   }
   { // the per-start-day lists are not sent to the page; only the entry-timing table made from them (issue #12)
     const { perStart, ...replay } = replayAll(s.hourly, terms);
-    // and on start days since 2020 only, shown next to it (a visitor's suggestion, 27 Oct 2026)
-    result.replay = { ...replay, lastStart: perStart.time.at(-1) ?? null, since2020: replaySince(perStart, Date.UTC(2020, 0, 1) / 1000) };
+    // and by first start year, in one table (visitors' suggestions, 27 and 29 Oct 2026); 2014 = all start days
+    result.replay = { ...replay, lastStart: perStart.time.at(-1) ?? null,
+      startYears: START_YEARS.map((year) => ({ year, ...replaySince(perStart, Date.UTC(year, 0, 1) / 1000) })) };
     result.entry = replay.starts ? entryTiming(s.hourly, perStart) : null;
   } await tick();
   result.stories = STORIES.map((iso) => story(s, terms, iso)).filter(Boolean);

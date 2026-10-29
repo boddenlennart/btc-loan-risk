@@ -416,6 +416,10 @@ function onClick(e) {
     e.preventDefault();
     $('#sec-cost').open = true;
     requestAnimationFrame(() => { $('#risk-cost').scrollIntoView({ block: 'start' }); const h = $('#risk-cost h4'); if (h) h.focus({ preventScroll: true }); }); // the focus follows (keyboard, screen readers)
+  } else if (tgt.closest('[data-open-history]')) {
+    e.preventDefault(); // open the real-history section and move there, the focus too (keyboard, screen readers)
+    const d = $('#sec-history'); d.open = true;
+    requestAnimationFrame(() => { d.scrollIntoView({ block: 'start' }); d.querySelector('summary').focus({ preventScroll: true }); });
   } else if (tgt.closest('[data-open-terms]')) {
     setTermsOpen(true, { focus: true });
   } else if (tgt.closest('[data-share]')) {
@@ -1101,13 +1105,17 @@ function renderRisk() {
   const st = r.stress;
   $('#stress-line').textContent = !st ? '' : t('results.stressLine', { vol: pct(st.vol, 0), calmVol: pct(st.calm.vol, 0), calm: shown(st.calm.p), wildVol: pct(st.wild.vol, 0), wild: shown(st.wild.p) });
   const hasHistory = r.replay.starts > 0; // none for a loan longer than the real prices allow
-  $('#methods-line').textContent = `${hasHistory ? t('results.otherMethods', { h, g }) : t('results.otherMethodNoHistory', { g })}${n >= g && (!hasHistory || n >= h) ? R.mostCautious : ''} · `;
+  // "real history since 2014 … of 100" opens the real-history section (owner, 29 Oct 2026)
+  const histLink = `<a href="#sec-history" data-open-history>${esc(t('results.historyLink', { h }))}</a>`;
+  $('#methods-line').innerHTML = `${hasHistory ? esc(t('results.otherMethods', { history: '\u0000', g })).replace('\u0000', histLink) : esc(t('results.otherMethodNoHistory', { g }))}${esc(n >= g && (!hasHistory || n >= h) ? R.mostCautious : '')}`;
   // the whole period the results are based on, and when the stored data was last updated
   $('#data-period').textContent = t('ui.dataThrough', { from: date(META.prices[cur].from), to: date(lastHour), updated: date(META.dataUpdated || META.prices[cur].to) });
+  $('#meta-short-text').textContent = t('results.metaShort', { to: date(lastHour) });
   renderSafer(); renderTrend(); renderCompare(); updateAnswerBar();
   if (tm.purpose === 'buy') renderLeverage();
   renderRiskCost();
   $('#history-text').innerHTML = historyText();
+  $('#history-sum').textContent = historySum(r.replay);
   $('#falls-month').textContent = fallsMonthText();
   renderFallHook(r, tm);
   if ($('#sec-falls').open) renderFutures();
@@ -1271,21 +1279,34 @@ function renderLeverage() {
 }
 
 // Real history first, then one sentence that connects it with the answer at the top
+// The start years of the real history (2014 = all start days), each with its share liquidated in full (h) and in
+// part (m); m is the rest of h + m rounded once, as in "Other methods: real history" (rounded on their own, it once
+// said 49 here and 48 there)
+function startYearRows(rp) {
+  return (rp.startYears || []).filter((y) => y.starts > 0).map((y) => {
+    const h = of100(y.liquidatedShare); return { ...y, h, m: of100(y.liquidatedShare + y.partialShare) - h };
+  });
+}
+// The section's title line: its key numbers, readable while folded (owner, 29 Oct 2026)
+function historySum(rp) {
+  const rows = startYearRows(rp); const y20 = rows.find((y) => y.year === 2020);
+  if (!rp.starts || !rows.length) return texts().history.sumNone;
+  return y20 ? t('history.sum', { a: rows[0].h, b: y20.h }) : t('history.sumOnly', { a: rows[0].h });
+}
+// Real history: the loan by first start year in one table, then one sentence that connects it with the answer at the top
 function historyText() {
-  const r = lastRisk; const rp = r.replay;
-  const h = of100(rp.liquidatedShare); const n = shown(pSale(r.main)); const hAny = of100(rp.liquidatedShare + rp.partialShare);
-  // the partly liquidated are the rest of "Other methods: real history" (rounded on their own, it once said 49 here and 48 there)
-  const partial = hAny > h ? t('history.replayPartial', { m: hAny - h }) : '';
+  const r = lastRisk; const rp = r.replay; const n = shown(pSale(r.main));
   if (!rp.starts) return `<p>${esc(texts().history.replayNone)}</p>`;
-  let html = `<p class="big-line">${esc(t('history.replay', { n: h, partial }))}</p>`;
-  const s = rp.since2020; // the same loan on start days since 2020 only: fixed, from real data, no switch
-  if (s && s.starts) {
-    const sh = of100(s.liquidatedShare); const sAny = of100(s.liquidatedShare + s.partialShare);
-    html += `<p id="history-since">${esc(t('history.replaySince', { starts: num(s.starts, 0), n: sh, partial: sAny > sh ? t('history.replayPartial', { m: sAny - sh }) : '' }))}</p>`;
-  }
+  const Y = texts().history.years; const rows = startYearRows(rp); const all = rows[0]; const partly = rows.some((y) => y.m > 0);
+  const label = (y, i) => (i === 0 ? t('history.years.all', { date: date(Date.UTC(y.year, 0, 1) / 1000) }) : date(Date.UTC(y.year, 0, 1) / 1000));
+  let html = `<h4 id="years-h">${esc(Y.title)}</h4><div class="table-wrap" tabindex="0" role="region" aria-labelledby="years-h"><table class="itable years" id="years-table">
+    <thead><tr>${[...Y.head, ...(partly ? [Y.headPartly] : [])].map((x) => `<th scope="col">${esc(x)}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map((y, i) => `<tr${i === 0 ? ' class="all"' : ''}><th scope="row">${esc(label(y, i))}</th><td>${num(y.starts, 0)}</td><td>${y.h}<span class="ybar" style="width:${y.h}px" aria-hidden="true"></span></td>${partly ? `<td>${y.m}</td>` : ''}</tr>`).join('')}</tbody></table></div>
+    <p class="hint">${esc(Y.note)}</p>`;
   if (rp.starts < 4 * 365) html += `<p>${esc(t('history.replayFew', { last: date(rp.lastStart) }))}</p>`; // fewer than 4 years of start days
+  const hAny = all.h + all.m;
   if (hAny !== n) html += `<p>${esc(t(hAny < n ? 'history.bridgeLower' : 'history.bridgeOther', { n }))}</p>`;
-  return html + entryTable(r.entry, { h, m: hAny - h });
+  return html + entryTable(r.entry, { h: all.h, m: all.m });
 }
 
 // Your loan by what BTC did in the 90 days before the start: history, not an input (decision 015, issue #12).
@@ -1359,6 +1380,7 @@ function renderStatic() {
   $('#basis-line').textContent = t('results.basis');
   const cur0 = state.currency;
   if (META.prices[cur0]) $('#data-period').textContent = t('ui.dataThrough', { from: date(META.prices[cur0].from), to: date(META.prices[cur0].to), updated: date(META.dataUpdated || META.prices[cur0].to) });
+  if (META.prices[cur0]) $('#meta-short-text').textContent = t('results.metaShort', { to: date(META.prices[cur0].to) });
   $('#share-btn').textContent = tx.ui.share;
   $('#terms-toggle').textContent = t(termsOpen ? 'form.closeTerms' : 'form.editTerms');
   $('meta[name="description"]').setAttribute('content', tx.meta.description);

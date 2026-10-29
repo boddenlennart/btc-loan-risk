@@ -127,7 +127,7 @@ test('"How it works" shows the same numbers as the check page: the answer, the d
   await expect(page.locator('#num-list')).toContainText(`shown as ${sim}.`);
   await visit(page, '/');
   await expect(page.locator('#headline-text em')).toHaveText(sim);
-  await expect(page.locator('#methods-line')).toContainText(`real history since 2014 ${hist} of 100`);
+  await expect(page.locator('#methods-line')).toContainText(`Real history since 2014 ${hist} of 100`);
 });
 
 test('German: /de/method/ and /de/insights/ start in German; the language menu on a page loads that page in the other language', async ({ page }) => {
@@ -366,6 +366,7 @@ test('"Insights": all 12, each with what was measured and a table or chart; the 
   expect(errors).toEqual([]);
   // from the check: the line under the answer opens the insights at the first group
   await visit(page, '/');
+  await page.locator('#behind > summary').click(); // the fastest fall sits behind "Behind this number" (owner, 29 Oct 2026)
   await page.locator('#fall-hook a').click();
   await expect(page).toHaveURL(/\/insights\/#buffer$/);
   await expect(page.locator('#buffer h2')).toBeInViewport();
