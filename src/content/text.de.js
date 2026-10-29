@@ -49,7 +49,6 @@ export default {
     of100: '{n} von 100',
     months: 'Monate',
     month: 'Monat',
-    month: 'Monat',
     monthN: 'Monat {n}',
     today: 'heute',
     perYear: 'pro Jahr',

@@ -1301,7 +1301,7 @@ function historyText() {
   const label = (y, i) => (i === 0 ? t('history.years.all', { date: date(Date.UTC(y.year, 0, 1) / 1000) }) : date(Date.UTC(y.year, 0, 1) / 1000));
   let html = `<h4 id="years-h">${esc(Y.title)}</h4><div class="table-wrap" tabindex="0" role="region" aria-labelledby="years-h"><table class="itable years" id="years-table">
     <thead><tr>${[...Y.head, ...(partly ? [Y.headPartly] : [])].map((x) => `<th scope="col">${esc(x)}</th>`).join('')}</tr></thead>
-    <tbody>${rows.map((y, i) => `<tr${i === 0 ? ' class="all"' : ''}><th scope="row">${esc(label(y, i))}</th><td>${num(y.starts, 0)}</td><td>${y.h}<span class="ybar" style="width:${y.h}px" aria-hidden="true"></span></td>${partly ? `<td>${y.m}</td>` : ''}</tr>`).join('')}</tbody></table></div>
+    <tbody>${rows.map((y, i) => `<tr${i === 0 ? ' class="all"' : ''}><th scope="row">${esc(label(y, i))}</th><td>${num(y.starts, 0)}</td><td>${y.h}<span class="ytrack" aria-hidden="true"><span class="ybar" style="width:${y.h}%"></span></span></td>${partly ? `<td>${y.m}</td>` : ''}</tr>`).join('')}</tbody></table></div>
     <p class="hint">${esc(Y.note)}</p>`;
   if (rp.starts < 4 * 365) html += `<p>${esc(t('history.replayFew', { last: date(rp.lastStart) }))}</p>`; // fewer than 4 years of start days
   const hAny = all.h + all.m;

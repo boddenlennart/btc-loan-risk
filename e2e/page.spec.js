@@ -1108,12 +1108,16 @@ test('real history (owner, 29 Oct 2026): second section, its numbers in the titl
   await expect(page.locator('#sec-history')).toHaveAttribute('open', '');
   await expect(page.locator('#sec-history > summary')).toBeInViewport();
   const rows = page.locator('#years-table tbody tr');
-  await expect(rows.locator('th')).toHaveText(['1 Jan 2014 (all)', '1 Jan 2018', '1 Jan 2020', '1 Jan 2022']);
+  // every year from 2014 to the last start day's, none skipped (owner, 29 Oct 2026); the example's 12 months reach 2025 at least
+  const labels = await rows.locator('th').allTextContents();
+  expect(labels[0]).toBe('1 Jan 2014 (all)');
+  expect(labels.slice(1)).toEqual(labels.slice(1).map((_, i) => `1 Jan ${2015 + i}`));
+  expect(labels.length).toBeGreaterThanOrEqual(2025 - 2014 + 1);
   const cell = async (r, c) => Number((await rows.nth(r).locator('td').nth(c).textContent()).replace(/,/g, ''));
   expect(await cell(0, 1)).toBe(Number(sum[1])); // the title line = the table
-  expect(await cell(2, 1)).toBe(Number(sum[2]));
+  expect(await cell(2020 - 2014, 1)).toBe(Number(sum[2]));
   expect(await cell(0, 0)).toBe(Number((await page.locator('#entry-table tfoot td').first().textContent()).replace(/,/g, ''))); // 2014 = all start days
-  for (let r = 1; r < 4; r++) expect(await cell(r, 0)).toBeLessThan(await cell(r - 1, 0)); // later years, fewer start days
+  for (let r = 1; r < labels.length; r++) expect(await cell(r, 0)).toBeLessThan(await cell(r - 1, 0)); // later years, fewer start days
   await expect(page.locator('#history-text')).not.toContainText('Started on any day since 2014');
   await expect(page.locator('#history-text')).toContainText('History, not a forecast.');
 });

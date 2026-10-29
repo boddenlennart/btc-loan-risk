@@ -277,7 +277,9 @@ details.behind > summary .sum { display: block; font-weight: 400; font-size: 13p
 /* a section's key numbers under its title, readable while folded */
 details.section > summary .sum { display: block; margin: 2px 0 0 1.2em; font-size: 14px; color: var(--text); }
 table.years tr.all th, table.years tr.all td { font-weight: 600; }
-.ybar { display: inline-block; height: 8px; margin-left: 6px; border-radius: 4px; background: var(--critical); vertical-align: middle; }
+/* a fixed track, so the numbers stay in one column whatever the bar's length (every start year, owner 29 Oct 2026) */
+.ytrack { display: inline-block; width: 60px; margin-left: 6px; vertical-align: middle; text-align: left; }
+.ybar { display: block; height: 8px; border-radius: 4px; background: var(--critical); }
 /* the lender's rules: their own line under the title, readable while folded (issue #11) */
 details.more > summary .rules-sum { display: block; margin-top: 4px; font-size: 14px; line-height: 1.4; color: var(--text); }
 details.more > summary .rules-sum .rule { display: block; }
