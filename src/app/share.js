@@ -2,6 +2,8 @@
 // never send to a server. The BTC price is left out, so whoever opens the link gets the
 // current price. A comparison (2-3 offers, or current loan and refinancing) is stored too.
 
+import { withAddPlan } from './terms.js';
+
 const KEYS = ['mode', 'currency', 'loanAmount', 'ltvInput', 'initialLtv', 'collateralBtc', 'liquidationLtv', 'durationMonths', 'rateType',
   'rateAnnual', 'ratePath', 'purpose', 'repayWith', 'repayment', 'compounding', 'originationFee', 'marginCallLtv', 'marginCallConsequence',
   'curePeriodHours', 'liquidationSale', 'cureTargetLtv', 'liquidationFee', 'liquidationFeeBasis', 'reserveAmount',
@@ -30,8 +32,8 @@ export function decodeLink(hash) {
     const c = o.compare;
     const ok = c && ['offers', 'refi'].includes(c.kind) && Array.isArray(c.offers) && c.offers.length >= 2 && c.offers.length <= 3
       && Number.isInteger(c.active) && c.active >= 0 && c.active < c.offers.length;
-    const compare = ok ? { kind: c.kind, active: c.active, names: (c.names || []).map((n) => String(n).slice(0, 40)), offers: c.offers.map(pickForm) } : null;
-    return { form, compare, incomplete: !!c && !ok };
+    const compare = ok ? { kind: c.kind, active: c.active, names: (c.names || []).map((n) => String(n).slice(0, 40)), offers: c.offers.map((x) => withAddPlan(pickForm(x))) } : null;
+    return { form: withAddPlan(form), compare, incomplete: !!c && !ok };
   } catch {
     return null;
   }

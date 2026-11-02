@@ -17,7 +17,7 @@ import { lenderRules, partialSaleBtc } from '../engine/lender.js';
 import { getSpotPrice } from '../live/price.js';
 import { setData as jobSetData, run as jobRun } from './riskjob.js';
 import { encodeState, decodeLink } from './share.js';
-import { toTerms, numOr, today, exampleKey, switchCosts, withSwitching, addPlanKind } from './terms.js';
+import { toTerms, numOr, today, exampleKey, switchCosts, withSwitching, addPlanKind, withAddPlan } from './terms.js';
 import { initShell, renderShell, setTheme } from './shell.js';
 import { dataAge } from '../data/candles.js';
 import { gunzipSync, strFromU8 } from 'fflate';
@@ -127,7 +127,8 @@ function loadState() {
   const okCompare = c && typeof c === 'object' && ['offers', 'refi'].includes(c.kind) && Array.isArray(c.offers) && c.offers.length >= 2 && c.offers.length <= 3
     && c.offers.every((o) => o && typeof o === 'object') && Number.isInteger(c.active) && c.active >= 0 && c.active < c.offers.length;
   if (okCompare) compare = { kind: c.kind, active: c.active, names: Array.isArray(c.names) ? c.names.map((n) => String(n ?? '').slice(0, 40)) : [], offers: c.offers.map((o) => ({ ...EXAMPLE_FORM, ...o })) };
-  const s = { ...EXAMPLE_FORM, ...(saved && saved.state), ...(fromLink || {}), ...(compare ? compare.offers[compare.active] : {}) };
+  if (compare && !linkData) compare.offers = compare.offers.map((o, i) => ({ ...EXAMPLE_FORM, ...withAddPlan(c.offers[i]) }));
+  const s = { ...EXAMPLE_FORM, ...withAddPlan(saved && saved.state), ...(fromLink || {}), ...(compare ? compare.offers[compare.active] : {}) };
   if (fromLink) s.priceManual = false;
   // the model's own settings are fixed (10,000 futures, 30-day pieces): every explanation and the test against
   // history rest on them, so inputs saved by an older version cannot change them
@@ -328,8 +329,10 @@ function rulesSummary(terms) {
   const margin = !r.mLtv ? 'noMargin' : r.behaviour === 'autoPartial' ? 'auto' : !r.afterCure ? 'warning' : r.cureSale === 'partial' ? 'curePartial' : 'cure';
   const fee = r.feeValue > 0 ? (r.feeBasis === 'collateralSold' ? 'feeSold' : 'feeDebt') : 'noFee';
   // one rule per line, easy to scan on a phone; the separators stay in the text for copying and screen readers
-  el.innerHTML = [...[margin, r.liquidationSale === 'partial' ? 'partial' : 'all', fee].map((k) => t(`form.fields.rulesSum.${k}`, vars)), planSummary(terms)]
-    .map((x) => `<span class="rule">${esc(x)}</span>`).join('<span class="sep"> · </span>');
+  // two groups, who decides what: the lender's rules, then your plan (owner, 2 Nov 2026)
+  const group = (who, items) => `<span class="who">${esc(who)}<span class="sep">: </span></span>${items.map((x) => `<span class="rule">${esc(x)}</span>`).join('<span class="sep"> · </span>')}`;
+  el.innerHTML = group(S.lender, [margin, r.liquidationSale === 'partial' ? 'partial' : 'all', fee].map((k) => t(`form.fields.rulesSum.${k}`, vars)))
+    + '<span class="sep"> · </span>' + group(S.plan, [planSummary(terms)]);
 }
 
 // "Will you add BTC if the price falls?" (issue #22, decision 023): one question, "No" unless the visitor picks a
@@ -345,10 +348,27 @@ function planFields(mc) {
     fields = numField('topUpAt', f.topUpAt.label, '%') + numField('topUpTo', f.topUpTo.label, '%') + numField('topUpBudget', f.topUpBudget.label, cur)
       + seg('topUpDelay', ['0', '1', '2'].map((v) => [v, D[v]]), D.label) + `<p class="hint">${esc(D.hint)}</p>`;
   }
-  return `<fieldset class="sub-group plan" id="add-plan">${seg('addPlan', ways, A.label, { value: kind, cls: 'stack' })}
+  return `<fieldset class="sub-group plan" id="add-plan"><legend><span class="label">${esc(A.legend)}</span></legend>${seg('addPlan', ways, A.label, { value: kind, cls: 'stack' })}
+    <p class="hint" id="plan-lender" hidden></p>
     ${fields ? `<div class="plan-fields">${fields}<p class="hint" id="plan-empty" hidden>${esc(A.empty)}</p></div>` : ''}</fieldset>`;
 }
 const hasPlan = (tm) => tm.reserveAmount > 0 || !!tm.plan;
+// The lender's deadline and your plan side by side: with "Top up in time, otherwise …", one line under the question
+// says what happens when the time ends, and warns when the chosen speed cannot meet it (from the margin call on)
+function planLenderHint(tm) {
+  const el = $('#plan-lender'); if (!el) return;
+  const r = lenderRules(tm);
+  if (!r.afterCure) { el.hidden = true; return; }
+  const A = F().addPlan; const S = F().rulesSum; const p = tm.plan;
+  const hours = tm.curePeriodHours === 1 ? S.hour : t('form.fields.rulesSum.hours', { n: tm.curePeriodHours });
+  const vars = { mc: pct(tm.marginCallLtv, 0), hours, what: r.cureSale === 'partial' ? A.whatPartial : A.whatAll };
+  let text = t(hasPlan(tm) ? 'form.fields.addPlan.deadlinePlan' : 'form.fields.addPlan.deadlineNone', vars);
+  // the plan's top-up comes at the end of its 1 or 2 days; the lender's sale at the end of its hours comes first
+  if (p && p.kind === 'ltv' && p.delayDays > 0 && p.delayDays * 24 >= tm.curePeriodHours && p.at >= tm.marginCallLtv) {
+    text += ` ${t('form.fields.addPlan.deadlineLate', { ...vars, speed: F().topUpDelay[p.delayDays] })}`;
+  }
+  el.textContent = text; el.hidden = false;
+}
 // the plan in words: one rule in the summary line (pre = 'form.fields.rulesSum.add'), or what the answer assumes
 // (pre = 'results.assume'); a way picked but not filled in counts as no plan
 function planWords(tm, pre) {
@@ -394,9 +414,13 @@ function renderPlan(r, tm) {
     if (w.id === 'ltv') { const q = w.own ? p : { at: w.at, to: tm.initialLtv, delayDays: 0 }; s = t('results.ways.ltv', { at: pct(q.at, 0), to: pct(q.to, 0), speed: R.speed[q.delayDays] }); }
     return w.own ? t('results.ways.yours', { way: s }) : s;
   };
-  $('#ways-sum').textContent = t('results.waysTitle', { total });
+  $('#ways-title').textContent = t('results.waysTitle', { total });
+  // readable while folded: your plan, without it, and the other ways (lowest to highest), as rounded in the table
+  const others = r.ways.filter((w) => !w.own && w.id !== 'none').map(asHeadline);
+  const lo = Math.min(...others); const hi = Math.max(...others);
+  $('#ways-sum').textContent = t('results.waysSum', { own: asHeadline(own), none: asHeadline(none), others: lo === hi ? lo : t('results.waysRange', { a: lo, b: hi }) });
   $('#ways-body').innerHTML = `<p>${esc(t('results.waysLead', { total }))}</p>
-    <div class="table-wrap" tabindex="0" role="region" aria-labelledby="ways-sum"><table class="itable ways-table" id="ways-table">
+    <div class="table-wrap" tabindex="0" role="region" aria-labelledby="ways-title"><table class="itable ways-table" id="ways-table">
     <thead><tr>${R.waysHead.map((x) => `<th scope="col">${esc(x)}</th>`).join('')}</tr></thead>
     <tbody>${r.ways.map((w) => { const n = asHeadline(w); return `<tr${w.own ? ' class="mine"' : ''}><th scope="row">${esc(label(w))}</th><td>${n}<span class="ytrack" aria-hidden="true"><span class="ybar" style="width:${n}%"></span></span></td><td>${esc(money0(w.added, cur))}</td></tr>`; }).join('')}</tbody></table></div>
     <p class="hint">${esc(R.waysNote)}</p>`;
@@ -664,6 +688,7 @@ function update() {
   }
   renderRefiNote(terms);
   const pe = $('#plan-empty'); if (pe) pe.hidden = hasPlan(terms);
+  planLenderHint(terms);
   if (!lastRisk) $('#headline-text').innerHTML = `<em class="hero-n">…</em> <span class="of">${esc(texts().results.heroOf)}</span> <span class="sentence">${esc(texts().ui.computingShort)}</span>`;
   renderCompare(); // also while the selected offer has an error, so the table and names stay current
   if (compare) $('#ans-label').textContent = offerName(compare.active);

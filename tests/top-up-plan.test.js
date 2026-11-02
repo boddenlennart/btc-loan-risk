@@ -129,10 +129,17 @@ describe('the form: one question, default "No"; nothing preset', () => {
     const { terms } = toTerms({ ...ex, addPlan: 'monthly', reserveAmount: 2000, monthlyAmount: 300, monthlyMonths: 12 });
     expect(terms.reserveAmount).toBe(0);
   });
-  it('a link shared before this change, with an amount kept ready, opens as "once at the margin call"', () => {
-    const { terms } = toTerms({ ...ex, addPlan: undefined, reserveAmount: 2000 });
-    expect(terms.addPlan).toBe('once');
-    expect(terms.reserveAmount).toBe(2000);
+  it('"No" is the stored default, so its button is the one pressed', () => {
+    expect(EXAMPLE_FORM.addPlan).toBe('none');
+    expect(toTerms({ ...ex, addPlan: 'something old' }).terms.addPlan).toBe('none'); // an unknown answer reads as "No"
+  });
+  it('a link shared before this change, with an amount kept ready, opens as "once at the margin call"; without one, as "No"', async () => {
+    const { encodeState, decodeLink } = await import('../src/app/share.js');
+    const { addPlan, ...old } = EXAMPLE_FORM; // no answer to the question in links made before it
+    const kept = decodeLink(encodeState({ ...old, reserveAmount: 2000 })).form;
+    expect(toTerms({ ...EXAMPLE_FORM, ...kept, btcPrice: 60000 }).terms).toMatchObject({ addPlan: 'once', reserveAmount: 2000 });
+    const none = decodeLink(encodeState({ ...old, reserveAmount: 0 })).form;
+    expect(toTerms({ ...EXAMPLE_FORM, ...none, btcPrice: 60000 }).terms.addPlan).toBe('none');
   });
   it('checks: months within the loan, the top-up level between the target and the liquidation LTV', () => {
     const codes = (form) => validateTerms(toTerms({ ...ex, ...form }).terms).errors.map((e) => e.code);

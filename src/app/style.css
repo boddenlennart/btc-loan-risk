@@ -293,12 +293,16 @@ table.years tr.all th, table.years tr.all td { font-weight: 600; }
 details.ways { border: 1px solid var(--border); border-radius: 10px; padding: 0 12px; margin: 12px 0 0; }
 details.ways > summary { cursor: pointer; padding: 10px 0; min-height: 44px; font-weight: 600; color: var(--accent-ink); }
 details.ways p { font-size: 14px; }
+details.ways > summary .sum { display: block; font-weight: 400; font-size: 13px; color: var(--text-2); }
 table.ways-table td { white-space: nowrap; }
 table.ways-table .ytrack { width: 32px; } /* short bars: the long labels keep two lines on a phone */
 table.ways-table tr.mine th, table.ways-table tr.mine td { font-weight: 600; background: var(--surface-2); }
 /* the lender's rules: their own line under the title, readable while folded (issue #11) */
 details.more > summary .rules-sum { display: block; margin-top: 4px; font-size: 14px; line-height: 1.4; color: var(--text); }
 details.more > summary .rules-sum .rule { display: block; }
+/* who decides what: "Your lender" and "Your plan", each over its own lines */
+details.more > summary .rules-sum .who { display: block; margin-top: 6px; font: 600 12px/1.3 var(--sans); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+details.more > summary .rules-sum .who:first-child { margin-top: 0; }
 details.more > summary .rules-sum .sep { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .sub-group { border: 1px solid var(--border); border-radius: 6px; padding: 4px 12px; margin: 12px 0; }
 .sub-group legend { display: flex; align-items: center; padding: 0 4px; }

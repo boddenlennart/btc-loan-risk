@@ -1,9 +1,9 @@
-# 023 · Adding BTC when the price falls: the visitor's own plan, nothing preset
+# 023 · Topping up when the price falls: the visitor's own plan, nothing preset
 
 Date: 2026-11-02 · Status: in force
 
 ## Decision
-In "When BTC falls: your lender and you", one question: "Will you add BTC if the price falls?" The answer is "No, I add nothing" unless the visitor picks a way; then the page counts exactly as before. Three ways, each with only its own fields, all empty until filled in:
+In "If the price falls: your lender's rules and your plan", one question: "Will you top up if the price falls?" (wording: decision 024). The answer is "No, I don't top up" unless the visitor picks a way; then the page counts exactly as before. Three ways, each with only its own fields, all empty until filled in:
 - **Once, at the margin call:** an amount, added as BTC at the margin-call price (the former reserve; offered only with a margin call).
 - **Every month:** an amount and a number of months (at most the loan's); the first now, then when each loan month begins, as BTC at that moment's price.
 - **Whenever the LTV gets too high:** an LTV at which to add, an LTV to go back to, the money available in total, and how fast: at once (at the price where the LTV reaches the level), within 1 day or within 2 days (at the price then, only if the LTV is still above the target). The simulation steps in days, real history in hours.

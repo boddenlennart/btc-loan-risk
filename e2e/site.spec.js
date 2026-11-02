@@ -91,8 +91,8 @@ test('"How it works": three layers, every part, the charts and tables of the exa
 test('"How it works", the cost of the risk: one future worked through, the average, the scaling, the textbook cross-check, the same number as the check', async ({ page }) => {
   const errors = await visit(page, '/method/');
   await expect(page.locator('#risk-one')).toContainText(/the example loan is liquidated on day \d+ at €[\d,]+\. 0\.\d{4} BTC repaid the loan, 0\.\d{4} BTC was the liquidation fee\. .* Liquidation fee: 0\.\d{4} × €[\d,]+ = €[\d,]+\./);
-  await expect(page.locator('#risk-one')).toContainText(/In this future: €[\d,]+\./);
-  await expect(page.locator('#risk-all')).toContainText(/In [\d,]+ futures nothing is sold, so their cost is €0\. In the other [\d,]+, it is €[\d,]+ on average/);
+  await expect(page.locator('#risk-one')).toContainText(/On this path: €[\d,]+\./);
+  await expect(page.locator('#risk-all')).toContainText(/In [\d,]+ price paths nothing is sold, so their cost is €0\. In the other [\d,]+, it is €[\d,]+ on average/);
   // the average written out: the arithmetic on the page adds up
   const nums = (s) => [...s.matchAll(/[\d][\d,.]*/g)].map((m) => Number(m[0].replace(/,/g, '')));
   const f1 = await page.locator('#risk-formula').textContent();
@@ -459,7 +459,7 @@ test('whole-site review fixes: fixed model settings, no repeats, the volatility 
   // S1: the model's own settings are not on the page and cannot come in through a shared link
   await page.locator('#own-terms-link').click();
   await page.locator('details.more[data-remember="expert"] > summary').click();
-  await expect(page.locator('#form')).not.toContainText('Simulated futures');
+  await expect(page.locator('#form')).not.toContainText('Simulated price paths');
   await expect(page.locator('[data-k="simPaths"], [data-k="bootstrapBlockDays"]')).toHaveCount(0);
   // S2: "you get back" once (the answer), the falls section says what it adds
   await page.locator('#sec-falls > summary').click();

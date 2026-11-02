@@ -37,9 +37,12 @@ export function withSwitching(terms, costs) {
  *  A way counts once all its fields are filled in; a link shared before it existed, with an amount kept ready,
  *  opens as "once at the margin call". Only the chosen way's fields count. */
 export function addPlanKind(s) {
-  const kind = s.addPlan || (numOr(s.reserveAmount, 0) > 0 ? 'once' : 'none');
+  const kind = ['none', 'once', 'monthly', 'ltv'].includes(s.addPlan) ? s.addPlan : 'none';
   return kind === 'once' && pctOrNull(s.marginCallLtv) === null ? 'none' : kind; // "once" needs a margin call
 }
+/** Inputs saved or shared before the question existed: an amount kept ready means "once at the margin call".
+ *  Everything else without an answer is "No" (the example's default). */
+export const withAddPlan = (form) => (form && form.addPlan === undefined && numOr(form.reserveAmount, 0) > 0 ? { ...form, addPlan: 'once' } : form);
 function addPlanOf(s) {
   const kind = addPlanKind(s);
   const filled = (...v) => v.every((x) => !Number.isNaN(numOr(x)));
