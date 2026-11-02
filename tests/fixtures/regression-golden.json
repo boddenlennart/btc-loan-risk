@@ -228,11 +228,6 @@
       "p": 0.362
      },
      {
-      "id": "reserve",
-      "value": 3000,
-      "p": 0.3635
-     },
-     {
       "id": "lowerLtv",
       "value": 0.45,
       "p": 0.3725
@@ -579,11 +574,6 @@
       "id": "higherLiqWarning",
       "value": 0.9,
       "p": 0.4155
-     },
-     {
-      "id": "reserve",
-      "value": 3000,
-      "p": 0.4755
      },
      {
       "id": "lowerLtv",
@@ -997,11 +987,6 @@
       "p": 0.0955
      },
      {
-      "id": "reserve",
-      "value": 3000,
-      "p": 0.1045
-     },
-     {
       "id": "higherLiq",
       "value": 0.9,
       "p": 0.1045
@@ -1348,11 +1333,6 @@
       "id": "higherLiq",
       "value": 0.9,
       "p": 0.3645
-     },
-     {
-      "id": "reserve",
-      "value": 3000,
-      "p": 0.3695
      },
      {
       "id": "lowerLtv",
@@ -1708,11 +1688,6 @@
       "p": 0.468
      },
      {
-      "id": "reserve",
-      "value": 3000,
-      "p": 0.471
-     },
-     {
       "id": "lowerLtv",
       "value": 0.45,
       "p": 0.4975
@@ -2064,11 +2039,6 @@
       "id": "shorter",
       "value": 6,
       "p": 0.369
-     },
-     {
-      "id": "reserve",
-      "value": 3000,
-      "p": 0.4265
      },
      {
       "id": "lowerLtv",
@@ -2655,9 +2625,9 @@
      "q95": 159119.266298852
     },
     "keptAfterSale": {
-     "q10": 0.121753653,
-     "q50": 0.231255234,
-     "q90": 0.29564547
+     "q10": 0.117807988,
+     "q50": 0.202942261,
+     "q90": 0.259521404
     },
     "leverage": null,
     "riskCost": {
@@ -2803,11 +2773,6 @@
       "id": "higherLiq",
       "value": 0.9,
       "p": 0.392
-     },
-     {
-      "id": "reserve",
-      "value": 3000,
-      "p": 0.4095
      }
     ],
     "leverBase": 0.4095,
@@ -3144,11 +3109,6 @@
       "id": "lowerLtv",
       "value": 0.64,
       "p": 0.8415
-     },
-     {
-      "id": "reserve",
-      "value": 3000,
-      "p": 0.859
      },
      {
       "id": "lowerLtv",
@@ -3521,11 +3481,6 @@
       "id": "higherLiq",
       "value": 0.9,
       "p": 0.209
-     },
-     {
-      "id": "reserve",
-      "value": 3000,
-      "p": 0.214
      }
     ],
     "leverBase": 0.2785,
@@ -3912,11 +3867,6 @@
       "id": "higherLiq",
       "value": 0.9,
       "p": 0.23
-     },
-     {
-      "id": "reserve",
-      "value": 3000,
-      "p": 0.2345
      }
     ],
     "leverBase": 0.285,
@@ -4243,11 +4193,6 @@
       "id": "shorter",
       "value": 3,
       "p": 0.143
-     },
-     {
-      "id": "reserve",
-      "value": 3000,
-      "p": 0.194
      },
      {
       "id": "higherLiq",

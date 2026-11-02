@@ -26,3 +26,4 @@ Why the project is the way it is. Read the record before changing what it decide
 | 020 | [Sale price in a fast fall: the lowest price of the hour the level is reached](020-sale-price-in-a-fast-fall.md) | 2026-10-27 |
 | 021 | [Calmer and wilder swings: two measured anchors, the answer unchanged](021-volatility-stress-measured-anchors.md) | 2026-10-27 |
 | 022 | [The example's margin call is only a warning](022-example-margin-call-warning-only.md) | 2026-10-27 |
+| 023 | [Adding BTC when the price falls: the visitor's own plan, nothing preset](023-adding-btc-the-visitors-own-plan.md) | 2026-11-02 |

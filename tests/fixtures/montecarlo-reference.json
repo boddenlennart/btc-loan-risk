@@ -51,7 +51,8 @@
       null,
       113
      ],
-     "riskCost": 1257.3200446936794
+     "riskCost": 1257.3200446936794,
+     "addedMean": 0.0
     },
     "warning only": {
      "terms": {
@@ -92,7 +93,8 @@
       null,
       114
      ],
-     "riskCost": 1097.6634287132117
+     "riskCost": 1097.6634287132117,
+     "addedMean": 0.0
     },
     "no margin call": {
      "terms": {
@@ -133,7 +135,8 @@
       null,
       114
      ],
-     "riskCost": 1097.6634287132117
+     "riskCost": 1097.6634287132117,
+     "addedMean": 0.0
     },
     "partial after the deadline": {
      "terms": {
@@ -174,7 +177,8 @@
       null,
       null
      ],
-     "riskCost": 1106.5104963112597
+     "riskCost": 1106.5104963112597,
+     "addedMean": 0.0
     },
     "partial at once": {
      "terms": {
@@ -216,7 +220,8 @@
       null,
       null
      ],
-     "riskCost": 1212.3445605034658
+     "riskCost": 1212.3445605034658,
+     "addedMean": 0.0
     },
     "partial at liquidation, fee on BTC sold": {
      "terms": {
@@ -257,7 +262,8 @@
       null,
       113
      ],
-     "riskCost": 1072.0792393036256
+     "riskCost": 1072.0792393036256,
+     "addedMean": 0.0
     },
     "reserve, 72 h": {
      "terms": {
@@ -298,7 +304,8 @@
       null,
       140
      ],
-     "riskCost": 946.9318660561173
+     "riskCost": 946.9318660561173,
+     "addedMean": 1108.0
     },
     "interest added, compounding, 24 months": {
      "terms": {
@@ -339,7 +346,8 @@
       null,
       113
      ],
-     "riskCost": 2716.6561511131313
+     "riskCost": 2716.6561511131313,
+     "addedMean": 0.0
     },
     "equal payments, 36 months, act/365": {
      "terms": {
@@ -380,7 +388,8 @@
       null,
       130
      ],
-     "riskCost": 1721.4337977044947
+     "riskCost": 1721.4337977044947,
+     "addedMean": 0.0
     },
     "high LTV 65%, 6 months, 24 h": {
      "terms": {
@@ -421,7 +430,8 @@
       null,
       107
      ],
-     "riskCost": 1238.4221383290658
+     "riskCost": 1238.4221383290658,
+     "addedMean": 0.0
     },
     "low LTV 25%, 12 months": {
      "terms": {
@@ -462,7 +472,8 @@
       null,
       null
      ],
-     "riskCost": 150.5139044086548
+     "riskCost": 150.5139044086548,
+     "addedMean": 0.0
     },
     "variable rate": {
      "terms": {
@@ -512,7 +523,153 @@
       null,
       113
      ],
-     "riskCost": 1255.6759396617267
+     "riskCost": 1255.6759396617267,
+     "addedMean": 0.0
+    },
+    "adds 300 every month, warning only": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "warningOnly",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15",
+      "plan": {
+       "kind": "monthly",
+       "amount": 300.0,
+       "months": 12
+      }
+     },
+     "s0": 72812.64,
+     "liquidated": 720,
+     "partial": 0,
+     "marginCall": 1017,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      null,
+      null,
+      114
+     ],
+     "riskCost": 955.9873140471847,
+     "addedMean": 2917.2
+    },
+    "adds at 65% back to 50%, at once, up to 5,000": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "warningOnly",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15",
+      "plan": {
+       "kind": "ltv",
+       "at": 0.65,
+       "to": 0.5,
+       "budget": 5000.0,
+       "delayDays": 0
+      }
+     },
+     "s0": 72812.64,
+     "liquidated": 506,
+     "partial": 0,
+     "marginCall": 684,
+     "firstPathsLiquidationDay": [
+      null,
+      179,
+      null,
+      null,
+      243
+     ],
+     "riskCost": 664.6552302717724,
+     "addedMean": 3232.26078078731
+    },
+    "adds at 65% back to 50%, within 2 days, up to 20,000, 48 h": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15",
+      "plan": {
+       "kind": "ltv",
+       "at": 0.65,
+       "to": 0.5,
+       "budget": 20000.0,
+       "delayDays": 2
+      }
+     },
+     "s0": 72812.64,
+     "liquidated": 265,
+     "partial": 0,
+     "marginCall": 719,
+     "firstPathsLiquidationDay": [
+      null,
+      178,
+      null,
+      null,
+      113
+     ],
+     "riskCost": 522.6938388311428,
+     "addedMean": 4971.590192686038
     }
    }
   },
@@ -562,7 +719,8 @@
       null,
       111
      ],
-     "riskCost": 1192.6735190346353
+     "riskCost": 1192.6735190346353,
+     "addedMean": 0.0
     },
     "warning only": {
      "terms": {
@@ -603,7 +761,8 @@
       null,
       111
      ],
-     "riskCost": 1048.006107325576
+     "riskCost": 1048.006107325576,
+     "addedMean": 0.0
     },
     "no margin call": {
      "terms": {
@@ -644,7 +803,8 @@
       null,
       111
      ],
-     "riskCost": 1048.006107325576
+     "riskCost": 1048.006107325576,
+     "addedMean": 0.0
     },
     "partial after the deadline": {
      "terms": {
@@ -685,7 +845,8 @@
       null,
       111
      ],
-     "riskCost": 1030.8872741079247
+     "riskCost": 1030.8872741079247,
+     "addedMean": 0.0
     },
     "partial at once": {
      "terms": {
@@ -727,7 +888,8 @@
       null,
       null
      ],
-     "riskCost": 1166.8164347317668
+     "riskCost": 1166.8164347317668,
+     "addedMean": 0.0
     },
     "partial at liquidation, fee on BTC sold": {
      "terms": {
@@ -768,7 +930,8 @@
       null,
       111
      ],
-     "riskCost": 1022.6402440270988
+     "riskCost": 1022.6402440270988,
+     "addedMean": 0.0
     },
     "reserve, 72 h": {
      "terms": {
@@ -809,7 +972,8 @@
       null,
       114
      ],
-     "riskCost": 877.5091800447391
+     "riskCost": 877.5091800447391,
+     "addedMean": 1085.0
     },
     "interest added, compounding, 24 months": {
      "terms": {
@@ -850,7 +1014,8 @@
       null,
       109
      ],
-     "riskCost": 2653.5179174097307
+     "riskCost": 2653.5179174097307,
+     "addedMean": 0.0
     },
     "equal payments, 36 months, act/365": {
      "terms": {
@@ -891,7 +1056,8 @@
       null,
       113
      ],
-     "riskCost": 1591.3606818512535
+     "riskCost": 1591.3606818512535,
+     "addedMean": 0.0
     },
     "high LTV 65%, 6 months, 24 h": {
      "terms": {
@@ -932,7 +1098,8 @@
       null,
       88
      ],
-     "riskCost": 1226.617273762632
+     "riskCost": 1226.617273762632,
+     "addedMean": 0.0
     },
     "low LTV 25%, 12 months": {
      "terms": {
@@ -973,7 +1140,8 @@
       null,
       307
      ],
-     "riskCost": 121.67449663542021
+     "riskCost": 121.67449663542021,
+     "addedMean": 0.0
     },
     "variable rate": {
      "terms": {
@@ -1023,7 +1191,153 @@
       null,
       111
      ],
-     "riskCost": 1201.1519427183857
+     "riskCost": 1201.1519427183857,
+     "addedMean": 0.0
+    },
+    "adds 300 every month, warning only": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "warningOnly",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15",
+      "plan": {
+       "kind": "monthly",
+       "amount": 300.0,
+       "months": 12
+      }
+     },
+     "s0": 81574.32,
+     "liquidated": 720,
+     "partial": 0,
+     "marginCall": 1031,
+     "firstPathsLiquidationDay": [
+      128,
+      178,
+      null,
+      null,
+      113
+     ],
+     "riskCost": 863.3572626841365,
+     "addedMean": 2917.05
+    },
+    "adds at 65% back to 50%, at once, up to 5,000": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "warningOnly",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15",
+      "plan": {
+       "kind": "ltv",
+       "at": 0.65,
+       "to": 0.5,
+       "budget": 5000.0,
+       "delayDays": 0
+      }
+     },
+     "s0": 81574.32,
+     "liquidated": 506,
+     "partial": 0,
+     "marginCall": 690,
+     "firstPathsLiquidationDay": [
+      null,
+      179,
+      null,
+      null,
+      144
+     ],
+     "riskCost": 641.1754190907194,
+     "addedMean": 3199.578103479619
+    },
+    "adds at 65% back to 50%, within 2 days, up to 20,000, 48 h": {
+     "terms": {
+      "loanAmount": 10000.0,
+      "initialLtv": 0.5,
+      "marginCallLtv": 0.7,
+      "liquidationLtv": 0.8,
+      "durationMonths": 12,
+      "rate": {
+       "type": "fixed",
+       "annual": 0.1
+      },
+      "repayment": "interestOnly",
+      "compounding": "none",
+      "dayCount": "30/360",
+      "originationFee": {
+       "type": "percent",
+       "value": 0.01
+      },
+      "liquidationFee": {
+       "value": 0.05,
+       "basis": "debt"
+      },
+      "marginCallConsequence": "liquidateAfterCure",
+      "curePeriodHours": 48,
+      "liquidationSale": "all",
+      "reserveAmount": 0,
+      "startDate": "2026-01-15",
+      "plan": {
+       "kind": "ltv",
+       "at": 0.65,
+       "to": 0.5,
+       "budget": 20000.0,
+       "delayDays": 2
+      }
+     },
+     "s0": 81574.32,
+     "liquidated": 244,
+     "partial": 0,
+     "marginCall": 772,
+     "firstPathsLiquidationDay": [
+      null,
+      179,
+      null,
+      null,
+      null
+     ],
+     "riskCost": 423.87484806145244,
+     "addedMean": 4949.200067778982
     }
    }
   }

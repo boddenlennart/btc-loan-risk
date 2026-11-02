@@ -6,7 +6,7 @@
 // What the lender does at a margin call or liquidation (including partial sales and
 // a reserve top-up) is defined once in lender.js and shared with the simulations.
 import { collateralBtc, debtByDay, loanDays } from './loan.js';
-import { lenderRules, createLoanState, stepLoan, watchPrice } from './lender.js';
+import { lenderRules, createLoanState, startPlan, stepLoan, watchPrice, planDue } from './lender.js';
 
 const isoDay = (t) => new Date(t * 1000).toISOString().slice(0, 10);
 
@@ -57,13 +57,14 @@ function run(hourly, terms, i0, skipDays = true, debtCache = null) {
   const rules = lenderRules(t);
   const cure = (t.curePeriodHours ?? 0) * 3600;
   const s = createLoanState(c0);
+  startPlan(s, rules, startPrice);
 
   let minLow = startPrice; let minLowTime = t0;
   let reserveNeeded = 0;
   const fast = skipDays && t0 % 86400 === 0;
   const blocks = fast ? blocksFor(hourly) : null;
   for (let i = i0 + 1; i < hourly.time.length && hourly.time[i] < tEnd; i++) {
-    if (fast && hourly.time[i] % 86400 === 0 && s.deadline === null) {
+    if (fast && hourly.time[i] % 86400 === 0 && s.deadline === null && !planDue(s, rules, Math.floor((hourly.time[i] - t0) / 86400))) {
       const dt = debt[Math.floor((hourly.time[i] - t0) / 86400)];
       const dayLow = blocks.low[i];
       if (s.liquidation || dayLow > watchPrice(s, rules, dt)) {
@@ -83,10 +84,10 @@ function run(hourly, terms, i0, skipDays = true, debtCache = null) {
     if (low < minLow) { minLow = low; minLowTime = ti; }
     const need = dt / (lLtv * low) / c0 - 1;
     if (need > reserveNeeded) reserveNeeded = need;
-    stepLoan(s, rules, { time: ti, low, close: hourly.close[i], debt: dt, cure });
+    stepLoan(s, rules, { time: ti, low, close: hourly.close[i], open: hourly.open[i], dayIndex: Math.floor((ti - t0) / 86400), day: 86400, debt: dt, cure });
   }
   return {
-    startTime: t0, startPrice, collateralBtc: c0, marginCall: s.firstMargin, liquidation: s.liquidation, topUp: s.topUp,
+    startTime: t0, startPrice, collateralBtc: c0, marginCall: s.firstMargin, liquidation: s.liquidation, topUp: s.topUp, added: s.added,
     partialSales: s.partialSales, collateralAtEnd: s.liquidation ? s.liquidation.btcReturned : s.c, debtScaleAtEnd: s.scale,
     maxDrawdown: 1 - minLow / startPrice, minLowTime, reserveNeeded: Math.max(0, reserveNeeded), endTime: tEnd, debtAtEnd: debt[debt.length - 1],
   };

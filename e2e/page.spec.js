@@ -361,9 +361,9 @@ test('"Make it safer" shows exactly the headline number for your own terms, and 
   await expect(page.locator('#safer .lv:not(.base)').filter({ hasText: best[1] }).locator('b')).toHaveText(best[2]);
   const all = (await page.locator('#safer .lv:not(.base) b').allTextContents()).map(Number);
   expect(all).toEqual([...all].sort((a, b) => a - b)); // the list still goes from lowest to highest
-  // fairness: the two other methods are shown with the answer; the example's margin call is only a warning
-  // (decision 022), so there is no top-up assumption to state (it shows with a deadline: the lender's-rules test)
-  await expect(page.locator('#assume-line')).toHaveText('');
+  // fairness: the two other methods are shown with the answer; what the number assumes you add is always stated,
+  // with the way to change it (issue #22)
+  await expect(page.locator('#assume-line')).toHaveText('Assumes you add no BTC or money. Will you add some?');
   await expect(page.locator('#methods-line')).toContainText(/^Real history since 2014 \d+ of 100, a volatility model \d+ of 100/);
   // what a sale leaves: not "everything lost"
   await expect(page.locator('#sold-line')).toContainText(/If liquidated: you get back at most 0\.\d{4} of your 0\.\d{4} BTC/);
@@ -1024,25 +1024,25 @@ test('the lender\'s rules (issue #11): their own folded part right under the liq
   const sum = rules.locator('#rules-sum');
   // placed straight after the liquidation LTV, before the duration
   expect(await page.evaluate(() => { const r = document.querySelector('#form details[data-remember="rules"]'); return r.previousElementSibling && r.previousElementSibling.dataset.field; })).toBe('liquidationLtv');
-  await expect(rules.locator('summary')).toContainText('What your lender does when BTC falls');
-  // the example's margin call is only a warning (decision 022)
-  await expect(sum).toHaveText('Margin call at 70%: a warning only · At 80%: everything is sold · Fee 5% of the amount owed');
+  await expect(rules.locator('summary')).toContainText('When BTC falls: your lender and you');
+  // the example's margin call is only a warning (decision 022); the visitor adds nothing unless they say so (issue #22)
+  await expect(sum).toHaveText('Margin call at 70%: a warning only · At 80%: everything is sold · Fee 5% of the amount owed · You add nothing');
   await expect(sum).toBeVisible(); // readable while folded
   await expect(rules).not.toHaveAttribute('open', '');
   await rules.locator('summary').click();
   await expect(rules).toHaveAttribute('open', '');
   await expect(rules.locator('#f-marginCallLtv')).toBeVisible();
   await expect(rules.locator('#f-liquidationFee')).toBeVisible();
-  // every change shows in the line at once; a deadline brings the top-up assumption under the answer
+  // every change shows in the line at once
   await rules.locator('[data-k="marginCallConsequence"]').selectOption('liquidateAfterCure');
   await expect(sum).toContainText('Margin call at 70%: 48 hours to top up, otherwise everything is sold');
-  await expect(page.locator('#assume-line')).toHaveText('Assumes you add no BTC or money after a margin call.');
+  await expect(page.locator('#assume-line')).toHaveText('Assumes you add no BTC or money. Will you add some?');
   await rules.locator('[data-k="marginCallConsequence"]').selectOption('autoPartial');
   await expect(sum).toContainText('Margin call at 70%: part is sold at once');
   await rules.locator('[data-set="liquidationSale"][data-val="partial"]').click();
   await expect(sum).toContainText('At 80%: only enough is sold');
   await rules.locator('#f-marginCallLtv').fill('');
-  await expect(sum).toHaveText(/^No margin call · At 80%: only enough is sold · Fee 5% of the amount owed$/);
+  await expect(sum).toHaveText(/^No margin call · At 80%: only enough is sold · Fee 5% of the amount owed · You add nothing$/);
   // the other terms stay in "More terms from your offer", without the rules
   const more = page.locator('#form details[data-remember="more"]');
   await expect(more.locator('#f-marginCallLtv, #f-liquidationFee')).toHaveCount(0);
@@ -1052,8 +1052,99 @@ test('the lender\'s rules (issue #11): their own folded part right under the liq
 test('the lender\'s rules (issue #11), in German', async ({ page }) => {
   await open(page, { lang: 'de' }); await waitDone(page);
   const rules = page.locator('#form details[data-remember="rules"]');
-  await expect(rules.locator('summary')).toContainText('Was Ihr Kreditgeber tut, wenn BTC fällt');
-  await expect(rules.locator('#rules-sum')).toHaveText(/^Margin Call bei 70\s%: nur eine Warnung · Bei 80\s%: alles wird verkauft · Gebühr 5\s% des geschuldeten Betrags$/);
+  await expect(rules.locator('summary')).toContainText('Wenn BTC fällt: Ihr Kreditgeber und Sie');
+  await expect(rules.locator('#rules-sum')).toHaveText(/^Margin Call bei 70\s%: nur eine Warnung · Bei 80\s%: alles wird verkauft · Gebühr 5\s% des geschuldeten Betrags · Sie schießen nichts nach$/);
+});
+
+// "Will you add BTC if the price falls?" (issue #22, decision 023)
+const heroN = async (page) => Number(await page.locator('#headline-text em').textContent());
+test('adding BTC (issue #22): "No" by default; the line under the answer opens the question; a way shows only its own empty fields and changes nothing until they are filled in', { tag: '@phone' }, async ({ page }) => {
+  await open(page); await waitDone(page);
+  const n0 = await heroN(page);
+  await expect(page.locator('#plan-line')).toBeHidden();
+  await expect(page.locator('#ways')).toBeHidden();
+  await page.locator('#assume-line [data-open-plan]').click();
+  const q = page.locator('#add-plan');
+  await expect(q).toBeInViewport();
+  await expect(q.locator('[data-set="addPlan"][aria-pressed="true"]')).toHaveText('No, I add nothing');
+  await expect(q.locator('[data-set="addPlan"]')).toHaveText(['No, I add nothing', 'Once, at the margin call', 'Every month', 'Whenever the LTV gets too high']);
+  await expect(q.locator('input')).toHaveCount(0);
+  await q.locator('[data-set="addPlan"][data-val="monthly"]').click();
+  await expect(q.locator('input')).toHaveCount(2);
+  await expect(page.locator('#f-monthlyAmount')).toHaveValue('');
+  await expect(page.locator('#f-monthlyMonths')).toHaveValue('');
+  await expect(page.locator('#plan-empty')).toBeVisible();
+  await expect(page.locator('#rules-sum')).toContainText('Your plan to add BTC: not filled in yet');
+  await expect(page.locator('#ans-label')).toHaveText('Example'); // nothing filled in: still the example, no new calculation
+  expect(await heroN(page)).toBe(n0);
+  await page.locator('#f-monthlyAmount').fill('300');
+  await page.locator('#f-monthlyMonths').fill('12');
+  await waitDone(page);
+  await expect(page.locator('#plan-empty')).toBeHidden();
+  await expect(page.locator('#rules-sum')).toContainText('You add €300 a month for 12 months');
+  await expect(page.locator('#assume-line')).toHaveText('Assumes you add €300 as BTC each month for 12 months, the first now. Change');
+  const n1 = await heroN(page);
+  expect(n1).toBeLessThan(n0);
+  await expect(page.locator('#plan-line')).toHaveText(new RegExp(`^If you add nothing: ${n0} of 100\\. On average you put in €[\\d,]+ of your €3,600\\.$`));
+  // your money, added in the other ways: folded, with your row and "Nothing"
+  const ways = page.locator('#ways');
+  await expect(ways.locator('summary')).toHaveText('Your €3,600, added in other ways');
+  await expect(ways).not.toHaveAttribute('open', '');
+  await ways.locator('summary').click();
+  const rows = ways.locator('tbody tr');
+  await expect(rows.locator('th')).toHaveText(['€300 every month for 12 months (yours)', 'All at the start', 'Once, at the margin call (70%)', 'At 65%, back to 50%, at once', 'Nothing']);
+  await expect(rows.first().locator('td').first()).toHaveText(String(n1));
+  await expect(rows.last().locator('td')).toHaveText([String(n0), '€0']);
+  // "Change" goes back to the question; "No" brings back the answer without a plan
+  await page.locator('#assume-line [data-open-plan]').click();
+  await expect(q).toBeInViewport();
+  await expect(q.locator('[data-set="addPlan"][aria-pressed="true"]')).toHaveText('Every month');
+  await q.locator('[data-set="addPlan"][data-val="none"]').click();
+  await waitDone(page);
+  expect(await heroN(page)).toBe(n0);
+  await expect(page.locator('#plan-line')).toBeHidden();
+  await expect(page.locator('#ways')).toBeHidden();
+});
+
+test('adding BTC (issue #22): "whenever the LTV gets too high" asks four things and checks them; "once" needs a margin call; an existing loan asks the same', { tag: '@phone' }, async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.locator('#own-terms-link').click();
+  await openFolded(page, '#form');
+  const q = page.locator('#add-plan');
+  await q.locator('[data-set="addPlan"][data-val="ltv"]').click();
+  await expect(q.locator('input')).toHaveCount(3);
+  await expect(q.locator('[data-set="topUpDelay"]')).toHaveText(['At once', 'Within 1 day', 'Within 2 days']);
+  await expect(q.locator('[data-set="topUpDelay"][aria-pressed="true"]')).toHaveCount(0); // nothing preset
+  await page.locator('#f-topUpAt').fill('85'); // above the liquidation LTV (80%)
+  await page.locator('#f-topUpTo').fill('50');
+  await page.locator('#f-topUpBudget').fill('5000');
+  await q.locator('[data-set="topUpDelay"][data-val="1"]').click();
+  await expect(page.locator('[data-field="topUpAt"] .err')).toHaveText(/This LTV must be above 0% and below the liquidation LTV\./);
+  await page.locator('#f-topUpAt').fill('65');
+  await waitDone(page);
+  await expect(page.locator('[data-field="topUpAt"] .err')).toBeHidden();
+  await expect(page.locator('#assume-line')).toHaveText('Assumes you add BTC whenever the LTV reaches 65%, back to 50%, within 1 day, up to €5,000 in total. Change');
+  await openFolded(page, '#answer');
+  await expect(page.locator('#ways tbody tr.mine th')).toHaveText('At 65%, back to 50%, within 1 day (yours)');
+  // without a margin call there is nothing to add "once" at
+  await page.locator('#f-marginCallLtv').fill('');
+  await expect(q.locator('[data-set="addPlan"]')).toHaveText(['No, I add nothing', 'Every month', 'Whenever the LTV gets too high']);
+  // a loan already running: the same question
+  await page.locator('[data-set="mode"][data-val="existing"]').click();
+  await expect(page.locator('#add-plan [data-set="addPlan"][aria-pressed="true"]')).toHaveText('Whenever the LTV gets too high');
+});
+
+test('adding BTC (issue #22), in German', async ({ page }) => {
+  await open(page, { lang: 'de' }); await waitDone(page);
+  await expect(page.locator('#assume-line')).toHaveText('Angenommen: Sie schießen weder BTC noch Geld nach. Schießen Sie etwas nach?');
+  await page.locator('#assume-line [data-open-plan]').click();
+  await expect(page.locator('#add-plan .label')).toHaveText('Schießen Sie BTC nach, wenn der Kurs fällt?');
+  await page.locator('#add-plan [data-set="addPlan"][data-val="monthly"]').click();
+  await page.locator('#f-monthlyAmount').fill('300');
+  await page.locator('#f-monthlyMonths').fill('12');
+  await waitDone(page);
+  await expect(page.locator('#assume-line')).toHaveText(/^Angenommen: Sie schießen 12 Monate lang jeden Monat 300\s€ als BTC nach, das erste Mal jetzt\. Ändern$/);
+  await expect(page.locator('#plan-line')).toHaveText(/^Wenn Sie nichts nachschießen: \d+ von 100\. Im Durchschnitt zahlen Sie [\d.]+\s€ Ihrer 3\.600\s€ ein\.$/);
 });
 
 test('entry timing (issue #12): the history section shows the loan by what BTC did in the 90 days before the start; the last row is the line above it', { tag: '@phone' }, async ({ page }) => {

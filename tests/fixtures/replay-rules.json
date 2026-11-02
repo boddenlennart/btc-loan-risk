@@ -51,7 +51,8 @@
      "btc": 0.02727258570151064
     }
    ],
-   "collateralAtEnd": 0.031622089369326464
+   "collateralAtEnd": 0.031622089369326464,
+   "added": 0.0
   }
  },
  {
@@ -89,7 +90,8 @@
     "btcReturned": 0.14626709818656536
    },
    "partialSales": [],
-   "collateralAtEnd": 0.14626709818656536
+   "collateralAtEnd": 0.14626709818656536,
+   "added": 0.0
   }
  },
  {
@@ -131,7 +133,8 @@
     "btcReturned": 0.1279800988368327
    },
    "partialSales": [],
-   "collateralAtEnd": 0.1279800988368327
+   "collateralAtEnd": 0.1279800988368327,
+   "added": 0.0
   }
  },
  {
@@ -171,7 +174,8 @@
      "btc": 1.4201620188365847
     }
    ],
-   "collateralAtEnd": 0.5124329343849543
+   "collateralAtEnd": 0.5124329343849543,
+   "added": 0.0
   }
  },
  {
@@ -210,7 +214,180 @@
     "btcReturned": 0.06746268010264239
    },
    "partialSales": [],
-   "collateralAtEnd": 0.06746268010264239
+   "collateralAtEnd": 0.06746268010264239,
+   "added": 3000.0
+  }
+ },
+ {
+  "currency": "USD",
+  "name": "Nov 2021 top, warning only, adds 300 every month for 12 months",
+  "start": "2021-11-10T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "plan": {
+    "kind": "monthly",
+    "amount": 300.0,
+    "months": 12
+   }
+  },
+  "expected": {
+   "startPrice": 66928.42,
+   "collateralBtc": 0.29882671666236854,
+   "marginCall": 1638594000,
+   "liquidation": {
+    "time": 1642730400,
+    "iso": "2022-01-21T02:00Z",
+    "reason": "liquidationLtv",
+    "btcReturned": 0.06160277833404787
+   },
+   "partialSales": [],
+   "collateralAtEnd": 0.06160277833404787,
+   "added": 900.0
+  }
+ },
+ {
+  "currency": "USD",
+  "name": "Dec 2017 top, adds back to 50% whenever the LTV reaches 65%, at once, up to 5,000",
+  "start": "2017-12-17T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "plan": {
+    "kind": "ltv",
+    "at": 0.65,
+    "to": 0.5,
+    "budget": 5000.0,
+    "delayDays": 0
+   }
+  },
+  "expected": {
+   "startPrice": 19187.78,
+   "collateralBtc": 1.0423300663234623,
+   "marginCall": 1516140000,
+   "liquidation": {
+    "time": 1517500800,
+    "iso": "2018-02-01T16:00Z",
+    "reason": "liquidationLtv",
+    "btcReturned": 0.25524135724425423
+   },
+   "partialSales": [],
+   "collateralAtEnd": 0.25524135724425423,
+   "added": 5000.0
+  }
+ },
+ {
+  "currency": "USD",
+  "name": "Nov 2021 top, adds back to 50% at 65% within 1 day, up to 20,000, sells all if not fixed in 48 h",
+  "start": "2021-11-10T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "marginCallConsequence": "liquidateAfterCure",
+   "curePeriodHours": 48,
+   "plan": {
+    "kind": "ltv",
+    "at": 0.65,
+    "to": 0.5,
+    "budget": 20000.0,
+    "delayDays": 1
+   }
+  },
+  "expected": {
+   "startPrice": 66928.42,
+   "collateralBtc": 0.29882671666236854,
+   "marginCall": 1638594000,
+   "liquidation": null,
+   "partialSales": [],
+   "collateralAtEnd": 0.9509045510176288,
+   "added": 20000.0
+  }
+ },
+ {
+  "currency": "USD",
+  "name": "Feb 2020, adds 2,000 a month for 3 months, partial sale at the liquidation LTV",
+  "start": "2020-02-13T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "liquidationSale": "partial",
+   "plan": {
+    "kind": "monthly",
+    "amount": 2000.0,
+    "months": 3
+   }
+  },
+  "expected": {
+   "startPrice": 10348.78,
+   "collateralBtc": 1.932594953221539,
+   "marginCall": 1584007200,
+   "liquidation": null,
+   "partialSales": [
+    {
+     "time": 1584010800,
+     "iso": "2020-03-12T11:00Z",
+     "reason": "liquidationLtv",
+     "btc": 1.370318989628228
+    }
+   ],
+   "collateralAtEnd": 1.4581266663428434,
+   "added": 6000.0
   }
  },
  {
@@ -256,7 +433,8 @@
      "btc": 0.796413340662276
     }
    ],
-   "collateralAtEnd": 0.2638406216143381
+   "collateralAtEnd": 0.2638406216143381,
+   "added": 0.0
   }
  },
  {
@@ -311,7 +489,8 @@
      "btc": 0.03759693025961583
     }
    ],
-   "collateralAtEnd": 0.040117023187891385
+   "collateralAtEnd": 0.040117023187891385,
+   "added": 0.0
   }
  },
  {
@@ -349,7 +528,8 @@
     "btcReturned": 0.2108454171526013
    },
    "partialSales": [],
-   "collateralAtEnd": 0.2108454171526013
+   "collateralAtEnd": 0.2108454171526013,
+   "added": 0.0
   }
  },
  {
@@ -391,7 +571,8 @@
     "btcReturned": 0.18980607358012058
    },
    "partialSales": [],
-   "collateralAtEnd": 0.18980607358012058
+   "collateralAtEnd": 0.18980607358012058,
+   "added": 0.0
   }
  },
  {
@@ -431,7 +612,8 @@
      "btc": 1.6789053916260248
     }
    ],
-   "collateralAtEnd": 0.4157741224083278
+   "collateralAtEnd": 0.4157741224083278,
+   "added": 0.0
   }
  },
  {
@@ -470,7 +652,180 @@
     "btcReturned": 0.09864606141628446
    },
    "partialSales": [],
-   "collateralAtEnd": 0.09864606141628446
+   "collateralAtEnd": 0.09864606141628446,
+   "added": 3000.0
+  }
+ },
+ {
+  "currency": "EUR",
+  "name": "Nov 2021 top, warning only, adds 300 every month for 12 months",
+  "start": "2021-11-10T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "plan": {
+    "kind": "monthly",
+    "amount": 300.0,
+    "months": 12
+   }
+  },
+  "expected": {
+   "startPrice": 57784.21,
+   "collateralBtc": 0.34611531420088637,
+   "marginCall": 1638594000,
+   "liquidation": {
+    "time": 1642734000,
+    "iso": "2022-01-21T03:00Z",
+    "reason": "liquidationLtv",
+    "btcReturned": 0.07084662360359595
+   },
+   "partialSales": [],
+   "collateralAtEnd": 0.07084662360359595,
+   "added": 900.0
+  }
+ },
+ {
+  "currency": "EUR",
+  "name": "Dec 2017 top, adds back to 50% whenever the LTV reaches 65%, at once, up to 5,000",
+  "start": "2017-12-17T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "plan": {
+    "kind": "ltv",
+    "at": 0.65,
+    "to": 0.5,
+    "budget": 5000.0,
+    "delayDays": 0
+   }
+  },
+  "expected": {
+   "startPrice": 16106.0,
+   "collateralBtc": 1.2417732522041476,
+   "marginCall": 1516136400,
+   "liquidation": {
+    "time": 1516201200,
+    "iso": "2018-01-17T15:00Z",
+    "reason": "liquidationLtv",
+    "btcReturned": 0.3273466918511161
+   },
+   "partialSales": [],
+   "collateralAtEnd": 0.3273466918511161,
+   "added": 5000.0
+  }
+ },
+ {
+  "currency": "EUR",
+  "name": "Nov 2021 top, adds back to 50% at 65% within 1 day, up to 20,000, sells all if not fixed in 48 h",
+  "start": "2021-11-10T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "marginCallConsequence": "liquidateAfterCure",
+   "curePeriodHours": 48,
+   "plan": {
+    "kind": "ltv",
+    "at": 0.65,
+    "to": 0.5,
+    "budget": 20000.0,
+    "delayDays": 1
+   }
+  },
+  "expected": {
+   "startPrice": 57784.21,
+   "collateralBtc": 0.34611531420088637,
+   "marginCall": 1638594000,
+   "liquidation": null,
+   "partialSales": [],
+   "collateralAtEnd": 0.9261428834717763,
+   "added": 17184.785172908647
+  }
+ },
+ {
+  "currency": "EUR",
+  "name": "Feb 2020, adds 2,000 a month for 3 months, partial sale at the liquidation LTV",
+  "start": "2020-02-13T00:00Z",
+  "terms": {
+   "loanAmount": 10000.0,
+   "initialLtv": 0.5,
+   "marginCallLtv": 0.7,
+   "liquidationLtv": 0.8,
+   "durationMonths": 12,
+   "rate": {
+    "type": "fixed",
+    "annual": 0.0
+   },
+   "repayment": "interestOnly",
+   "compounding": "none",
+   "dayCount": "30/360",
+   "originationFee": {
+    "type": "percent",
+    "value": 0.0
+   },
+   "liquidationSale": "partial",
+   "plan": {
+    "kind": "monthly",
+    "amount": 2000.0,
+    "months": 3
+   }
+  },
+  "expected": {
+   "startPrice": 9548.0,
+   "collateralBtc": 2.0946795140343526,
+   "marginCall": 1584007200,
+   "liquidation": null,
+   "partialSales": [
+    {
+     "time": 1584007200,
+     "iso": "2020-03-12T10:00Z",
+     "reason": "liquidationLtv",
+     "btc": 1.4694374402225896
+    }
+   ],
+   "collateralAtEnd": 1.6104671732455822,
+   "added": 6000.0
   }
  },
  {
@@ -516,7 +871,8 @@
      "btc": 0.9452491359143367
     }
    ],
-   "collateralAtEnd": 0.348746688906018
+   "collateralAtEnd": 0.348746688906018,
+   "added": 0.0
   }
  }
 ]

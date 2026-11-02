@@ -142,6 +142,28 @@ class Loan:
         self.target = t.get("cureTargetLtv") or t["initialLtv"]
         self.m = t.get("marginCallLtv")
         self.rule = t.get("marginCallConsequence", "warningOnly") if self.m else "none"
+        # the borrower's plan (issue #22): monthly from the start (each when its day begins), or back to a lower
+        # LTV whenever it reaches a level, at once at that price or at the close `delayDays` days later
+        self.plan = t.get("plan")
+        self.added, self.paid, self.pending = 0.0, 0, None
+        self.due = []
+        if self.plan and self.plan["kind"] == "monthly":
+            start = dt.date.fromisoformat(t["startDate"])
+            self.due = [0] + [(add_months(start, k) - start).days for k in range(1, self.plan["months"])]
+
+    def add(self, money, price):
+        self.c += money / price
+        self.added += money
+
+    def start(self, price):
+        if self.due:
+            self.add(self.plan["amount"], price)
+            self.paid = 1
+
+    def top_up(self, debt, price):
+        money = min(debt / self.plan["to"] - self.c * price, self.plan["budget"] - self.added)
+        if money > 0:
+            self.add(money, price)
 
     def sell_enough(self, price, debt, day):
         proceeds = (debt - self.target * self.c * price) / (self.k - self.target)
@@ -161,9 +183,12 @@ class Loan:
         # the debt plus the fee, at most all the BTC: the fee is a share of the debt or of the sale
         self.sales.append((min(self.c, debt / self.k / price), price))
 
-    def step(self, day, low, close, scheduled_debt, cure, hour_lows=()):
+    def step(self, day, low, close, scheduled_debt, cure, hour_lows=(), open_=None):
         if self.liquidated:
             return
+        while self.paid < len(self.due) and self.due[self.paid] <= day - 1:
+            self.add(self.plan["amount"], open_)
+            self.paid += 1
 
         def sale_price(level):
             for p in hour_lows:
@@ -194,6 +219,15 @@ class Loan:
                 if self.first_event is None:
                     self.first_event = day
                 return
+        if self.plan and self.plan["kind"] == "ltv":
+            if self.pending is not None and day >= self.pending:
+                self.pending = None
+                self.top_up(debt, close)
+            elif self.pending is None and self.added < self.plan["budget"] - 1e-9 and low <= debt / (self.c * self.plan["at"]):
+                if self.plan["delayDays"] > 0:
+                    self.pending = day + self.plan["delayDays"]
+                else:
+                    self.top_up(debt, debt / (self.c * self.plan["at"]))
         if not self.m or self.deadline is not None:
             return
         if self.first_margin and self.rule == "warningOnly":
@@ -205,7 +239,7 @@ class Loan:
         reserve = self.t.get("reserveAmount", 0)
         if reserve > 0 and not self.topped_up:
             self.topped_up = True
-            self.c += reserve / mc
+            self.add(reserve, mc)
         if debt / (self.c * mc) < self.m - 1e-12:
             return
         if self.rule in ("liquidateAfterCure", "partialAfterCure"):
@@ -239,11 +273,13 @@ def simulate(r, l, h, t, s0, n_paths, seed, weights):
     btc = t["loanAmount"] / (t["initialLtv"] * s0)
     cure = max(1, math.ceil(t.get("curePeriodHours", 0) / 24))
     liq = part = margin = 0
+    added = 0.0
     first_days = []
     ends, path_sales = [], []
     for p in range(n_paths):
         rng = Sfc32(mix_seed(seed, p))
         loan = Loan(btc, t)
+        loan.start(s0)
         log_s = math.log(s0)
         pos = left = 0
         for d in range(1, days + 1):
@@ -262,9 +298,11 @@ def simulate(r, l, h, t, s0, n_paths, seed, weights):
             pos += 1
             left -= 1
             low = math.exp(log_s + low_rel)
+            open_ = math.exp(log_s)
             log_s += ret
-            loan.step(d, low, math.exp(log_s), debts[d - 1], cure, hour_lows)
+            loan.step(d, low, math.exp(log_s), debts[d - 1], cure, hour_lows, open_)
         ends.append(math.exp(log_s))
+        added += loan.added
         path_sales.append(loan.sales)
         if loan.liquidated:
             liq += 1
@@ -283,7 +321,8 @@ def simulate(r, l, h, t, s0, n_paths, seed, weights):
         e = end * scale
         for b, price in sales:
             total += k * b * max(0.0, e - price) + (1 - k) * b * e
-    return dict(liquidated=liq, partial=part, marginCall=margin, firstPathsLiquidationDay=first_days, riskCost=total / n_paths)
+    return dict(liquidated=liq, partial=part, marginCall=margin, firstPathsLiquidationDay=first_days, riskCost=total / n_paths,
+                addedMean=added / n_paths)
 
 
 def loan(**kw):
@@ -309,6 +348,9 @@ CASES = [
     ("high LTV 65%, 6 months, 24 h", loan(initialLtv=0.65, marginCallLtv=0.75, liquidationLtv=0.85, durationMonths=6, curePeriodHours=24)),
     ("low LTV 25%, 12 months", loan(initialLtv=0.25)),
     ("variable rate", loan(rate=dict(type="variable", path=[dict(fromMonth=0, annual=0.08), dict(fromMonth=6, annual=0.14)]))),
+    ("adds 300 every month, warning only", loan(marginCallConsequence="warningOnly", plan=dict(kind="monthly", amount=300.0, months=12))),
+    ("adds at 65% back to 50%, at once, up to 5,000", loan(marginCallConsequence="warningOnly", plan=dict(kind="ltv", at=0.65, to=0.5, budget=5000.0, delayDays=0))),
+    ("adds at 65% back to 50%, within 2 days, up to 20,000, 48 h", loan(plan=dict(kind="ltv", at=0.65, to=0.5, budget=20000.0, delayDays=2))),
 ]
 
 

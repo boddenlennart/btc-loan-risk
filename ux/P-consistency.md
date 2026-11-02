@@ -47,6 +47,7 @@ The check opens 30 very different loans, two comparisons, How it works and three
 | 15 | **Calmer and wilder swings** (decision 021): the calm anchor is below the simulation's swings, the wild one above; calmer gives at most the answer's number, wilder at least (not for a loan already past its margin call, where calmer swings make a recovery less likely). The three volatilities equal those on How it works. |
 | 16 | **Entry timing** (issue #12): the table's "All start days" row repeats the history line above it, full and partly liquidated. |
 | 17 | **Real history** (owner, 29 Oct 2026): the section's title line repeats the start-years table's 2014 and 2020 rows; the 2014 row (all start days) is the number in "Other methods" and the 90-day table's last row. |
+| 18 | **Adding BTC** (issue #22, decision 023): in "Your money, added in other ways", your row is the answer's number and "Nothing" is the number in "If you add nothing" under the answer (each row rounded as the answer would show it); the money put in and your total match the line under the answer and the table's title; "Nothing" puts in nothing. |
 
 **Comparing loans**
 

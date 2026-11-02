@@ -42,6 +42,8 @@ export const LOANS = [
   ['Swiss francs', { currency: 'CHF', initialLtv: 40 }],
   ['Czech crowns', { currency: 'CZK', loanAmount: 250000 }],
   ['cash reserve for a margin call', { reserveAmount: 3000 }],
+  ['adds BTC every month (issue #22)', { addPlan: 'monthly', monthlyAmount: 300, monthlyMonths: 12 }],
+  ['adds BTC whenever the LTV gets too high (issue #22)', { addPlan: 'ltv', topUpAt: 65, topUpTo: 50, topUpBudget: 5000, topUpDelay: '1', marginCallConsequence: 'liquidateAfterCure' }],
   ['high fees', { liquidationFee: 10, originationFee: { value: 3, type: 'percent' } }],
   ['tax on selling', { taxRateNow: 25, taxRateAtMaturity: 25, purpose: 'buy' }],
 ];
@@ -93,6 +95,8 @@ async function readPage(page) {
         trend: rows('#trend-body'), methods: txt('#methods-line'), history: txt('#history-text'), stress: txt('#stress-line'), historySum: txt('#history-sum'),
         years: [...document.querySelectorAll('#years-table tbody tr')].map((r) => [...r.cells].map((c) => c.textContent.trim())),
         entryTotal: [...document.querySelectorAll('#entry-table tfoot td')].map((c) => c.textContent.trim()),
+        planLine: txt('#plan-line'), waysSum: txt('#ways-sum'),
+        ways: [...document.querySelectorAll('#ways-table tbody tr')].map((r) => [...[...r.cells].map((c) => c.textContent.trim()), r.classList.contains('mine')]),
         leverage: txt('#leverage'), levLegend: legend('#leverage'), levDots: dots('#leverage'),
         ownLtv: (() => { const f = document.querySelector('#f-initialLtv'); return f && f.offsetParent && f.value !== '' ? Number(f.value) : null; })(), // typed as an LTV (not as BTC)
       };
@@ -176,6 +180,17 @@ function checkRules(d, label) {
     expect(Number(hs[1]), at('title line 2014 = table 2014 row')).toBe(Number(d.years[0][2]));
     const y20 = d.years.find((r) => r[0].includes('2020'));
     if (y20) expect(Number(hs[2]), at('title line 2020 = table 2020 row')).toBe(Number(y20[2]));
+  }
+  // 18. adding BTC (issue #22): your row in "Your money, added in other ways" = the big number; "Nothing" = "If you add
+  // nothing" under the answer; what you put in on average and your total = your row and the table's title
+  if (d.ways.length) {
+    const mine = d.ways.find((r) => r[3]); const nothing = d.ways.find((r) => r[0] === 'Nothing');
+    expect(int(mine[1]), at('ways: your row = the big number')).toBe(n);
+    const pl = one(d.planLine, /^If you add nothing: (\d+) of 100\. On average you put in (.+) of your (.+)\.$/, 'plan line');
+    expect(Number(pl[1]), at('"If you add nothing" = the table\'s "Nothing" row')).toBe(int(nothing[1]));
+    expect(pl[2], at('money put in: plan line = your row')).toBe(mine[2]);
+    expect(d.waysSum, at('your total: plan line = table title')).toBe(`Your ${pl[3]}, added in other ways`);
+    expect(int(nothing[2]), at('"Nothing" puts in nothing')).toBe(0);
   }
   // 15. calmer and wilder swings (decision 021): on the same futures, calmer never more than the big number, wilder never less.
   // Not for a loan already past its margin call: there calmer swings make a recovery less likely (98 vs 97 of 100, found 27 Oct 2026).
