@@ -17,6 +17,15 @@
 // reserveAmount: money the borrower adds as BTC at the first margin call (at the
 // margin-call price), before the lender acts.
 //
+// The borrower's plan (terms.plan, issue #22, decision 023), the other two ways to add BTC:
+//   { kind: 'monthly', amount, months }  the amount as BTC on the first day of each loan month, the first at the
+//                                        start (startPlan), each at the price when that day begins (the step's open)
+//   { kind: 'ltv', at, to, budget, delayDays }  whenever the LTV reaches `at`: enough BTC to bring it back to `to`,
+//                                        from what is left of `budget`; at once at that price (delayDays 0), or at
+//                                        the close of the step `delayDays` days later if the LTV is above `to` then
+// Like the reserve, the plan comes after the lender's sales in a step: a fall through the liquidation LTV within
+// one step is a liquidation. All money put in is counted (s.added, s.addedBtc).
+//
 // Sale price (issue #7, decision 020): a sale triggered by a price level (liquidation LTV, or the margin call
 // with autoPartial) happens at the lowest price of the hour in which the level was reached, never above the
 // level: the price can fall through the level before the lender has sold (gaps, slippage). The replay steps
@@ -26,6 +35,19 @@
 //
 // A partial sale repays part of the debt. Interest is proportional to the debt, so
 // all later debt is scaled down by the same factor ("debt scale").
+
+import { addMonths, daysBetween } from './loan.js';
+
+/** The plan with its due days (monthly: day 0 and the first day of each later loan month). */
+function planRules(terms) {
+  const p = terms.plan;
+  if (!p) return null;
+  if (p.kind === 'monthly') {
+    const dueDays = Array.from({ length: p.months }, (_, k) => (k === 0 ? 0 : daysBetween(terms.startDate, addMonths(terms.startDate, k))));
+    return { ...p, dueDays };
+  }
+  return p.kind === 'ltv' ? { ...p } : null;
+}
 
 export function lenderRules(terms) {
   const mLtv = terms.marginCallLtv || null;
@@ -44,11 +66,30 @@ export function lenderRules(terms) {
     feeValue: fee.value || 0,
     feeBasis: fee.basis === 'collateralSold' ? 'collateralSold' : 'debt',
     reserve: terms.reserveAmount > 0 ? terms.reserveAmount : 0,
+    plan: planRules(terms),
   };
 }
 
 export function createLoanState(collateral) {
-  return { c: collateral, scale: 1, deadline: null, marginCalls: 0, firstMargin: null, topUp: null, partialSales: [], liquidation: null };
+  return { c: collateral, scale: 1, deadline: null, marginCalls: 0, firstMargin: null, topUp: null, partialSales: [], liquidation: null,
+    added: 0, addedBtc: 0, paid: 0, pending: null };
+}
+
+function addBtc(s, money, price) {
+  s.c += money / price; s.added += money; s.addedBtc += money / price;
+}
+/** The plan's instalments due by day `dayIndex` (monthly), at `price`. */
+function monthly(s, plan, dayIndex, price) {
+  while (s.paid < plan.dueDays.length && plan.dueDays[s.paid] <= dayIndex) { addBtc(s, plan.amount, price); s.paid++; }
+}
+/** At the start of the loan: what the plan adds on day 0 (the first monthly instalment), at the start price. */
+export function startPlan(s, rules, price) {
+  if (rules.plan && rules.plan.kind === 'monthly') monthly(s, rules.plan, 0, price);
+}
+/** LTV plan: enough BTC at `price` to bring the LTV back to the target, from what is left of the budget. */
+function topUpTo(s, plan, d, price) {
+  const money = Math.min(d / plan.to - s.c * price, plan.budget - s.added);
+  if (money > 0) addBtc(s, money, price);
 }
 
 /** Share of the sale proceeds that repays debt (the rest is the fee). */
@@ -82,8 +123,10 @@ function closeLoan(s, rules, price, debt, time, reason, low, level = price) {
  * (seconds for the replay, days for the simulation); firstLow(level), if given: the low of the
  * step's first hour at or below `level`, or null.
  */
-export function stepLoan(s, rules, { time, low, close, debt, cure, firstLow = null }) {
+export function stepLoan(s, rules, { time, low, close, debt, cure, firstLow = null, open = null, dayIndex = 0, day = 1 }) {
   if (s.liquidation) return;
+  const plan = rules.plan;
+  if (plan && plan.kind === 'monthly') monthly(s, plan, dayIndex, open ?? close);
   const saleAt = (level) => { const p = firstLow ? firstLow(level) : null; return p === null || p > level ? low : Math.max(p, low); };
   const d = debt * s.scale;
   const liqPrice = d / (s.c * rules.lLtv);
@@ -103,6 +146,13 @@ export function stepLoan(s, rules, { time, low, close, debt, cure, firstLow = nu
     }
     s.deadline = null;
   }
+  if (plan && plan.kind === 'ltv') {
+    if (s.pending !== null && time >= s.pending) { s.pending = null; topUpTo(s, plan, d, close); }
+    else if (s.pending === null && s.added < plan.budget - 1e-9) {
+      const at = d / (s.c * plan.at);
+      if (low <= at) { if (plan.delayDays > 0) s.pending = time + plan.delayDays * day; else topUpTo(s, plan, d, at); }
+    }
+  }
   if (!rules.mLtv || s.deadline !== null) return;
   if (s.firstMargin && !rules.rearm) return;
   const mcPrice = d / (s.c * rules.mLtv);
@@ -111,7 +161,7 @@ export function stepLoan(s, rules, { time, low, close, debt, cure, firstLow = nu
   if (!s.firstMargin) s.firstMargin = { time, low };
   if (rules.reserve && !s.topUp) {
     s.topUp = { time, btc: rules.reserve / mcPrice, price: mcPrice };
-    s.c += s.topUp.btc;
+    addBtc(s, rules.reserve, mcPrice);
   }
   if (d / (s.c * mcPrice) < rules.mLtv - 1e-12) return; // the top-up fixed it
   if (rules.afterCure) s.deadline = time + cure;
@@ -121,8 +171,17 @@ export function stepLoan(s, rules, { time, low, close, debt, cure, firstLow = nu
 /** Price below which this step needs a closer look (any rule could act). */
 export function watchPrice(s, rules, debt) {
   const d = debt * s.scale;
-  if (rules.mLtv && (!s.firstMargin || rules.rearm)) return d / (s.c * rules.mLtv);
-  return d / (s.c * rules.lLtv);
+  const p = rules.plan;
+  const plan = p && p.kind === 'ltv' && s.added < p.budget - 1e-9 ? d / (s.c * p.at) : 0;
+  if (rules.mLtv && (!s.firstMargin || rules.rearm)) return Math.max(plan, d / (s.c * rules.mLtv));
+  return Math.max(plan, d / (s.c * rules.lLtv));
+}
+/** Whether the plan needs this whole day stepped hour by hour (an instalment or a top-up falls due). */
+export function planDue(s, rules, dayIndex, time) {
+  const p = rules.plan;
+  if (!p) return false;
+  if (p.kind === 'monthly') return s.paid < p.dueDays.length && p.dueDays[s.paid] <= dayIndex;
+  return s.pending !== null;
 }
 
 /** BTC a partial sale at `price` would take to bring the LTV back to the target (for display). */

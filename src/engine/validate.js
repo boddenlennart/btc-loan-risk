@@ -6,7 +6,7 @@ export const ERROR_CODES = [
   'LOAN_AMOUNT_INVALID', 'PRICE_INVALID', 'LTV_OUT_OF_RANGE', 'LIQ_LTV_NOT_ABOVE_INITIAL',
   'LIQ_LTV_TOO_HIGH', 'MARGIN_LTV_OUT_OF_RANGE', 'DURATION_INVALID', 'NEGATIVE_RATE',
   'RATE_PATH_INVALID', 'NEGATIVE_FEE', 'FEE_EXCEEDS_LOAN', 'CURE_NEGATIVE', 'TAX_RATE_INVALID',
-  'RESERVE_NEGATIVE', 'CURE_TARGET_INVALID', 'COLLATERAL_INVALID', 'EXISTING_LOAN_AT_LIQUIDATION',
+  'RESERVE_NEGATIVE', 'ADD_NEGATIVE', 'MONTHS_TOO_MANY', 'TOPUP_AT_INVALID', 'TOPUP_TO_INVALID', 'CURE_TARGET_INVALID', 'COLLATERAL_INVALID', 'EXISTING_LOAN_AT_LIQUIDATION',
 ];
 
 const BEHAVIOURS = ['warningOnly', 'liquidateAfterCure', 'partialAfterCure', 'autoPartial'];
@@ -70,6 +70,17 @@ export function validateTerms(t) {
     if (!num(t.cureTargetLtv) || t.cureTargetLtv <= 0 || (num(cap) && t.cureTargetLtv >= cap)) add('cureTargetLtv', 'CURE_TARGET_INVALID');
   }
   if (!empty(t.reserveAmount) && (!num(t.reserveAmount) || t.reserveAmount < 0)) add('reserveAmount', 'RESERVE_NEGATIVE');
+  // the borrower's plan (issue #22): positive amounts, months within the loan, levels between 0 and the liquidation LTV
+  const p = t.plan;
+  if (p && p.kind === 'monthly') {
+    if (!num(p.amount) || p.amount <= 0) add('monthlyAmount', 'ADD_NEGATIVE');
+    if (!Number.isInteger(p.months) || p.months < 1 || (num(t.durationMonths) && p.months > t.durationMonths)) add('monthlyMonths', 'MONTHS_TOO_MANY');
+  }
+  if (p && p.kind === 'ltv') {
+    if (!num(p.at) || p.at <= 0 || (num(t.liquidationLtv) && p.at >= t.liquidationLtv)) add('topUpAt', 'TOPUP_AT_INVALID');
+    if (!num(p.to) || p.to <= 0 || (num(p.at) && p.to >= p.at)) add('topUpTo', 'TOPUP_TO_INVALID');
+    if (!num(p.budget) || p.budget <= 0) add('topUpBudget', 'ADD_NEGATIVE');
+  }
   for (const f of ['taxRateNow', 'taxRateAtMaturity']) {
     if (!empty(t[f]) && (!num(t[f]) || t[f] < 0 || t[f] >= 1)) add(f, 'TAX_RATE_INVALID');
   }

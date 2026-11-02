@@ -29,7 +29,11 @@ export const EXAMPLE_FORM = {
   cureTargetLtv: '',
   liquidationFee: 5,
   liquidationFeeBasis: 'debt',
-  reserveAmount: 0,
+  // "Will you add BTC if the price falls?" (issue #22): "No" unless the visitor picks a way (inputs saved or shared
+  // earlier with an amount kept ready open as "once": withAddPlan in src/app/terms.js); every amount starts empty
+  addPlan: 'none',
+  reserveAmount: '',
+  monthlyAmount: '', monthlyMonths: '', topUpAt: '', topUpTo: '', topUpBudget: '', topUpDelay: '',
   taxRateNow: 0,
   taxRateAtMaturity: 0,
   startDate: '',

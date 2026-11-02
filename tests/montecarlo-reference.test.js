@@ -2,7 +2,7 @@
 // (reference/reference_montecarlo.py) that reads the raw exchange downloads, builds its own daily
 // series, takes the debt from the independent loan reference and applies the lender's rules from
 // their written description. Both use the same random-number generator, so they draw the same
-// 30-day pieces: every count must agree exactly, for 12 loans covering every rule, in EUR and USD.
+// 30-day pieces: every count must agree exactly, for 15 loans covering every rule and the three ways to add BTC, in EUR and USD.
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import { runMonteCarlo } from '../src/engine/montecarlo.js';
@@ -53,6 +53,8 @@ describe.skipIf(!ref)('simulation = independent Python reference (same random dr
           expect(res.samplePaths.map((p) => (p.liquidated ? p.event.day : null))).toEqual(c.firstPathsLiquidationDay);
           // the cost of the risk (ux/M-risk-cost-spec.md), from each side's own sale records
           expect(Math.abs(res.riskCost.value - c.riskCost)).toBeLessThanOrEqual(1e-9 * Math.max(1, c.riskCost));
+          // the money put in, on average (reserve or plan, issue #22)
+          if (res.added) expect(res.added.mean).toBeCloseTo(c.addedMean, 6);
         }, 120_000);
       }
     });

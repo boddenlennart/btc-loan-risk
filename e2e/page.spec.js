@@ -80,7 +80,7 @@ test('the example answer is there the moment the page opens, and the live calcul
   await page.addInitScript(() => { try { localStorage.clear(); localStorage.setItem('btc-loan-risk:lang', 'en'); } catch {} });
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   const atOnce = await page.evaluate(() => document.querySelector('#headline-text').textContent);
-  expect(atOnce).toMatch(/^\d+ of 100 simulated futures/);
+  expect(atOnce).toMatch(/^\d+ of 100 simulated price paths/);
   await waitDone(page);
   expect(await page.locator('#headline-text').textContent()).toBe(atOnce);
   await expect(page.locator('#ans-label')).toHaveText('Example');
@@ -127,7 +127,7 @@ test('LTV slider: dragging and letting go recalculates and sets the starting LTV
   await page.mouse.up();
   // where the handle lands depends on the drag; what counts: a lower LTV is taken and matches the line
   await expect.poll(async () => Number(await page.locator('#f-initialLtv').inputValue())).toBeLessThan(50);
-  await expect(page.locator('#slider-line')).toContainText(`Starting LTV ${await page.locator('#f-initialLtv').inputValue()}%`);
+  await expect(page.locator('#slider-line')).toContainText(`Initial LTV ${await page.locator('#f-initialLtv').inputValue()}%`);
   await expect(page.locator('#slider-undo')).toBeVisible();
   await expect.poll(async () => headlineNumber(page)).toBeLessThan(before);
 });
@@ -158,7 +158,7 @@ test('LTV slider: arrow keys set the starting LTV after a short pause and keep t
   await expect(page.locator('#f-initialLtv')).toHaveValue('40');
   await waitDone(page);
   await expect(page.locator('#ltv-slider')).toBeFocused();
-  await expect(page.locator('#slider-line')).toContainText('Starting LTV 40%');
+  await expect(page.locator('#slider-line')).toContainText('Initial LTV 40%');
 });
 
 test('LTV slider: each label sits exactly under the handle at its LTV; arrow keys move point by point', async ({ page }) => {
@@ -167,7 +167,7 @@ test('LTV slider: each label sits exactly under the handle at its LTV; arrow key
   await slider.focus();
   await page.keyboard.press('Home');
   for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowRight'); // 10 → 15 → 20 → 25 → 30
-  await expect(page.locator('#slider-line')).toContainText('Starting LTV 30%');
+  await expect(page.locator('#slider-line')).toContainText('Initial LTV 30%');
   const handleX = async () => {
     const b = await slider.boundingBox(); const v = Number(await slider.inputValue());
     return b.x + 11 + (v / 1000) * (b.width - 22); // 22 px handle (style.css)
@@ -175,7 +175,7 @@ test('LTV slider: each label sits exactly under the handle at its LTV; arrow key
   const labelX = async (txt) => { const b = await page.locator('.ticks span', { hasText: new RegExp(`^${txt}$`) }).boundingBox(); return b.x + b.width / 2; };
   expect(Math.abs((await handleX()) - (await labelX('30%')))).toBeLessThan(1.5);
   await page.keyboard.press('ArrowLeft'); // 25%: exactly halfway between the 20% and 30% labels
-  await expect(page.locator('#slider-line')).toContainText('Starting LTV 25%');
+  await expect(page.locator('#slider-line')).toContainText('Initial LTV 25%');
   const mid = ((await labelX('20%')) + (await labelX('30%'))) / 2;
   expect(Math.abs((await handleX()) - mid)).toBeLessThan(1.5);
 });
@@ -199,7 +199,7 @@ test('payment plan: stays open when the terms change, and shows the new plan (in
 test('impossible terms show a plain-language error and no result', async ({ page }) => {
   await open(page); await waitDone(page);
   await page.locator('#f-liquidationLtv').fill('40');
-  await expect(page.locator('[data-field="liquidationLtv"] .err')).toContainText('not higher than the starting LTV');
+  await expect(page.locator('[data-field="liquidationLtv"] .err')).toContainText('not higher than the initial LTV');
   await expect(page.locator('#error-banner')).toBeVisible();
   await expect(page.locator('body')).toHaveClass(/invalid/);
 });
@@ -227,7 +227,7 @@ test('"buy more BTC": the result counted in BTC appears', async ({ page }) => {
   await page.getByRole('button', { name: 'Buy more BTC' }).click();
   await waitDone(page);
   await page.locator('#sec-cost > summary').click();
-  await expect(page.locator('#leverage')).toContainText(/In \d+ of 100 futures you end with more BTC/);
+  await expect(page.locator('#leverage')).toContainText(/In \d+ of 100 price paths you end with more BTC/);
   await expect(page.locator('#lev-sizes')).toContainText(/middle value of each group, in BTC compared with not borrowing: more BTC \+0\.\d{4} BTC, less but not liquidated −0\.\d{4} BTC, liquidated −0\.\d{4} BTC/);
 });
 
@@ -241,7 +241,7 @@ test('history section: real history first, a sentence linking it to the answer, 
   await page.locator('#trend-details > summary').click();
   await expect(page.locator('#trend-body .lv')).toHaveCount(5);
   await expect(page.locator('#trend-body .lv.base b')).toHaveText(String(n)); // "the answer above" really is the answer above
-  await expect(page.locator('#trend-body')).toContainText(/even at \+100% a year, \d+ of 100 futures still end in liquidation/);
+  await expect(page.locator('#trend-body')).toContainText(/even at \+100% a year, \d+ of 100 price paths still end in liquidation/);
   // the method justification is on the "How it works" page (e2e/site.spec.js)
   await page.getByRole('button', { name: 'Buy more BTC' }).click();
   await waitDone(page);
@@ -344,14 +344,14 @@ test('Share (desktop): copies a summary with the visitor\'s numbers and the link
   await page.locator('#share-btn').click();
   await expect(page.locator('#link-copied')).toBeVisible();
   const text = await page.evaluate(() => navigator.clipboard.readText());
-  expect(text).toContain(`Loan offer checked: ${n} of 100 simulated futures end in liquidation within 12 months.`);
+  expect(text).toContain(`Loan offer checked: ${n} of 100 simulated price paths end in liquidation within 12 months.`);
   expect(text).toMatch(/\nhttp:\/\/127\.0\.0\.1:\d+\/#s=/);
 });
 
 test('"Make it safer" shows exactly the headline number for your own terms, and the best option sits under the answer', async ({ page }) => {
   await open(page); await waitDone(page);
   const n = await headlineNumber(page);
-  await expect(page.locator('#slider-line')).toContainText(`Starting LTV 50% → ${n} of 100`);
+  await expect(page.locator('#slider-line')).toContainText(`Initial LTV 50% → ${n} of 100`);
   await expect(page.locator('#safer .lv.base b')).toHaveText(String(n));
   const best = (await page.locator('#best-lever').textContent()).match(/One change lowers this: (.+) → (\d+) of 100/);
   expect(best).not.toBeNull();
@@ -361,9 +361,9 @@ test('"Make it safer" shows exactly the headline number for your own terms, and 
   await expect(page.locator('#safer .lv:not(.base)').filter({ hasText: best[1] }).locator('b')).toHaveText(best[2]);
   const all = (await page.locator('#safer .lv:not(.base) b').allTextContents()).map(Number);
   expect(all).toEqual([...all].sort((a, b) => a - b)); // the list still goes from lowest to highest
-  // fairness: the two other methods are shown with the answer; the example's margin call is only a warning
-  // (decision 022), so there is no top-up assumption to state (it shows with a deadline: the lender's-rules test)
-  await expect(page.locator('#assume-line')).toHaveText('');
+  // fairness: the two other methods are shown with the answer; what the number assumes you add is always stated,
+  // with the way to change it (issue #22)
+  await expect(page.locator('#assume-line')).toHaveText('Assumes you don\'t top up. Will you?');
   await expect(page.locator('#methods-line')).toContainText(/^Real history since 2014 \d+ of 100, a volatility model \d+ of 100/);
   // what a sale leaves: not "everything lost"
   await expect(page.locator('#sold-line')).toContainText(/If liquidated: you get back at most 0\.\d{4} of your 0\.\d{4} BTC/);
@@ -470,7 +470,7 @@ test('refinancing: current loan vs. a cash-out offer, compared over the same mon
   await expect(rows.filter({ hasText: 'At the start' })).toContainText('You receive €2,000');
   // too much extra cash: the new loan would start in a margin call; the reason is shown at once
   await page.locator('#f-refiExtra').fill('5000');
-  await expect(page.locator('#ltv-today')).toContainText('starting LTV');
+  await expect(page.locator('#ltv-today')).toContainText('initial LTV');
   await expect(page.locator('#error-banner')).toBeVisible();
 });
 
@@ -535,7 +535,7 @@ test('slider: releasing it says what changed, and Undo brings the old terms back
   const slider = page.locator('#ltv-slider');
   await slider.focus();
   await page.keyboard.press('Home'); // the browser itself sends "change", as for a real visitor
-  await expect(page.locator('#slider-undo')).toContainText('Your starting LTV is now 10%.');
+  await expect(page.locator('#slider-undo')).toContainText('Your initial LTV is now 10%.');
   await expect(page.locator('#f-initialLtv')).toHaveValue('10');
   await page.locator('#slider-undo-btn').click();
   await expect(page.locator('#f-initialLtv')).toHaveValue('50');
@@ -662,9 +662,9 @@ test('a loan already running: past its margin call, only what the borrower can d
   await page.locator('#sec-falls > summary').click();
   await expect(page.locator('#falls-text')).toContainText('Your loan is already past its margin call: at today\'s price');
   await expect(page.locator('#falls-text')).not.toContainText('−-');
-  await expect(page.locator('#safer')).toContainText('add BTC or repay part');
+  await expect(page.locator('#safer')).toContainText('top up or repay part');
   await expect(page.locator('#safer')).not.toContainText('Liquidation LTV 90%');
-  await expect(page.locator('#safer')).not.toContainText('Starting LTV');
+  await expect(page.locator('#safer')).not.toContainText('Initial LTV');
   await expect(page.locator('#questions-title')).not.toContainText('Before you sign');
   await page.locator('#sec-cost > summary').click();
   await expect(page.locator('#cost-body')).toContainText('Keeping the loan only beats selling BTC today');
@@ -729,7 +729,7 @@ test('cost including the risk: in "What it costs", in the comparison of offers a
   const block = page.locator('#risk-cost');
   await expect(block).toContainText(`Including the liquidation risk: about ${tileTotal} (`);
   await expect(block).toContainText(/Including the liquidation risk: about €[\d,]+ \(about [\d.]+% a year instead of 11\.6%\)\./);
-  await expect(block).toContainText(/In \d+ of 100 futures it is zero/);
+  await expect(block).toContainText(/In \d+ of 100 price paths it is zero/);
   await expect(block.locator('a')).toHaveAttribute('href', /method\/#risk-cost$/);
   // a comparison of offers: one row with a value and a yearly figure per offer
   await page.locator('#compare-btn').click();
@@ -768,7 +768,7 @@ test('refinancing to buy more BTC: the extra cash is compared, future by future,
   await expect(page.locator('#form')).not.toContainText('What will you do with the extra cash?'); // only when borrowing more
   await page.locator('[data-set="refi.change"][data-val="more"]').click();
   await page.locator('#f-refiExtra').fill('5000');
-  await expect(page.locator('#refi-note')).toContainText('Starting LTV 30%, up from 20% today. Check that this is within your lender\'s maximum starting LTV.');
+  await expect(page.locator('#refi-note')).toContainText('Initial LTV 30%, up from 20% today. Check that this is within your lender\'s maximum initial LTV.');
   await page.locator('[data-set="durationMonths"][data-val="12"]').click();
   await page.locator('[data-set="purpose"][data-val="buy"]').click();
   await waitDone(page);
@@ -777,7 +777,7 @@ test('refinancing to buy more BTC: the extra cash is compared, future by future,
   await page.locator('#sec-cost > summary').click();
   const lev = page.locator('#leverage');
   await expect(lev).toContainText('With the extra US$5,000 you buy 0.0833 BTC today. Compared below: the same refinancing without the extra cash.');
-  await expect(lev).toContainText(/In \d+ of 100 futures you end with more BTC than without the extra cash\./);
+  await expect(lev).toContainText(/In \d+ of 100 price paths you end with more BTC than without the extra cash\./);
   await expect(lev).toContainText('Breakeven: BTC must be 10.0% higher at the end');
   await expect(lev).not.toContainText('Does the price trend matter here?');
   // back to the same amount: the question and the leverage view go away
@@ -873,7 +873,7 @@ test('screen readers: the tiles are a list, every "?" says what it explains, the
   const items = page.locator('#tiles[role="list"] > [role="listitem"]');
   expect(await items.count()).toBe(await page.locator('#tiles .tile').count());
   await expect(page.locator('#answer button.q')).toHaveAttribute('aria-label', 'More about this number');
-  await expect(page.locator('#sec-falls button.q')).toHaveAttribute('aria-label', 'More: 20 possible futures');
+  await expect(page.locator('#sec-falls button.q')).toHaveAttribute('aria-label', 'More: 20 possible price paths');
   for (const b of await page.locator('main button.q').all()) expect(await b.getAttribute('aria-label')).not.toBe('More');
   await page.locator('#tiles a.tile-risk').focus(); await page.keyboard.press('Enter');
   await expect(page.locator('#risk-cost h4')).toBeFocused();
@@ -883,7 +883,7 @@ test('small details: the currency sits beside the amount, one precision for an e
   await page.setViewportSize({ width: 375, height: 812 });
   await open(page); await waitDone(page);
   await page.locator('#own-terms-link').click();
-  await expect(page.locator('#ltv-interest-hint')).toContainText('Some lenders count the interest for the whole term in the starting LTV.');
+  await expect(page.locator('#ltv-interest-hint')).toContainText('Some lenders count the interest for the whole term in the initial LTV.');
   await page.getByRole('button', { name: 'A loan I already have' }).click();
   await page.locator('#f-loanAmount').fill('10000'); await waitDone(page);
   // beside the input: both centred on the same line (Safari draws the menu a little shorter)
@@ -1024,25 +1024,25 @@ test('the lender\'s rules (issue #11): their own folded part right under the liq
   const sum = rules.locator('#rules-sum');
   // placed straight after the liquidation LTV, before the duration
   expect(await page.evaluate(() => { const r = document.querySelector('#form details[data-remember="rules"]'); return r.previousElementSibling && r.previousElementSibling.dataset.field; })).toBe('liquidationLtv');
-  await expect(rules.locator('summary')).toContainText('What your lender does when BTC falls');
-  // the example's margin call is only a warning (decision 022)
-  await expect(sum).toHaveText('Margin call at 70%: a warning only · At 80%: everything is sold · Fee 5% of the amount owed');
+  await expect(rules.locator('summary')).toContainText('If the price falls: your lender\'s rules and your plan');
+  // the example's margin call is only a warning (decision 022); the visitor adds nothing unless they say so (issue #22)
+  await expect(sum).toHaveText('Your lender: Margin call at 70%: a warning only · At 80%: everything is sold · Fee 5% of the amount owed · Your plan: No top-ups');
   await expect(sum).toBeVisible(); // readable while folded
   await expect(rules).not.toHaveAttribute('open', '');
   await rules.locator('summary').click();
   await expect(rules).toHaveAttribute('open', '');
   await expect(rules.locator('#f-marginCallLtv')).toBeVisible();
   await expect(rules.locator('#f-liquidationFee')).toBeVisible();
-  // every change shows in the line at once; a deadline brings the top-up assumption under the answer
+  // every change shows in the line at once
   await rules.locator('[data-k="marginCallConsequence"]').selectOption('liquidateAfterCure');
   await expect(sum).toContainText('Margin call at 70%: 48 hours to top up, otherwise everything is sold');
-  await expect(page.locator('#assume-line')).toHaveText('Assumes you add no BTC or money after a margin call.');
+  await expect(page.locator('#assume-line')).toHaveText('Assumes you don\'t top up. Will you?');
   await rules.locator('[data-k="marginCallConsequence"]').selectOption('autoPartial');
   await expect(sum).toContainText('Margin call at 70%: part is sold at once');
   await rules.locator('[data-set="liquidationSale"][data-val="partial"]').click();
   await expect(sum).toContainText('At 80%: only enough is sold');
   await rules.locator('#f-marginCallLtv').fill('');
-  await expect(sum).toHaveText(/^No margin call · At 80%: only enough is sold · Fee 5% of the amount owed$/);
+  await expect(sum).toHaveText(/^Your lender: No margin call · At 80%: only enough is sold · Fee 5% of the amount owed · Your plan: No top-ups$/);
   // the other terms stay in "More terms from your offer", without the rules
   const more = page.locator('#form details[data-remember="more"]');
   await expect(more.locator('#f-marginCallLtv, #f-liquidationFee')).toHaveCount(0);
@@ -1052,8 +1052,120 @@ test('the lender\'s rules (issue #11): their own folded part right under the liq
 test('the lender\'s rules (issue #11), in German', async ({ page }) => {
   await open(page, { lang: 'de' }); await waitDone(page);
   const rules = page.locator('#form details[data-remember="rules"]');
-  await expect(rules.locator('summary')).toContainText('Was Ihr Kreditgeber tut, wenn BTC fällt');
-  await expect(rules.locator('#rules-sum')).toHaveText(/^Margin Call bei 70\s%: nur eine Warnung · Bei 80\s%: alles wird verkauft · Gebühr 5\s% des geschuldeten Betrags$/);
+  await expect(rules.locator('summary')).toContainText('Wenn der Kurs fällt: die Regeln Ihres Kreditgebers und Ihr Plan');
+  await expect(rules.locator('#rules-sum')).toHaveText(/^Ihr Kreditgeber: Margin Call bei 70\s%: nur eine Warnung · Bei 80\s%: alles wird verkauft · Gebühr 5\s% des geschuldeten Betrags · Ihr Plan: Nichts nachschießen$/);
+});
+
+// "Will you add BTC if the price falls?" (issue #22, decision 023)
+const heroN = async (page) => Number(await page.locator('#headline-text em').textContent());
+test('adding BTC (issue #22): "No" by default; the line under the answer opens the question; a way shows only its own empty fields and changes nothing until they are filled in', { tag: '@phone' }, async ({ page }) => {
+  await open(page); await waitDone(page);
+  const n0 = await heroN(page);
+  await expect(page.locator('#plan-line')).toBeHidden();
+  await expect(page.locator('#ways')).toBeHidden();
+  await page.locator('#assume-line [data-open-plan]').click();
+  const q = page.locator('#add-plan');
+  await expect(q).toBeInViewport();
+  await expect(q.locator('[data-set="addPlan"][aria-pressed="true"]')).toHaveText('No, I don\'t top up');
+  await expect(q.locator('[data-set="addPlan"]')).toHaveText(['No, I don\'t top up', 'Once, at the margin call', 'Every month', 'Whenever the LTV gets too high']);
+  await expect(q.locator('input')).toHaveCount(0);
+  await q.locator('[data-set="addPlan"][data-val="monthly"]').click();
+  await expect(q.locator('input')).toHaveCount(2);
+  await expect(page.locator('#f-monthlyAmount')).toHaveValue('');
+  await expect(page.locator('#f-monthlyMonths')).toHaveValue('');
+  await expect(page.locator('#plan-empty')).toBeVisible();
+  await expect(page.locator('#rules-sum')).toContainText('Your plan: Not filled in yet');
+  await expect(page.locator('#ans-label')).toHaveText('Example'); // nothing filled in: still the example, no new calculation
+  expect(await heroN(page)).toBe(n0);
+  await page.locator('#f-monthlyAmount').fill('300');
+  await page.locator('#f-monthlyMonths').fill('12');
+  await waitDone(page);
+  await expect(page.locator('#plan-empty')).toBeHidden();
+  await expect(page.locator('#rules-sum')).toContainText('Your plan: Top up €300 each month for 12 months');
+  await expect(page.locator('#assume-line')).toHaveText('Assumes you top up €300 each month for 12 months, the first now. Change');
+  const n1 = await heroN(page);
+  expect(n1).toBeLessThan(n0);
+  await expect(page.locator('#plan-line')).toHaveText(new RegExp(`^Without top-ups: ${n0} of 100\\. On average you top up €[\\d,]+ of your €3,600\\.$`));
+  // your money, added in the other ways: folded, with your row and "Nothing"
+  const ways = page.locator('#ways');
+  await expect(ways.locator('#ways-title')).toHaveText('Your €3,600 of top-ups: the same money, at other times');
+  await expect(ways.locator('#ways-sum')).toHaveText(new RegExp(`^Liquidated, of 100: your plan ${n1} · without it ${n0} · other ways \\d+( to \\d+)?$`)); // readable while folded
+  await expect(ways).not.toHaveAttribute('open', '');
+  await ways.locator('summary').click();
+  const rows = ways.locator('tbody tr');
+  await expect(rows.locator('th')).toHaveText(['€300 every month for 12 months (your plan)', 'All at the start', 'Once, at the margin call (70%)', 'At 65%, back to 50%, at once', 'No top-ups']);
+  await expect(rows.first().locator('td').first()).toHaveText(String(n1));
+  await expect(rows.last().locator('td')).toHaveText([String(n0), '€0']);
+  // "Change" goes back to the question; "No" brings back the answer without a plan
+  await page.locator('#assume-line [data-open-plan]').click();
+  await expect(q).toBeInViewport();
+  await expect(q.locator('[data-set="addPlan"][aria-pressed="true"]')).toHaveText('Every month');
+  await q.locator('[data-set="addPlan"][data-val="none"]').click();
+  await waitDone(page);
+  expect(await heroN(page)).toBe(n0);
+  await expect(page.locator('#plan-line')).toBeHidden();
+  await expect(page.locator('#ways')).toBeHidden();
+});
+
+test('adding BTC (issue #22): "whenever the LTV gets too high" asks four things and checks them; "once" needs a margin call; an existing loan asks the same', { tag: '@phone' }, async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.locator('#own-terms-link').click();
+  await openFolded(page, '#form');
+  const q = page.locator('#add-plan');
+  await q.locator('[data-set="addPlan"][data-val="ltv"]').click();
+  await expect(q.locator('input')).toHaveCount(3);
+  await expect(q.locator('[data-set="topUpDelay"]')).toHaveText(['At once', 'Within 1 day', 'Within 2 days']);
+  await expect(q.locator('[data-set="topUpDelay"][aria-pressed="true"]')).toHaveCount(0); // nothing preset
+  await page.locator('#f-topUpAt').fill('85'); // above the liquidation LTV (80%)
+  await page.locator('#f-topUpTo').fill('50');
+  await page.locator('#f-topUpBudget').fill('5000');
+  await q.locator('[data-set="topUpDelay"][data-val="1"]').click();
+  await expect(page.locator('[data-field="topUpAt"] .err')).toHaveText(/This LTV must be above 0% and below the liquidation LTV\./);
+  await page.locator('#f-topUpAt').fill('65');
+  await waitDone(page);
+  await expect(page.locator('[data-field="topUpAt"] .err')).toBeHidden();
+  await expect(page.locator('#assume-line')).toHaveText('Assumes you top up whenever the LTV reaches 65%, back to 50%, within 1 day, up to €5,000 in total. Change');
+  await openFolded(page, '#answer');
+  await expect(page.locator('#ways tbody tr.mine th')).toHaveText('At 65%, back to 50%, within 1 day (your plan)');
+  // without a margin call there is nothing to add "once" at
+  await page.locator('#f-marginCallLtv').fill('');
+  await expect(q.locator('[data-set="addPlan"]')).toHaveText(['No, I don\'t top up', 'Every month', 'Whenever the LTV gets too high']);
+  // a loan already running: the same question
+  await page.locator('[data-set="mode"][data-val="existing"]').click();
+  await expect(page.locator('#add-plan [data-set="addPlan"][aria-pressed="true"]')).toHaveText('Whenever the LTV gets too high');
+});
+
+test('adding BTC (issue #22) next to the lender\'s deadline: one line says what happens when the time ends, and warns when the chosen speed is too slow', { tag: '@phone' }, async ({ page }) => {
+  await open(page); await waitDone(page);
+  await page.locator('#own-terms-link').click();
+  await openFolded(page, '#form');
+  const hint = page.locator('#plan-lender');
+  await expect(hint).toBeHidden(); // the example's margin call is only a warning: no deadline
+  await page.locator('[data-k="marginCallConsequence"]').selectOption('liquidateAfterCure');
+  await expect(hint).toHaveText('With "No": if the LTV is still 70% or more after 48 hours, your lender sells everything.');
+  const q = page.locator('#add-plan');
+  await q.locator('[data-set="addPlan"][data-val="ltv"]').click();
+  await page.locator('#f-topUpAt').fill('70');
+  await page.locator('#f-topUpTo').fill('50');
+  await page.locator('#f-topUpBudget').fill('5000');
+  await q.locator('[data-set="topUpDelay"][data-val="2"]').click();
+  await expect(hint).toHaveText('If the LTV is still 70% or more after 48 hours, your lender sells everything. The answer counts whether your plan gets it lower in time. "Within 2 days" is not sooner than your lender\'s 48 hours: from 70% on, your BTC arrives too late.');
+  await q.locator('[data-set="topUpDelay"][data-val="1"]').click();
+  await expect(hint).toHaveText('If the LTV is still 70% or more after 48 hours, your lender sells everything. The answer counts whether your plan gets it lower in time.');
+  await waitDone(page);
+});
+
+test('adding BTC (issue #22), in German', async ({ page }) => {
+  await open(page, { lang: 'de' }); await waitDone(page);
+  await expect(page.locator('#assume-line')).toHaveText('Angenommen: Sie schießen keine BTC nach. Schießen Sie BTC nach?');
+  await page.locator('#assume-line [data-open-plan]').click();
+  await expect(page.locator('#l-addPlan')).toHaveText('Schießen Sie BTC nach, wenn der Kurs fällt?');
+  await page.locator('#add-plan [data-set="addPlan"][data-val="monthly"]').click();
+  await page.locator('#f-monthlyAmount').fill('300');
+  await page.locator('#f-monthlyMonths').fill('12');
+  await waitDone(page);
+  await expect(page.locator('#assume-line')).toHaveText(/^Angenommen: Sie schießen 12 Monate lang jeden Monat 300\s€ als BTC nach, das erste Mal jetzt\. Ändern$/);
+  await expect(page.locator('#plan-line')).toHaveText(/^Wenn Sie nichts nachschießen: \d+ von 100\. Im Durchschnitt schießen Sie [\d.]+\s€ Ihrer 3\.600\s€ nach\.$/);
 });
 
 test('entry timing (issue #12): the history section shows the loan by what BTC did in the 90 days before the start; the last row is the line above it', { tag: '@phone' }, async ({ page }) => {
@@ -1135,14 +1247,14 @@ test('"Show 20 other futures" goes through five different sets and says which on
   await open(page); await waitDone(page);
   await page.locator('#sec-falls > summary').click();
   const btn = page.locator('#other-paths');
-  await expect(btn).toHaveText('Show the next 20 futures (set 2 of 5)');
+  await expect(btn).toHaveText('Show the next 20 price paths (set 2 of 5)');
   const seen = new Set();
   for (let i = 0; i < 5; i++) {
     seen.add(await page.locator('#futures-chart svg').innerHTML());
     await btn.click();
   }
   expect(seen.size).toBe(5); // five different sets
-  await expect(btn).toHaveText('Show the next 20 futures (set 2 of 5)'); // back to the first set
+  await expect(btn).toHaveText('Show the next 20 price paths (set 2 of 5)'); // back to the first set
 });
 
 // The owner counted the ✕ in all five sets and got 13 while the answer said 15 (21 Oct 2026): the chart
@@ -1165,31 +1277,31 @@ test('"What happens when BTC falls": the five sets of 20 futures together have e
   }
 });
 
-// The example showed "54 of 100" liquidated and "in 47 of 100 futures it is zero" (owner, 21 Oct 2026):
+// The example showed "54 of 100" liquidated and "in 47 of 100 price paths it is zero" (owner, 21 Oct 2026):
 // 53.5 and 46.5, each rounded up. The futures without a sale are now 100 minus the answer's number.
-test('cost of the risk: "zero in X of 100 futures" and the answer add up to 100, also on How it works', async ({ page }) => {
+test('cost of the risk: "zero in X of 100 price paths" and the answer add up to 100, also on How it works', async ({ page }) => {
   await open(page); await waitDone(page);
   const example = await headlineNumber(page);
   for (const ltv of ['50', '30', '62']) {
     if (ltv !== '50') { await page.locator('#f-initialLtv').fill(ltv); await waitFresh(page); }
     const n = await headlineNumber(page);
-    const none = Number((await page.locator('#risk-cost').textContent()).match(/In (\d+) of 100 futures it is zero/)[1]);
+    const none = Number((await page.locator('#risk-cost').textContent()).match(/In (\d+) of 100 price paths it is zero/)[1]);
     expect(none + n, `starting LTV ${ltv}%`).toBe(100);
   }
   await page.goto('/method/'); // How it works explains the example
-  const zero = Number((await page.locator('#risk-read').textContent()).match(/Zero in (\d+) of 100 futures/)[1]);
+  const zero = Number((await page.locator('#risk-read').textContent()).match(/Zero in (\d+) of 100 price paths/)[1]);
   expect(zero + example).toBe(100);
 });
 
-// Owner, 21 Oct 2026: a loan at 25% got "Starting LTV 5% → 0 of 100" (five times the BTC). Now the smallest step
+// Owner, 21 Oct 2026: a loan at 25% got "Initial LTV 5% → 0 of 100" (five times the BTC). Now the smallest step
 // that clearly helps is suggested; the slider below shows the rest.
 test('"One change lowers this": the smallest starting-LTV step that clearly helps, not the biggest', async ({ page }) => {
   await open(page, { hash: encodeState({ ...EXAMPLE_FORM, isExample: false, currency: 'USD', initialLtv: 25 }) }); await waitDone(page);
-  await expect(page.locator('#best-lever')).toHaveText(/^One change lowers this: Starting LTV 20% → \d+ of 100\.$/);
+  await expect(page.locator('#best-lever')).toHaveText(/^One change lowers this: Initial LTV 20% → \d+ of 100\.$/);
   const n = await headlineNumber(page);
   const p = Number((await page.locator('#best-lever').textContent()).match(/→ (\d+) of 100/)[1]);
   expect(p).toBeLessThanOrEqual(n - Math.max(1, Math.ceil(n / 4))); // clearly lower
-  await expect(page.locator('#safer .lv').filter({ hasText: 'Starting LTV 5%' })).toHaveCount(1); // the bigger steps stay in the list
+  await expect(page.locator('#safer .lv').filter({ hasText: 'Initial LTV 5%' })).toHaveCount(1); // the bigger steps stay in the list
 });
 
 test('questions to ask the lender: a folded checklist tile after "Make it safer"; the closed line says what is inside', async ({ page }) => {
@@ -1420,11 +1532,11 @@ test('refinancing: today\'s LTV, when borrowing more or taking back BTC is possi
   const max = (await note.textContent()).match(/at most (0\.\d+) BTC/)[1];
   await page.locator('#f-refiBack').fill(max);
   await expect(note).not.toHaveClass(/err/); // possible now, but much higher than today: the neutral note
-  await expect(note).toContainText(/Starting LTV \d+%, up from 50% today\. Check that this is within your lender's maximum starting LTV\./);
-  await expect(page.locator('#ltv-today')).toContainText(/starting LTV 69\.\d%/);
+  await expect(note).toContainText(/Initial LTV \d+%, up from 50% today\. Check that this is within your lender's maximum initial LTV\./);
+  await expect(page.locator('#ltv-today')).toContainText(/initial LTV 69\.\d%/);
   await page.locator('[data-set="refi.change"][data-val="more"]').click();
   await page.locator('#f-refiExtra').fill('3000');
-  await expect(note).toContainText(/Starting LTV \d+%, up from 50% today\. Check that this is within your lender's maximum starting LTV\./);
+  await expect(note).toContainText(/Initial LTV \d+%, up from 50% today\. Check that this is within your lender's maximum initial LTV\./);
   await page.locator('#f-refiExtra').fill('5000');
   await expect(note).toContainText(/at most €3,\d{3} more can be borrowed/);
   await page.locator('[data-set="refi.change"][data-val="same"]').click();

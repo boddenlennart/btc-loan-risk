@@ -42,6 +42,8 @@ export const LOANS = [
   ['Swiss francs', { currency: 'CHF', initialLtv: 40 }],
   ['Czech crowns', { currency: 'CZK', loanAmount: 250000 }],
   ['cash reserve for a margin call', { reserveAmount: 3000 }],
+  ['adds BTC every month (issue #22)', { addPlan: 'monthly', monthlyAmount: 300, monthlyMonths: 12 }],
+  ['adds BTC whenever the LTV gets too high (issue #22)', { addPlan: 'ltv', topUpAt: 65, topUpTo: 50, topUpBudget: 5000, topUpDelay: '1', marginCallConsequence: 'liquidateAfterCure' }],
   ['high fees', { liquidationFee: 10, originationFee: { value: 3, type: 'percent' } }],
   ['tax on selling', { taxRateNow: 25, taxRateAtMaturity: 25, purpose: 'buy' }],
 ];
@@ -93,6 +95,8 @@ async function readPage(page) {
         trend: rows('#trend-body'), methods: txt('#methods-line'), history: txt('#history-text'), stress: txt('#stress-line'), historySum: txt('#history-sum'),
         years: [...document.querySelectorAll('#years-table tbody tr')].map((r) => [...r.cells].map((c) => c.textContent.trim())),
         entryTotal: [...document.querySelectorAll('#entry-table tfoot td')].map((c) => c.textContent.trim()),
+        planLine: txt('#plan-line'), waysTitle: txt('#ways-title'), waysSum: txt('#ways-sum'),
+        ways: [...document.querySelectorAll('#ways-table tbody tr')].map((r) => [...[...r.cells].map((c) => c.textContent.trim()), r.classList.contains('mine')]),
         leverage: txt('#leverage'), levLegend: legend('#leverage'), levDots: dots('#leverage'),
         ownLtv: (() => { const f = document.querySelector('#f-initialLtv'); return f && f.offsetParent && f.value !== '' ? Number(f.value) : null; })(), // typed as an LTV (not as BTC)
       };
@@ -117,7 +121,7 @@ function checkRules(d, label) {
   expect(Number(one(d.futuresLine, /so that (\d+) of them end/, 'futures sentence')[1]), at('futures sentence')).toBe(n);
   // 3. the cost of the risk: zero in 100 − the big number of futures
   if (d.riskCost) {
-    expect(Number(one(d.riskCost, /In (\d+) of 100 futures it is zero/, 'zero count')[1]), at('"zero in X of 100" = 100 − the big number')).toBe(100 - n);
+    expect(Number(one(d.riskCost, /In (\d+) of 100 price paths it is zero/, 'zero count')[1]), at('"zero in X of 100" = 100 − the big number')).toBe(100 - n);
     // 4. the tile and "What it costs" show the same total (and the same yearly rate)
     const line = one(d.riskCost, /Including the liquidation risk: about ((?:[A-Z]{2,3} )?[^\s(]*[\d,]+)(?: \(about ([\d.]+%) a year instead of ([\d.]+%)\))?/, 'risk line');
     const tile = one(d.tileRisk, /about ((?:[A-Z]{2,3} )?[^\s·]*[\d,]+)(?: · ([\d.]+%))?/, 'tile risk line');
@@ -133,7 +137,7 @@ function checkRules(d, label) {
   const base = d.safer.find((r) => r[2]);
   if (base) expect(int(base[1]), at('"Your terms" row = the big number')).toBe(n);
   // (the slider moves in steps of 5 points: compared only when it sits at your own LTV)
-  const own = d.slider.match(/^Starting LTV (\d+)% → (\d+) of 100/);
+  const own = d.slider.match(/^Initial LTV (\d+)% → (\d+) of 100/);
   if (d.sliderShown && own && d.ownLtv !== null && Number(own[1]) === d.ownLtv) expect(Number(own[2]), at('slider line at your LTV')).toBe(n);
   const best = d.best.match(/One change lowers this: (.+) → (\d+) of 100/);
   if (best) {
@@ -154,7 +158,7 @@ function checkRules(d, label) {
   if (d.levLegend.length) {
     const lv = Object.fromEntries(d.levLegend.map((s) => { const m = s.match(/^(\d+) (.+)$/); return [m[2], Number(m[1])]; }));
     expect(Object.values(lv).reduce((a, b) => a + b, 0), at('"buy more BTC" adds up to 100')).toBe(100);
-    const lh = one(d.leverage, /In (\d+) of 100 futures you end with more BTC[^.]*\. In (\d+) of 100 with less \((\d+) of them liquidated\)/, 'leverage headline');
+    const lh = one(d.leverage, /In (\d+) of 100 price paths you end with more BTC[^.]*\. In (\d+) of 100 with less \((\d+) of them liquidated\)/, 'leverage headline');
     expect(Number(lh[1]) + Number(lh[2]), at('"more" + "less" = 100')).toBe(100);
     expect(Number(lh[3]), at('"buy more BTC" liquidated = legend "liquidated" under the answer')).toBe(leg.liquidated || 0);
   }
@@ -176,6 +180,21 @@ function checkRules(d, label) {
     expect(Number(hs[1]), at('title line 2014 = table 2014 row')).toBe(Number(d.years[0][2]));
     const y20 = d.years.find((r) => r[0].includes('2020'));
     if (y20) expect(Number(hs[2]), at('title line 2020 = table 2020 row')).toBe(Number(y20[2]));
+  }
+  // 18. pledging more BTC (issue #22): in the table of other ways, your row = the big number; "Nothing more" = "If you pledge
+  // nothing more" under the answer; what you pledge on average and your total = your row and the table's title; the title's
+  // summary line repeats your row, "Nothing more" and the other rows' range
+  if (d.ways.length) {
+    const mine = d.ways.find((r) => r[3]); const nothing = d.ways.find((r) => r[0] === 'No top-ups');
+    expect(int(mine[1]), at('ways: your row = the big number')).toBe(n);
+    const pl = one(d.planLine, /^Without top-ups: (\d+) of 100\. On average you top up (.+) of your (.+)\.$/, 'plan line');
+    expect(Number(pl[1]), at('"If you add nothing" = the table\'s "Nothing" row')).toBe(int(nothing[1]));
+    expect(pl[2], at('money put in: plan line = your row')).toBe(mine[2]);
+    expect(d.waysTitle, at('your total: plan line = table title')).toBe(`Your ${pl[3]} of top-ups: the same money, at other times`);
+    const others = d.ways.filter((r) => !r[3] && r[0] !== 'No top-ups').map((r) => int(r[1]));
+    const lo = Math.min(...others); const hi = Math.max(...others);
+    expect(d.waysSum, at('table summary line = its rows')).toBe(`Liquidated, of 100: your plan ${int(mine[1])} · without it ${int(nothing[1])} · other ways ${lo === hi ? lo : `${lo} to ${hi}`}`);
+    expect(int(nothing[2]), at('"Nothing" puts in nothing')).toBe(0);
   }
   // 15. calmer and wilder swings (decision 021): on the same futures, calmer never more than the big number, wilder never less.
   // Not for a loan already past its margin call: there calmer swings make a recovery less likely (98 vs 97 of 100, found 27 Oct 2026).

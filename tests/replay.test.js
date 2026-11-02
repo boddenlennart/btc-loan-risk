@@ -226,6 +226,7 @@ describe('real crashes with margin-call rules: same result as the independent re
       expect(r.partialSales.map((p) => [p.time, p.reason])).toEqual(e.partialSales.map((p) => [p.time, p.reason]));
       r.partialSales.forEach((p, i) => expect(p.btc).toBeCloseTo(e.partialSales[i].btc, 9));
       expect(r.collateralAtEnd).toBeCloseTo(e.collateralAtEnd, 9);
+      expect(r.added).toBeCloseTo(e.added, 6); // the money put in: reserve or plan (issue #22)
     });
   }
 });

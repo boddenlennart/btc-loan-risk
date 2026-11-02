@@ -17,7 +17,7 @@ import { lenderRules, partialSaleBtc } from '../engine/lender.js';
 import { getSpotPrice } from '../live/price.js';
 import { setData as jobSetData, run as jobRun } from './riskjob.js';
 import { encodeState, decodeLink } from './share.js';
-import { toTerms, numOr, today, exampleKey, switchCosts, withSwitching } from './terms.js';
+import { toTerms, numOr, today, exampleKey, switchCosts, withSwitching, addPlanKind, withAddPlan } from './terms.js';
 import { initShell, renderShell, setTheme } from './shell.js';
 import { dataAge } from '../data/candles.js';
 import { gunzipSync, strFromU8 } from 'fflate';
@@ -51,6 +51,7 @@ let riskTerms = null; let riskSettings = null; const pending = {};
 let pathSet = 0; // which 20 of the 100 sample futures are shown
 // the example answer computed by the build (META.example), shown at once while the page recomputes it
 let embeddedKey = null;
+let riskIsExample = false; // the answer shown is the example's (stored, or its quiet recalculation)
 let undoState = null; let sliderChanging = false; let refocusSlider = false;
 function undoSlider() {
   if (!undoState) return;
@@ -126,7 +127,8 @@ function loadState() {
   const okCompare = c && typeof c === 'object' && ['offers', 'refi'].includes(c.kind) && Array.isArray(c.offers) && c.offers.length >= 2 && c.offers.length <= 3
     && c.offers.every((o) => o && typeof o === 'object') && Number.isInteger(c.active) && c.active >= 0 && c.active < c.offers.length;
   if (okCompare) compare = { kind: c.kind, active: c.active, names: Array.isArray(c.names) ? c.names.map((n) => String(n ?? '').slice(0, 40)) : [], offers: c.offers.map((o) => ({ ...EXAMPLE_FORM, ...o })) };
-  const s = { ...EXAMPLE_FORM, ...(saved && saved.state), ...(fromLink || {}), ...(compare ? compare.offers[compare.active] : {}) };
+  if (compare && !linkData) compare.offers = compare.offers.map((o, i) => ({ ...EXAMPLE_FORM, ...withAddPlan(c.offers[i]) }));
+  const s = { ...EXAMPLE_FORM, ...withAddPlan(saved && saved.state), ...(fromLink || {}), ...(compare ? compare.offers[compare.active] : {}) };
   if (fromLink) s.priceManual = false;
   // the model's own settings are fixed (10,000 futures, 30-day pieces): every explanation and the test against
   // history rest on them, so inputs saved by an older version cannot change them
@@ -160,10 +162,10 @@ function numField(key, label, unit, { help, hint, step = 'any', id = key, after 
     ${hint ? `<p class="hint">${esc(hint)}</p>` : ''}
     <p class="err" role="alert" hidden></p></div>`;
 }
-function seg(key, options, label, { help, id = key } = {}) {
-  const btns = options.map(([v, l]) => `<button type="button" data-set="${key}" data-val="${esc(v)}" aria-pressed="${String(getPath(state, key)) === String(v)}">${esc(l)}</button>`).join('');
+function seg(key, options, label, { help, id = key, value = getPath(state, key), cls = '' } = {}) {
+  const btns = options.map(([v, l]) => `<button type="button" data-set="${key}" data-val="${esc(v)}" aria-pressed="${String(value) === String(v)}">${esc(l)}</button>`).join('');
   return `<div class="field" data-field="${id}">${label ? `<div class="label-row"><span class="label" id="l-${id}">${esc(label)}</span>${help ? helpBtn(id, label) : ''}</div>` : ''}
-    ${help ? helpBox(id, help) : ''}<div class="seg" role="group"${label ? ` aria-labelledby="l-${id}"` : ''}>${btns}</div><p class="err" role="alert" hidden></p></div>`;
+    ${help ? helpBox(id, help) : ''}<div class="seg${cls ? ` ${cls}` : ''}" role="group"${label ? ` aria-labelledby="l-${id}"` : ''}>${btns}</div><p class="err" role="alert" hidden></p></div>`;
 }
 function select(key, options, label, { id = key } = {}) {
   const opts = options.map(([v, l]) => `<option value="${esc(v)}"${String(state[key]) === String(v) ? ' selected' : ''}>${esc(l)}</option>`).join('');
@@ -245,7 +247,8 @@ function buildForm() {
       ${seg('liquidationSale', ['all', 'partial'].map((v) => [v, f.liquidationSale[v]]), f.liquidationSale.label)}
       ${(mc || anyPartial) ? numField('cureTargetLtv', f.cureTargetLtv.label, '%', { hint: existing ? '' : f.cureTargetLtv.hint }) : ''}
     </fieldset>
-    <div class="field" data-field="liquidationFee"><label for="f-liquidationFee">${esc(f.liquidationFee.label)}</label><div class="pair"><input id="f-liquidationFee" data-k="liquidationFee" type="number" step="any" min="0" inputmode="decimal" value="${esc(state.liquidationFee)}">${feeSel('liquidationFeeBasis', [['debt', f.liquidationFee.debt], ['collateralSold', f.liquidationFee.collateralSold]])}</div><p class="err" role="alert" hidden></p></div>`;
+    <div class="field" data-field="liquidationFee"><label for="f-liquidationFee">${esc(f.liquidationFee.label)}</label><div class="pair"><input id="f-liquidationFee" data-k="liquidationFee" type="number" step="any" min="0" inputmode="decimal" value="${esc(state.liquidationFee)}">${feeSel('liquidationFeeBasis', [['debt', f.liquidationFee.debt], ['collateralSold', f.liquidationFee.collateralSold]])}</div><p class="err" role="alert" hidden></p></div>
+    ${planFields(mc)}`;
   const more = `
     ${seg('repayment', ['interestOnly', 'bullet', 'amortizing'].map((v) => [v, f.repayment[v]]), f.repayment.label, { help: fm.help.repayment })}
     ${state.repayment === 'bullet' ? seg('compounding', ['none', 'monthly'].map((v) => [v, f.compounding[v]]), f.compounding.label) : ''}
@@ -326,7 +329,101 @@ function rulesSummary(terms) {
   const margin = !r.mLtv ? 'noMargin' : r.behaviour === 'autoPartial' ? 'auto' : !r.afterCure ? 'warning' : r.cureSale === 'partial' ? 'curePartial' : 'cure';
   const fee = r.feeValue > 0 ? (r.feeBasis === 'collateralSold' ? 'feeSold' : 'feeDebt') : 'noFee';
   // one rule per line, easy to scan on a phone; the separators stay in the text for copying and screen readers
-  el.innerHTML = [margin, r.liquidationSale === 'partial' ? 'partial' : 'all', fee].map((k) => `<span class="rule">${esc(t(`form.fields.rulesSum.${k}`, vars))}</span>`).join('<span class="sep"> · </span>');
+  // two groups, who decides what: the lender's rules, then your plan (owner, 2 Nov 2026)
+  const group = (who, items) => `<span class="who">${esc(who)}<span class="sep">: </span></span>${items.map((x) => `<span class="rule">${esc(x)}</span>`).join('<span class="sep"> · </span>')}`;
+  el.innerHTML = group(S.lender, [margin, r.liquidationSale === 'partial' ? 'partial' : 'all', fee].map((k) => t(`form.fields.rulesSum.${k}`, vars)))
+    + '<span class="sep"> · </span>' + group(S.plan, [planSummary(terms)]);
+}
+
+// "Will you add BTC if the price falls?" (issue #22, decision 023): one question, "No" unless the visitor picks a
+// way; then only that way's fields, empty until filled in. "Once" needs a margin call.
+function planFields(mc) {
+  const f = F(); const A = f.addPlan; const kind = addPlanKind(state); const cur = state.currency;
+  const ways = [['none', A.none], ...(mc ? [['once', A.once]] : []), ['monthly', A.monthly], ['ltv', A.ltv]];
+  let fields = '';
+  if (kind === 'once') fields = numField('reserveAmount', f.reserveAmount.label, cur, { hint: f.reserveAmount.hint });
+  if (kind === 'monthly') fields = numField('monthlyAmount', f.monthlyAmount.label, cur, { hint: f.monthlyAmount.hint }) + numField('monthlyMonths', f.monthlyMonths.label, t('ui.months'), { step: '1' });
+  if (kind === 'ltv') {
+    const D = f.topUpDelay;
+    fields = numField('topUpAt', f.topUpAt.label, '%') + numField('topUpTo', f.topUpTo.label, '%') + numField('topUpBudget', f.topUpBudget.label, cur)
+      + seg('topUpDelay', ['0', '1', '2'].map((v) => [v, D[v]]), D.label) + `<p class="hint">${esc(D.hint)}</p>`;
+  }
+  return `<fieldset class="sub-group plan" id="add-plan"><legend><span class="label">${esc(A.legend)}</span></legend>${seg('addPlan', ways, A.label, { value: kind, cls: 'stack' })}
+    <p class="hint" id="plan-lender" hidden></p>
+    ${fields ? `<div class="plan-fields">${fields}<p class="hint" id="plan-empty" hidden>${esc(A.empty)}</p></div>` : ''}</fieldset>`;
+}
+const hasPlan = (tm) => tm.reserveAmount > 0 || !!tm.plan;
+// The lender's deadline and your plan side by side: with "Top up in time, otherwise …", one line under the question
+// says what happens when the time ends, and warns when the chosen speed cannot meet it (from the margin call on)
+function planLenderHint(tm) {
+  const el = $('#plan-lender'); if (!el) return;
+  const r = lenderRules(tm);
+  if (!r.afterCure) { el.hidden = true; return; }
+  const A = F().addPlan; const S = F().rulesSum; const p = tm.plan;
+  const hours = tm.curePeriodHours === 1 ? S.hour : t('form.fields.rulesSum.hours', { n: tm.curePeriodHours });
+  const vars = { mc: pct(tm.marginCallLtv, 0), hours, what: r.cureSale === 'partial' ? A.whatPartial : A.whatAll };
+  let text = t(hasPlan(tm) ? 'form.fields.addPlan.deadlinePlan' : 'form.fields.addPlan.deadlineNone', vars);
+  // the plan's top-up comes at the end of its 1 or 2 days; the lender's sale at the end of its hours comes first
+  if (p && p.kind === 'ltv' && p.delayDays > 0 && p.delayDays * 24 >= tm.curePeriodHours && p.at >= tm.marginCallLtv) {
+    text += ` ${t('form.fields.addPlan.deadlineLate', { ...vars, speed: F().topUpDelay[p.delayDays] })}`;
+  }
+  el.textContent = text; el.hidden = false;
+}
+// the plan in words: one rule in the summary line (pre = 'form.fields.rulesSum.add'), or what the answer assumes
+// (pre = 'results.assume'); a way picked but not filled in counts as no plan
+function planWords(tm, pre) {
+  const cur = tm.currency; const p = tm.plan;
+  if (tm.reserveAmount > 0) return t(`${pre}Once`, { amount: money0(tm.reserveAmount, cur) });
+  if (p && p.kind === 'monthly') return t(`${pre}Monthly`, { amount: money0(p.amount, cur), months: p.months });
+  if (p && p.kind === 'ltv') return t(`${pre}Ltv`, { at: pct(p.at, 0), to: pct(p.to, 0), budget: money0(p.budget, cur), speed: t(`results.speed.${p.delayDays}`) });
+  return t(`${pre}${pre.endsWith('add') && tm.addPlan !== 'none' ? 'Open' : 'None'}`);
+}
+const planSummary = (tm) => planWords(tm, 'form.fields.rulesSum.add');
+
+// The link under the answer: open the terms at the question, with the focus on the chosen way
+function openPlan() {
+  setTermsOpen(true);
+  const d = $('#form details.rules'); if (d) { d.open = true; openDetails.add('rules'); }
+  requestAnimationFrame(() => {
+    const box = $('#add-plan'); if (!box) return;
+    box.scrollIntoView({ block: 'start' });
+    const b = box.querySelector('[data-set="addPlan"][aria-pressed="true"]'); if (b) b.focus({ preventScroll: true });
+  });
+}
+
+// On the answer card: what the number assumes you add, with the way to the question; with a plan, the number
+// without it and the money put in, and the folded "Your money, added in other ways" (issue #22, decision 023).
+function renderPlan(r, tm) {
+  const R = texts().results; const cur = tm.currency; const p = tm.plan; const plan = hasPlan(tm);
+  $('#assume-line').innerHTML = `${esc(planWords(tm, 'results.assume'))} <button type="button" class="link" data-open-plan>${esc(plan ? R.assumeChange : R.assumeAsk)}</button>`;
+  const line = $('#plan-line'); const box = $('#ways');
+  line.hidden = !plan; box.hidden = !plan || !r.ways;
+  if (!plan) return;
+  // until the ways are computed (with "Make it safer"), the line keeps its last text, dimmed
+  line.classList.toggle('pending', !r.ways);
+  if (!r.ways) { if (!line.textContent) line.textContent = texts().ui.computingShort; return; }
+  // every row rounded as the answer at the top would show it: "nothing" is the number shown without a plan, "yours" the headline
+  const asHeadline = (w) => { const [a, b] = heroSplit(w); return a + b; };
+  const own = r.ways.find((w) => w.own); const none = r.ways.find((w) => w.id === 'none');
+  line.textContent = t('results.planLine', { none: asHeadline(none), added: money0(own.added, cur), total: money0(own.total, cur) });
+  const total = money0(own.total, cur);
+  const label = (w) => {
+    let s = R.ways[w.id];
+    if (w.id === 'once') s = t('results.ways.once', { mc: pct(tm.marginCallLtv, 0) });
+    if (w.id === 'monthly') { const m = w.own ? p : { amount: own.total / tm.durationMonths, months: tm.durationMonths }; s = t('results.ways.monthly', { amount: money0(m.amount, cur), months: m.months }); }
+    if (w.id === 'ltv') { const q = w.own ? p : { at: w.at, to: tm.initialLtv, delayDays: 0 }; s = t('results.ways.ltv', { at: pct(q.at, 0), to: pct(q.to, 0), speed: R.speed[q.delayDays] }); }
+    return w.own ? t('results.ways.yours', { way: s }) : s;
+  };
+  $('#ways-title').textContent = t('results.waysTitle', { total });
+  // readable while folded: your plan, without it, and the other ways (lowest to highest), as rounded in the table
+  const others = r.ways.filter((w) => !w.own && w.id !== 'none').map(asHeadline);
+  const lo = Math.min(...others); const hi = Math.max(...others);
+  $('#ways-sum').textContent = t('results.waysSum', { own: asHeadline(own), none: asHeadline(none), others: lo === hi ? lo : t('results.waysRange', { a: lo, b: hi }) });
+  $('#ways-body').innerHTML = `<p>${esc(t('results.waysLead', { total }))}</p>
+    <div class="table-wrap" tabindex="0" role="region" aria-labelledby="ways-title"><table class="itable ways-table" id="ways-table">
+    <thead><tr>${R.waysHead.map((x) => `<th scope="col">${esc(x)}</th>`).join('')}</tr></thead>
+    <tbody>${r.ways.map((w) => { const n = asHeadline(w); return `<tr${w.own ? ' class="mine"' : ''}><th scope="row">${esc(label(w))}</th><td>${n}<span class="ytrack" aria-hidden="true"><span class="ybar" style="width:${n}%"></span></span></td><td>${esc(money0(w.added, cur))}</td></tr>`; }).join('')}</tbody></table></div>
+    <p class="hint">${esc(R.waysNote)}</p>`;
 }
 
 function renderPriceLine() {
@@ -420,6 +517,8 @@ function onClick(e) {
     e.preventDefault(); // open the real-history section and move there, the focus too (keyboard, screen readers)
     const d = $('#sec-history'); d.open = true;
     requestAnimationFrame(() => { d.scrollIntoView({ block: 'start' }); d.querySelector('summary').focus({ preventScroll: true }); });
+  } else if (tgt.closest('[data-open-plan]')) {
+    openPlan();
   } else if (tgt.closest('[data-open-terms]')) {
     setTermsOpen(true, { focus: true });
   } else if (tgt.closest('[data-share]')) {
@@ -530,9 +629,9 @@ function onWorkerMessage(m) {
     const mainRes = m.type === 'partial' ? m.result : (partsOf.all || partsOf.main || {}).result;
     if (!mainRes) return;
     const lv = partsOf.levers && partsOf.levers.result; const ex = partsOf.extras && partsOf.extras.result;
-    const merged = { ...mainRes, ...(lv ? { levers: lv.levers, leverBase: lv.leverBase } : {}), ...(ex ? { slider: ex.slider, trends: ex.trends } : {}) };
+    const merged = { ...mainRes, ...(lv ? { levers: lv.levers, leverBase: lv.leverBase, ways: lv.ways } : {}), ...(ex ? { slider: ex.slider, trends: ex.trends } : {}) };
     garchCache[merged.currency] = merged.garch;
-    lastRisk = merged; [riskTerms, riskSettings] = pending[m.id];
+    lastRisk = merged; [riskTerms, riskSettings] = pending[m.id]; riskIsExample = quietRuns.has(m.id);
     const finished = PARTS.every((p) => partsOf[p] && partsOf[p].result) || (useInline && m.type === 'result');
     if (finished) { busy = false; $('#progress').hidden = true; document.body.dataset.ready = '1'; }
     keepInPlace(renderRisk);
@@ -588,6 +687,8 @@ function update() {
       : `LTV ${pct(terms.initialLtv, 1)}`;
   }
   renderRefiNote(terms);
+  const pe = $('#plan-empty'); if (pe) pe.hidden = hasPlan(terms);
+  planLenderHint(terms);
   if (!lastRisk) $('#headline-text').innerHTML = `<em class="hero-n">…</em> <span class="of">${esc(texts().results.heroOf)}</span> <span class="sentence">${esc(texts().ui.computingShort)}</span>`;
   renderCompare(); // also while the selected offer has an error, so the table and names stay current
   if (compare) $('#ans-label').textContent = offerName(compare.active);
@@ -601,7 +702,13 @@ function update() {
   runId++;
   if (compare) settings.compareTerms = compare.offers.map((_, i) => (i === compare.active ? null : validTermsOf(i)));
   const sameAsEmbedded = !compare && embeddedKey !== null && exampleKey(state) === embeddedKey;
-  if (sameAsEmbedded) { riskTerms = terms; riskSettings = settings; if (lastRisk) renderTiles(terms); } // same answer, today's price for the charts (the tile line needs it)
+  if (sameAsEmbedded) { // same answer, today's price for the charts (the tile line needs it)
+    riskTerms = terms; riskSettings = settings;
+    // back to the example after a change: its stored answer at once, not the last one until the quiet run ends
+    // (switching "Every month" back to "No" kept showing the plan's number for a moment: issue #22)
+    if (lastRisk && !riskIsExample) { lastRisk = META.example.result; riskIsExample = true; renderRisk(); }
+    else if (lastRisk) renderTiles(terms);
+  }
   else if (lastRisk) document.body.classList.add('outdated');
   updateAnswerBar();
   if (!started) return;
@@ -910,6 +1017,7 @@ function renderTermsChips(tm) {
   const parts = [money0(tm.loanAmount, cur), `LTV ${pct(tm.initialLtv, 0)}`, `${f.liquidationLtv.label} ${pct(tm.liquidationLtv, 0)}`,
     `${tm.durationMonths} ${t(tm.durationMonths === 1 ? 'ui.month' : 'ui.months')}`, tm.rate.type === 'fixed' ? `${pct(tm.rate.annual, 1)} ${t('ui.perYear')}` : f.rateAnnual.label];
   if (tm.marginCallLtv) parts.push(`${f.marginCallLtv.label} ${pct(tm.marginCallLtv, 0)}`);
+  if (hasPlan(tm)) parts.push(planSummary(tm)); // the visitor's plan to add BTC (issue #22)
   $('#terms-chips').innerHTML = parts.map((p) => `<span>${esc(p)}</span>`).join('');
 }
 
@@ -1097,8 +1205,7 @@ function renderRisk() {
   $('#basis-line').textContent = t('results.basis');
   // the assumption behind the number, and the two other methods next to it (fairness: the
   // simulation is the most cautious; the real history and the volatility model are shown with it)
-  const rules = lenderRules(tm);
-  $('#assume-line').textContent = !rules.afterCure ? '' : tm.reserveAmount > 0 ? t('results.assumeReserve', { reserve: money0(tm.reserveAmount, cur) }) : texts().results.assumeNoTopUp;
+  renderPlan(r, tm);
   // "the simulation is the most cautious" only where it is true for this loan
   const h = of100(r.replay.liquidatedShare + r.replay.partialShare); const g = of100(pSale(r.garchMc)); const n = shown(pSale(m));
   // the swings the number assumes, and the same futures calmer and wilder (decision 021); the number itself stays (decision 004)
@@ -1342,6 +1449,7 @@ function renderFutures() {
   const r = lastRisk;
   if (!r || !r.main.samplePool) { // the instant example has no sample futures: they arrive with the full calculation
     $('#futures-chart').innerHTML = `<p class="progress">${esc(texts().ui.computingShort)}</p>`;
+    $('#futures-line').textContent = ''; // not the previous loan's count meanwhile (back to the example, issue #22)
     return;
   }
   // together the 100 futures have exactly the answer's number of forced sales
@@ -1402,7 +1510,7 @@ function showEmbeddedExample() {
   const ex = META.example;
   if (!ex || !lastTerms || exampleKey(state) !== ex.key || !META.prices[state.currency]) return;
   embeddedKey = ex.key;
-  lastRisk = ex.result; riskTerms = lastTerms; riskSettings = lastSettings;
+  lastRisk = ex.result; riskTerms = lastTerms; riskSettings = lastSettings; riskIsExample = true;
   renderRisk();
 }
 

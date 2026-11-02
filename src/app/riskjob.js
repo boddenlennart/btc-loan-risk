@@ -133,16 +133,9 @@ function leverList(t) {
     add('shorter', { durationMonths: m, rate: t.rate.type === 'variable' ? { ...t.rate, path: t.rate.path.filter((p) => p.fromMonth < m) } : t.rate }, m);
   }
   // a loan already running: its rules are fixed, so only what the borrower can do (add BTC or repay part,
-  // repay early, keep money ready) is offered
-  if (t.mode === 'existing') {
-    if (t.marginCallLtv) add('reserve', { reserveAmount: t.reserveAmount > 0 ? t.reserveAmount : Math.round(t.loanAmount * 0.2 / 100) * 100 }, t.reserveAmount > 0 ? t.reserveAmount : Math.round(t.loanAmount * 0.2 / 100) * 100);
-    return out;
-  }
-  if (t.marginCallLtv) {
-    const reserve = t.reserveAmount > 0 ? t.reserveAmount : Math.round(t.loanAmount * 0.2 / 100) * 100;
-    add('reserve', { reserveAmount: reserve }, reserve);
-    if (t.marginCallConsequence !== 'warningOnly') add('warningOnly', { marginCallConsequence: 'warningOnly' }, null);
-  }
+  // repay early) is offered. Money added later is the visitor's own plan, never a suggested amount (decision 023).
+  if (t.mode === 'existing') return out;
+  if (t.marginCallLtv && t.marginCallConsequence !== 'warningOnly') add('warningOnly', { marginCallConsequence: 'warningOnly' }, null);
   // a higher liquidation LTV: 10 points more, at most 90% (higher values are rarely offered)
   const liq = Math.min(0.9, Math.round((t.liquidationLtv + 0.1) * 100) / 100);
   if (liq > t.liquidationLtv + 0.004) {
@@ -151,6 +144,36 @@ function leverList(t) {
   }
   if (t.repayment === 'bullet') add('monthlyInterest', { repayment: 'interestOnly', compounding: 'none' }, null);
   return out;
+}
+
+/** "Your money, other ways" (issue #22, decision 023): the visitor's own total, added in each way that applies,
+ *  and nothing. The other ways take their settings from the visitor's own terms: once at the lender's margin call;
+ *  every month over the whole loan; whenever the LTV reaches halfway to the liquidation LTV, back to the starting
+ *  LTV, at once; all at the start. Empty without a plan. */
+export function waysList(t) {
+  const total = t.reserveAmount > 0 ? t.reserveAmount : !t.plan ? 0 : t.plan.kind === 'monthly' ? t.plan.amount * t.plan.months : t.plan.budget;
+  if (!(total > 0)) return [];
+  const own = t.reserveAmount > 0 ? 'once' : t.plan.kind;
+  const none = { reserveAmount: 0, plan: null };
+  const at = Math.round(((t.initialLtv + t.liquidationLtv) / 2) * 100) / 100;
+  const out = [{ id: own, own: true, terms: t, total }];
+  out.push({ id: 'start', terms: { ...t, ...none, plan: { kind: 'monthly', amount: total, months: 1 } } });
+  if (own !== 'monthly') out.push({ id: 'monthly', terms: { ...t, ...none, plan: { kind: 'monthly', amount: total / t.durationMonths, months: t.durationMonths } } });
+  if (own !== 'once' && t.marginCallLtv) out.push({ id: 'once', terms: { ...t, ...none, reserveAmount: total } });
+  if (own !== 'ltv' && at > t.initialLtv && at < t.liquidationLtv) out.push({ id: 'ltv', at, terms: { ...t, ...none, plan: { kind: 'ltv', at, to: t.initialLtv, budget: total, delayDays: 0 } } });
+  out.push({ id: 'none', terms: { ...t, ...none } });
+  return out;
+}
+async function waysRun(t, s, settings, tick) {
+  const out = [];
+  for (const w of waysList(t)) {
+    const m = simulate(w.terms, s, settings, { countOnly: true });
+    // the three shares too, so the page rounds each row exactly as the answer at the top (dots that add up to 100)
+    out.push({ id: w.id, own: !!w.own, at: w.at ?? null, total: w.total ?? null, p: pSale(m), pLiquidation: m.pLiquidation, pPartial: m.pPartial,
+      pMarginCall: m.pMarginCall, added: m.added ? m.added.mean : 0 });
+    await tick();
+  }
+  return out.length ? out : null;
 }
 
 /** Yearly trends of the middle simulated path compared in "Does the price trend matter?". */
@@ -196,8 +219,9 @@ async function run(id, terms, settings, garch, post = postMessage) {
   // with several cores (UAT finding 7): 'main' (the answer), 'levers' ("Make it safer"), 'extras' (slider, trends).
   // Every part uses the same fixed futures, so the results are identical to one run of 'all'.
   const part = settings.part || 'all';
-  const nMain = 6 + others.filter(Boolean).length; const nLevers = levers.length + 1; const nExtras = ltvGrid.length + TRENDS.length;
-  const total = part === 'main' ? nMain : part === 'levers' ? nLevers : part === 'extras' ? nExtras : nMain + levers.length + ltvGrid.length + TRENDS.length;
+  const nWays = waysList(terms).length;
+  const nMain = 6 + others.filter(Boolean).length; const nLevers = levers.length + 1 + nWays; const nExtras = ltvGrid.length + TRENDS.length;
+  const total = part === 'main' ? nMain : part === 'levers' ? nLevers : part === 'extras' ? nExtras : nMain + levers.length + nWays + ltvGrid.length + TRENDS.length;
   let done = 0;
   // after each step: report progress and give the page a moment to repaint
   const tick = async () => { post({ type: 'progress', id, done: ++done, total }); await new Promise((r) => setTimeout(r, 0)); };
@@ -220,6 +244,7 @@ async function run(id, terms, settings, garch, post = postMessage) {
     for (const l of levers) { result.levers.push({ id: l.id, value: l.value, p: pSale(simulate(l.terms, s, settings, { countOnly: true })) }); await tick(); }
     result.levers.sort((a, b) => a.p - b.p);
     result.leverBase = pSale(base);
+    result.ways = await waysRun(terms, s, settings, tick);
     return result;
   }
   if (part === 'extras') { // the slider and the trends; the answer itself (no trend, own LTV) comes from the same futures
@@ -281,8 +306,8 @@ async function run(id, terms, settings, garch, post = postMessage) {
     p: gbmBarrierHitProbability({ s0: terms.btcPrice, barrier: lp.atStart, mu: s.sigma ** 2 / 2, sigma: s.sigma, years: loanDays(terms) / 365 }),
   };
   await tick();
-  if (part === 'main') return { ...result, levers: null, slider: null, trends: null };
-  post({ type: 'partial', id, result: { ...result, levers: null, slider: null, trends: null } }); // the answer first
+  if (part === 'main') return { ...result, levers: null, ways: null, slider: null, trends: null };
+  post({ type: 'partial', id, result: { ...result, levers: null, ways: null, slider: null, trends: null } }); // the answer first
 
   // "Make it safer" uses the same random paths as the answer, so "your terms as they are" is exactly
   // the headline number and every option differs only by the one change it makes
@@ -293,6 +318,7 @@ async function run(id, terms, settings, garch, post = postMessage) {
   }
   result.levers.sort((a, b) => a.p - b.p);
   result.leverBase = pSale(result.main);
+  result.ways = await waysRun(terms, s, settings, tick);
   post({ type: 'partial', id, result: { ...result, slider: null } }); // the best option under the answer, before the rest
   // "Does the price trend matter?": the same loan at fixed yearly trends of the middle path.
   // Same random paths as the main answer, only shifted, so "no trend" is exactly the answer above.

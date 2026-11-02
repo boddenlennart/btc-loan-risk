@@ -132,6 +132,22 @@ def replay_rules(candles, scenario):
     reserve = tm.get("reserveAmount", 0)
     scale, deadline, first_margin, topped = 1.0, None, None, False
     partials, liquidation = [], None
+    # the borrower's plan (issue #22): monthly from the start, or back to a lower LTV whenever it reaches a level
+    plan = tm.get("plan")
+    added, paid, pending = 0.0, 0, None
+    due = []
+    if plan and plan["kind"] == "monthly":
+        due = [0] + [(add_months(start, k) - start).days for k in range(1, plan["months"])]
+    if due:
+        btc += plan["amount"] / open0
+        added, paid = plan["amount"], 1
+
+    def top_up(debt, price):
+        nonlocal btc, added
+        money = min(debt / plan["to"] - btc * price, plan["budget"] - added)
+        if money > 0:
+            btc += money / price
+            added += money
 
     def sell_part(debt, price, t, why):
         nonlocal btc, scale
@@ -153,7 +169,11 @@ def replay_rules(candles, scenario):
     t = t0 + 3600
     while t < t_end and liquidation is None:
         if t in candles:
-            _, low, close = candles[t]
+            open_, low, close = candles[t]
+            while paid < len(due) and due[paid] <= (t - t0) // 86400:  # an instalment: when its day begins
+                btc += plan["amount"] / open_
+                added += plan["amount"]
+                paid += 1
             debt = debt_on_day(tm, rows, (t - t0) // 86400) * scale
             liq_price = debt / (btc * L)
             if low <= liq_price:
@@ -172,6 +192,15 @@ def replay_rules(candles, scenario):
                         liquidation = close_all(debt, close, t, "cureExpired")
                     t += 3600
                     continue
+            if plan and plan["kind"] == "ltv":
+                if pending is not None and t >= pending:
+                    pending = None
+                    top_up(debt, close)
+                elif pending is None and added < plan["budget"] - 1e-9 and low <= debt / (btc * plan["at"]):
+                    if plan["delayDays"] > 0:
+                        pending = t + plan["delayDays"] * 86400
+                    else:
+                        top_up(debt, debt / (btc * plan["at"]))
             if M and deadline is None and not (first_margin is not None and beh == "warningOnly"):
                 mc_price = debt / (btc * M)
                 if low <= mc_price:
@@ -179,6 +208,7 @@ def replay_rules(candles, scenario):
                         first_margin = t
                     if reserve and not topped:
                         btc += reserve / mc_price
+                        added += reserve
                         topped = True
                     if debt / (btc * mc_price) >= M - 1e-12:
                         if beh in ("liquidateAfterCure", "partialAfterCure"):
@@ -187,7 +217,7 @@ def replay_rules(candles, scenario):
                             sell_part(debt, low, t, "autoPartial")
         t += 3600
     return dict(startPrice=open0, collateralBtc=btc0, marginCall=first_margin, liquidation=liquidation,
-                partialSales=partials, collateralAtEnd=liquidation["btcReturned"] if liquidation else btc)
+                partialSales=partials, collateralAtEnd=liquidation["btcReturned"] if liquidation else btc, added=added)
 
 
 RULE_SCENARIOS = [
@@ -201,6 +231,14 @@ RULE_SCENARIOS = [
          terms=terms(marginCallConsequence="warningOnly", liquidationSale="partial")),
     dict(name="Nov 2021 top, reserve 3,000 added, sells everything if not fixed in 72 h", start="2021-11-10T00:00Z",
          terms=terms(marginCallConsequence="liquidateAfterCure", curePeriodHours=72, reserveAmount=3000.0)),
+    dict(name="Nov 2021 top, warning only, adds 300 every month for 12 months", start="2021-11-10T00:00Z",
+         terms=terms(plan=dict(kind="monthly", amount=300.0, months=12))),
+    dict(name="Dec 2017 top, adds back to 50% whenever the LTV reaches 65%, at once, up to 5,000", start="2017-12-17T00:00Z",
+         terms=terms(plan=dict(kind="ltv", at=0.65, to=0.5, budget=5000.0, delayDays=0))),
+    dict(name="Nov 2021 top, adds back to 50% at 65% within 1 day, up to 20,000, sells all if not fixed in 48 h", start="2021-11-10T00:00Z",
+         terms=terms(marginCallConsequence="liquidateAfterCure", curePeriodHours=48, plan=dict(kind="ltv", at=0.65, to=0.5, budget=20000.0, delayDays=1))),
+    dict(name="Feb 2020, adds 2,000 a month for 3 months, partial sale at the liquidation LTV", start="2020-02-13T00:00Z",
+         terms=terms(liquidationSale="partial", plan=dict(kind="monthly", amount=2000.0, months=3))),
     dict(name="Mid 2019 top, bullet 12%, sells part after 24 h, target 45%", start="2019-06-26T00:00Z",
          terms=terms(initialLtv=0.4, marginCallLtv=0.65, liquidationLtv=0.75, rate=dict(type="fixed", annual=0.12), repayment="bullet",
                      compounding="monthly", dayCount="act/365", marginCallConsequence="partialAfterCure", curePeriodHours=24, cureTargetLtv=0.45)),

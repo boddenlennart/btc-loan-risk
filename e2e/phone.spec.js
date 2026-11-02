@@ -116,7 +116,7 @@ test('buttons by touch: compare an offer, the tile link, other futures, the lang
   await page.locator('#sec-falls > summary').scrollIntoViewIfNeeded(); await page.locator('#sec-falls > summary').tap();
   const other = page.locator('#other-paths');
   await other.scrollIntoViewIfNeeded(); await other.tap();
-  await expect(other).toHaveText('Show the next 20 futures (set 3 of 5)');
+  await expect(other).toHaveText('Show the next 20 price paths (set 3 of 5)');
   const cmp = page.locator('#compare-btn');
   await cmp.scrollIntoViewIfNeeded(); await cmp.tap();
   await expect(page.locator('#cmp')).toBeVisible();

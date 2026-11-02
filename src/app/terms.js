@@ -33,6 +33,28 @@ export function withSwitching(terms, costs) {
 
 /** Form state -> engine terms (fractions) and simulation settings.
  *  `base`: for a refinancing offer, the current loan it starts from. */
+/** "Will you add BTC if the price falls?" (issue #22, decision 023): the chosen way, its fields as numbers.
+ *  A way counts once all its fields are filled in; a link shared before it existed, with an amount kept ready,
+ *  opens as "once at the margin call". Only the chosen way's fields count. */
+export function addPlanKind(s) {
+  const kind = ['none', 'once', 'monthly', 'ltv'].includes(s.addPlan) ? s.addPlan : 'none';
+  return kind === 'once' && pctOrNull(s.marginCallLtv) === null ? 'none' : kind; // "once" needs a margin call
+}
+/** Inputs saved or shared before the question existed: an amount kept ready means "once at the margin call".
+ *  Everything else without an answer is "No" (the example's default). */
+export const withAddPlan = (form) => (form && form.addPlan === undefined && numOr(form.reserveAmount, 0) > 0 ? { ...form, addPlan: 'once' } : form);
+function addPlanOf(s) {
+  const kind = addPlanKind(s);
+  const filled = (...v) => v.every((x) => !Number.isNaN(numOr(x)));
+  let plan = null; let reserve = 0;
+  if (kind === 'once' && filled(s.reserveAmount)) reserve = numOr(s.reserveAmount);
+  if (kind === 'monthly' && filled(s.monthlyAmount, s.monthlyMonths)) plan = { kind, amount: numOr(s.monthlyAmount), months: numOr(s.monthlyMonths) };
+  if (kind === 'ltv' && filled(s.topUpAt, s.topUpTo, s.topUpBudget, s.topUpDelay)) {
+    plan = { kind, at: numOr(s.topUpAt) / 100, to: numOr(s.topUpTo) / 100, budget: numOr(s.topUpBudget), delayDays: numOr(s.topUpDelay) };
+  }
+  return { addPlan: kind, plan, reserveAmount: reserve };
+}
+
 export function toTerms(form, { base = null } = {}) {
   const s = form.refi && base ? refiForm(form, base) : form;
   const price = numOr(s.btcPrice);
@@ -56,7 +78,7 @@ export function toTerms(form, { base = null } = {}) {
     liquidationFee: { value: numOr(s.liquidationFee) / 100, basis: s.liquidationFeeBasis },
     earlyRepaymentFee: 0,
     curePeriodHours: numOr(s.curePeriodHours, 0), marginCallConsequence: s.marginCallConsequence, liquidationSale: s.liquidationSale,
-    cureTargetLtv: pctOrNull(s.cureTargetLtv) ?? (existing ? 0.5 : null), reserveAmount: numOr(s.reserveAmount, 0),
+    cureTargetLtv: pctOrNull(s.cureTargetLtv) ?? (existing ? 0.5 : null), ...addPlanOf(s),
     taxRateNow: (pctOrNull(s.taxRateNow) ?? 0), taxRateAtMaturity: (pctOrNull(s.taxRateAtMaturity) ?? 0),
     purpose: existing ? 'spend' : s.purpose, repayWith: s.repayWith, // a loan already running has no money left to invest
   };
@@ -74,6 +96,7 @@ export function toTerms(form, { base = null } = {}) {
  *  same key have the same answer. */
 export function exampleKey(s) {
   const { terms, settings } = toTerms(s);
-  const { btcPrice, startDate, collateralInput, ...rest } = terms;
+  // addPlan: a way picked but not filled in changes nothing (the plan itself is in `plan` / `reserveAmount`)
+  const { btcPrice, startDate, collateralInput, addPlan, ...rest } = terms;
   return JSON.stringify({ ...rest, initialLtv: Math.round(rest.initialLtv * 1e6) / 1e6, settings });
 }
