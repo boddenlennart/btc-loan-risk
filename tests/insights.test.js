@@ -50,6 +50,8 @@ describe.skipIf(!hasData('USD'))('insights on the real US-dollar history', () =>
     expect(s.marginCalls).toBe(Math.round(replayAll(h, reference({ marginCallConsequence: 'warningOnly' })).marginCallShare * s.starts));
     expect(s.within24 <= s.within48 && s.within48 <= s.within72 && s.within72 <= s.liquidatedLater && s.liquidatedLater <= 1).toBe(true);
     expect(s.outsideOfficeHours).toBeGreaterThan(0); expect(s.outsideOfficeHours).toBeLessThan(1);
+    // the same hours as a share of the week (5 × 12 office hours of 168), so the reader can compare: 64 of 100
+    expect(s.outsideShareOfWeek).toBe(108 / 168);
   });
   it('levers: each equals its own replay; sorted from the lowest', () => {
     const over = { lowerLtv: { initialLtv: 0.4 }, shorter: { durationMonths: 6 }, reserve: { reserveAmount: 2000 } };

@@ -75,16 +75,21 @@ export function crashSpeed(hourly) {
   const r = replayAll(hourly, reference({ marginCallConsequence: 'warningOnly' }));
   const p = r.perStart; const hours = []; let calls = 0; let outside = 0;
   const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Berlin', weekday: 'short', hour: 'numeric', hourCycle: 'h23' });
+  const offHours = (time) => { // at night or at the weekend: outside 8:00–20:00 on weekdays, Central European Time
+    const parts = Object.fromEntries(fmt.formatToParts(new Date(time * 1000)).map((x) => [x.type, x.value]));
+    const hr = Number(parts.hour);
+    return parts.weekday === 'Sat' || parts.weekday === 'Sun' || hr < 8 || hr >= 20;
+  };
   for (let k = 0; k < p.time.length; k++) {
     const mc = p.marginCallTime[k]; if (mc === null) continue;
     calls++;
-    const parts = Object.fromEntries(fmt.formatToParts(new Date(mc * 1000)).map((x) => [x.type, x.value]));
-    const hr = Number(parts.hour);
-    if (parts.weekday === 'Sat' || parts.weekday === 'Sun' || hr < 8 || hr >= 20) outside++;
+    if (offHours(mc)) outside++;
     if (p.liquidationTime[k] !== null) hours.push((p.liquidationTime[k] - mc) / 3600);
   }
   const within = (h) => (calls ? hours.filter((x) => x <= h).length / calls : null);
-  return { starts: r.starts, marginCalls: calls, within24: within(24), within48: within(48), within72: within(72), liquidatedLater: calls ? hours.length / calls : null, outsideOfficeHours: calls ? outside / calls : null };
+  // the same hours as a share of a week (one week in January, without a clock change), to compare with
+  const week = Array.from({ length: 168 }, (_, k) => Date.UTC(2026, 0, 5) / 1000 + k * 3600);
+  return { starts: r.starts, marginCalls: calls, within24: within(24), within48: within(48), within72: within(72), liquidatedLater: calls ? hours.length / calls : null, outsideOfficeHours: calls ? outside / calls : null, outsideShareOfWeek: week.filter(offHours).length / week.length };
 }
 
 /** 4. Lever ranking: the reference loan with one term changed at a time (liquidated share of start days). */
