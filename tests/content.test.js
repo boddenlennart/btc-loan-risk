@@ -210,3 +210,22 @@ describe('one name per concept', () => {
     });
   }
 });
+
+// 3 Nov 2026: "At a initial LTV" slipped in when "Starting LTV" became "Initial LTV" (decision 024).
+describe('English: "an" before a vowel sound', () => {
+  it('no "a" before a word that starts with a vowel sound', async () => {
+    const SOUNDS_LIKE_YOU = /^(one|once|unit|uni|us|use|usu|euro)/i; // "a one-off", "a US$ …", "a euro …"
+    const bad = allStrings(await load('en')).flatMap(([path, s]) => [...s.matchAll(/\b[Aa] ([aeiouAEIOU]\w*)/g)]
+      .filter((m) => !SOUNDS_LIKE_YOU.test(m[1])).map((m) => `${path}: "${m[0]}"`));
+    expect(bad).toEqual([]);
+  });
+});
+
+// Insights is in US dollars, How it works in the example's euros: the simulation's volatility differs by about a
+// point between them (57% / 58%), so the Insights sentence names its currency (numbers-agree rule, 3 Nov 2026).
+describe('Insights names the currency of the simulation it quotes', () => {
+  it('the volatility sentence says US dollars, in both languages', async () => {
+    expect((await load('en')).insights.swings.vsSim).toMatch(/US dollars/);
+    expect((await load('de')).insights.swings.vsSim).toMatch(/US-Dollar/);
+  });
+});

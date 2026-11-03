@@ -49,7 +49,7 @@ function render() {
   const sp = I.speed; const spShares = to100([sp.within24, sp.within48 - sp.within24, sp.within72 - sp.within48, sp.liquidatedLater - sp.within72, 1 - sp.liquidatedLater]);
   block('speed', T.speed.title, T.speed.lead, t('insights.speed.take', { a: spShares[0] }),
     table(T.speed.title, T.speed.head, [T.speed.within, t('insights.speed.between', { a: 24, b: 48 }), t('insights.speed.between', { a: 48, b: 72 }), T.speed.later, T.speed.never]
-      .map((label, k) => [label, String(spShares[k])])) + `<p>${esc(t('insights.speed.night', { n: of100(sp.outsideOfficeHours) }))}</p>` + hint(T.speed.note));
+      .map((label, k) => [label, String(spShares[k])])) + `<p>${esc(t('insights.speed.night', { n: of100(sp.outsideOfficeHours), week: of100(sp.outsideShareOfWeek) }))}</p>` + hint(T.speed.note));
 
   // 4. one change at a time
   const L = I.levers;
@@ -73,7 +73,7 @@ function render() {
       [T.cost.head[1], usd(A.cost), usd(B.cost)], [T.cost.head[2], String(of100(A.liquidated)), String(of100(B.liquidated))],
       [T.cost.head[3], usd(A.avgLoss), usd(B.avgLoss)], [T.cost.head[4], usd(A.expected), usd(B.expected)]])}
     ${table(T.cost.title, [T.cost.head[0], ...T.cost.head.slice(2)], C.rows.map((r) => [pct(r.ltv, 0), String(of100(r.liquidated)), usd(r.avgLoss), usd(r.expected)]))}`
-    + hint(t('insights.cost.sameCost', { cost: usd(C.rows[0].cost) })) + hint(T.cost.note) + `<p>${esc(T.cost.differs)}</p>`);
+    + hint(t('insights.cost.sameCost', { cost: usd(C.rows[0].cost) })) + hint(T.cost.morePledged) + hint(T.cost.note) + `<p>${esc(T.cost.differs)}</p>`);
 
   // 8. hourly lows vs. a smoother price
   const M = I.measure;

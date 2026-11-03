@@ -264,10 +264,13 @@ test('numbers agree with each other: How it works uses exactly the example\'s nu
   const m = await page.evaluate(() => ({
     red: document.querySelectorAll('#num-dots i.d-liq').length,
     methods: [...document.querySelectorAll('#methods-table tbody tr')].map((r) => r.lastElementChild.textContent.trim()),
+    rules: document.querySelector('#rules-list').textContent,
     formula: document.querySelector('#risk-formula').textContent, end: document.querySelector('#risk-all-end').textContent, read: document.querySelector('#risk-read').textContent,
   }));
   expect(m.red, 'red dots on How it works = the example\'s answer').toBe(n);
   expect(Number(m.methods[0]), 'methods table, simulation = the example\'s answer').toBe(n);
+  // the example's margin call is only a warning, so "with only a warning" is the example itself
+  expect(Number(one(m.rules, /With only a warning, as in the example: (\d+)\./, 'rules')[1]), 'lender rules, "with only a warning" = the example\'s answer').toBe(n);
   expect(Number(m.methods[1]), 'methods table, volatility model = check page "Other methods"').toBe(g);
   expect(Number(m.methods[2]), 'methods table, real history = check page "Other methods"').toBe(h);
   const f = one(m.formula, /\((\d[\d,]*) × €0 \+ (\d[\d,]*) × €[\d,]+\) ÷ (\d[\d,]*) = €[\d,]+ ÷ [\d,]+ = (€[\d,]+)$/, 'formula');
