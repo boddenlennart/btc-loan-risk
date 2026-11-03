@@ -538,10 +538,10 @@ export default {
     oneTitle: 'Eine simulierte Zukunft, Schritt für Schritt',
     oneLead: 'Der Beispielkredit: {story} Der Kurs erreicht die Liquidationslinie nach einem Rückgang um {drop}.',
     oneSteps: [
-      '30 echte Tage ziehen. Ein zufälliger Starttag seit 2014; die nächsten 30 Tage werden so übernommen, wie sie waren, mit der Bewegung und dem tiefsten Kurs jedes Tages. In dieser Zukunft stammt das erste Stück aus {first}.',
+      '30 echte Tage ziehen. Ein zufälliger Starttag seit 2014; die nächsten 30 Tage werden so übernommen, wie sie waren, mit der Bewegung und dem tiefsten Kurs jedes Tages. Übernommen werden nur die Bewegungen, nicht die alten Kurse: Ein Fall um 40 % in einem alten Stück wird zu einem Fall um 40 % ab dem heutigen Kurs. In dieser Zukunft stammt das erste Stück aus {first}.',
       'Stücke aneinanderreihen. Dreizehn Stücke ergeben ein Jahr. Einbrüche bleiben innerhalb eines Stücks erhalten, denn auf schlechte Tage folgen oft weitere.',
       'Jeden Tag prüfen. Liegt der tiefste Kurs des Tages bei oder unter Ihrem Liquidationskurs? Wird ein Margin Call nicht rechtzeitig behoben? In dieser Zukunft wird der Kredit an Tag {day} liquidiert, {why}, in einem Stück aus {crash}.',
-      '10.000-mal wiederholen, jedes Mal mit anderen Stücken, und zählen.',
+      '10.000-mal wiederholen, jedes Mal mit anderen Stücken, und zählen. Der lange Anstieg von BTC seit 2014 wird herausgerechnet, sodass der mittlere Kurs etwa beim heutigen Stand endet. Die Schwankungen bleiben echt.',
     ],
     oneWhy: { liquidationLtv: 'als der Kurs den Liquidationskurs erreichte', cureExpired: 'weil ein Margin Call nicht innerhalb von {hours} Stunden behoben wurde', autoPartial: 'nach Teilliquidationen' },
     oneChartNote: 'Gelbe Linie: Margin Call, im Beispiel nur eine Warnung. Rote Linie: Liquidation, dort verkauft der Kreditgeber.',

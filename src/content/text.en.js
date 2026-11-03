@@ -546,10 +546,10 @@ export default {
     oneTitle: 'One simulated price path, step by step',
     oneLead: 'The example loan: {story} The price falls to the liquidation line after a fall of {drop}.',
     oneSteps: [
-      'Pick 30 real days. A random start day since 2014; the next 30 days are taken as they happened, each day\'s move and its lowest price. On this path, the first piece comes from {first}.',
+      'Pick 30 real days. A random start day since 2014; the next 30 days are taken as they happened, each day\'s move and its lowest price. Only the moves are taken, not the old prices: a 40% fall in an old piece becomes a 40% fall from today\'s price. On this path, the first piece comes from {first}.',
       'Join pieces. Thirteen pieces make a year. Crashes stay intact inside a piece, because bad days often follow bad days.',
       'Check every day. Is the day\'s lowest price at or below your liquidation price? Is a margin call not fixed in time? On this path, the loan is liquidated on day {day}, {why}, in a piece from {crash}.',
-      'Repeat 10,000 times, each time with other pieces, and count.',
+      'Repeat 10,000 times, each time with other pieces, and count. BTC\'s long rise since 2014 is taken out, so the middle path ends near today\'s price. The swings stay real.',
     ],
     oneWhy: { liquidationLtv: 'when the price reached the liquidation price', cureExpired: 'because a margin call was not fixed within {hours} hours', autoPartial: 'after partial liquidations' },
     oneChartNote: 'Amber line: margin call, in the example only a warning. Red line: liquidation, where the lender sells.',

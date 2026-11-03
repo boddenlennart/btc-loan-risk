@@ -65,7 +65,7 @@ function render() {
 
   // 4. the lender's rules in the simulation
   const dl = (d) => show(md.deadline.find((x) => x.days === d).p);
-  const rv = { d1: dl(1), d2: dl(2), d3: dl(3), none: of100(md.noMarginCall), median: pct(md.gap.median, 1), p90: pct(md.gap.p90, 0) };
+  const rv = { d1: dl(1), d2: dl(2), d3: dl(3), none: show(md.noMarginCall), median: pct(md.gap.median, 1), p90: pct(md.gap.p90, 0) };
   $('#rules-list').innerHTML = M.rules.map((s) => `<li>${esc(s.replace(/\{(\w+)\}/g, (_, k) => rv[k] ?? `{${k}}`))}</li>`).join('');
 
   // 5. the cost of the risk (ux/M-risk-cost-spec.md), on the example and the one future above
