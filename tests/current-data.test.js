@@ -43,10 +43,12 @@ describe.skipIf(!hasData('USD') || !hasData('EUR'))('reference loans on the newe
       // a lower starting LTV never helps less than 3 points of random noise allow
       for (const l of k.levers.filter((x) => x.id === 'lowerLtv')) expect(l.p).toBeLessThanOrEqual(k.leverBase + 0.03);
       // "Make it safer" uses the answer's own paths: "your terms" and the slider at the visitor's LTV equal the headline exactly
-      // ("liquidated" = a forced sale, full or partial: UAT finding 1)
-      expect(k.leverBase).toBe(k.pLiquidation + k.pPartial);
+      // ("liquidated" = a forced sale, full or partial: UAT finding 1). The results here are rounded to 9 decimals, and the sum
+      // of two rounded numbers can differ from the rounded sum in the 16th decimal (weekly update, 9 Nov 2026: 0.5905 against
+      // 0.5904999999999999); one future of 2000 is 0.0005, so 9 decimals still demand the very same count.
+      expect(k.leverBase).toBeCloseTo(k.pLiquidation + k.pPartial, 9);
       const own = k.slider.find((x) => Math.abs(x.ltv - loanTerms(ref).initialLtv) < 1e-9);
-      if (own) expect(own.p).toBe(k.pLiquidation + k.pPartial);
+      if (own) expect(own.p).toBeCloseTo(k.pLiquidation + k.pPartial, 9);
       // the slider: higher LTV, never clearly lower risk
       for (let i = 1; i < k.slider.length; i++) expect(k.slider[i].p).toBeGreaterThanOrEqual(k.slider[i - 1].p - 0.03);
       if (loanTerms(ref).purpose === 'buy') {
