@@ -1,26 +1,26 @@
 {
  "USD": {
-  "hours": 112525,
+  "hours": 112695,
   "from": 1388534400,
-  "to": 1793620800,
-  "lastClose": 77687.08,
+  "to": 1794232800,
+  "lastClose": 74797.71,
   "sources": [
    "bitstamp\r",
    "bitstamp"
   ],
-  "bytes": 764791
+  "bytes": 766192
  },
  "EUR": {
-  "hours": 112525,
+  "hours": 112695,
   "from": 1388534400,
-  "to": 1793620800,
-  "lastClose": 69300.06,
+  "to": 1794232800,
+  "lastClose": 66804.28,
   "sources": [
    "kraken\r",
    "bitstamp\r",
    "bitstamp"
   ],
-  "bytes": 761511
+  "bytes": 763003
  },
- "updated": 1793626168
+ "updated": 1794239112
 }
