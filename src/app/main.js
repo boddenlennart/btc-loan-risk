@@ -707,7 +707,7 @@ function update() {
     // back to the example after a change: its stored answer at once, not the last one until the quiet run ends
     // (switching "Every month" back to "No" kept showing the plan's number for a moment: issue #22)
     if (lastRisk && !riskIsExample) { lastRisk = META.example.result; riskIsExample = true; renderRisk(); }
-    else if (lastRisk) renderTiles(terms);
+    else if (lastRisk) { renderTiles(terms); renderSafer(); } // the slider's line names the BTC pledged at today's price
   }
   else if (lastRisk) document.body.classList.add('outdated');
   updateAnswerBar();
@@ -1277,7 +1277,9 @@ function renderSafer() {
       return add > 0.00005 ? t('results.sliderLineExisting', { ltv: pct(g.ltv, 0), p: shown(g.p), btc: btc(btcNeeded), add: btc(add) })
         : t('results.sliderLineExistingNow', { ltv: pct(g.ltv, 0), p: shown(g.p), btc: btc(btcNeeded) });
     }
-    return t('results.sliderLine', { ltv: pct(g.ltv, 0), p: shown(g.p), btc: btc(g.btc) });
+    // from the price the page shows now, not the one the result was computed with: the example's stored result
+    // carries the price of the last data update (0.2994 BTC here next to 0.3030 under the answer, 11 Nov 2026)
+    return t('results.sliderLine', { ltv: pct(g.ltv, 0), p: shown(g.p), btc: btc(tm.loanAmount / (g.ltv * tm.btcPrice)) });
   };
   const levers = r.levers || [];
   const label = (l) => leverLabel(l, tm);

@@ -84,6 +84,14 @@ Each rule was checked to fail with the old behaviour:
 - chart not matched to the answer: 31 fail;
 - "buy more BTC" rounded on its own: 1 fails.
 
+## Found on the live page (11 Nov 2026), fixed
+
+| Found | Fix |
+|---|---|
+| **Slider: "you pledge 0.2994 BTC"**, under the answer "of your 0.3030 BTC" (the example, until the page had recalculated in the background) | The slider's BTC is worked out from the price the page shows now, not from the price the stored example was computed with. Rule 19; a test reads both the moment today's price arrives |
+
+Checked to fail with the old behaviour: 10 of 10 runs.
+
 ## Adding a number to the page
 
 If it can be compared with another number, add its rule here and in `e2e/consistency.spec.js`.

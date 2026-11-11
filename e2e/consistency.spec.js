@@ -49,7 +49,7 @@ export const LOANS = [
 ];
 
 const ALLOWED = ['127.0.0.1', 'www.bitstamp.net', 'api.coinbase.com'];
-async function open(page, form) {
+async function open(page, form, { wait = true } = {}) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
@@ -61,7 +61,7 @@ async function open(page, form) {
   });
   await page.addInitScript(() => { try { if (!sessionStorage.getItem('set')) { localStorage.clear(); localStorage.setItem('btc-loan-risk:lang', 'en'); sessionStorage.setItem('set', '1'); } } catch {} });
   await page.goto(`/${encodeState(form)}`);
-  await waitDone(page);
+  if (wait) await waitDone(page);
   return errors;
 }
 const waitDone = async (page) => { await expect(page.locator('#progress')).toBeHidden({ timeout: 60000 }); await expect(page.locator('body')).toHaveAttribute('data-ready', '1'); };
@@ -91,7 +91,7 @@ async function readPage(page) {
         futuresLine: txt('#futures-line'), falls: txt('#falls-text'),
         tiles: [...document.querySelectorAll('#tiles .tile')].map((t) => t.textContent.replace(/\s+/g, ' ').trim()), tileRisk: txt('#tiles a.tile-risk'),
         cost: txt('#sec-cost'), riskCost: txt('#risk-cost'),
-        safer: rows('#safer'), slider: txt('#slider-line'), sliderShown: !!document.querySelector('#safer .slider:not([hidden])'), best: txt('#best-lever'),
+        safer: rows('#safer'), slider: txt('#slider-line'), sold: txt('#sold-line'), sliderShown: !!document.querySelector('#safer .slider:not([hidden])'), best: txt('#best-lever'),
         trend: rows('#trend-body'), methods: txt('#methods-line'), history: txt('#history-text'), stress: txt('#stress-line'), historySum: txt('#history-sum'),
         years: [...document.querySelectorAll('#years-table tbody tr')].map((r) => [...r.cells].map((c) => c.textContent.trim())),
         entryTotal: [...document.querySelectorAll('#entry-table tfoot td')].map((c) => c.textContent.trim()),
@@ -205,7 +205,24 @@ function checkRules(d, label) {
     expect(Number(sl[3]), at('calmer swings: at most the big number')).toBeLessThanOrEqual(n);
     expect(Number(sl[5]), at('wilder swings: at least the big number')).toBeGreaterThanOrEqual(n);
   }
+  // 19. the BTC you pledge (found 11 Nov 2026: the slider said 0.2994 BTC, "What a sale leaves you" 0.3030): the slider's line
+  // = "of your … BTC" under the answer, whenever the slider stands on the loan's own LTV
+  const sb = d.slider.match(/^Initial LTV (\d+)% → .* · you pledge ([\d.]+) BTC$/);
+  const ob = d.sold.match(/of your ([\d.]+) BTC/);
+  if (d.sliderShown && sb && ob && d.ownLtv === Number(sb[1])) expect(sb[2], at('slider "you pledge" = "of your … BTC"')).toBe(ob[1]);
 }
+
+// The example's answer is stored in the page by the build, with the price of the last data update. Today's price arrives a
+// moment later; every BTC amount must follow it at once, not only after the page has recalculated in the background.
+test('numbers agree with each other: the example at today\'s price, the slider\'s BTC = "What a sale leaves you" at once', async ({ page }) => {
+  const errors = await open(page, EXAMPLE_FORM, { wait: false }); // read as soon as the price is there, before the background run ends
+  await expect(page.locator('#tiles .tile').first()).toContainText('37,500'); // today's price (60,000 in this test) has arrived
+  const read = () => page.evaluate(() => [document.querySelector('#slider-line').textContent, document.querySelector('#sold-line').textContent]);
+  const [slider, sold] = await read();
+  expect(slider.match(/you pledge ([\d.]+) BTC/)[1], 'slider "you pledge" = "of your … BTC"').toBe(sold.match(/of your ([\d.]+) BTC/)[1]);
+  expect(sold).toContain('0.3333 BTC'); // 20,000 ÷ 60,000
+  expect(errors).toEqual([]);
+});
 
 for (const [label, form] of LOANS) {
   test(`numbers agree with each other: ${label}`, async ({ page }) => {
