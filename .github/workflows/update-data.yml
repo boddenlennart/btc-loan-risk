@@ -47,6 +47,13 @@ jobs:
         id: update
         run: node tools/update-data.mjs "$RUNNER_TEMP/summary.md"
 
+      # before the build: it opens each finished page once in Chrome and writes its texts into the file (decision 025);
+      # the link-preview images below are drawn with the same Chrome
+      - name: Install Chrome for the build
+        if: steps.update.outputs.changed == 'true'
+        timeout-minutes: 15
+        run: npx playwright install --with-deps chromium
+
       - name: Rebuild the page (re-fits the model settings)
         if: steps.update.outputs.changed == 'true'
         run: node tools/build.mjs
@@ -54,7 +61,6 @@ jobs:
       - name: Rebuild the link-preview images (they show the example's answer, which new data can move)
         if: steps.update.outputs.changed == 'true'
         run: |
-          npx playwright install --with-deps chromium
           node tools/build-og.mjs
           node tools/build.mjs # again: the pages point to the images with a stamp made from them
 

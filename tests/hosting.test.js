@@ -31,6 +31,8 @@ describe.skipIf(!existsSync(page))(`built page ${name}: self-hosted, no external
     for (const h of hosts) {
       // SVG namespace identifiers are not requests
       if (h === 'www.w3.org') continue;
+      // the vocabulary name of the structured data (decision 025) is not a request either; it may stand only there
+      if (h === 'schema.org') { expect(html.match(/schema\.org/g)).toHaveLength(1); expect(html).toContain('<script type="application/ld+json">{"@context":"https://schema.org",'); continue; }
       expect([...ALLOWED_HOSTS, ...TEXT_LINKS], h).toContain(h);
     }
   });
@@ -40,11 +42,15 @@ describe.skipIf(!existsSync(page))(`built page ${name}: self-hosted, no external
     expect(scriptSrc).not.toContain("'unsafe-inline'");
     expect(scriptSrc).not.toContain("'unsafe-eval'");
     const runnable = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
-    // the light/dark script in <head> and the page's own script; every other script block is data (JSON or plain text)
-    expect(runnable).toHaveLength(2);
+    // the light/dark script in <head>, the one line that puts the empty original page back for the page's script
+    // (decision 025), and the page's own script; every other script block is data (JSON or plain text)
+    expect(runnable).toHaveLength(3);
     expect(runnable[0].length).toBeLessThan(200);
+    expect(runnable[1].length).toBeLessThan(220);
+    expect(runnable[1]).toContain("getElementById('pristine')");
+    expect(runnable[1]).not.toMatch(/fetch|XMLHttpRequest|import|eval|http/); // it only moves what is already in the page
     for (const r of runnable) expect(scriptSrc).toContain(`'sha256-${createHash('sha256').update(r).digest('base64')}'`);
-    expect(scriptSrc.match(/'sha256-/g)).toHaveLength(2);
+    expect(scriptSrc.match(/'sha256-/g)).toHaveLength(3);
     expect(html).not.toMatch(/<[^>]+\son[a-z]+=["']/i); // no onclick=, onsubmit= ... attributes
   });
   it('the Content Security Policy only allows the named price services (the check) or nothing (the other pages)', () => {
@@ -69,6 +75,8 @@ describe('source code: no outside addresses beyond the allowed ones', () => {
     for (const f of files) {
       for (const [, h] of readFileSync(f, 'utf8').matchAll(/https?:\/\/([a-z0-9.-]+)/gi)) {
         if (h === 'www.w3.org') continue;
+      // the vocabulary name of the structured data (decision 025) is not a request either; it may stand only there
+      if (h === 'schema.org') { expect(html.match(/schema\.org/g)).toHaveLength(1); expect(html).toContain('<script type="application/ld+json">{"@context":"https://schema.org",'); continue; }
         expect([...ALLOWED_HOSTS, ...TEXT_LINKS], `${f.pathname}: ${h}`).toContain(h.toLowerCase());
       }
     }

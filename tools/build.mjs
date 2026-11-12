@@ -6,6 +6,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { build } from 'esbuild';
+import { chromium } from '@playwright/test';
 import QRCode from 'qrcode';
 import { SITE } from '../src/content/site.js';
 import { gunzipSync, gzipSync } from 'node:zlib';
@@ -162,7 +163,21 @@ function head(lang, page) {
     `<link rel="apple-touch-icon" href="${up}apple-touch-icon.png">`,
     '<meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">',
     '<meta name="theme-color" content="#121210" media="(prefers-color-scheme: dark)">',
+    `<script type="application/ld+json">${structuredData(lang, page, { title, description, url })}</script>`,
   ].join('\n');
+}
+// Structured data (JSON-LD, decision 025): tells search engines and AI assistants in a fixed vocabulary what each page is:
+// a free web application (the check) or a page of the site, in which language, by whom, last changed when.
+// It names nobody but the site and its maker (decision 002), and carries no number a reader could compare with the page.
+function structuredData(lang, page, { title, description, url }) {
+  const all = { en, de }[lang];
+  const maker = { '@type': 'Person', '@id': `${BASE}#maker`, name: SITE.maker, url: SITE.makerUrl };
+  const site = { '@type': 'WebSite', '@id': `${BASE}#site`, url: BASE, name: en.meta.name, alternateName: de.meta.name, inLanguage: ['en', 'de'], author: { '@id': maker['@id'] } };
+  const common = { url, name: title, description, inLanguage: lang, isPartOf: { '@id': site['@id'] }, author: { '@id': maker['@id'] }, dateModified: meta.updated ? new Date(meta.updated * (meta.updated > 1e11 ? 1 : 1000)).toISOString().slice(0, 10) : undefined, license: `${SITE.codeUrl}/blob/main/LICENSE` };
+  const self = page.group
+    ? { '@type': 'WebPage', '@id': `${url}#page`, ...common }
+    : { '@type': ['WebApplication', 'WebPage'], '@id': `${url}#page`, ...common, alternateName: all.meta.name, applicationCategory: 'FinanceApplication', operatingSystem: 'Any', browserRequirements: 'Requires JavaScript', isAccessibleForFree: true, offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' }, codeRepository: SITE.codeUrl };
+  return JSON.stringify({ '@context': 'https://schema.org', '@graph': [self, site, maker] }).replace(/</g, '\\u003c');
 }
 // The preview image's address carries a stamp made from the image itself: LinkedIn and messengers keep an image
 // by its address, so a new image needs a new address (they kept showing the old one after the logo changed, 21 Oct 2026).
@@ -186,13 +201,74 @@ writeFileSync(new URL(`${OUT}/404.html`, root), `<!doctype html><html lang="en">
 <style>body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f6f5f1;color:#15140f;display:grid;place-items:center;min-height:100vh;padding:16px}a{color:#1f4e79}@media(prefers-color-scheme:dark){body{background:#121210;color:#f2f0ea}a{color:#9cc0e8}}</style></head>
 <body><main><h1 style="font-size:24px">This page does not exist.</h1><p><a href="/">${attr(en.meta.name)}</a> · <a href="/de/" lang="de">${attr(de.meta.name)} (Deutsch)</a></p><p style="font-size:14px"><a href="/#impressum">Impressum (legal notice)</a> · <a href="/#privacy-notice">Privacy notice</a> · <a href="/de/#privacy-notice" lang="de">Datenschutzerklärung</a></p></main></body></html>
 `);
+// A summary for AI assistants (llms.txt, decision 025): what the site is and where its pages are, in plain text.
+const exMain = pageMeta.example && pageMeta.example.result.main;
+// the example's answer rounded exactly as the page shows it (splitTo100 in src/app/main.js: the four groups add up to 100)
+function shownAnswer(m) {
+  const marginOnly = m.pMarginCall === null ? 0 : Math.max(0, m.pMarginCall - m.pLiquidation - m.pPartial);
+  const raw = [m.pLiquidation, m.pPartial, marginOnly, 1 - m.pLiquidation - m.pPartial - marginOnly].map((p) => Math.max(0, p) * 100); const fl = raw.map(Math.floor);
+  let rest = 100 - fl.reduce((a, b) => a + b, 0);
+  raw.map((r, k) => [r - fl[k], k]).sort((a, b) => b[0] - a[0]).forEach(([, k]) => { if (rest > 0) { fl[k]++; rest--; } });
+  return fl[0] + fl[1];
+}
+const llmsPart = (tx, dir) => {
+  const exLine = exMain ? `- ${tx.llms.example.replace('{n}', String(shownAnswer(exMain))).replace('{date}', new Date(meta[EXAMPLE_FORM.currency].to * 1000).toISOString().slice(0, 10))}\n` : '';
+  return `> ${tx.llms.summary}\n\n${tx.llms.facts.map((f) => `- ${f}`).join('\n')}\n${exLine}\n### ${tx.llms.pagesTitle}\n\n${PAGES.map((p) => `- [${p.group ? tx[p.group].metaTitle : tx.meta.title}](${BASE}${dir}${p.dir}): ${p.group ? tx[p.group].metaDescription : tx.meta.description}`).join('\n')}\n`;
+};
+writeFileSync(new URL(`${OUT}/llms.txt`, root), `# ${en.meta.name}\n\n${llmsPart(en, '')}\n## ${en.llms.germanTitle}\n\n${llmsPart(de, 'de/')}\n## ${en.llms.sourceTitle}\n\n- [${en.llms.sourceCode}](${SITE.codeUrl})\n`);
+
+// For readers without scripts (search and AI crawlers, decision 025): each finished page is opened once here, in the
+// project's own Chrome, exactly as a first-time visitor gets it, and what stands on the screen is written into the file.
+// The empty original moves into a <template>; a one-line script in the page puts it back before the page's own script
+// starts. So a visitor's browser runs the very same page as before, and a crawler reads the texts and the example's numbers.
+let browser;
+try { browser = await chromium.launch(); } catch (e) {
+  throw new Error(`The build needs the project's Chrome to write the page texts into the files (decision 025).\nSet PLAYWRIGHT_BROWSERS_PATH="$PWD/.tools/ms-playwright" (see CLAUDE.md), or install it: npx playwright install chromium\n${e.message}`);
+}
+async function prerender(doc, url) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, timezoneId: 'UTC', locale: 'en-GB' });
+  const page = await context.newPage();
+  const problems = [];
+  page.on('pageerror', (e) => problems.push(String(e)));
+  // no request leaves this computer: the page itself comes from memory, the price services answer "nothing new"
+  // (the page then uses the last price of its own data, the same for every build of the same data)
+  await page.route('**/*', (route) => (route.request().url() === url ? route.fulfill({ body: doc, contentType: 'text/html; charset=utf-8' }) : route.abort()));
+  await page.goto(url);
+  await page.waitForSelector('body[data-ready="1"]', { timeout: 120000 });
+  // the check page recalculates the example once in the background: wait until nothing is marked as still computing
+  await page.waitForFunction(() => !document.querySelector('.pending, .outdated') && (!document.querySelector('#progress') || document.querySelector('#progress').hidden), null, { timeout: 180000 });
+  if (problems.length) throw new Error(`${url}: the page reported errors while it was written out: ${problems.join('; ')}`);
+  const html = await page.evaluate(() => {
+    // what the visitor typed or what stands in a field is a property, not markup: write it into the markup
+    for (const el of document.querySelectorAll('input, select, textarea')) {
+      if (el.type === 'checkbox' || el.type === 'radio') el.toggleAttribute('checked', el.checked);
+      else if (el.tagName === 'SELECT') for (const o of el.options) o.toggleAttribute('selected', o.selected);
+      else if (el.tagName === 'TEXTAREA') el.textContent = el.value;
+      else el.setAttribute('value', el.value);
+    }
+    const t = document.getElementById('pristine-here');
+    const out = []; for (let n = document.body.firstChild; n && n !== t; n = n.nextSibling) out.push(n.nodeType === 1 ? n.outerHTML : n.nodeType === 3 ? n.textContent : '');
+    return out.join('');
+  });
+  await context.close();
+  return html;
+}
 for (const page of PAGES) {
   const html = assemble(page);
   for (const lang of ['en', 'de']) {
     const out = `${OUT}/${lang === 'de' ? 'de/' : ''}${page.dir}index.html`;
     mkdirSync(new URL(out.replace(/index\.html$/, ''), root), { recursive: true });
-    const doc = html.replace('<html lang="en">', `<html lang="${lang}">`).replace('/*HEAD*/', () => head(lang, page));
+    const plain = html.replace('<html lang="en">', `<html lang="${lang}">`).replace('/*HEAD*/', () => head(lang, page));
+    // the part a visitor sees: from the start of <body> to the marker after </main>
+    const from = plain.indexOf('<body>') + '<body>'.length; const to = plain.indexOf('/*PRISTINE*/');
+    if (from < 6 || to < 0) throw new Error(`${page.src}: <body> or the /*PRISTINE*/ marker is missing`);
+    const original = plain.slice(from, to);
+    if (/<script|<template/i.test(original)) throw new Error(`${page.src}: the visible part must hold no script or template`);
+    const written = await prerender(plain.replace('/*PRISTINE*/', '<i id="pristine-here" hidden></i>'), `${BASE}${lang === 'de' ? 'de/' : ''}${page.dir}`);
+    if (/<script/i.test(written)) throw new Error(`${out}: the written-out page holds a script`);
+    const doc = `${plain.slice(0, from)}${written}<template id="pristine">${original}</template>${plain.slice(to + '/*PRISTINE*/'.length)}`;
     writeFileSync(new URL(out, root), doc);
     console.log(`${out}: ${(doc.length / 1024 / 1024).toFixed(2)} MB`);
   }
 }
+await browser.close();

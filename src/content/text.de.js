@@ -9,11 +9,29 @@ export default {
     name: 'Bitcoin-Kredit-Check',
     title: 'Bitcoin-Kredit-Check: Liquidationsrisiko jedes BTC-Kredits',
     ogTitle: 'Bitcoin-Kredit-Check: ein unabhängiger Check für jedes Bitcoin-Kreditangebot',
-    description: 'Wie wahrscheinlich wird ein Bitcoin-besicherter Kredit liquidiert, bei welchem Kurs, und was kostet er? Kostenlos, Open Source, im Browser.',
+    description: 'Wie wahrscheinlich wird ein Bitcoin-besicherter Kredit (Krypto-Kredit) liquidiert, bei welchem Kurs, und was kostet er? Kostenlos, Open Source, im Browser.',
     ogFacts: '<b>Liquidationsrisiko</b>, <b>Liquidationskurs</b> und <b>Gesamtkosten</b>, geprüft an echten BTC-Kursen seit 2014. Läuft in Ihrem Browser.',
     ogTrust: 'Kostenlos · Open Source',
   },
 
+  // llms.txt: die Kurzbeschreibung für KI-Assistenten (Entscheidung 025), vom Build geschrieben
+  llms: {
+    summary: 'Der Bitcoin-Kredit-Check ist ein kostenloser Open-Source-Rechner für Kredite, die mit Bitcoin besichert sind. Er zeigt, wie oft ein Kredit mit gegebenen Bedingungen liquidiert wird, bei welchem Kurs, und was er kostet. Unabhängig: Kein Kreditgeber zahlt dafür oder nimmt Einfluss.',
+    facts: [
+      'Die Antwort ist eine Zählung: In wie vielen von 100 simulierten Zukünften wird der Kredit innerhalb der Laufzeit liquidiert.',
+      'Die Zukünfte entstehen aus echten stündlichen BTC-Kursen seit 2014, jüngere Jahre zählen mehr. Es wird kein Kurstrend angenommen.',
+      'Zwei weitere Methoden prüfen die Zahl: derselbe Kredit in der echten Geschichte und ein Volatilitätsmodell.',
+      'Keine Prognose und keine Finanz-, Anlage- oder Steuerberatung. Das Risiko des Kreditgebers selbst ist nicht enthalten.',
+      'Auf der Seite wird kein Kreditgeber genannt, bewertet oder empfohlen.',
+      'Alle Berechnungen laufen im Browser der Besucher. Kein Tracking, keine Cookies, kein Konto.',
+      'Die Kursdaten werden jede Woche aktualisiert. Der Code steht unter der MIT-Lizenz.',
+    ],
+    example: 'Beispiel mit Kursdaten bis {date}: 10.000 € für 12 Monate leihen, Start-LTV 50 %, Liquidation bei LTV 80 %. Ergebnis: Liquidation in {n} von 100 simulierten Zukünften.',
+    pagesTitle: 'Seiten',
+    germanTitle: 'Deutsch',
+    sourceTitle: 'Quelle',
+    sourceCode: 'Quellcode, Datenquellen und Tests',
+  },
   nav: {
     label: 'Seiten',
     skip: 'Zum Inhalt springen',

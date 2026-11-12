@@ -43,7 +43,7 @@ standing instructions: read it first in every session, then the task (a GitHub i
 
 ```
 export PATH="$PWD/.tools/node/bin:$PATH" PLAYWRIGHT_BROWSERS_PATH="$PWD/.tools/ms-playwright"
-node tools/build.mjs                 # build docs/ from src/ (always before browser tests)
+node tools/build.mjs                 # build docs/ from src/ (always before browser tests; ~30 s, opens each page in the project's Chrome)
 node tools/build-og.mjs              # link-preview images (after build; they show the example's answer); then build again
 npm test                             # unit tests (vitest); npm run test:fast skips calibration
 npx playwright test                  # browser tests: chromium, webkit, firefox, iphone, android (~11 min)
@@ -74,6 +74,11 @@ Local preview: `.claude/launch.json` ("page", port 8765). Long runs: run in the 
 **Design** (`ux/C-design-spec.md`, `tests/design.test.js`)
 - Orange belongs to the Bitcoin logo only, never to a warning or data colour. Status colours: red (liquidated),
   half-filled red (partly), gold/yellow (margin call); they must stay apart for colour-blind eyes. Type scale is fixed.
+
+**Search and AI crawlers** (`decisions/025`, `e2e/crawler.spec.js`)
+- The build writes each page's texts and the example's numbers into the page files, for readers without scripts.
+  The visible part of a page source (from `<body>` to `</main>`) holds no script and no template.
+- Search-facing texts (descriptions, structured data, `llms.txt`) follow the same wording rules as the page.
 
 **Privacy and legal** (`decisions/001`, `decisions/014`)
 - No tracking, no cookies, no new outside service without updating the privacy notice first (EN and DE, new version date).

@@ -28,3 +28,4 @@ Why the project is the way it is. Read the record before changing what it decide
 | 022 | [The example's margin call is only a warning](022-example-margin-call-warning-only.md) | 2026-10-27 |
 | 023 | [Topping up when the price falls: the visitor's own plan, nothing preset](023-adding-btc-the-visitors-own-plan.md) | 2026-11-02 |
 | 024 | [Words bitcoiners know: price paths, top up, initial LTV](024-words-bitcoiners-know.md) | 2026-11-02 |
+| 025 | [Search engines and AI assistants: readable without scripts, no lender names, crawlers allowed](025-search-and-ai-assistants.md) | 2026-11-12 |

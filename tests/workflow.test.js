@@ -49,6 +49,15 @@ describe('data-update workflow', () => {
     expect(job('browser').needs).toBe('update');
     expect(job('publish').needs).toEqual(['update', 'browser']); // the pull request only after every browser setup passed
   });
+  it('Chrome is installed before every build: the build writes the page texts into the files with it (decision 025)', () => {
+    for (const steps of [tests.jobs.browser.steps, job('update').steps]) {
+      const runs = steps.map((x) => x.run || '');
+      const install = runs.findIndex((r) => /npx playwright install --with-deps .*chromium/.test(r));
+      const build = runs.findIndex((r) => /node tools\/build\.mjs/.test(r));
+      expect(install).toBeGreaterThanOrEqual(0);
+      expect(install).toBeLessThan(build);
+    }
+  });
   it('the browser tests run in all five setups of playwright.config.js, side by side, as for every other change', () => {
     const projects = job('browser').strategy.matrix.include.map((m) => m.project).sort();
     const config = readFileSync(new URL('../playwright.config.js', import.meta.url), 'utf8');

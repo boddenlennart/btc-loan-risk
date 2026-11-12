@@ -11,6 +11,7 @@ const GROUPS = [
   ['cost', 'Section: costs, borrow or sell, leverage'], ['history', 'Section: what history says'], ['insights', 'Page: Insights'], ['method', 'Page: How it works'],
   ['feedback', 'Feedback panel'], ['donate', 'Donation box'], ['footer', 'Footer'], ['glossary', 'Glossary'], ['errors', 'Error messages'],
   ['legal', 'Impressum and privacy notice (templates; review by a lawyer)'], ['meta', 'Page title and search description'],
+  ['llms', 'Summary file for AI assistants (llms.txt, decision 025)'],
 ];
 // every text group must be listed above, so no text is left out of the review
 const missing = Object.keys(en).filter((k) => !GROUPS.some(([g]) => g === k));

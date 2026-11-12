@@ -12,11 +12,29 @@ export default {
     name: 'Bitcoin Loan Check',
     title: 'Bitcoin Loan Check: liquidation risk of any BTC loan',
     ogTitle: 'Bitcoin Loan Check: an independent check for any Bitcoin loan offer',
-    description: 'See how likely a Bitcoin-backed loan is to be liquidated, at which price, and what it costs. Free, open source, runs in your browser.',
+    description: 'See how likely a Bitcoin-backed loan (crypto loan) is to be liquidated, at which price, and what it costs. Free, open source, runs in your browser.',
     ogFacts: '<b>Liquidation chance</b>, <b>liquidation price</b> and <b>full cost</b>, tested on real BTC prices since 2014. Runs in your browser.',
     ogTrust: 'Free · Open source',
   },
 
+  // llms.txt: the plain summary for AI assistants (decision 025), written by the build
+  llms: {
+    summary: 'Bitcoin Loan Check is a free, open-source calculator for loans backed by Bitcoin. It shows how often a loan with given terms is liquidated, at which price, and what it costs. Independent: no lender pays for or influences it.',
+    facts: [
+      'The answer is a count: in how many of 100 simulated price paths the loan is liquidated within its term.',
+      'The price paths are built from real hourly BTC prices since 2014, with recent years counting more. No price trend is assumed.',
+      'Two other methods check the number: the same loan on real history, and a volatility model.',
+      'It is not a forecast, and not financial, investment or tax advice. The lender\'s own risk is not included.',
+      'No lender is named, ranked or recommended on the site.',
+      'All calculations run in the visitor\'s browser. No tracking, no cookies, no account.',
+      'The price data is updated every week. The code is under the MIT licence.',
+    ],
+    example: 'Example with price data to {date}: borrow €10,000 for 12 months at an initial LTV of 50%, liquidated at LTV 80%. Result: liquidated in {n} of 100 simulated price paths.',
+    pagesTitle: 'Pages',
+    germanTitle: 'German (Deutsch)',
+    sourceTitle: 'Source',
+    sourceCode: 'Source code, data sources and tests',
+  },
   nav: {
     label: 'Pages',
     skip: 'Skip to content',
