@@ -1,0 +1,41 @@
+# Bitcoin Loan Check
+
+> Bitcoin Loan Check is a free, open-source calculator for loans backed by Bitcoin. It shows how often a loan with given terms is liquidated, at which price, and what it costs. Independent: no lender pays for or influences it.
+
+- The answer is a count: in how many of 100 simulated price paths the loan is liquidated within its term.
+- The price paths are built from real hourly BTC prices since 2014, with recent years counting more. No price trend is assumed.
+- Two other methods check the number: the same loan on real history, and a volatility model.
+- It is not a forecast, and not financial, investment or tax advice. The lender's own risk is not included.
+- No lender is named, ranked or recommended on the site.
+- All calculations run in the visitor's browser. No tracking, no cookies, no account.
+- The price data is updated every week. The code is under the MIT licence.
+- Example with price data to 2026-11-09: borrow €10,000 for 12 months at an initial LTV of 50%, liquidated at LTV 80%. Result: liquidated in 45 of 100 simulated price paths.
+
+### Pages
+
+- [Bitcoin Loan Check: liquidation risk of any BTC loan](https://bitcoinloancheck.com/): See how likely a Bitcoin-backed loan (crypto loan) is to be liquidated, at which price, and what it costs. Free, open source, runs in your browser.
+- [Insights · Bitcoin Loan Check](https://bitcoinloancheck.com/insights/): What happened to Bitcoin-backed loans since 2014: how much buffer they needed, which terms mattered most, and how fast BTC crashes went. Not a forecast, not advice.
+- [How it works · Bitcoin Loan Check](https://bitcoinloancheck.com/method/): How Bitcoin Loan Check computes the risk of a BTC-backed loan: the simulation step by step, which volatility it uses and why, the maths, and how to verify every number.
+
+## German (Deutsch)
+
+> Der Bitcoin-Kredit-Check ist ein kostenloser Open-Source-Rechner für Kredite, die mit Bitcoin besichert sind. Er zeigt, wie oft ein Kredit mit gegebenen Bedingungen liquidiert wird, bei welchem Kurs, und was er kostet. Unabhängig: Kein Kreditgeber zahlt dafür oder nimmt Einfluss.
+
+- Die Antwort ist eine Zählung: In wie vielen von 100 simulierten Zukünften wird der Kredit innerhalb der Laufzeit liquidiert.
+- Die Zukünfte entstehen aus echten stündlichen BTC-Kursen seit 2014, jüngere Jahre zählen mehr. Es wird kein Kurstrend angenommen.
+- Zwei weitere Methoden prüfen die Zahl: derselbe Kredit in der echten Geschichte und ein Volatilitätsmodell.
+- Keine Prognose und keine Finanz-, Anlage- oder Steuerberatung. Das Risiko des Kreditgebers selbst ist nicht enthalten.
+- Auf der Seite wird kein Kreditgeber genannt, bewertet oder empfohlen.
+- Alle Berechnungen laufen im Browser der Besucher. Kein Tracking, keine Cookies, kein Konto.
+- Die Kursdaten werden jede Woche aktualisiert. Der Code steht unter der MIT-Lizenz.
+- Beispiel mit Kursdaten bis 2026-11-09: 10.000 € für 12 Monate leihen, Start-LTV 50 %, Liquidation bei LTV 80 %. Ergebnis: Liquidation in 45 von 100 simulierten Zukünften.
+
+### Seiten
+
+- [Bitcoin-Kredit-Check: Liquidationsrisiko jedes BTC-Kredits](https://bitcoinloancheck.com/de/): Wie wahrscheinlich wird ein Bitcoin-besicherter Kredit (Krypto-Kredit) liquidiert, bei welchem Kurs, und was kostet er? Kostenlos, Open Source, im Browser.
+- [Erkenntnisse · Bitcoin-Kredit-Check](https://bitcoinloancheck.com/de/insights/): Was mit Bitcoin-gedeckten Krediten seit 2014 geschah: wie viel Puffer sie brauchten, welche Bedingungen am meisten zählten und wie schnell BTC-Einbrüche verliefen. Keine Prognose, keine Beratung.
+- [So funktioniert es · Bitcoin-Kredit-Check](https://bitcoinloancheck.com/de/method/): Wie der Bitcoin-Kredit-Check das Risiko eines BTC-gedeckten Kredits berechnet: die Simulation Schritt für Schritt, welche Volatilität sie nutzt und warum, die Mathematik und wie Sie jede Zahl selbst prüfen.
+
+## Source
+
+- [Source code, data sources and tests](https://github.com/boddenlennart/btc-loan-risk)

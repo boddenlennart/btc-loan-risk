@@ -64,6 +64,9 @@
 
   /*FOOTER*/
 </main>
+<!-- For readers without scripts (search and AI crawlers, decision 025) the build writes the finished page above this line and keeps
+     the empty original in a template; this script puts the original back before the page's own script starts, so nothing else changes. -->
+/*PRISTINE*/<script>(function(){var t=document.getElementById('pristine');if(!t)return;while(t.previousSibling)t.parentNode.removeChild(t.previousSibling);t.parentNode.replaceChild(t.content,t)})()</script>
 <script type="application/json" id="meta">/*META*/</script>
 <script>/*APP*/</script>
 </body>

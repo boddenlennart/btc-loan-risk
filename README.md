@@ -74,7 +74,7 @@ python3 tools/fetch_history.py eur           # download EUR price history (slow:
 node tools/build-data.mjs                    # compress the history into data/
 node tools/update-fx.mjs                     # refresh the ECB exchange rates in data/fx-ecb.csv
 node tools/check-fx.mjs                      # compare the converted prices with real exchange prices
-node tools/build.mjs                         # write the three pages in both languages (docs/…/index.html)
+node tools/build.mjs                         # write the three pages in both languages (docs/…/index.html); needs the project's Chrome (npx playwright install chromium)
 node tools/build-og.mjs                      # link-preview images and icons (only when name, headline or logo change)
 npm test                                     # run all automated tests
 npm run test:e2e                             # test the finished page in Chrome's, Safari's and Firefox's engine (first: npx playwright install chromium webkit firefox)
@@ -104,7 +104,7 @@ The page contains BTC price history up to a fixed date. A scheduled **GitHub Act
      - the 12 reference loans on frozen history, which must match the stored results exactly
      - the same 12 loans on the newest data, where every result must be valid
      - the test against history
-   - **the 163 browser tests of the finished pages (38 of them check that the numbers agree with each other), in Chrome's, Safari's and Firefox's engine, and the phone tests also as an iPhone and an Android phone with a touch screen**
+   - **the 174 browser tests of the finished pages (38 of them check that the numbers agree with each other, 11 read the pages as a crawler without scripts does), in Chrome's, Safari's and Firefox's engine, and the phone tests also as an iPhone and an Android phone with a touch screen**
    - the **drift guard**: if the new hours move the result of any reference loan by more than 5 of 100, the update stops and you get an issue instead of a pull request.
 6. It opens a **pull request** called "Weekly price data update [date]". The description says, in plain words:
    - old and new end date
@@ -193,6 +193,14 @@ Once a year (for example in January):
 
 All simulations run in a background Web Worker. The GARCH model is fitted once when the page is built (it was the slowest step in the browser).
 
+### What search engines and AI assistants read (decision 025)
+
+The page's script writes all texts and numbers. The crawlers of AI assistants run no scripts, so they used to find an almost empty page. Now the build opens each finished page once in the project's Chrome, as a first-time visitor gets it, and writes what stands on the screen into the page file. The empty original is kept in the file too; one line of script puts it back before the page's own script starts, so a visitor's browser runs exactly the same page as before.
+
+- The written-out numbers are the example's, with the last price of the page's own data. They are refreshed with every build, so with every weekly data update.
+- Each page also carries structured data (what it is, in which language, by whom) and the site has a plain summary for AI assistants, `llms.txt`.
+- `e2e/crawler.spec.js` opens every page with scripts switched off and looks for the title, the texts and the example's answer. It also checks that the check page still works when cut after its first 2 MB, because Google reads no further.
+
 ### What the visitor sees (UX redesign and review, see `ux/`)
 
 Design and reasons: [ux/C-design-spec.md](ux/C-design-spec.md) (look, layout, logo), [ux/D-share-preview.md](ux/D-share-preview.md) (link previews), [ux/E-test-plan.md](ux/E-test-plan.md) (tests with people). Screenshots: [phone, light](ux/redesign/phone-light.jpg), [phone, dark](ux/redesign/phone-dark.jpg).
@@ -259,7 +267,7 @@ Public APIs can change their rules at any time; the page then falls back to the 
 
 ## Tests and how each was verified
 
-Run with `npm test` (491 tests) and `npm run test:e2e` (163 browser tests, each in Chrome's, Safari's and Firefox's engine; the phone tests also as an iPhone and an Android phone). Quality measurements: [ux/G-quality-report.md](ux/G-quality-report.md) (coverage, planted bugs, hostile input, browsers, speed, accessibility, security). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
+Run with `npm test` (492 tests) and `npm run test:e2e` (174 browser tests, each in Chrome's, Safari's and Firefox's engine; the phone tests also as an iPhone and an Android phone). Quality measurements: [ux/G-quality-report.md](ux/G-quality-report.md) (coverage, planted bugs, hostile input, browsers, speed, accessibility, security). Tests 1–9 were written **before** the engine (phase 1) and approved by the project owner; the tests marked UX were added in the UX redesign (phase C).
 
 | # | Test | How it was verified |
 |---|---|---|

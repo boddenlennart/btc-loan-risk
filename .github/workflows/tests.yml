@@ -56,17 +56,19 @@ jobs:
           cache: npm
       - name: Install tools
         run: npm ci
-      - name: Build the page from the sources (the browser tests use this build)
-        run: node tools/build.mjs
       # the browser is kept between runs (installing it from scratch took up to 30 minutes on 26 Oct 2026)
       - name: Keep the installed browser between runs
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ matrix.engine }}-${{ hashFiles('package-lock.json') }}
+          key: playwright-with-chromium-${{ runner.os }}-${{ matrix.engine }}-${{ hashFiles('package-lock.json') }}
       - name: Install the browser and what it needs from the system
         timeout-minutes: 15
-        run: npx playwright install --with-deps ${{ matrix.engine }}
+        run: npx playwright install --with-deps ${{ matrix.engine }} chromium
+      # after the browser: the build opens each finished page once in Chrome and writes its texts into the file,
+      # so that search and AI crawlers, which run no scripts, can read them (decision 025)
+      - name: Build the page from the sources (the browser tests use this build)
+        run: node tools/build.mjs
       - name: The finished page in a real browser
         timeout-minutes: 30
         run: npx playwright test --project=${{ matrix.project }}

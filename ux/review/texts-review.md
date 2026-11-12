@@ -1038,6 +1038,24 @@ How to review: read each row. Note the **number** of every text you do not under
 | 933 | Bitcoin Loan Check | Bitcoin-Kredit-Check | `meta.name` |
 | 934 | Bitcoin Loan Check: liquidation risk of any BTC loan | Bitcoin-Kredit-Check: Liquidationsrisiko jedes BTC-Kredits | `meta.title` |
 | 935 | Bitcoin Loan Check: an independent check for any Bitcoin loan offer | Bitcoin-Kredit-Check: ein unabhängiger Check für jedes Bitcoin-Kreditangebot | `meta.ogTitle` |
-| 936 | See how likely a Bitcoin-backed loan is to be liquidated, at which price, and what it costs. Free, open source, runs in your browser. | Wie wahrscheinlich wird ein Bitcoin-besicherter Kredit liquidiert, bei welchem Kurs, und was kostet er? Kostenlos, Open Source, im Browser. | `meta.description` |
+| 936 | See how likely a Bitcoin-backed loan (crypto loan) is to be liquidated, at which price, and what it costs. Free, open source, runs in your browser. | Wie wahrscheinlich wird ein Bitcoin-besicherter Kredit (Krypto-Kredit) liquidiert, bei welchem Kurs, und was kostet er? Kostenlos, Open Source, im Browser. | `meta.description` |
 | 937 | <b>Liquidation chance</b>, <b>liquidation price</b> and <b>full cost</b>, tested on real BTC prices since 2014. Runs in your browser. | <b>Liquidationsrisiko</b>, <b>Liquidationskurs</b> und <b>Gesamtkosten</b>, geprüft an echten BTC-Kursen seit 2014. Läuft in Ihrem Browser. | `meta.ogFacts` |
 | 938 | Free · Open source | Kostenlos · Open Source | `meta.ogTrust` |
+
+## Summary file for AI assistants (llms.txt, decision 025)
+
+| # | English | Deutsch | key |
+|---|---|---|---|
+| 939 | Bitcoin Loan Check is a free, open-source calculator for loans backed by Bitcoin. It shows how often a loan with given terms is liquidated, at which price, and what it costs. Independent: no lender pays for or influences it. | Der Bitcoin-Kredit-Check ist ein kostenloser Open-Source-Rechner für Kredite, die mit Bitcoin besichert sind. Er zeigt, wie oft ein Kredit mit gegebenen Bedingungen liquidiert wird, bei welchem Kurs, und was er kostet. Unabhängig: Kein Kreditgeber zahlt dafür oder nimmt Einfluss. | `llms.summary` |
+| 940 | The answer is a count: in how many of 100 simulated price paths the loan is liquidated within its term. | Die Antwort ist eine Zählung: In wie vielen von 100 simulierten Zukünften wird der Kredit innerhalb der Laufzeit liquidiert. | `llms.facts.0` |
+| 941 | The price paths are built from real hourly BTC prices since 2014, with recent years counting more. No price trend is assumed. | Die Zukünfte entstehen aus echten stündlichen BTC-Kursen seit 2014, jüngere Jahre zählen mehr. Es wird kein Kurstrend angenommen. | `llms.facts.1` |
+| 942 | Two other methods check the number: the same loan on real history, and a volatility model. | Zwei weitere Methoden prüfen die Zahl: derselbe Kredit in der echten Geschichte und ein Volatilitätsmodell. | `llms.facts.2` |
+| 943 | It is not a forecast, and not financial, investment or tax advice. The lender's own risk is not included. | Keine Prognose und keine Finanz-, Anlage- oder Steuerberatung. Das Risiko des Kreditgebers selbst ist nicht enthalten. | `llms.facts.3` |
+| 944 | No lender is named, ranked or recommended on the site. | Auf der Seite wird kein Kreditgeber genannt, bewertet oder empfohlen. | `llms.facts.4` |
+| 945 | All calculations run in the visitor's browser. No tracking, no cookies, no account. | Alle Berechnungen laufen im Browser der Besucher. Kein Tracking, keine Cookies, kein Konto. | `llms.facts.5` |
+| 946 | The price data is updated every week. The code is under the MIT licence. | Die Kursdaten werden jede Woche aktualisiert. Der Code steht unter der MIT-Lizenz. | `llms.facts.6` |
+| 947 | Example with price data to {date}: borrow €10,000 for 12 months at an initial LTV of 50%, liquidated at LTV 80%. Result: liquidated in {n} of 100 simulated price paths. | Beispiel mit Kursdaten bis {date}: 10.000 € für 12 Monate leihen, Start-LTV 50 %, Liquidation bei LTV 80 %. Ergebnis: Liquidation in {n} von 100 simulierten Zukünften. | `llms.example` |
+| 948 | Pages | Seiten | `llms.pagesTitle` |
+| 949 | German (Deutsch) | Deutsch | `llms.germanTitle` |
+| 950 | Source | Quelle | `llms.sourceTitle` |
+| 951 | Source code, data sources and tests | Quellcode, Datenquellen und Tests | `llms.sourceCode` |
