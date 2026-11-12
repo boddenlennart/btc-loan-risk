@@ -16,7 +16,10 @@ export default defineConfig({
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    // Firefox gets the same extra time as the phones: on GitHub's computers its test run takes 11 to 21 minutes for the
+    // same page, and on 12 Nov 2026 one calculation had not started after 30 seconds (the page was fine: the same
+    // commit passed in a second run at the same time).
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, timeout: 180_000, expect: { timeout: 90_000 } },
     // The same tests as a real phone: touch screen, phone browser, phone screen. Desktop windows made
     // narrow missed a slider that did nothing on iPhones (Oct 2026). Runs the tests tagged @phone and
     // the touch sweep (e2e/phone.spec.js).
