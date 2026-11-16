@@ -9,7 +9,7 @@
 - No lender is named, ranked or recommended on the site.
 - All calculations run in the visitor's browser. No tracking, no cookies, no account.
 - The price data is updated every week. The code is under the MIT licence.
-- Example with price data to 2026-11-09: borrow €10,000 for 12 months at an initial LTV of 50%, liquidated at LTV 80%. Result: liquidated in 45 of 100 simulated price paths.
+- Example with price data to 2026-11-16: borrow €10,000 for 12 months at an initial LTV of 50%, liquidated at LTV 80%. Result: liquidated in 44 of 100 simulated price paths.
 
 ### Pages
 
@@ -28,7 +28,7 @@
 - Auf der Seite wird kein Kreditgeber genannt, bewertet oder empfohlen.
 - Alle Berechnungen laufen im Browser der Besucher. Kein Tracking, keine Cookies, kein Konto.
 - Die Kursdaten werden jede Woche aktualisiert. Der Code steht unter der MIT-Lizenz.
-- Beispiel mit Kursdaten bis 2026-11-09: 10.000 € für 12 Monate leihen, Start-LTV 50 %, Liquidation bei LTV 80 %. Ergebnis: Liquidation in 45 von 100 simulierten Zukünften.
+- Beispiel mit Kursdaten bis 2026-11-16: 10.000 € für 12 Monate leihen, Start-LTV 50 %, Liquidation bei LTV 80 %. Ergebnis: Liquidation in 44 von 100 simulierten Zukünften.
 
 ### Seiten
 
